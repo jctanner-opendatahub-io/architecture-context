@@ -101,7 +101,10 @@ def _check_extra_repos(value, errors):
             f" got {type(value).__name__}"
         )
         return
-    allowed = {"org", "repo", "branch", "suffix", "exclude_files", "protocol"}
+    allowed = {
+        "org", "repo", "branch", "suffix", "exclude_files", "protocol",
+        "name_prefix",
+    }
     for i, entry in enumerate(value):
         if not isinstance(entry, dict):
             errors.append(
@@ -124,10 +127,16 @@ def _check_extra_repos(value, errors):
                 errors.append(
                     f"'extra_repos[{i}].{req}' must be a string"
                 )
-        for opt in ("branch", "suffix"):
+        for opt in ("branch", "suffix", "name_prefix"):
             if opt in entry and not isinstance(entry[opt], str):
                 errors.append(
                     f"'extra_repos[{i}].{opt}' must be a string"
+                )
+        if "name_prefix" in entry:
+            prefix = entry["name_prefix"]
+            if "/" in prefix or "\\" in prefix or ".." in prefix:
+                errors.append(
+                    f"'extra_repos[{i}].name_prefix' must be a safe name prefix"
                 )
         if "protocol" in entry:
             proto = entry["protocol"]

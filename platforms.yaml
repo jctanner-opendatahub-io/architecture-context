@@ -12,7 +12,7 @@
 ##                       (optional; defaults to branch name, then directory name)
 ##   orgs              - primary GitHub orgs to clone (list of strings)
 ##   extra_orgs        - additional orgs (list of {org, branch?, suffix?, protocol?})
-##   extra_repos       - individual cross-org repos (list of {org, repo, branch?, suffix?, protocol?})
+##   extra_repos       - individual cross-org repos (list of {org, repo, branch?, suffix?, protocol?, name_prefix?})
 ##   exclude_repos     - repos to skip during fetch (supports globs)
 ##
 ## Component map override fields (applied after discovery):
@@ -29,6 +29,7 @@
 ##
 ## Per extra_repos entry:
 ##   exclude_files         - files/dirs to delete after cloning (list of glob patterns)
+##   name_prefix           - optional prefix for the local checkout/component alias
 ##
 ## Use YAML anchors (&name / *name) to share config across entries.
 
@@ -128,18 +129,23 @@ rhoai.next:
     - org: praxis-proxy
       repo: proxy
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: ai
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: grid
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: policy
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: enhancements
       branch: main
+      name_prefix: praxis-
     - org: openshift
       repo: kueue-operator
       branch: "release-4.*"
@@ -176,8 +182,8 @@ rhoai.next:
 
 rhoai-3.6-ea.2:
   <<: *rhoai_3x_common
-  suffix: rhoai-3.6-ea.1
-  branch: rhoai-3.6-ea.1
+  suffix: rhoai-3.6-ea.2
+  branch: rhoai-3.6-ea.2
   extra_repos:
     - org: project-codeflare
       repo: codeflare-sdk
@@ -196,18 +202,23 @@ rhoai-3.6-ea.2:
     - org: praxis-proxy
       repo: proxy
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: ai
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: grid
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: policy
       branch: main
+      name_prefix: praxis-
     - org: praxis-proxy
       repo: enhancements
       branch: main
+      name_prefix: praxis-
     - org: openshift
       repo: kueue-operator
       branch: "release-4.*"
@@ -240,6 +251,10 @@ rhoai-3.6-ea.2:
     - key: kueue-operator
       repo_org: openshift
       repo_name: kueue-operator
+      type: operator
+    - key: praxis-grid
+      repo_org: praxis-proxy
+      repo_name: grid
       type: operator
 
 rhoai-3.6-ea.1:

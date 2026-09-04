@@ -84,3 +84,21 @@ def test_pipeline_dispatches_component_scoped_phases_in_order(monkeypatch):
         ("generate-architecture", "models-as-a-service"),
         ("generate-architecture", "eval-hub"),
     ]
+
+
+def test_pipeline_lets_discovery_resolve_platform_checkout_dirs():
+    args = SimpleNamespace(
+        platform="rhoai-3.6-ea.2",
+        architecture_dir="architecture",
+        checkouts_dir="checkouts",
+        max_concurrent=1,
+        force=True,
+        model="opus",
+        strace=False,
+    )
+
+    phase_args = orchestration._pipeline_phase_args(
+        args, "discover-components", None,
+    )
+
+    assert phase_args.checkouts_dir is None

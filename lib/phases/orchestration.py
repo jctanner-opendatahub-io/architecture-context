@@ -327,9 +327,16 @@ def _pipeline_phase_args(args, phase: str, component: str | None):
             format="summary",
         )
     if phase == "discover-components":
+        # Fetch consumes the checkout root, but discovery must resolve the
+        # platform's individual organization checkout directories. Passing the
+        # parser default ("checkouts") makes provenance treat the root itself
+        # as an organization named "checkouts".
+        discovery_checkouts_dir = getattr(args, "checkouts_dir", None)
+        if discovery_checkouts_dir == "checkouts":
+            discovery_checkouts_dir = None
         return Namespace(
             **common,
-            checkouts_dir=getattr(args, "checkouts_dir", None),
+            checkouts_dir=discovery_checkouts_dir,
             entry_repo=None,
             exclude=None,
         )

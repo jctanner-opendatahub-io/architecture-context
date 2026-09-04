@@ -11,6 +11,7 @@ from pathlib import Path
 from lib.agent_runner import run_agent
 from lib.component_discovery import get_component_map_metadata
 from lib.fetch import load_platform_config
+from lib.repo_naming import checkout_name, extra_repo_checkout_name
 
 
 def _apply_map_overrides(map_file: Path, platform_config: dict) -> None:
@@ -28,18 +29,35 @@ def _apply_map_overrides(map_file: Path, platform_config: dict) -> None:
     # Pull include_components out of excluded into components
     for entry in includes:
         key = entry["key"]
-        if key in excluded and key not in components:
-            del excluded[key]
+        repo_org = entry.get("repo_org")
+        repo_name = entry.get("repo_name", key)
+        canonical_key = repo_name
+        source_key = key
+        if source_key not in excluded and source_key not in components:
+            alias = extra_repo_checkout_name(
+                platform_config, repo_org, repo_name,
+            )
+            for candidate in (canonical_key, alias):
+                if candidate in excluded or candidate in components:
+                    source_key = candidate
+                    break
+
+        if source_key in excluded and key not in components:
+            del excluded[source_key]
             suffix = platform_config.get("suffix")
-            repo_org = entry.get("repo_org")
-            repo_name = entry.get("repo_name", key)
             org_dir = f"{repo_org}.{suffix}" if suffix and repo_org else repo_org
             checkout_path = None
             if org_dir:
+                checkout_dir = extra_repo_checkout_name(
+                    platform_config, repo_org, repo_name,
+                )
                 for candidate_dir in [org_dir, repo_org]:
-                    candidate = Path("checkouts") / candidate_dir / repo_name
-                    if candidate.exists():
-                        checkout_path = str(candidate.resolve())
+                    for local_name in (checkout_dir, repo_name):
+                        candidate = Path("checkouts") / candidate_dir / local_name
+                        if candidate.exists():
+                            checkout_path = str(candidate.resolve())
+                            break
+                    if checkout_path:
                         break
             components[key] = {
                 "key": key,
@@ -544,10 +562,26 @@ async def run_discover_components_phase(args) -> None:
         f"--checkouts-dir={d}" for d in checkouts_dirs
     )
 
+    alias_lines = []
+    if platform_config:
+        for entry in platform_config.get("extra_repos", []):
+            prefix = entry.get("name_prefix", "")
+            if prefix:
+                alias_lines.append(
+                    f"  - {entry['org']}/{entry['repo']} is checked out as "
+                    f"{checkout_name(entry['repo'], prefix)}; preserve the "
+                    f"canonical repo_name {entry['repo']} in the output."
+                )
+    alias_part = (
+        "\nCheckout alias mappings (directory/component key vs canonical repo):\n"
+        + "\n".join(alias_lines)
+        if alias_lines else ""
+    )
+
     prompt = (
         f"/discover-components --platform={args.platform}"
         f" {checkouts_parts}{entry_part}{exclude_part}"
-        f" --architecture-dir={architecture_dir}"
+        f" --architecture-dir={architecture_dir}{alias_part}"
     )
 
     log_dir = Path("logs/discover-components")

@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 
+from lib.repo_naming import checkout_name
+
 _log_file = None
 
 
@@ -474,10 +476,11 @@ async def _clone_repo(
     pull: bool = False,
     exclude_files: list = None,
     protocol: str = "https",
+    name_prefix: str = "",
 ) -> None:
     """Clone an individual repository."""
     org_dir = f"{org}.{suffix}" if suffix else org
-    repo_path = checkouts_dir / org_dir / repo
+    repo_path = checkouts_dir / org_dir / checkout_name(repo, name_prefix)
 
     if branch and any(c in branch for c in ("*", "?")):
         resolved = await _resolve_branch_glob(org, repo, branch, protocol)
@@ -714,6 +717,7 @@ async def fetch_repositories(
                         branch=repo_branch, suffix=repo_suffix, pull=pull,
                         exclude_files=entry.get("exclude_files"),
                         protocol=entry.get("protocol", "https"),
+                        name_prefix=entry.get("name_prefix", ""),
                     )
 
             # Clone sync config repo if declared
