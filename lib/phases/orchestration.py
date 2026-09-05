@@ -110,7 +110,12 @@ async def run_all_phases(args) -> None:
         print(f"Branch: {branch}")
     if target_version:
         print(f"Target Version: {target_version}")
-    print(f"Model: {getattr(args, 'model', 'opus')}")
+    harness = getattr(args, "harness", "claude")
+    print(f"Harness: {harness}")
+    selected_model = getattr(args, "model", None) or (
+        "opus" if harness == "claude" else "configured default"
+    )
+    print(f"Model: {selected_model}")
     print("=" * 80 + "\n")
 
     # Phase 1: Fetch repositories
@@ -147,6 +152,7 @@ async def run_all_phases(args) -> None:
         entry_repo=None,
         exclude=None,
         model=getattr(args, 'model', 'opus'),
+        harness=harness,
         force=force,
         strace=strace,
     )
@@ -175,6 +181,7 @@ async def run_all_phases(args) -> None:
         version=target_version or args.platform,
         evidence_gated_merge=getattr(args, 'evidence_gated_merge', True),
         model=getattr(args, 'model', 'opus'),
+        harness=harness,
         tier=getattr(args, 'tier', 'all'),
         strace=strace,
     )
@@ -190,6 +197,7 @@ async def run_all_phases(args) -> None:
         limit=None,
         force=force,
         model=getattr(args, 'model', 'opus'),
+        harness=harness,
         strace=strace,
     )
     await run_generate_platform_architecture_phase(platform_arch_args)
@@ -208,6 +216,7 @@ async def run_all_phases(args) -> None:
             force_regenerate=force,
             export_png=getattr(args, 'export_png', False),
             model=getattr(args, 'model', 'opus'),
+            harness=harness,
             strace=strace,
         )
         await run_generate_diagrams_phase(diagrams_args)
@@ -302,7 +311,8 @@ def _pipeline_phase_args(args, phase: str, component: str | None):
         "architecture_dir": getattr(args, "architecture_dir", "architecture"),
         "max_concurrent": getattr(args, "max_concurrent", 1),
         "force": getattr(args, "force", False),
-        "model": getattr(args, "model", "opus"),
+        "model": getattr(args, "model", None),
+        "harness": getattr(args, "harness", "claude"),
         "strace": getattr(args, "strace", False),
     }
     if phase == "fetch":

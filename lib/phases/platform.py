@@ -154,7 +154,12 @@ async def run_generate_platform_architecture_phase(args) -> None:
     await _ensure_arch_query()
 
     # Prepare agent jobs
-    model_display = get_model_display_name(args.model)
+    harness = getattr(args, "harness", "claude")
+    model_display = (
+        get_model_display_name(args.model, harness=harness)
+        if harness != "claude"
+        else get_model_display_name(args.model)
+    )
     jobs = []
     for p in sorted(needs_generation, key=lambda x: x['name']):
         distribution = p['name'].split("-")[0] if "-" in p['name'] else p['name']
@@ -195,7 +200,11 @@ async def run_generate_platform_architecture_phase(args) -> None:
     print(f"{'=' * 60}")
     print(f"Ready to process {len(jobs)} platform(s)")
     print(f"Max concurrent agents: {args.max_concurrent}")
-    print(f"Model: {args.model}")
+    print(f"Harness: {harness}")
+    selected_model = args.model or (
+        "opus" if harness == "claude" else "configured default"
+    )
+    print(f"Model: {selected_model}")
     print(f"{'=' * 60}\n")
 
     strace_prefix = (
@@ -206,6 +215,7 @@ async def run_generate_platform_architecture_phase(args) -> None:
         jobs, log_dir, args.model, args.max_concurrent, enable_skills=True,
         strace_prefix=strace_prefix,
         phase_label="PHASE 5 · Platform architecture synthesis",
+        harness=harness,
     )
 
     # Summary

@@ -49,6 +49,7 @@ The next focused milestone is the
 - [ADR-0014: Declarative exclude_files](docs/decisions/ADR-0014-exclude-files.md)
 - [ADR-0015: Build Metadata Extraction](docs/decisions/ADR-0015-build-metadata-extraction.md)
 - [ADR-0016: Image and Repo Provenance](docs/decisions/ADR-0016-image-and-repo-provenance.md)
+- [ADR-0017: Selectable Agent Harness](docs/decisions/ADR-0017-selectable-agent-harness.md)
 
 ## Notes
 

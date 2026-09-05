@@ -222,7 +222,12 @@ async def run_generate_architecture_phase(args) -> None:
 
     # Prepare generation work. Every eligible component gets agent synthesis;
     # analyzer output is always preseeded for constrained routes.
-    model_display = get_model_display_name(args.model)
+    harness = getattr(args, "harness", "claude")
+    model_display = (
+        get_model_display_name(args.model, harness=harness)
+        if harness != "claude"
+        else get_model_display_name(args.model)
+    )
     readiness_routing = getattr(args, "evidence_gated_merge", False)
     if readiness_routing:
         arch_doc_binary = ensure_arch_doc_binary()
@@ -343,7 +348,11 @@ async def run_generate_architecture_phase(args) -> None:
     print(f"{'=' * 60}")
     print(f"Ready to process {len(work_items)} component(s)")
     print(f"Max concurrent agents: {args.max_concurrent}")
-    print(f"Model: {args.model}")
+    print(f"Harness: {harness}")
+    selected_model = args.model or (
+        "opus" if harness == "claude" else "configured default"
+    )
+    print(f"Model: {selected_model}")
     print(f"{'=' * 60}\n")
 
     strace_prefix = (
@@ -369,6 +378,7 @@ async def run_generate_architecture_phase(args) -> None:
                 platform=distribution,
                 version=insight_version,
             ),
+            harness=harness,
         )
 
     # Test doubles and older callers may not invoke the per-job callback.

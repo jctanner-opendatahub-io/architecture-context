@@ -13,6 +13,8 @@ docs/*
 !docs/goals/**
 !docs/bugs/
 !docs/bugs/**
+!docs/decisions/
+!docs/decisions/**
 !docs/notes/
 !docs/notes/**
 !docs/milestones/

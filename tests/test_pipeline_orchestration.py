@@ -94,6 +94,7 @@ def test_pipeline_lets_discovery_resolve_platform_checkout_dirs():
         max_concurrent=1,
         force=True,
         model="opus",
+        harness="codex",
         strace=False,
     )
 
@@ -102,3 +103,4 @@ def test_pipeline_lets_discovery_resolve_platform_checkout_dirs():
     )
 
     assert phase_args.checkouts_dir is None
+    assert phase_args.harness == "codex"

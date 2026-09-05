@@ -107,6 +107,52 @@ def test_pipeline_accepts_repeated_phases_components_and_repos(monkeypatch):
     assert args.evidence_gated_merge is True
 
 
+def test_pipeline_accepts_codex_harness_and_codex_model(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "main.py",
+            "pipeline",
+            "--platform",
+            "rhoai-3.6-ea.2",
+            "--phase",
+            "fetch",
+            "--phase",
+            "discover-components",
+            "--harness",
+            "codex",
+            "--model",
+            "gpt-5.3-codex",
+        ],
+    )
+
+    args = parse_args()
+
+    assert args.harness == "codex"
+    assert args.model == "gpt-5.3-codex"
+
+
+def test_codex_harness_uses_configured_model_by_default(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "main.py",
+            "discover-components",
+            "--platform",
+            "rhoai-3.6-ea.2",
+            "--harness",
+            "codex",
+        ],
+    )
+
+    args = parse_args()
+
+    assert args.harness == "codex"
+    assert args.model is None
+
+
 def test_pipeline_allows_evidence_gated_merge_opt_out(monkeypatch):
     monkeypatch.setattr(
         sys,

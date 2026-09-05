@@ -217,7 +217,12 @@ async def run_generate_diagrams_phase(args) -> None:
     print(f"{'=' * 60}")
     print(f"Ready to process {len(jobs)} file(s)")
     print(f"Max concurrent agents: {args.max_concurrent}")
-    print(f"Model: {args.model}")
+    harness = getattr(args, "harness", "claude")
+    print(f"Harness: {harness}")
+    selected_model = args.model or (
+        "opus" if harness == "claude" else "configured default"
+    )
+    print(f"Model: {selected_model}")
     print(f"{'=' * 60}\n")
 
     strace_prefix = (
@@ -235,6 +240,7 @@ async def run_generate_diagrams_phase(args) -> None:
             platform_jobs, log_dir, args.model, args.max_concurrent,
             enable_skills=True, strace_prefix=strace_prefix,
             phase_label="PHASE 6a · Platform diagram generation",
+            harness=harness,
         )
         all_results.extend(platform_results)
         all_jobs.extend(platform_jobs)
@@ -246,6 +252,7 @@ async def run_generate_diagrams_phase(args) -> None:
             args.max_concurrent, enable_skills=True,
             strace_prefix=strace_prefix,
             phase_label="PHASE 6b · Component diagram generation",
+            harness=harness,
         )
         all_results.extend(component_results)
         all_jobs.extend(component_jobs)

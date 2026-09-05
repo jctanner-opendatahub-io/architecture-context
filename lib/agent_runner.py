@@ -1,4 +1,4 @@
-"""Claude SDK agent launcher and model utilities."""
+"""Agent harness launcher and model utilities."""
 
 from __future__ import annotations
 
@@ -541,7 +541,10 @@ class _AgentExecutionGuard:
         return result
 
 
-def get_model_display_name(model_shorthand: str) -> str:
+def get_model_display_name(
+    model_shorthand: str | None,
+    harness: str = "claude",
+) -> str:
     """
     Convert model shorthand to human-readable display name for generated files.
 
@@ -551,6 +554,9 @@ def get_model_display_name(model_shorthand: str) -> str:
     Returns:
         Human-readable model name
     """
+    if harness == "codex":
+        return model_shorthand or "Codex"
+    model_shorthand = model_shorthand or "opus"
     display_names = {
         "sonnet": "Claude Sonnet 4.5",
         "opus": "Claude Opus 4.6",
@@ -598,7 +604,7 @@ async def run_agent(
     cwd: str,
     prompt: str,
     log_dir: Path,
-    model: str = "opus",
+    model: str | None = "opus",
     enable_skills: bool = False,
     progress: AgentProgress | None = None,
     strace_dir: Path | None = None,
@@ -606,21 +612,40 @@ async def run_agent(
     checkout_path: str | Path | None = None,
     analyzer_root: str | Path | None = None,
     output_paths: tuple[str | Path, ...] = (),
+    harness: str = "claude",
 ) -> dict:
     """
-    Launch one independent Claude agent session.
+    Launch one independent agent session through the selected harness.
 
     Args:
         name: Component name for identification
         cwd: Working directory for the agent
         prompt: Prompt to send to the agent
         log_dir: Directory to write log files
-        model: Claude model to use (sonnet, opus, or haiku)
+        model: Model understood by the selected harness
         enable_skills: If True, enable Skill tool and load skills from filesystem
 
     Returns:
         dict with 'name', 'success', 'log_file', and optional 'error' keys
     """
+    if harness == "codex":
+        from lib.codex_agent import run_codex_agent
+
+        return await run_codex_agent(
+            name=name,
+            cwd=cwd,
+            prompt=prompt,
+            log_dir=log_dir,
+            model=model,
+            enable_skills=enable_skills,
+            progress=progress,
+            strace_dir=strace_dir,
+        )
+    if harness != "claude":
+        raise ValueError(f"Unsupported agent harness: {harness!r}")
+
+    model = model or "opus"
+
     # Create log file for this agent
     log_file = log_dir / f"{name.replace('/', '_')}.log"
 
@@ -821,12 +846,13 @@ async def run_agent(
 async def run_agents_concurrently(
     jobs: list,
     log_dir: Path,
-    model: str,
+    model: str | None,
     max_concurrent: int,
     enable_skills: bool = False,
     strace_prefix: str | None = None,
     phase_label: str = "",
     on_result=None,
+    harness: str = "claude",
 ) -> list:
     """
     Run multiple agent jobs with a concurrency limit.
@@ -837,7 +863,7 @@ async def run_agents_concurrently(
     Args:
         jobs: List of dicts with 'name', 'cwd', 'prompt' keys
         log_dir: Directory for agent log files
-        model: Model shorthand (sonnet, opus, haiku)
+        model: Model understood by the selected harness
         max_concurrent: Max agents running at once
         enable_skills: If True, enable Skill tool and load skills from filesystem
 
@@ -889,6 +915,7 @@ async def run_agents_concurrently(
                 checkout_path=job.get("checkout_path"),
                 analyzer_root=job.get("analyzer_root"),
                 output_paths=tuple(job.get("output_paths", ())),
+                harness=harness,
             )
         except BaseException as e:
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
@@ -927,6 +954,7 @@ async def run_agents_concurrently(
                     checkout_path=job.get("checkout_path"),
                     analyzer_root=job.get("analyzer_root"),
                     output_paths=tuple(job.get("output_paths", ())),
+                    harness=harness,
                 )
             return await _finalize_result(index, job, result)
         except BaseException as e:

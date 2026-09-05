@@ -10,28 +10,49 @@ from dotenv import load_dotenv
 from lib.cli import parse_args
 from lib.phases import main
 
-# Load environment variables from .env file
-env_path = Path(__file__).parent / ".env"
-if not env_path.exists():
-    print(
-        "Error: .env file not found\n"
-        "\n"
-        f"Expected location: {env_path}\n"
-        "\n"
-        "Create a .env file with at minimum:\n"
-        "\n"
-        "  ANTHROPIC_API_KEY=sk-ant-...\n"
-        "\n"
-        "The Claude Agent SDK requires a valid API key to spawn agents.",
-        file=sys.stderr,
-    )
-    sys.exit(1)
-load_dotenv(dotenv_path=env_path)
+_AGENT_COMMANDS = frozenset({
+    "discover-components",
+    "generate-architecture",
+    "generate-platform-architecture",
+    "generate-diagrams",
+    "all",
+})
+_AGENT_PHASES = frozenset({
+    "discover-components",
+    "generate-architecture",
+    "generate-platform-architecture",
+    "generate-diagrams",
+})
+
+
+def _uses_claude(args) -> bool:
+    """Return whether this invocation will launch a Claude SDK agent."""
+    if getattr(args, "harness", "claude") != "claude":
+        return False
+    if args.command in _AGENT_COMMANDS:
+        return True
+    if args.command == "pipeline":
+        return bool(_AGENT_PHASES.intersection(getattr(args, "phase", ())))
+    return False
+
+
+def _load_agent_environment(args) -> None:
+    """Load optional local secrets and enforce Claude's legacy requirement."""
+    env_path = Path(__file__).parent / ".env"
+    if env_path.exists():
+        load_dotenv(dotenv_path=env_path)
+        return
+    if _uses_claude(args):
+        raise RuntimeError(
+            f".env file not found at {env_path}; Claude agent phases require "
+            "ANTHROPIC_API_KEY. Codex phases use the existing Codex login."
+        )
 
 
 if __name__ == "__main__":
     args = parse_args()
     try:
+        _load_agent_environment(args)
         asyncio.run(main(args))
     except KeyboardInterrupt:
         print("\n\nInterrupted by user")

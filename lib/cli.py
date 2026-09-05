@@ -92,6 +92,24 @@ def _add_strace_flag(parser):
     )
 
 
+def _add_agent_options(parser, help_scope: str = "agent phases"):
+    """Add harness/model selection shared by agent-backed commands."""
+    parser.add_argument(
+        "--harness",
+        choices=["claude", "codex"],
+        default="claude",
+        help=f"Agent harness to use for {help_scope} (default: claude)",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help=(
+            "Model understood by the selected harness. Defaults to opus for "
+            "Claude and the configured Codex default for Codex."
+        ),
+    )
+
+
 def parse_args():
     """Parse command line arguments with subcommands for each phase."""
     parser = argparse.ArgumentParser(
@@ -249,16 +267,7 @@ def parse_args():
         action="store_true",
         help="Re-run discovery even if component-map.json already exists"
     )
-    discover_parser.add_argument(
-        "--model",
-        choices=["sonnet", "opus", "haiku"],
-        default="opus",
-        help=(
-            "Claude model to use for discovery"
-            " (default: opus -- discovery explores"
-            " many repos and needs large context)"
-        ),
-    )
+    _add_agent_options(discover_parser, "discovery")
     _add_strace_flag(discover_parser)
 
     # Phase 2c: Static analysis (arch-analyzer)
@@ -374,12 +383,7 @@ def parse_args():
             " name or Makefile."
         ),
     )
-    generate_arch_parser.add_argument(
-        "--model",
-        choices=["sonnet", "opus", "haiku"],
-        default="opus",
-        help="Claude model to use (default: opus)"
-    )
+    _add_agent_options(generate_arch_parser, "architecture generation")
     generate_arch_parser.add_argument(
         "--tier",
         choices=["all", "significant", "core"],
@@ -429,16 +433,7 @@ def parse_args():
         default=False,
         help="Force regeneration of PLATFORM.md even if up-to-date"
     )
-    platform_arch_parser.add_argument(
-        "--model",
-        choices=["sonnet", "opus", "haiku"],
-        default="opus",
-        help=(
-            "Claude model to use (default: opus --"
-            " platform aggregation needs"
-            " large context)"
-        ),
-    )
+    _add_agent_options(platform_arch_parser, "platform architecture generation")
     _add_strace_flag(platform_arch_parser)
 
     # Phase 5: Generate diagrams
@@ -489,12 +484,7 @@ def parse_args():
         default=False,
         help="Export Mermaid diagrams to PNG (requires mmdc + Chrome; off by default)"
     )
-    diagrams_parser.add_argument(
-        "--model",
-        choices=["sonnet", "opus", "haiku"],
-        default="opus",
-        help="Claude model to use (default: opus)"
-    )
+    _add_agent_options(diagrams_parser, "diagram generation")
     _add_strace_flag(diagrams_parser)
 
     # Check eligibility
@@ -589,12 +579,7 @@ def parse_args():
         default=1,
         help="Maximum concurrency for component phases (default: 1)"
     )
-    pipeline_parser.add_argument(
-        "--model",
-        choices=["sonnet", "opus", "haiku"],
-        default="opus",
-        help="Claude model to use for agent phases (default: opus)"
-    )
+    _add_agent_options(pipeline_parser)
     pipeline_parser.add_argument(
         "--log-dir",
         help=(
@@ -682,12 +667,7 @@ def parse_args():
             " name or Makefile."
         ),
     )
-    all_parser.add_argument(
-        "--model",
-        choices=["sonnet", "opus", "haiku"],
-        default="opus",
-        help="Claude model to use for all agent tasks (default: opus)"
-    )
+    _add_agent_options(all_parser, "all agent tasks")
     all_parser.add_argument(
         "--tier",
         choices=["all", "significant", "core"],

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from lib.agent_runner import run_agent
 from lib.component_discovery import get_component_map_metadata
+from lib.discovery_workspace import run_isolated_discovery
 from lib.fetch import load_platform_config
 from lib.repo_naming import (
     checkout_name,
@@ -623,9 +624,14 @@ async def run_discover_components_phase(args) -> None:
     log_dir = Path("logs/discover-components")
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    model = getattr(args, 'model', 'opus')
+    harness = getattr(args, "harness", "claude")
+    model = getattr(args, "model", None)
     print("Running component discovery with Skills enabled (SDK)...")
-    print(f"Model: {model}")
+    print(f"Harness: {harness}")
+    selected_model = model or (
+        "opus" if harness == "claude" else "configured default"
+    )
+    print(f"Model: {selected_model}")
     print(f"Log directory: {log_dir}\n")
 
     strace_dir = None
@@ -636,7 +642,7 @@ async def run_discover_components_phase(args) -> None:
             / f"{safe_platform}-discover-components-discover-{safe_platform}"
         )
 
-    result = await run_agent(
+    job = dict(
         name=f"discover-{args.platform}",
         cwd=".",
         prompt=prompt,
@@ -644,7 +650,15 @@ async def run_discover_components_phase(args) -> None:
         model=model,
         enable_skills=True,
         strace_dir=strace_dir,
+        harness=harness,
     )
+    if harness == "codex":
+        result = await run_isolated_discovery(
+            run_agent, platform=args.platform,
+            architecture_dir=architecture_dir, **job,
+        )
+    else:
+        result = await run_agent(**job)
 
     print("\n" + "=" * 60)
     if result.get("success"):
