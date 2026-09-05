@@ -332,6 +332,49 @@ func TestInputBuildsRepoLineageFromComponentMap(t *testing.T) {
 	}
 }
 
+func TestInputUsesComponentMapAliasForCanonicalRepository(t *testing.T) {
+	document := Input(model.Input{
+		Component: "policy",
+		Repo:      "https://github.com/praxis-proxy/policy.git",
+	}, Options{
+		ComponentMap: &model.ComponentMap{
+			Components: map[string]model.ComponentEntry{
+				"praxis-policy": {
+					RepoOrg:  "praxis-proxy",
+					RepoName: "policy",
+					RepoURL:  "https://github.com/praxis-proxy/policy",
+				},
+			},
+		},
+	})
+
+	if document.Component != "praxis-policy" {
+		t.Fatalf("Component = %q, want component-map alias", document.Component)
+	}
+}
+
+func TestInputKeepsRepositoryNameWhenComponentMapIdentityIsAmbiguous(t *testing.T) {
+	document := Input(model.Input{
+		Component: "policy",
+		Repo:      "git@github.com:praxis-proxy/policy.git",
+	}, Options{
+		ComponentMap: &model.ComponentMap{
+			Components: map[string]model.ComponentEntry{
+				"praxis-policy": {
+					RepoOrg: "praxis-proxy", RepoName: "policy",
+				},
+				"praxis-policy-secondary": {
+					RepoOrg: "praxis-proxy", RepoName: "policy",
+				},
+			},
+		},
+	})
+
+	if document.Component != "policy" {
+		t.Fatalf("Component = %q, want unchanged ambiguous repository name", document.Component)
+	}
+}
+
 func TestInputRepoLineageUpstreamRoleForOriginRepo(t *testing.T) {
 	document := Input(model.Input{
 		Component: "llm-d-kv-cache",

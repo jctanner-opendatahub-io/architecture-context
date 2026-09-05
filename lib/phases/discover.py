@@ -11,20 +11,56 @@ from pathlib import Path
 from lib.agent_runner import run_agent
 from lib.component_discovery import get_component_map_metadata
 from lib.fetch import load_platform_config
-from lib.repo_naming import checkout_name, extra_repo_checkout_name
+from lib.repo_naming import (
+    checkout_name,
+    extra_repo_aliases,
+    extra_repo_checkout_name,
+)
 
 
 def _apply_map_overrides(map_file: Path, platform_config: dict) -> None:
     """Move include_components entries from excluded to components in the JSON."""
     includes = platform_config.get("include_components", [])
     excludes = platform_config.get("exclude_components", [])
-    if not includes and not excludes:
+    aliases = extra_repo_aliases(platform_config)
+    if not includes and not excludes and not aliases:
         return
 
     data = json.loads(map_file.read_text())
     components = data.get("components", {})
     excluded = data.get("excluded", {})
     changed = False
+
+    # Discovery agents naturally use the checkout directory name as the
+    # component key. Normalize aliased extra repositories while retaining the
+    # canonical GitHub identity in repo_org/repo_name.
+    for (_repo_org, repo_name), alias in aliases.items():
+        if repo_name in components and alias not in components:
+            component = components.pop(repo_name)
+            component["key"] = alias
+            components[alias] = component
+            print(f"  Renamed discovered component {repo_name} -> {alias}")
+            changed = True
+        if repo_name in excluded and alias not in excluded:
+            excluded[alias] = excluded.pop(repo_name)
+            print(f"  Renamed excluded repository {repo_name} -> {alias}")
+            changed = True
+
+    dependency_graph = data.get("dependency_graph", {})
+    if dependency_graph and aliases:
+        repo_aliases = {
+            repo_name: alias
+            for (_repo_org, repo_name), alias in aliases.items()
+        }
+        normalized_graph = {
+            repo_aliases.get(source, source): [
+                repo_aliases.get(dep, dep) for dep in dependencies
+            ]
+            for source, dependencies in dependency_graph.items()
+        }
+        if normalized_graph != dependency_graph:
+            data["dependency_graph"] = normalized_graph
+            changed = True
 
     # Pull include_components out of excluded into components
     for entry in includes:

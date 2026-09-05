@@ -26,7 +26,7 @@ func Input(input model.Input, options Options) model.Document {
 
 	sources := newSourceIndex()
 	document := model.Document{
-		Component:            input.Component,
+		Component:            componentMapKey(input, options.ComponentMap),
 		Purpose:              valueOr(input.Summary, "Pending synthesis from source-backed facts."),
 		DataCoverage:         input.DataCoverage,
 		CategoryCoverage:     input.CategoryCoverage,
@@ -983,7 +983,7 @@ func lookupRepoKey(input model.Input, componentMap *model.ComponentMap) string {
 	if componentMap == nil || componentMap.Provenance == nil {
 		return ""
 	}
-	comp, ok := componentMap.Components[input.Component]
+	comp, ok := componentMap.Components[componentMapKey(input, componentMap)]
 	if ok && comp.RepoOrg != "" && comp.RepoName != "" {
 		key := comp.RepoOrg + "/" + comp.RepoName
 		if _, ok := componentMap.Provenance.Repos[key]; ok {
@@ -998,4 +998,39 @@ func lookupRepoKey(input model.Input, componentMap *model.ComponentMap) string {
 		}
 	}
 	return ""
+}
+
+func componentMapKey(input model.Input, componentMap *model.ComponentMap) string {
+	if componentMap == nil {
+		return input.Component
+	}
+	if _, ok := componentMap.Components[input.Component]; ok {
+		return input.Component
+	}
+
+	repoKey := repositoryIdentity(input.Repo)
+	if repoKey == "" {
+		return input.Component
+	}
+	candidates := make([]string, 0, 1)
+	for key, component := range componentMap.Components {
+		identity := strings.Trim(component.RepoOrg+"/"+component.RepoName, "/")
+		if identity == repoKey || repositoryIdentity(component.RepoURL) == repoKey {
+			candidates = append(candidates, key)
+		}
+	}
+	if len(candidates) != 1 {
+		return input.Component
+	}
+	return candidates[0]
+}
+
+func repositoryIdentity(repository string) string {
+	repository = strings.TrimSpace(strings.TrimSuffix(repository, ".git"))
+	repository = strings.TrimSuffix(repository, "/")
+	repository = strings.TrimPrefix(repository, "https://github.com/")
+	repository = strings.TrimPrefix(repository, "http://github.com/")
+	repository = strings.TrimPrefix(repository, "ssh://git@github.com/")
+	repository = strings.TrimPrefix(repository, "git@github.com:")
+	return repository
 }

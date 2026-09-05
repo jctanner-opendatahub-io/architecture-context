@@ -25,6 +25,7 @@ from lib.component_discovery import (
 from lib.fetch import load_platform_config
 from lib.insights import load_insight_artifact
 from lib.phases.static_analysis import analyzer_output_dir
+from lib.repo_naming import extra_repo_checkout_name
 from lib.source_read_justifications import validate_source_read_justifications
 
 CHANGE_RECORD_FILENAME = "ARCHITECTURE_CHANGES.md"
@@ -63,6 +64,50 @@ def component_generation_path(
     ) / filename
 
 
+def _remove_legacy_component_outputs(
+    architecture_dir: str | Path,
+    platform: str,
+    platform_config: dict,
+    components,
+) -> None:
+    """Remove generated artifacts left under a component's former raw name.
+
+    ``name_prefix`` changes the component key used by every downstream phase.
+    Remove the old generated names during the transition so platform synthesis
+    and diagram discovery cannot see both ``policy`` and ``praxis-policy``.
+    """
+    platform_dir = Path(architecture_dir) / platform
+    diagrams_dir = platform_dir / "diagrams"
+    for component in components.values():
+        alias = extra_repo_checkout_name(
+            platform_config, component.repo_org, component.repo_name,
+        )
+        if not alias or alias == component.repo_name or not component.repo_name:
+            continue
+
+        legacy_file = platform_dir / f"{component.repo_name}.md"
+        if legacy_file.exists():
+            legacy_file.unlink()
+            print(f"  Removed legacy component document: {legacy_file}")
+
+        for legacy_dir in (
+            platform_dir / component.repo_name / ".analyzer",
+            platform_dir / component.repo_name / ".generation",
+        ):
+            if legacy_dir.exists():
+                shutil.rmtree(legacy_dir)
+                print(f"  Removed legacy component artifacts: {legacy_dir}")
+        legacy_component_dir = platform_dir / component.repo_name
+        if legacy_component_dir.is_dir() and not any(legacy_component_dir.iterdir()):
+            legacy_component_dir.rmdir()
+
+        if diagrams_dir.exists():
+            for diagram_file in diagrams_dir.glob(f"{component.repo_name}-*"):
+                if diagram_file.is_file():
+                    diagram_file.unlink()
+                    print(f"  Removed legacy diagram: {diagram_file}")
+
+
 async def run_generate_architecture_phase(args) -> None:
     """Run Phase 3: Generate architecture documentation."""
     print("\n" + "=" * 60)
@@ -89,6 +134,9 @@ async def run_generate_architecture_phase(args) -> None:
             components,
             platform_config,
             checkouts_base=checkouts_dir,
+        )
+        _remove_legacy_component_outputs(
+            architecture_dir, args.platform, platform_config, components,
         )
     components = apply_component_selection(
         components,
@@ -401,7 +449,14 @@ def _promote_component_output(source: Path, target: Path) -> None:
 
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_name(f".{target.name}.tmp")
-    shutil.copy2(source, temporary)
+    content = source.read_text()
+    expected_heading = f"# Component: {target.stem}"
+    lines = content.splitlines(keepends=True)
+    if lines and lines[0].startswith("# Component:"):
+        newline = "\n" if lines[0].endswith("\n") else ""
+        lines[0] = expected_heading + newline
+        content = "".join(lines)
+    temporary.write_text(content)
     temporary.replace(target)
 
 

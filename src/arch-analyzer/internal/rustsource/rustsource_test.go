@@ -72,3 +72,33 @@ func TestExtractRustWorkspaceManifest(t *testing.T) {
 		t.Fatalf("dependencies = %#v, want source-backed workspace dependency", result.Dependencies)
 	}
 }
+
+func TestExtractRustWorkspaceManifestWithInheritedPackageVersion(t *testing.T) {
+	root := t.TempDir()
+	member := filepath.Join(root, "policy")
+	if err := os.MkdirAll(member, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	write := func(path, content string) {
+		t.Helper()
+		if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write(
+		filepath.Join(root, "Cargo.toml"),
+		"[workspace]\nmembers = [\"policy\"]\n\n[workspace.package]\nversion = \"0.2.0\"\n",
+	)
+	write(
+		filepath.Join(member, "Cargo.toml"),
+		"[package]\nname = \"praxis-policy\"\nversion.workspace = true\ndescription = \"policy library\"\n\n[dependencies]\nserde = { workspace = true }\n",
+	)
+
+	result, err := Extract(root)
+	if err != nil {
+		t.Fatalf("Extract() inherited workspace package error = %v", err)
+	}
+	if len(result.Components) != 1 || result.Components[0].Name != "praxis-policy" {
+		t.Fatalf("components = %#v, want inherited-version workspace member", result.Components)
+	}
+}
