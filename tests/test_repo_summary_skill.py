@@ -38,3 +38,16 @@ def test_change_output_contract_is_explicit_in_summary_skill():
     assert "requires a delete for the former key" in skill
     assert "an add\nfor the latter key" in skill
     assert "Do not emit bare pipe-separated lines" in skill
+
+
+def test_surface_planning_and_final_review_contract_is_explicit():
+    skill = SKILL_PATH.read_text()
+
+    assert "--surface-inventory=PATH" in skill
+    assert "--surface-coverage-output=PATH" in skill
+    assert "plan\nacross individual surfaces" in skill
+    assert "Closing one gateway or authentication" in skill
+    assert "one justified targeted follow-up" in skill
+    assert "final evidence-to-output review" in skill
+    assert "without another read" in skill
+    assert "post-merge validation" in skill

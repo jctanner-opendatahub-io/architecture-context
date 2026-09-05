@@ -1,0 +1,62 @@
+{
+  "fixture_version": "architecture-surface-regression/v1",
+  "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed",
+  "source_path": "cmd/main.go",
+  "source_range": "480-500",
+  "component_role": "operator",
+  "surface_id": "authentication.metrics-enforcement",
+  "parent_category": "authentication",
+  "question": "When does the controller-runtime metrics serving surface enforce authentication and authorization?",
+  "priority": "required",
+  "applicability_basis": "The operator configures a controller-runtime metrics serving surface.",
+  "candidate_locations": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "480-500"
+    }
+  ],
+  "expected_evidence": {
+    "serving_surface": "controller-runtime metrics serving surface",
+    "condition": "oconfig.MetricsSecure is true",
+    "enforcement_provider": "filters.WithAuthenticationAndAuthorization",
+    "authentication": "authentication is enforced by the controller-runtime filter provider when MetricsSecure is true",
+    "authorization": "authorization is enforced by the controller-runtime filter provider when MetricsSecure is true"
+  },
+  "forbidden_claims": [
+    "metrics authentication and authorization are unconditionally enforced",
+    "the metrics endpoint is FIPS compliant"
+  ],
+  "cases": [
+    {
+      "name": "evidence_unavailable",
+      "disposition": "unresolved",
+      "result": "extraction_gap",
+      "candidate_source_present": false,
+      "remaining_question": "Whether the metrics serving surface conditionally installs the authentication and authorization filter provider."
+    },
+    {
+      "name": "evidence_available_omitted",
+      "disposition": "unresolved",
+      "result": "synthesis_omission",
+      "candidate_source_present": true,
+      "evidence_present": true,
+      "candidate_output_omits_behavior": true
+    },
+    {
+      "name": "explicit_unresolved",
+      "disposition": "unresolved",
+      "result": "unresolved",
+      "remaining_question": "The available evidence does not establish whether secure metrics serving is enabled in the deployed configuration.",
+      "unsupported_claim_warning": false
+    },
+    {
+      "name": "unsupported_claim",
+      "disposition": "documented",
+      "claim_support": "unsupported",
+      "result": "unverifiable_coverage_claim",
+      "candidate_source_present": true,
+      "candidate_claim": "metrics authentication and authorization are unconditionally enforced",
+      "unsupported_claim_warning": true
+    }
+  ]
+}

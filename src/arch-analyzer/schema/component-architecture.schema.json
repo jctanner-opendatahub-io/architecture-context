@@ -42,6 +42,10 @@
     "security_evidence": {
       "type": "array",
       "items": {"$ref": "#/$defs/securityEvidence"}
+    },
+    "behavioral_evidence": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/behavioralEvidence"}
     }
   },
   "additionalProperties": true,
@@ -381,6 +385,40 @@
         "source": {"type": "string", "minLength": 1},
         "sources": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
       },
+      "additionalProperties": false
+    },
+    "behavioralEvidence": {
+      "type": "object",
+      "required": ["kind", "status", "identity", "source"],
+      "properties": {
+        "kind": {"enum": ["conditional-metrics-enforcement", "named-watch-predicate"]},
+        "status": {"enum": ["observed", "unresolved"]},
+        "identity": {"type": "string", "minLength": 1},
+        "serving_surface": {"type": "string", "minLength": 1},
+        "configuration_branch": {"type": "string", "minLength": 1},
+        "enforcement_provider": {"type": "string", "minLength": 1},
+        "watched_gvk": {"type": "string", "minLength": 1},
+        "literal_values": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true},
+        "event_target": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "pattern": "^[^:]+:[1-9][0-9]*-[1-9][0-9]*$"},
+        "limitations": {"type": "array", "items": {"type": "string", "minLength": 1}, "minItems": 1, "uniqueItems": true}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "conditional-metrics-enforcement"}, "status": {"const": "observed"}}},
+          "then": {"required": ["serving_surface", "configuration_branch", "enforcement_provider"]}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "named-watch-predicate"}, "status": {"const": "observed"}}},
+          "then": {
+            "required": ["watched_gvk", "literal_values", "event_target"]
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "unresolved"}}},
+          "then": {"required": ["limitations"]}
+        }
+      ],
       "additionalProperties": false
     }
   }

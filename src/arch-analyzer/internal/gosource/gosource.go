@@ -36,6 +36,7 @@ type Result struct {
 	RuntimeSecurity       []model.RuntimeSecurityControl
 	RuntimeProxies        []model.RuntimeProxyControl
 	RuntimeWebhooks       []model.RuntimeWebhookServer
+	BehavioralEvidence    []model.BehavioralEvidence
 	AccessPolicies        []model.AccessPolicy
 	ComponentRefs         []model.ComponentRef
 	Entrypoints           []model.Entrypoint
@@ -84,6 +85,7 @@ func Extract(root string) (Result, error) {
 		files = append(files, moduleFiles...)
 	}
 	repositoryOptions := discoverRepositoryOptionBindings(files)
+	result.BehavioralEvidence = extractBehavioralEvidence(files, repositoryOptions)
 	for _, file := range files {
 		result.ControllerWatches = append(result.ControllerWatches, extractWatches(file)...)
 		result.HTTPEndpoints = append(result.HTTPEndpoints, extractRoutes(file)...)

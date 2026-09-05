@@ -11,6 +11,34 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from lib.phases import architecture  # noqa: E402
 
 
+def test_surface_observations_use_harness_telemetry_only() -> None:
+    assert architecture._observed_read_records_from_telemetry(None) is None
+    assert architecture._observed_read_records_from_telemetry(
+        {"source_read_ranges": []}
+    ) is None
+    assert architecture._observed_read_records_from_telemetry(
+        {
+            "source_read_observation": "claude-pre-tool-use-hooks",
+            "source_read_ranges": [],
+            "agent_claimed_reads": ["cmd/unobserved.go"],
+        }
+    ) == []
+    assert architecture._observed_read_records_from_telemetry(
+        {
+            "source_read_observation": "successful-sdk-read-actions",
+            "source_read_ranges": [
+                {"path": "cmd/main.go", "offset": 480, "limit": 21}
+            ],
+        }
+    ) == [
+        {
+            "path": "cmd/main.go",
+            "line_range": "480-500",
+            "outcome": "observed-by-harness",
+        }
+    ]
+
+
 def _valid_insight_artifact_json(component: str = "example") -> str:
     return json.dumps(
         {
@@ -225,6 +253,12 @@ async def test_generation_opt_in_archives_merges_reports_and_validates(
         captured_jobs.extend(jobs)
         output_path = Path(jobs[0]["output_path"])
         assert output_path.read_text() == analyzer
+        inventory = json.loads(
+            Path(jobs[0]["surface_inventory_path"]).read_text()
+        )
+        coverage = json.loads(Path(jobs[0]["surface_coverage_path"]).read_text())
+        assert coverage == inventory
+        assert inventory["schema_version"] == "architecture-surface-coverage/v1"
         output_path.write_text(candidate)
         Path(jobs[0]["insight_path"]).write_text(_empty_insight_artifact_json())
         return [
@@ -286,6 +320,8 @@ async def test_generation_opt_in_archives_merges_reports_and_validates(
 
     assert "--change-output=" in captured_jobs[0]["prompt"]
     assert "--insights-output=" in captured_jobs[0]["prompt"]
+    assert "--surface-inventory=" in captured_jobs[0]["prompt"]
+    assert "--surface-coverage-output=" in captured_jobs[0]["prompt"]
     assert "--platform=rhoai" in captured_jobs[0]["prompt"]
     assert "--version=rhoai.next" in captured_jobs[0]["prompt"]
     assert "--readiness=sufficient" in captured_jobs[0]["prompt"]
@@ -308,9 +344,20 @@ async def test_generation_opt_in_archives_merges_reports_and_validates(
     assert run_report["insights"]["artifact_path"] == str(
         log_dir / "example.insights.json"
     )
+    assert run_report["surface_coverage"]["structural_valid"] is True
+    assert run_report["surface_coverage"]["summary"] == {
+        "seeded": 0,
+        "documented": 0,
+        "unresolved": 0,
+        "not_applicable": 0,
+    }
+    assert run_report["surface_coverage"]["artifact_path"] == str(
+        log_dir / "example.coverage.json"
+    )
     assert run_report["runtime_breakdown"]["agent_api_seconds"] == 0.85
     assert run_report["runtime_breakdown"]["agent_activity_counts"] == {
         "analyzer_context_reads": 3,
+        "surface_inventory_reads": 0,
         "targeted_source_reads": 2,
         "targeted_discovery_calls": 1,
         "architecture_output_edits": 1,
@@ -330,6 +377,7 @@ async def test_generation_opt_in_archives_merges_reports_and_validates(
     )
     assert run_report["phase_timings"]["preseed_seconds"] >= 0
     assert (log_dir / "example.insights.json").is_file()
+    assert (log_dir / "example.coverage.json").is_file()
     assert len(validation_calls) == 1
 
 

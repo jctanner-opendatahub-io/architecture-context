@@ -63,6 +63,7 @@ class _AgentExecutionGuard:
         checkout_path: str | Path | None,
         *,
         analyzer_root: str | Path | None = None,
+        input_paths: tuple[str | Path, ...] = (),
         output_paths: tuple[str | Path, ...] = (),
         context_exporter: ContextExporter | None = None,
     ):
@@ -74,6 +75,7 @@ class _AgentExecutionGuard:
             Path(analyzer_root).resolve() if analyzer_root is not None else None
         )
         self._direct_output_mode = bool(output_paths)
+        self._allowed_input_paths = {Path(path).resolve() for path in input_paths}
         self._allowed_output_paths = {
             Path(path).resolve() for path in output_paths
         }
@@ -241,6 +243,11 @@ class _AgentExecutionGuard:
             self.ctx_telemetry.record_navigation_read(
                 self._analyzer_relative_path(path),
             )
+            return self._rewrite_relative_path(tool_input, raw_path, path)
+        if path is not None and path in self._allowed_input_paths:
+            self.read_calls += 1
+            self._record_tool_activity("planning_input_read")
+            self.ctx_telemetry.record_navigation_read(str(path))
             return self._rewrite_relative_path(tool_input, raw_path, path)
         if path is not None and path in self._allowed_output_paths:
             self.read_calls += 1
@@ -507,6 +514,7 @@ class _AgentExecutionGuard:
 
     def telemetry(self) -> dict[str, object]:
         result = {
+            "source_read_observation": "claude-pre-tool-use-hooks",
             "tool_calls": sum(self.tool_calls.values()),
             "tool_calls_by_name": dict(sorted(self.tool_calls.items())),
             "tool_calls_by_activity": dict(
@@ -611,6 +619,7 @@ async def run_agent(
     agent_policy: dict | None = None,
     checkout_path: str | Path | None = None,
     analyzer_root: str | Path | None = None,
+    input_paths: tuple[str | Path, ...] = (),
     output_paths: tuple[str | Path, ...] = (),
     harness: str = "claude",
 ) -> dict:
@@ -640,6 +649,9 @@ async def run_agent(
             enable_skills=enable_skills,
             progress=progress,
             strace_dir=strace_dir,
+            checkout_path=checkout_path,
+            input_paths=input_paths,
+            output_paths=output_paths,
         )
     if harness != "claude":
         raise ValueError(f"Unsupported agent harness: {harness!r}")
@@ -658,6 +670,7 @@ async def run_agent(
         policy,
         checkout_path,
         analyzer_root=analyzer_root,
+        input_paths=input_paths,
         output_paths=output_paths,
     )
     allowed_tools = ["Read", "Write", "Edit", "Bash", "Glob", "Grep"]
@@ -888,8 +901,10 @@ async def run_agents_concurrently(
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
             return {
+                **(result if isinstance(result, dict) else {}),
                 "name": job["name"],
                 "success": False,
+                "_postprocessed": True,
                 "error": f"post-processing failed: {e}",
                 "log_file": str(log_dir / f"{job['name'].replace('/', '_')}.log"),
                 "duration_seconds": (
@@ -914,6 +929,7 @@ async def run_agents_concurrently(
                 agent_policy=job.get("agent_policy"),
                 checkout_path=job.get("checkout_path"),
                 analyzer_root=job.get("analyzer_root"),
+                input_paths=tuple(job.get("input_paths", ())),
                 output_paths=tuple(job.get("output_paths", ())),
                 harness=harness,
             )
@@ -953,6 +969,7 @@ async def run_agents_concurrently(
                     agent_policy=job.get("agent_policy"),
                     checkout_path=job.get("checkout_path"),
                     analyzer_root=job.get("analyzer_root"),
+                    input_paths=tuple(job.get("input_paths", ())),
                     output_paths=tuple(job.get("output_paths", ())),
                     harness=harness,
                 )

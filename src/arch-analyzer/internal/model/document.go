@@ -20,6 +20,7 @@ type Document struct {
 	Secrets                []SecretRow
 	Authentication         []AuthenticationRow
 	SecurityEvidence       []SecurityEvidence
+	BehavioralEvidence     []BehavioralEvidence
 	Webhooks               []WebhookRow
 	IntegrationPoints      []IntegrationPointRow
 	RecentChanges          []RecentChange

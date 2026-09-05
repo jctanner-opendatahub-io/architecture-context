@@ -18,6 +18,13 @@ The next focused milestone is the
 
 ## Active Tasks
 
+- [Checkpoint Surface Work and Restore Validation](docs/tasks/current/checkpoint-surface-work-and-restore-validation.md) — in progress; checkpoint first, then baseline repair follows FIPS applicability.
+- [Fix Surface FIPS Applicability](docs/tasks/pending/fix-surface-fips-applicability.md) — next code fix after checkpoint.
+- [Refresh Surface Analyzer Evidence](docs/tasks/pending/refresh-surface-analyzer-evidence.md) — pending source inputs and scoped regeneration approval.
+- [Run Repeated Surface Coverage Live Canary](docs/tasks/pending/run-surface-coverage-live-canary.md) — deferred pending model access and explicit live-run approval.
+- [Decide Surface Coverage Rollout](docs/tasks/pending/decide-surface-coverage-rollout.md) — separate enforcement/worker decisions; defaults remain unchanged.
+- [Audit Architecture Surface Rollout](docs/tasks/done/audit-architecture-surface-rollout.md) — completed read-only audit; stored artifacts lack the evidence needed for an enforcement decision.
+- [Improve Architecture Surface Coverage](docs/tasks/done/improve-architecture-surface-coverage.md) — implemented and independently reviewed; the offline-canary selection remains provisional pending any separate rollout decision.
 - [Complete the Architecture Context Static Migration](docs/tasks/done/complete-architecture-context-static-migration.md) — consolidated implementation and iteration history.
 - [Replace Markdown Change Records with a JSON Patch Contract](docs/tasks/pending/replace-markdown-change-record-with-json-patch.md) — pending workflow hardening.
 - [Resolve External Analyzer-Assisted Rollout Gates](docs/tasks/blocked/resolve-external-analyzer-assisted-rollout-gates.md) — blocked on external and human inputs; not a local implementation blocker.
@@ -25,9 +32,11 @@ The next focused milestone is the
 ## Open Bugs
 
 - [Partial Route Component Runtime Remains High](docs/bugs/open/partial-route-component-runtime-remains-high.md)
+- [Surface Inventory Nominates Empty FIPS Category](docs/bugs/open/surface-inventory-nominates-empty-fips-category.md)
 
 ## Plans
 
+- [Architecture Surface Coverage](docs/plans/architecture-surface-coverage.md)
 - [Architecture Context Static Migration](docs/plans/architecture-context-static-migration.md)
 - [Architecture Diagram Implementation](docs/plans/000-architecture-diagram-implementation.md)
 

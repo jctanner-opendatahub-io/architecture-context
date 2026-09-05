@@ -241,6 +241,9 @@ async def test_partial_route_allows_targeted_source_reads_for_sufficient_readine
     assert guard.telemetry()["source_read_ranges"] == [
         {"path": "src/server.go", "offset": 1, "limit": 120},
     ]
+    assert guard.telemetry()["source_read_observation"] == (
+        "claude-pre-tool-use-hooks"
+    )
 
 
 @pytest.mark.asyncio
@@ -495,6 +498,45 @@ async def test_preseeded_output_write_denial_suggests_edit(
     assert "reserve Write for sidecar artifacts" in reason
     assert guard.telemetry()["denied_tool_calls_by_category"] == {
         "workflow-noise": 1
+    }
+
+
+@pytest.mark.asyncio
+async def test_planning_input_is_readable_but_not_writable(tmp_path: Path):
+    checkout = tmp_path / "checkout" / "example"
+    generation = tmp_path / "architecture" / "example" / ".generation"
+    checkout.mkdir(parents=True)
+    generation.mkdir(parents=True)
+    inventory = generation / "SURFACE_INVENTORY.json"
+    coverage = generation / "SURFACE_COVERAGE.json"
+    inventory.write_text("{}\n")
+
+    guard = agent_runner._AgentExecutionGuard(
+        {"route": "partial", "readiness": "partial", "file_budget": 1},
+        checkout,
+        input_paths=(inventory,),
+        output_paths=(coverage,),
+    )
+
+    read = await guard.pre_tool_use(
+        {"tool_name": "Read", "tool_input": {"file_path": str(inventory)}},
+        "tool-use-read-inventory",
+        {},
+    )
+    write = await guard.pre_tool_use(
+        {
+            "tool_name": "Write",
+            "tool_input": {"file_path": str(inventory), "content": "{}\n"},
+        },
+        "tool-use-write-inventory",
+        {},
+    )
+
+    assert read == {}
+    assert write["hookSpecificOutput"]["permissionDecision"] == "deny"
+    assert guard.telemetry()["tool_calls_by_activity"] == {
+        "denied_call": 1,
+        "planning_input_read": 1,
     }
 
 

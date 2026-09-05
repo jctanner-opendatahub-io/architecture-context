@@ -9,6 +9,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass
+from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -126,13 +127,17 @@ def _codex_input(
     skill_file = (
         staged_skill if staged_skill and staged_skill.is_file()
         else resolve_skill_file(name)
-    )
+    ).resolve()
     items: list[object] = [
-        SkillInput(name=name, path=str(skill_file.resolve()))
+        SkillInput(name=name, path=str(skill_file))
     ]
     items.append(TextInput(text=(
-        f"Execute the attached {name} skill now. Read its SKILL.md first and "
-        "perform its workflow directly. You are a pipeline worker. "
+        f"Execute the attached {name} skill now. "
+        f"First read the complete skill file at {skill_file}.\n"
+        f"Its supporting scripts and references are under {skill_file.parent}. "
+        "Resolve relative skill references against that directory, and use it "
+        "where the skill refers to CLAUDE_SKILL_DIR.\n"
+        "Perform its workflow directly. You are a pipeline worker. "
         "The following are skill arguments and task context:\n"
         f"{arguments or ''}"
     )))
@@ -140,6 +145,8 @@ def _codex_input(
 
 
 def _jsonable(value: Any) -> Any:
+    if isinstance(value, Enum):
+        return _jsonable(value.value)
     if dataclasses.is_dataclass(value):
         return _jsonable(dataclasses.asdict(value))
     if hasattr(value, "model_dump"):
@@ -153,6 +160,97 @@ def _jsonable(value: Any) -> Any:
     if hasattr(value, "value"):
         return value.value
     return value
+
+
+def _source_read_telemetry(
+    items: list[object], checkout_path: str | Path | None,
+) -> dict:
+    """Observe SDK-classified reads; do not infer evidence from agent claims.
+
+    Unknown commands and uncertain line bounds are deliberately not guessed.
+    This is telemetry, not enforcement of Claude's read-budget hooks.
+    """
+    checkout = Path(checkout_path).resolve() if checkout_path else None
+    files: list[str] = []
+    ranges: list[dict] = []
+    commands = 0
+    seen: set[str] = set()
+    for raw in items:
+        item = _jsonable(raw)
+        if not isinstance(item, dict) or item.get("type") != "commandExecution":
+            continue
+        item_id = item.get("id")
+        if item_id and item_id in seen:
+            continue
+        if item_id:
+            seen.add(item_id)
+        commands += 1
+        if checkout is None or item.get("exit_code") != 0:
+            continue
+        for action in item.get("command_actions", ()):
+            if action.get("type") != "read" or not action.get("path"):
+                continue
+            path = Path(action["path"])
+            if not path.is_absolute():
+                # Relative SDK paths require the command's working directory.
+                if not item.get("cwd"):
+                    continue
+                path = Path(item["cwd"]) / path
+            try:
+                relative = path.resolve().relative_to(checkout).as_posix()
+            except ValueError:
+                continue
+            if relative not in files:
+                files.append(relative)
+            # Recognize direct bounded sed reads only. In particular, an nl
+            # action can omit its downstream pipeline; do not invent bounds.
+            match = re.fullmatch(
+                r"sed -n ['\"]?(\d+),(\d+)p['\"]? [^|;&\n]+",
+                action.get("command", ""),
+            )
+            offset, limit = None, None
+            if match:
+                first, last = map(int, match.groups())
+                if 0 < first <= last:
+                    offset, limit = first, last - first + 1
+            ranges.append({"path": relative, "offset": offset, "limit": limit})
+    return {
+        "source_read_observation": "successful-sdk-read-actions",
+        "tool_calls": commands,
+        "tool_calls_by_name": {"commandExecution": commands},
+        "tool_calls_by_activity": {"targeted_source_read": len(ranges)},
+        "source_files_read": files,
+        "source_file_count": len(files),
+        "source_read_operations": len(ranges),
+        "source_read_ranges": ranges,
+    }
+
+
+def _snapshot_immutable_inputs(
+    paths: tuple[str | Path, ...],
+) -> dict[Path, bytes]:
+    snapshots: dict[Path, bytes] = {}
+    for raw_path in paths:
+        path = Path(raw_path).resolve()
+        if not path.is_file():
+            raise FileNotFoundError(f"immutable planning input is missing: {path}")
+        snapshots[path] = path.read_bytes()
+    return snapshots
+
+
+def _restore_mutated_inputs(snapshots: dict[Path, bytes]) -> list[str]:
+    mutated: list[str] = []
+    for path, original in snapshots.items():
+        try:
+            current = path.read_bytes()
+        except OSError:
+            current = None
+        if current == original:
+            continue
+        mutated.append(str(path))
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(original)
+    return mutated
 
 
 def _value(value: object) -> object:
@@ -238,6 +336,9 @@ async def run_codex_agent(
     enable_skills: bool,
     progress: AgentProgress | None,
     strace_dir: Path | None,
+    checkout_path: str | Path | None = None,
+    input_paths: tuple[str | Path, ...] = (),
+    output_paths: tuple[str | Path, ...] = (),
 ) -> dict:
     """Run one Codex turn and normalize its result for pipeline callers."""
     if strace_dir is not None:
@@ -264,6 +365,8 @@ async def run_codex_agent(
     )
     started = time.monotonic()
     heartbeat_task = None
+    input_snapshots = _snapshot_immutable_inputs(input_paths)
+    integrity_mutations: list[str] = []
 
     if progress:
         progress.agent_started(name)
@@ -308,6 +411,13 @@ async def run_codex_agent(
                     show_events=progress is None,
                 )
 
+        integrity_mutations = _restore_mutated_inputs(input_snapshots)
+        if integrity_mutations:
+            raise RuntimeError(
+                "Codex mutated immutable planning input(s): "
+                + ", ".join(integrity_mutations)
+            )
+
         elapsed = time.monotonic() - started
         with log_file.open("a") as log:
             summary = {"type": "codex_turn_result", "result": _jsonable(result)}
@@ -324,8 +434,16 @@ async def run_codex_agent(
             "log_file": str(log_file),
             "duration_seconds": elapsed,
             "telemetry": {
+                **_source_read_telemetry(result.items, checkout_path),
                 "harness": "codex",
                 "guard_enforcement": "workspace-write-sandbox",
+                "immutable_input_check": "passed",
+                "immutable_input_paths": sorted(
+                    str(path) for path in input_snapshots
+                ),
+                "allowed_output_paths": sorted(
+                    str(Path(path).resolve()) for path in output_paths
+                ),
                 "thread_id": thread.id,
                 "turn_id": result.id,
                 "turn_status": _jsonable(result.status),
@@ -349,6 +467,11 @@ async def run_codex_agent(
         raise
     except Exception as exc:
         elapsed = time.monotonic() - started
+        integrity_mutations.extend(
+            path
+            for path in _restore_mutated_inputs(input_snapshots)
+            if path not in integrity_mutations
+        )
         if progress:
             progress.agent_completed(name, success=False)
         error_text = str(exc) or repr(exc)
@@ -375,9 +498,17 @@ async def run_codex_agent(
             "telemetry": {
                 "harness": "codex",
                 "guard_enforcement": "workspace-write-sandbox",
+                "immutable_input_check": (
+                    "failed-restored" if integrity_mutations else "passed"
+                ),
+                "mutated_input_paths": integrity_mutations,
+                "allowed_output_paths": sorted(
+                    str(Path(path).resolve()) for path in output_paths
+                ),
             },
         }
     finally:
+        _restore_mutated_inputs(input_snapshots)
         if heartbeat_task:
             heartbeat_task.cancel()
             try:

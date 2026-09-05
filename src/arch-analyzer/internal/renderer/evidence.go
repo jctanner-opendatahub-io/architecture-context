@@ -11,6 +11,7 @@ import (
 
 const synthesisEvidenceLimit = 40
 const gapEvidenceLimit = 12
+const behavioralEvidenceLimit = 16
 
 // SynthesisEvidenceMarkdown renders the bounded analyzer projection used for
 // agent navigation. It deliberately excludes the full inventory and retains
@@ -59,6 +60,50 @@ func SynthesisEvidenceMarkdown(writer io.Writer, input model.Input) error {
 		}
 	}
 
+	if _, err := io.WriteString(writer, "\n## Behavioral Evidence\n\n"); err != nil {
+		return err
+	}
+	if len(input.BehavioralEvidence) == 0 {
+		if _, err := io.WriteString(writer, "No bounded behavioral evidence was extracted.\n"); err != nil {
+			return err
+		}
+	}
+	behaviors := prioritizedBehavioralEvidence(input.BehavioralEvidence)
+	for _, behavior := range behaviors {
+		detail := behavior.ServingSurface
+		if behavior.ConfigurationBranch != "" {
+			detail += "; condition=" + behavior.ConfigurationBranch
+		}
+		if behavior.EnforcementProvider != "" {
+			detail += "; enforcement=" + behavior.EnforcementProvider
+		}
+		if behavior.WatchedGVK != "" {
+			detail = behavior.WatchedGVK + "; literal names=" + strings.Join(behavior.LiteralValues, ", ")
+		}
+		if behavior.EventTarget != "" {
+			detail += "; event target=" + behavior.EventTarget
+		}
+		if len(behavior.Limitations) > 0 {
+			detail += "; limitations=" + strings.Join(behavior.Limitations, "; ")
+		}
+		if _, err := fmt.Fprintf(
+			writer,
+			"- **%s (%s)** %s: %s [source: %s]\n",
+			behavior.Kind,
+			behavior.Status,
+			behavior.Identity,
+			strings.TrimPrefix(detail, "; "),
+			behavior.Source,
+		); err != nil {
+			return err
+		}
+	}
+	if omitted := len(input.BehavioralEvidence) - len(behaviors); omitted > 0 {
+		if _, err := fmt.Fprintf(writer, "- %d additional behavioral records remain in the analyzer JSON.\n", omitted); err != nil {
+			return err
+		}
+	}
+
 	if _, err := io.WriteString(writer, "\n## Gap Evidence Index\n\n"); err != nil {
 		return err
 	}
@@ -95,6 +140,11 @@ func SynthesisEvidenceMarkdown(writer io.Writer, input model.Input) error {
 				}
 			}
 			if _, err := fmt.Fprintf(writer, "\n  **Status:** %s; **Limitations:** %s\n", candidate.Status, strings.Join(candidate.Limitations, "; ")); err != nil {
+				return err
+			}
+		}
+		if omitted := len(input.GapEvidenceIndex[key]) - len(candidates); omitted > 0 {
+			if _, err := fmt.Fprintf(writer, "- %d additional gap candidates remain in the analyzer JSON.\n", omitted); err != nil {
 				return err
 			}
 		}
@@ -151,4 +201,24 @@ func SynthesisEvidenceMarkdown(writer io.Writer, input model.Input) error {
 		}
 	}
 	return nil
+}
+
+func prioritizedBehavioralEvidence(records []model.BehavioralEvidence) []model.BehavioralEvidence {
+	prioritized := append([]model.BehavioralEvidence{}, records...)
+	sort.SliceStable(prioritized, func(i, j int) bool {
+		if prioritized[i].Status != prioritized[j].Status {
+			return prioritized[i].Status == "observed"
+		}
+		if prioritized[i].Kind != prioritized[j].Kind {
+			return prioritized[i].Kind < prioritized[j].Kind
+		}
+		if prioritized[i].Identity != prioritized[j].Identity {
+			return prioritized[i].Identity < prioritized[j].Identity
+		}
+		return prioritized[i].Source < prioritized[j].Source
+	})
+	if len(prioritized) > behavioralEvidenceLimit {
+		prioritized = prioritized[:behavioralEvidenceLimit]
+	}
+	return prioritized
 }

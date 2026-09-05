@@ -23,6 +23,9 @@ reviewed overlays, explicit unknowns, and provenance are authoritative.
   synthesis/partial artifacts.
 - `--read-justifications-output=PATH`, optional JSON sidecar for source-read
   metadata. When supplied, emit one record for every source file read.
+- `--surface-inventory=PATH` and `--surface-coverage-output=PATH`, optional
+  surface-planning input and versioned coverage sidecar. Preserve every seeded
+  surface and follow `references/surface-coverage-contract.md`.
 - Orchestrator controls: `--readiness`, `--analysis-route`,
   `--gap-categories`, `--baseline-preseeded`, `--file-budget`,
   `--allowed-source-files`, and `--gap-reasons`.
@@ -54,6 +57,14 @@ baseline is evidence, not permission to invent facts.
 
 Read the analyzer JSON and baseline before any source inspection.
 
+Inspection operations are defined independent of the agent harness: read the
+provided analyzer context, read an exact source range, match a targeted path,
+match targeted text with bounded results, edit the candidate document, and
+write declared sidecars. The Claude adapter maps these to Read, Glob, Grep,
+Edit, and Write. The Codex adapter supplies equivalent bounded file operations.
+Do not require a harness-specific task or shell operation to complete a
+constrained route.
+
 ### Partial (default for all analyzer-backed components)
 
 Use Read/Edit/Write/Glob/Grep only. This is the default extend-and-improve
@@ -62,6 +73,10 @@ route for every component with valid analyzer artifacts (both
 readiness classification (`sufficient`, `partial`, `insufficient`, or
 `unknown`). The synthesis route is not selected for normal generation.
 Discovery and reads are limited to the declared gap categories.
+When a surface inventory is supplied, read it before source inspection and plan
+across individual surfaces as well as routed categories. Address required
+surfaces before lower-priority questions. Closing one gateway or authentication
+question does not close the other authentication surfaces.
 `--file-budget` is guidance for how many unique source files should usually
 settle the gaps. Prefer fewer reads. If a directly relevant file is needed for
 an unresolved question, read it once at a bounded range and record why in
@@ -69,6 +84,10 @@ an unresolved question, read it once at a bounded range and record why in
 that one targeted follow-up. Once the question is answered or remains
 unverified, stop and record the result. The budget is not permission to repeat
 equivalent discovery or keep searching after the evidence trail is sufficient.
+Use one justified targeted follow-up for a remaining required surface when the
+inventory or encountered evidence identifies a concrete location, even after
+the soft file-budget guidance is reached. Record an explicit unresolved
+disposition when that bounded follow-up cannot establish the behavior.
 Read only files relevant to those gaps, including
 narrative, safety-critical, and structural gaps as classified by
 `--gap-reasons`. Record every checkout source file read with path, lines, gap
@@ -180,6 +199,7 @@ Read only those applicable to the selected route and component:
 - [`references/security-build-analysis.md`](references/security-build-analysis.md) — FIPS, crypto, and hermetic builds.
 - [`references/provenance-and-quality.md`](references/provenance-and-quality.md) — lineage, output quality, and report.
 - [`references/insight-artifact-contract.md`](references/insight-artifact-contract.md) — exact schema for optional insight artifacts.
+- [`references/surface-coverage-contract.md`](references/surface-coverage-contract.md) — surface planning, dispositions, and final evidence-to-output review.
 - [`references/webhook-analysis.md`](references/webhook-analysis.md) — analyzer-backed webhook inventory
   synthesis, bounded handler semantics, provenance, and aggregation.
 - Existing language, container, kustomize, multi-tenancy, Konflux, and
@@ -330,6 +350,16 @@ explaining why narrower symbol-, function-, or manifest-snippet evidence was
 insufficient; missing `scope_reason` makes the read unjustified in orchestrator
 telemetry.
 The orchestrator compares it with read telemetry in warning-only mode.
+
+When `--surface-coverage-output` is present, read
+`references/surface-coverage-contract.md`, update the preseeded sidecar in
+place, and preserve its `schema_version`, component, inventory identity, and
+all seeded surface IDs. After candidate edits and change-record reconciliation,
+perform the contract's final evidence-to-output review. Evidence already present
+in analyzer context or encountered in an earlier justified source read must be
+mapped to the candidate without another read. Leave orchestrator-owned
+`observed_reads` and `validator_findings` empty; post-merge validation fills
+them against the promoted document.
 
 ## Validation and report
 

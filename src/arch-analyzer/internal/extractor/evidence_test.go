@@ -1,6 +1,7 @@
 package extractor
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -72,6 +73,79 @@ func TestSynthesisEvidenceIsBoundedAndSourceLinked(t *testing.T) {
 				t.Errorf("%s record = %#v, want claim and provenance", category, record)
 			}
 		}
+	}
+}
+
+func TestBehavioralEvidenceProjectsOnlyUnresolvedGaps(t *testing.T) {
+	input := model.Input{
+		RuntimeSecurity: []model.RuntimeSecurityControl{{
+			Surface: "controller-runtime metrics", Source: "cmd/main.go:492",
+		}},
+		ControllerWatches: []model.ControllerWatch{{
+			Type: "Watches", GVK: "/v1/Namespace", Controller: "ServiceHandler",
+			Source: "internal/controller/auth/controller.go:63",
+		}},
+		BehavioralEvidence: []model.BehavioralEvidence{
+			{
+				Kind: "conditional-metrics-enforcement", Status: "observed",
+				Identity: "controller-runtime metrics", ServingSurface: "controller-runtime metrics serving surface",
+				ConfigurationBranch: "config.MetricsSecure is true", EnforcementProvider: "filters.WithAuthenticationAndAuthorization",
+				Source: "cmd/main.go:485-500",
+			},
+			{
+				Kind: "named-watch-predicate", Status: "unresolved",
+				Identity: "internal/controller/auth.ServiceHandler", WatchedGVK: "/v1/Namespace",
+				Source:      "internal/controller/auth/controller.go:63-69",
+				Limitations: []string{"predicate argument is dynamic"},
+			},
+		},
+	}
+
+	gaps := gapEvidenceIndex(input)
+	if len(gaps["authentication"]) != 0 {
+		t.Fatalf("authentication gaps = %#v, want observed metrics behavior to suppress its generic hint", gaps["authentication"])
+	}
+	watchGaps := gaps["kubernetes_relationships"]
+	if len(watchGaps) != 1 || watchGaps[0].LineRange != "63-69" ||
+		!strings.Contains(watchGaps[0].Question, "literal resource names") {
+		t.Fatalf("watch gaps = %#v, want precise unresolved behavioral candidate", watchGaps)
+	}
+}
+
+func TestPreciseBehavioralGapsSurviveCategoryCapAndSameFileDeduplication(t *testing.T) {
+	input := model.Input{}
+	for index := 0; index < 14; index++ {
+		line := 10 + index*5
+		input.BehavioralEvidence = append(input.BehavioralEvidence, model.BehavioralEvidence{
+			Kind: "named-watch-predicate", Status: "unresolved",
+			Identity:    fmt.Sprintf("internal/controller/missing-%02d.Handler", index),
+			WatchedGVK:  "/v1/Namespace",
+			Source:      fmt.Sprintf("internal/controller/shared.go:%d-%d", line, line+3),
+			Limitations: []string{"predicate argument is dynamic"},
+		})
+	}
+	input.ControllerWatches = []model.ControllerWatch{{
+		Type: "Watches", GVK: "/v1/Namespace", Controller: "Handler",
+		Source: "internal/controller/shared.go:10",
+	}}
+
+	gaps := gapEvidenceIndex(input)["kubernetes_relationships"]
+	if len(gaps) != 14 {
+		t.Fatalf("precise watch gaps = %d, want all 14 beyond generic cap: %#v", len(gaps), gaps)
+	}
+	for index, gap := range gaps {
+		wantIdentity := fmt.Sprintf("internal/controller/missing-%02d.Handler", index)
+		if gap.Source != "internal/controller/shared.go" || !strings.Contains(strings.Join(gap.Symbols, "\x00"), wantIdentity) ||
+			!strings.Contains(gap.Question, "literal resource names") {
+			t.Fatalf("gap[%d] = %#v, want precise identity/range without generic replacement", index, gap)
+		}
+	}
+}
+
+func TestSourceLocationPreservesBoundedBehavioralRange(t *testing.T) {
+	path, lineRange := sourceLocation("cmd/main.go:485-500")
+	if path != "cmd/main.go" || lineRange != "485-500" {
+		t.Fatalf("source location = %q, %q, want bounded range", path, lineRange)
 	}
 }
 

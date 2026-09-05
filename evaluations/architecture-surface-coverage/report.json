@@ -1,0 +1,451 @@
+{
+  "canary_id": "rhods-operator-surface-coverage-v1",
+  "conditions": [
+    {
+      "analyzer_preservation_rate": {
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "changed_factor": null,
+      "condition_id": "baseline",
+      "factors": {
+        "behavioral_extraction": false,
+        "budget_policy": "existing",
+        "subsection_workers": false,
+        "surface_planning_review": false
+      },
+      "merge_totals": {
+        "applied": 0,
+        "lost": 0,
+        "rejected": 0,
+        "restored": 0
+      },
+      "omitted_surfaces": {
+        "maximum": 2,
+        "mean": 2.0
+      },
+      "performance": {
+        "mean_cost_usd": null,
+        "mean_latency_seconds": null,
+        "token_usage": {
+          "cumulative_cached_input_tokens": null,
+          "cumulative_input_tokens": null,
+          "cumulative_output_tokens": null,
+          "request_cached_input_tokens": null,
+          "request_context_window": null,
+          "request_input_tokens": null,
+          "request_output_tokens": null
+        }
+      },
+      "repeat_count": 2,
+      "source_reads": {
+        "mean_discovery_calls": 0.0,
+        "unique_file_count": 3,
+        "unique_files": [
+          "cmd/main.go",
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml",
+          "internal/controller/services/gateway/gateway_controller_actions.go"
+        ],
+        "unique_range_count": 3,
+        "unique_ranges": [
+          "cmd/main.go:480-515",
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16",
+          "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+        ]
+      },
+      "surface_recall": {
+        "maximum": 0.5,
+        "mean": 0.5,
+        "minimum": 0.5
+      },
+      "unresolved_surfaces": {
+        "maximum": 0,
+        "mean": 0.0
+      },
+      "unsupported_claims": {
+        "maximum": 0,
+        "mean": 0.0
+      }
+    },
+    {
+      "analyzer_preservation_rate": {
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "changed_factor": "surface_planning_review",
+      "condition_id": "surface-planning-review",
+      "factors": {
+        "behavioral_extraction": false,
+        "budget_policy": "existing",
+        "subsection_workers": false,
+        "surface_planning_review": true
+      },
+      "merge_totals": {
+        "applied": 0,
+        "lost": 0,
+        "rejected": 0,
+        "restored": 0
+      },
+      "omitted_surfaces": {
+        "maximum": 0,
+        "mean": 0.0
+      },
+      "performance": {
+        "mean_cost_usd": null,
+        "mean_latency_seconds": null,
+        "token_usage": {
+          "cumulative_cached_input_tokens": null,
+          "cumulative_input_tokens": null,
+          "cumulative_output_tokens": null,
+          "request_cached_input_tokens": null,
+          "request_context_window": null,
+          "request_input_tokens": null,
+          "request_output_tokens": null
+        }
+      },
+      "repeat_count": 2,
+      "source_reads": {
+        "mean_discovery_calls": 0.0,
+        "unique_file_count": 4,
+        "unique_files": [
+          "cmd/main.go",
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml",
+          "internal/controller/services/auth/auth_controller.go",
+          "internal/controller/services/gateway/gateway_controller_actions.go"
+        ],
+        "unique_range_count": 4,
+        "unique_ranges": [
+          "cmd/main.go:485-500",
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16",
+          "internal/controller/services/auth/auth_controller.go:63-76",
+          "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+        ]
+      },
+      "surface_recall": {
+        "maximum": 0.75,
+        "mean": 0.75,
+        "minimum": 0.75
+      },
+      "unresolved_surfaces": {
+        "maximum": 1,
+        "mean": 1.0
+      },
+      "unsupported_claims": {
+        "maximum": 0,
+        "mean": 0.0
+      }
+    },
+    {
+      "analyzer_preservation_rate": {
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "changed_factor": "behavioral_extraction",
+      "condition_id": "behavioral-extraction",
+      "factors": {
+        "behavioral_extraction": true,
+        "budget_policy": "existing",
+        "subsection_workers": false,
+        "surface_planning_review": true
+      },
+      "merge_totals": {
+        "applied": 0,
+        "lost": 0,
+        "rejected": 0,
+        "restored": 0
+      },
+      "omitted_surfaces": {
+        "maximum": 0,
+        "mean": 0.0
+      },
+      "performance": {
+        "mean_cost_usd": null,
+        "mean_latency_seconds": null,
+        "token_usage": {
+          "cumulative_cached_input_tokens": null,
+          "cumulative_input_tokens": null,
+          "cumulative_output_tokens": null,
+          "request_cached_input_tokens": null,
+          "request_context_window": null,
+          "request_input_tokens": null,
+          "request_output_tokens": null
+        }
+      },
+      "repeat_count": 2,
+      "source_reads": {
+        "mean_discovery_calls": 0.0,
+        "unique_file_count": 2,
+        "unique_files": [
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml",
+          "internal/controller/services/gateway/gateway_controller_actions.go"
+        ],
+        "unique_range_count": 2,
+        "unique_ranges": [
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16",
+          "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+        ]
+      },
+      "surface_recall": {
+        "maximum": 1.0,
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "unresolved_surfaces": {
+        "maximum": 0,
+        "mean": 0.0
+      },
+      "unsupported_claims": {
+        "maximum": 0,
+        "mean": 0.0
+      }
+    },
+    {
+      "analyzer_preservation_rate": {
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "changed_factor": "budget_policy",
+      "condition_id": "surface-aware-budget",
+      "factors": {
+        "behavioral_extraction": true,
+        "budget_policy": "surface-aware",
+        "subsection_workers": false,
+        "surface_planning_review": true
+      },
+      "merge_totals": {
+        "applied": 0,
+        "lost": 0,
+        "rejected": 0,
+        "restored": 0
+      },
+      "omitted_surfaces": {
+        "maximum": 0,
+        "mean": 0.0
+      },
+      "performance": {
+        "mean_cost_usd": null,
+        "mean_latency_seconds": null,
+        "token_usage": {
+          "cumulative_cached_input_tokens": null,
+          "cumulative_input_tokens": null,
+          "cumulative_output_tokens": null,
+          "request_cached_input_tokens": null,
+          "request_context_window": null,
+          "request_input_tokens": null,
+          "request_output_tokens": null
+        }
+      },
+      "repeat_count": 2,
+      "source_reads": {
+        "mean_discovery_calls": 0.0,
+        "unique_file_count": 2,
+        "unique_files": [
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml",
+          "internal/controller/services/gateway/gateway_controller_actions.go"
+        ],
+        "unique_range_count": 2,
+        "unique_ranges": [
+          "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16",
+          "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+        ]
+      },
+      "surface_recall": {
+        "maximum": 1.0,
+        "mean": 1.0,
+        "minimum": 1.0
+      },
+      "unresolved_surfaces": {
+        "maximum": 0,
+        "mean": 0.0
+      },
+      "unsupported_claims": {
+        "maximum": 0,
+        "mean": 0.0
+      }
+    }
+  ],
+  "execution_notes": [
+    "Live-agent execution was cancelled and is unavailable under the user-directed offline constraint; no live result is scored."
+  ],
+  "measurement_limits": [
+    "Each observed architecture file is a single output, so the comparison cannot estimate model variability or repeat reliability.",
+    "The architecture files do not contain comparable latency, cost, token, cache, source-read-range, or discovery-call telemetry.",
+    "Analyzer preservation and merge rejection/loss cannot be reconstructed from the architecture files alone.",
+    "The staged condition results are deterministic source-fixture replays, not observed model runs; their null runtime values must not be imputed."
+  ],
+  "measurement_scope": "Two repeated deterministic source-fixture replays per condition. Recall, uncertainty, preservation, merge, and read metrics are replay observations; agent latency, cost, and token values are unavailable and remain null.",
+  "observed_comparisons": [
+    {
+      "artifact": "architecture/rhoai-3.6-ea.2.claude/rhods-operator.md",
+      "artifact_sha256": "458bdc321a7951979b23bd8bc6fc33986cdbd415f2763378c5b2d472af322eea",
+      "comparison_only": true,
+      "harness": "claude",
+      "limitation": "Single on-disk output with no comparable run telemetry; gateway modes are incomplete and FIPS/package/linkage claims exceed the pinned source.",
+      "measurements": {
+        "analyzer_preservation": null,
+        "cache_usage": null,
+        "cost_usd": null,
+        "discovery_calls": null,
+        "latency_seconds": null,
+        "merge_rejection_loss": null,
+        "source_read_files": null,
+        "source_read_ranges": null,
+        "token_usage": null
+      },
+      "model": "claude-opus-4-6",
+      "repeat_count": 1,
+      "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed",
+      "surface_recall": 0.5,
+      "surface_results": [
+        {
+          "finding": "The output states that metrics authentication and authorization are conditional on MetricsSecure (architecture line 359).",
+          "review_basis": [
+            "cmd/main.go:485-500"
+          ],
+          "status": "supported",
+          "surface_id": "authentication.metrics-enforcement"
+        },
+        {
+          "finding": "The output identifies both literal Namespace names and the auth service controller (architecture lines 26 and 358).",
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:63-69",
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ],
+          "status": "supported",
+          "surface_id": "controller.named-resource-watches"
+        },
+        {
+          "finding": "The output mentions OIDC variants but does not establish the externally managed mode that deliberately omits the proxy.",
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ],
+          "status": "partial",
+          "surface_id": "authentication.gateway-modes"
+        },
+        {
+          "finding": "The output calls builds FIPS-compliant and asserts provider/linkage behavior even though the selected CSV says false and binary/provider state was not verified.",
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ],
+          "status": "unsupported",
+          "surface_id": "compliance.runtime-fips"
+        }
+      ],
+      "unsupported_claim_count": 3,
+      "unsupported_claims": [
+        {
+          "claim": "The component has FIPS-compliant builds or full FIPS compliance signals.",
+          "source_reason": "The selected CSV marks features.operators.openshift.io/fips-compliant false; strictfipsruntime and CGO flags do not establish runtime compliance.",
+          "surface_id": "compliance.runtime-fips"
+        },
+        {
+          "claim": "The UBI base declaration proves that OpenSSL with post-quantum support is present in the produced runtime image.",
+          "source_reason": "The Dockerfile base reference alone is not a verified runtime package inventory.",
+          "surface_id": "compliance.runtime-fips"
+        },
+        {
+          "claim": "CGO_ENABLED=1 ensures dynamic OpenSSL linkage and Go crypto/tls operates through OpenSSL in FIPS mode.",
+          "source_reason": "Neither the source nor an inspected binary/provider state establishes those linkage and provider claims.",
+          "surface_id": "compliance.runtime-fips"
+        }
+      ]
+    },
+    {
+      "artifact": "architecture/rhoai-3.6-ea.2/rhods-operator.md",
+      "artifact_sha256": "5cfbf54d76aca7fa8afdb0988eecdf90a36d679f7513498290241efa21df7ebc",
+      "comparison_only": true,
+      "harness": "codex",
+      "limitation": "Single on-disk output with no comparable run telemetry; it omits conditional metrics enforcement and named Namespace-watch semantics.",
+      "measurements": {
+        "analyzer_preservation": null,
+        "cache_usage": null,
+        "cost_usd": null,
+        "discovery_calls": null,
+        "latency_seconds": null,
+        "merge_rejection_loss": null,
+        "source_read_files": null,
+        "source_read_ranges": null,
+        "token_usage": null
+      },
+      "model": "gpt-5.6-sol",
+      "repeat_count": 1,
+      "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed",
+      "surface_recall": 0.5,
+      "surface_results": [
+        {
+          "finding": "The output does not state that MetricsSecure conditionally installs the authentication and authorization filter.",
+          "review_basis": [
+            "cmd/main.go:485-500"
+          ],
+          "status": "omitted",
+          "surface_id": "authentication.metrics-enforcement"
+        },
+        {
+          "finding": "The output lists the MaaS library but does not describe either literal Namespace watch or its auth-controller target.",
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:63-69",
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ],
+          "status": "omitted",
+          "surface_id": "controller.named-resource-watches"
+        },
+        {
+          "finding": "The output distinguishes integrated OAuth, external OIDC, and externally managed authentication that omits the proxy (architecture lines 18 and 24).",
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ],
+          "status": "supported",
+          "surface_id": "authentication.gateway-modes"
+        },
+        {
+          "finding": "The output explicitly preserves that runtime provider/linkage and end-to-end FIPS compliance are not verified (architecture lines 317-329).",
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ],
+          "status": "supported",
+          "surface_id": "compliance.runtime-fips"
+        }
+      ],
+      "unsupported_claim_count": 0,
+      "unsupported_claims": []
+    }
+  ],
+  "recommendation": {
+    "decision": "provisional-offline-selection",
+    "global_enforcement": "remain-warning-only",
+    "provisional": true,
+    "reason": "Deterministic fixtures make behavioral extraction the earliest passing condition; the two single on-disk outputs have complementary supported surface sets (claude 0.50; codex 0.50), so repeated controlled evidence is still required before rollout.",
+    "selected_condition": "behavioral-extraction",
+    "separate_rollout_decision_required": true,
+    "subsection_workers": "remain-disabled"
+  },
+  "schema_version": "architecture-surface-canary/v1",
+  "settings": {
+    "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+    "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
+    "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+    "analyzer_sources": [
+      "src/arch-analyzer/internal/extractor/evidence.go",
+      "src/arch-analyzer/internal/extractor/extractor.go",
+      "src/arch-analyzer/internal/gosource/behavioral_evidence.go",
+      "src/arch-analyzer/internal/gosource/gosource.go",
+      "src/arch-analyzer/internal/model/document.go",
+      "src/arch-analyzer/internal/model/input.go",
+      "src/arch-analyzer/internal/normalize/normalize.go",
+      "src/arch-analyzer/internal/renderer/evidence.go",
+      "src/arch-analyzer/internal/renderer/markdown.go",
+      "src/arch-analyzer/schema/component-architecture.schema.json"
+    ],
+    "controlled_harness": "deterministic-fixture-replay",
+    "controlled_model": "source-reviewed-expected-outcomes",
+    "coverage_enforcement": "warning-only",
+    "file_budget": 6,
+    "route": "partial",
+    "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+    "workers_enabled": false
+  },
+  "source": {
+    "repository": "red-hat-data-services/rhods-operator",
+    "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+  }
+}

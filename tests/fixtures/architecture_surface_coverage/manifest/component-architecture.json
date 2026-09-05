@@ -1,0 +1,21 @@
+{
+  "component": "example-chart",
+  "deployments": [
+    {
+      "name": "worker",
+      "source": "deploy/worker.yaml:1"
+    }
+  ],
+  "services": [
+    {
+      "name": "worker",
+      "source": "deploy/service.yaml:1"
+    }
+  ],
+  "secrets_referenced": [
+    {
+      "name": "worker-token",
+      "source": "deploy/worker.yaml:20"
+    }
+  ]
+}

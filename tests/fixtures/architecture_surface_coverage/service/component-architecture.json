@@ -1,0 +1,17 @@
+{
+  "component": "example-api",
+  "entrypoints": [
+    {
+      "name": "api",
+      "type": "Go service",
+      "source": "cmd/api/main.go:10"
+    }
+  ],
+  "http_endpoints": [
+    {
+      "method": "GET",
+      "path": "/v1/items",
+      "source": "internal/api/routes.go:20"
+    }
+  ]
+}

@@ -15,6 +15,12 @@ from lib.agent_runner import (
 from lib.arch_doc import assemble_architecture_sections, ensure_arch_doc_binary
 from lib.architecture_merge import merge_architecture_files
 from lib.architecture_routing import load_architecture_agent_policy
+from lib.architecture_surface_coverage import (
+    build_surface_inventory,
+    finalized_sidecar,
+    load_sidecar,
+    validate_surface_coverage,
+)
 from lib.cli import resolve_distribution
 from lib.component_discovery import (
     apply_component_selection,
@@ -31,6 +37,8 @@ from lib.source_read_justifications import validate_source_read_justifications
 CHANGE_RECORD_FILENAME = "ARCHITECTURE_CHANGES.md"
 INSIGHT_ARTIFACT_FILENAME = "INSIGHTS_ARTIFACT.json"
 SOURCE_READ_JUSTIFICATIONS_FILENAME = "SOURCE_READ_JUSTIFICATIONS.json"
+SURFACE_INVENTORY_FILENAME = "SURFACE_INVENTORY.json"
+SURFACE_COVERAGE_FILENAME = "SURFACE_COVERAGE.json"
 PRESEED_FILENAME = "preseed.md"
 CANDIDATE_FILENAME = "candidate.md"
 MERGED_FILENAME = "merged.md"
@@ -256,6 +264,21 @@ async def run_generate_architecture_phase(args) -> None:
         change_path = generation_dir / CHANGE_RECORD_FILENAME
         insight_path = generation_dir / INSIGHT_ARTIFACT_FILENAME
         justification_path = generation_dir / SOURCE_READ_JUSTIFICATIONS_FILENAME
+        surface_inventory_path = generation_dir / SURFACE_INVENTORY_FILENAME
+        surface_coverage_path = generation_dir / SURFACE_COVERAGE_FILENAME
+        surface_inventory = None
+        analyzer_payload = None
+        if policy.evidence_gated:
+            try:
+                analyzer_payload = json.loads(
+                    (analyzer_root / "component-architecture.json").read_text()
+                )
+            except (OSError, json.JSONDecodeError):
+                analyzer_payload = {}
+            surface_inventory = build_surface_inventory(
+                analyzer_payload,
+                component=component.key,
+            )
         prompt = ""
         prompt = (
             f"/repo-to-architecture-summary {checkout_path}"
@@ -271,6 +294,17 @@ async def run_generate_architecture_phase(args) -> None:
         if policy.evidence_gated:
             prompt += f" --change-output={change_path}"
             prompt += f" --insights-output={insight_path}"
+            prompt += f" --surface-inventory={surface_inventory_path}"
+            prompt += f" --surface-coverage-output={surface_coverage_path}"
+
+        output_paths = [
+            candidate_path,
+            change_path,
+            insight_path,
+            justification_path,
+        ]
+        if policy.evidence_gated:
+            output_paths.append(surface_coverage_path)
 
         job = {
             "name": f"{component.key}",
@@ -284,12 +318,17 @@ async def run_generate_architecture_phase(args) -> None:
             "candidate_path": candidate_path,
             "merged_path": merged_path,
             "final_output_path": final_output_path,
-            "output_paths": (
-                candidate_path, change_path, insight_path, justification_path,
+            "output_paths": tuple(output_paths),
+            "input_paths": (
+                (surface_inventory_path,) if policy.evidence_gated else ()
             ),
             "change_path": change_path,
             "insight_path": insight_path,
             "justification_path": justification_path,
+            "surface_inventory_path": surface_inventory_path,
+            "surface_coverage_path": surface_coverage_path,
+            "surface_inventory": surface_inventory,
+            "surface_analyzer": analyzer_payload,
             "agent_policy": policy.to_dict(),
             "phase_timings": {},
         }
@@ -320,12 +359,21 @@ async def run_generate_architecture_phase(args) -> None:
             Path(item["change_path"]),
             Path(item["insight_path"]),
             Path(item["justification_path"]),
+            Path(item["surface_inventory_path"]),
+            Path(item["surface_coverage_path"]),
         ):
             if artifact.exists():
                 artifact.unlink()
         if policy.get("route") in ('synthesis', 'partial'):
             shutil.copy2(analyzer_file, preseed_file)
             shutil.copy2(preseed_file, output_file)
+            inventory = item.get("surface_inventory")
+            if isinstance(inventory, dict):
+                inventory_text = json.dumps(
+                    inventory, indent=2, sort_keys=True
+                ) + "\n"
+                Path(item["surface_inventory_path"]).write_text(inventory_text)
+                Path(item["surface_coverage_path"]).write_text(inventory_text)
         item["phase_timings"]["preseed_seconds"] = (
             time.monotonic() - preseed_started
         )
@@ -604,6 +652,7 @@ async def _postprocess_agent_result(
             version=version,
         )
     _promote_unmerged_agent_outputs([job], [result])
+    _validate_and_archive_surface_coverage(job, result, log_dir)
     _append_generation_duration(job, result)
     result["_postprocessed"] = True
     _write_agent_run_reports([job], [result], log_dir)
@@ -829,6 +878,111 @@ def _merge_agent_outputs(
             print(f"Insight artifact failed: {job['name']}: {error}")
 
 
+def _observed_read_records_from_telemetry(
+    telemetry: object,
+) -> list[dict[str, object]] | None:
+    """Translate real harness observations without trusting the agent ledger."""
+
+    if not isinstance(telemetry, dict):
+        return None
+    observation = telemetry.get("source_read_observation")
+    ranges = telemetry.get("source_read_ranges")
+    if observation not in {
+        "claude-pre-tool-use-hooks",
+        "successful-sdk-read-actions",
+    } or not isinstance(ranges, list):
+        return None
+    result: list[dict[str, object]] = []
+    for item in ranges:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            continue
+        offset = item.get("offset")
+        limit = item.get("limit")
+        if isinstance(offset, int) and isinstance(limit, int) and limit > 0:
+            line_range = f"{offset}-{offset + limit - 1}"
+        elif isinstance(offset, int):
+            line_range = f"{offset}-unknown"
+        else:
+            line_range = "unknown"
+        result.append(
+            {
+                "path": item["path"],
+                "line_range": line_range,
+                "outcome": "observed-by-harness",
+            }
+        )
+    return result
+
+
+def _validate_and_archive_surface_coverage(
+    job: dict,
+    result: dict,
+    log_dir: Path,
+) -> None:
+    """Validate surface accounting against the document selected for promotion."""
+
+    inventory = job.get("surface_inventory")
+    if not isinstance(inventory, dict):
+        result["surface_coverage"] = None
+        return
+
+    started = time.monotonic()
+    sidecar_path = Path(job["surface_coverage_path"])
+    sidecar = load_sidecar(sidecar_path)
+    promoted_path = Path(job["final_output_path"])
+    candidate_path = Path(job["candidate_path"])
+    report = validate_surface_coverage(
+        inventory=inventory,
+        sidecar=sidecar,
+        promoted_document=promoted_path if promoted_path.is_file() else None,
+        candidate_document=candidate_path if candidate_path.is_file() else None,
+        observed_reads=_observed_read_records_from_telemetry(
+            result.get("telemetry")
+        ),
+        analyzer_document=job.get("surface_analyzer"),
+        source_root=job.get("checkout_path"),
+    )
+    if not report["structural_valid"] and sidecar_path.is_file():
+        invalid_path = log_dir / (
+            f"{str(job['name']).replace('/', '_')}.coverage.invalid.json"
+        )
+        shutil.copy2(sidecar_path, invalid_path)
+    enriched = finalized_sidecar(sidecar, report, inventory=inventory)
+    sidecar_path.write_text(json.dumps(enriched, indent=2, sort_keys=True) + "\n")
+    name = str(job["name"]).replace("/", "_")
+    archived_path = log_dir / f"{name}.coverage.json"
+    shutil.copy2(sidecar_path, archived_path)
+    result["phase_timings"]["surface_coverage_validation_seconds"] = (
+        time.monotonic() - started
+    )
+    result["surface_coverage"] = {
+        "artifact_path": str(archived_path),
+        "structural_valid": report["structural_valid"],
+        "structural_errors": report["structural_errors"],
+        "coverage_accounting": report["coverage_accounting"],
+        "summary": report["summary"],
+        "read_observation": report["read_observation"],
+        "unresolved_safety_critical_surfaces": report[
+            "unresolved_safety_critical_surfaces"
+        ],
+        "validator_findings": report["validator_findings"],
+        "warning_count": report["warning_count"],
+        "status": report["status"],
+    }
+    if report["warning_count"]:
+        classifications = sorted(
+            {
+                finding["classification"]
+                for finding in report["validator_findings"]
+            }
+        )
+        details = ", ".join(classifications) or "structural-invalid"
+        print(
+            f"Surface-coverage warning: {job['name']}: "
+            f"{report['warning_count']} finding(s) ({details})"
+        )
+
+
 def _runtime_breakdown(result: dict) -> dict:
     """Return durable diagnostic timing/count buckets for one agent run."""
 
@@ -856,11 +1010,18 @@ def _runtime_breakdown(result: dict) -> dict:
             "source_read_justification_validation": phase_timings.get(
                 "source_read_justification_validation_seconds"
             ),
+            "surface_coverage_validation": phase_timings.get(
+                "surface_coverage_validation_seconds"
+            ),
         },
         "agent_activity_counts": {
             "analyzer_context_reads": (
                 telemetry.get("tool_calls_by_activity", {})
                 .get("analyzer_context_read", 0)
+            ),
+            "surface_inventory_reads": (
+                telemetry.get("tool_calls_by_activity", {})
+                .get("planning_input_read", 0)
             ),
             "targeted_source_reads": telemetry.get("source_read_operations", 0),
             "source_read_budget_exceeded": telemetry.get(
@@ -909,6 +1070,7 @@ def _write_agent_run_reports(jobs, results, log_dir: Path) -> None:
             "merge": result.get("merge"),
             "insights": result.get("insights"),
             "source_read_justifications": result.get("source_read_justifications"),
+            "surface_coverage": result.get("surface_coverage"),
             "fallback": result.get("fallback"),
             "log_file": result.get("log_file"),
         }

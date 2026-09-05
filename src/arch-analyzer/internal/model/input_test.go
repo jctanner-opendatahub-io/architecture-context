@@ -102,3 +102,27 @@ func TestUnknownCategoryCoverageRoundTrips(t *testing.T) {
 		t.Fatalf("status = %q, want unknown", got)
 	}
 }
+
+func TestBehavioralEvidenceRoundTripsWithoutChangingLegacyInput(t *testing.T) {
+	input := Input{
+		Component: "operator",
+		BehavioralEvidence: []BehavioralEvidence{{
+			Kind: "named-watch-predicate", Status: "observed",
+			Identity: "internal/controller/auth.ServiceHandler", WatchedGVK: "/v1/Namespace",
+			LiteralValues: []string{"models-as-a-service"},
+			EventTarget:   "services.platform.opendatahub.io/v1alpha1/Auth/auth",
+			Source:        "internal/controller/auth/controller.go:63-69",
+		}},
+	}
+	var encoded strings.Builder
+	if err := EncodeInput(&encoded, input); err != nil {
+		t.Fatal(err)
+	}
+	decoded, err := DecodeInput(strings.NewReader(encoded.String()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(decoded.BehavioralEvidence) != 1 || decoded.BehavioralEvidence[0].LiteralValues[0] != "models-as-a-service" {
+		t.Fatalf("behavioral evidence = %#v, want lossless compatibility round trip", decoded.BehavioralEvidence)
+	}
+}

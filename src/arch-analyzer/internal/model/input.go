@@ -49,6 +49,7 @@ type Input struct {
 	RuntimeSecurity         []RuntimeSecurityControl          `json:"runtime_security_controls,omitempty"`
 	RuntimeProxies          []RuntimeProxyControl             `json:"runtime_proxy_controls,omitempty"`
 	RuntimeWebhooks         []RuntimeWebhookServer            `json:"runtime_webhook_servers,omitempty"`
+	BehavioralEvidence      []BehavioralEvidence              `json:"behavioral_evidence,omitempty"`
 	AccessPolicies          []AccessPolicy                    `json:"access_policies,omitempty"`
 	InfrastructureResources []InfrastructureResource          `json:"infrastructure_resources,omitempty"`
 	DataCoverage            map[string]string                 `json:"data_coverage"`
@@ -218,6 +219,24 @@ type RuntimeWebhookServer struct {
 	Port        int    `json:"port"`
 	Conditional bool   `json:"conditional"`
 	Source      string `json:"source"`
+}
+
+// BehavioralEvidence retains bounded source behavior that cannot be represented
+// faithfully by a generic endpoint, watch, or dependency row. Observed records
+// require a closed literal/static proof; unresolved records preserve the exact
+// source range and limitation without promoting names into behavior claims.
+type BehavioralEvidence struct {
+	Kind                string   `json:"kind"`
+	Status              string   `json:"status"`
+	Identity            string   `json:"identity"`
+	ServingSurface      string   `json:"serving_surface,omitempty"`
+	ConfigurationBranch string   `json:"configuration_branch,omitempty"`
+	EnforcementProvider string   `json:"enforcement_provider,omitempty"`
+	WatchedGVK          string   `json:"watched_gvk,omitempty"`
+	LiteralValues       []string `json:"literal_values,omitempty"`
+	EventTarget         string   `json:"event_target,omitempty"`
+	Source              string   `json:"source"`
+	Limitations         []string `json:"limitations,omitempty"`
 }
 
 type AccessPolicy struct {

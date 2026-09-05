@@ -2,6 +2,7 @@ package renderer
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -92,6 +93,114 @@ func TestSynthesisEvidenceMarkdownIsBoundedAndSourceLinked(t *testing.T) {
 		if !strings.Contains(text, expected) {
 			t.Errorf("projection missing %q:\n%s", expected, text)
 		}
+	}
+}
+
+func TestBehavioralEvidenceRendersInCompactContextAndBaseline(t *testing.T) {
+	records := []model.BehavioralEvidence{
+		{
+			Kind: "conditional-metrics-enforcement", Status: "observed",
+			Identity: "controller-runtime metrics", ServingSurface: "controller-runtime metrics serving surface",
+			ConfigurationBranch: "oconfig.MetricsSecure is true", EnforcementProvider: "filters.WithAuthenticationAndAuthorization",
+			Source: "cmd/main.go:485-500",
+		},
+		{
+			Kind: "named-watch-predicate", Status: "observed",
+			Identity: "internal/controller/services/auth.ServiceHandler", WatchedGVK: "/v1/Namespace",
+			LiteralValues: []string{"models-as-a-service"},
+			EventTarget:   "services.platform.opendatahub.io/v1alpha1/Auth/auth",
+			Source:        "internal/controller/services/auth/auth_controller.go:63-69",
+		},
+	}
+
+	var compact bytes.Buffer
+	if err := SynthesisEvidenceMarkdown(&compact, model.Input{Component: "rhods-operator", BehavioralEvidence: records}); err != nil {
+		t.Fatal(err)
+	}
+	for _, expected := range []string{
+		"## Behavioral Evidence",
+		"oconfig.MetricsSecure is true",
+		"filters.WithAuthenticationAndAuthorization",
+		"internal/controller/services/auth.ServiceHandler",
+		"models-as-a-service",
+		"services.platform.opendatahub.io/v1alpha1/Auth/auth",
+		"cmd/main.go:485-500",
+	} {
+		if !strings.Contains(compact.String(), expected) {
+			t.Errorf("compact context missing %q:\n%s", expected, compact.String())
+		}
+	}
+
+	var baseline bytes.Buffer
+	if err := Markdown(&baseline, model.Document{Component: "rhods-operator", BehavioralEvidence: records}); err != nil {
+		t.Fatal(err)
+	}
+	for _, expected := range []string{
+		"### Behavioral Evidence",
+		"| conditional-metrics-enforcement | observed | controller-runtime metrics | controller-runtime metrics serving surface | oconfig.MetricsSecure is true | filters.WithAuthenticationAndAuthorization | cmd/main.go:485-500 |",
+		"| named-watch-predicate | observed | internal/controller/services/auth.ServiceHandler | /v1/Namespace | models-as-a-service | services.platform.opendatahub.io/v1alpha1/Auth/auth | internal/controller/services/auth/auth_controller.go:63-69 |",
+	} {
+		if !strings.Contains(baseline.String(), expected) {
+			t.Errorf("rendered baseline missing %q:\n%s", expected, baseline.String())
+		}
+	}
+}
+
+func TestCompactBehavioralEvidenceIsBoundedAndPrioritizesObservedRecords(t *testing.T) {
+	records := []model.BehavioralEvidence{{
+		Kind: "named-watch-predicate", Status: "observed", Identity: "z-observed",
+		WatchedGVK: "/v1/Namespace", LiteralValues: []string{"system"}, Source: "observed.go:1-2",
+	}}
+	for _, identity := range []string{
+		"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q",
+	} {
+		records = append(records, model.BehavioralEvidence{
+			Kind: "named-watch-predicate", Status: "unresolved", Identity: identity,
+			WatchedGVK: "/v1/Namespace", Source: identity + ".go:1-2",
+			Limitations: []string{"predicate argument is dynamic"},
+		})
+	}
+
+	var output bytes.Buffer
+	if err := SynthesisEvidenceMarkdown(&output, model.Input{Component: "example", BehavioralEvidence: records}); err != nil {
+		t.Fatal(err)
+	}
+	text := output.String()
+	if !strings.Contains(text, "z-observed") {
+		t.Fatalf("compact context omitted observed record:\n%s", text)
+	}
+	if strings.Count(text, "**named-watch-predicate") != behavioralEvidenceLimit {
+		t.Fatalf("compact behavioral record count = %d, want %d", strings.Count(text, "**named-watch-predicate"), behavioralEvidenceLimit)
+	}
+	if !strings.Contains(text, "2 additional behavioral records remain") {
+		t.Fatalf("compact context missing truncation notice:\n%s", text)
+	}
+}
+
+func TestCompactGapEvidenceReportsCandidatesRetainedOnlyInJSON(t *testing.T) {
+	candidates := make([]model.GapEvidenceCandidate, 0, 14)
+	for index := 0; index < 14; index++ {
+		candidates = append(candidates, model.GapEvidenceCandidate{
+			Source: "internal/controller/shared.go", LineRange: fmt.Sprintf("%d-%d", 10+index*5, 13+index*5),
+			Symbols:        []string{fmt.Sprintf("internal/controller/missing-%02d.Handler", index)},
+			Question:       "Which literal resource names constrain this controller watch?",
+			ExpectedSignal: "a supported literal named-resource predicate", Status: "candidate",
+			Limitations: []string{"candidate location only"},
+		})
+	}
+	var output bytes.Buffer
+	if err := SynthesisEvidenceMarkdown(&output, model.Input{
+		Component:        "operator",
+		GapEvidenceIndex: map[string][]model.GapEvidenceCandidate{"kubernetes_relationships": candidates},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	text := output.String()
+	if !strings.Contains(text, "missing-00.Handler") || strings.Contains(text, "missing-13.Handler") {
+		t.Fatalf("compact gap projection did not retain the expected first bounded candidates:\n%s", text)
+	}
+	if !strings.Contains(text, "2 additional gap candidates remain in the analyzer JSON") {
+		t.Fatalf("compact gap projection missing JSON retention notice:\n%s", text)
 	}
 }
 

@@ -9,6 +9,8 @@ import (
 	"github.com/jctanner/arch-analyzer/internal/model"
 )
 
+const gapEvidenceCategoryLimit = 12
+
 // crossReferences joins facts only when the join key is explicit: a service
 // name/reference, an endpoint owner, a webhook service reference, or an exact
 // port. It intentionally does not guess from component names or prose.
@@ -308,12 +310,12 @@ func dedupeSecurityEvidence(records []model.SecurityEvidence) []model.SecurityEv
 func gapEvidenceIndex(input model.Input) map[string][]model.GapEvidenceCandidate {
 	result := map[string][]model.GapEvidenceCandidate{}
 	seen := map[string]bool{}
-	add := func(category, source, question, expected string, symbols ...string) {
-		if source == "" || question == "" || len(result[category]) >= 12 {
+	addCandidate := func(precise bool, category, source, question, expected string, symbols ...string) {
+		if source == "" || question == "" || (!precise && len(result[category]) >= gapEvidenceCategoryLimit) {
 			return
 		}
 		path, line := sourceLocation(source)
-		key := category + "\x00" + path + "\x00" + question
+		key := category + "\x00" + path + "\x00" + line + "\x00" + question + "\x00" + strings.Join(symbols, "\x00")
 		if seen[key] {
 			return
 		}
@@ -323,6 +325,29 @@ func gapEvidenceIndex(input model.Input) map[string][]model.GapEvidenceCandidate
 			Question: question, ExpectedSignal: expected, Status: "candidate",
 			Limitations: []string{"candidate location only; source inspection is required to establish the relationship"},
 		})
+	}
+	add := func(category, source, question, expected string, symbols ...string) {
+		addCandidate(false, category, source, question, expected, symbols...)
+	}
+	addPrecise := func(category, source, question, expected string, symbols ...string) {
+		addCandidate(true, category, source, question, expected, symbols...)
+	}
+	for _, behavior := range input.BehavioralEvidence {
+		if behavior.Status != "unresolved" {
+			continue
+		}
+		switch behavior.Kind {
+		case "conditional-metrics-enforcement":
+			addPrecise("authentication", behavior.Source,
+				"Under which configuration branch does the metrics serving surface install authentication and authorization?",
+				"a direct SecureServing condition and controller-runtime authn/authz FilterProvider assignment",
+				behavior.Identity, behavior.ServingSurface)
+		case "named-watch-predicate":
+			addPrecise("kubernetes_relationships", behavior.Source,
+				"Which literal resource names constrain this controller watch, and where are matching events routed?",
+				"a supported literal named-resource predicate and any explicit event-handler target",
+				behavior.Identity, behavior.WatchedGVK)
+		}
 	}
 	for _, endpoint := range input.HTTPEndpoints {
 		add("http_endpoints", endpoint.Source,
@@ -356,6 +381,9 @@ func gapEvidenceIndex(input model.Input) map[string][]model.GapEvidenceCandidate
 			"middleware, filter, policy, or enforcement branch", auth.Endpoint, auth.Mechanism)
 	}
 	for _, security := range input.RuntimeSecurity {
+		if behaviorCoversSource(input.BehavioralEvidence, "conditional-metrics-enforcement", security.Source) {
+			continue
+		}
 		add("authentication", security.Source,
 			"How is this runtime security control wired to the serving surface?",
 			"flag/default, certificate, middleware, or enforcement point", security.Surface, security.EnforcementPoint)
@@ -396,6 +424,9 @@ func gapEvidenceIndex(input model.Input) map[string][]model.GapEvidenceCandidate
 			"container port, probe, service account, or lifecycle configuration", deployment.Name, deployment.ServiceAccount)
 	}
 	for _, watch := range input.ControllerWatches {
+		if behaviorCoversSource(input.BehavioralEvidence, "named-watch-predicate", watch.Source) {
+			continue
+		}
 		add("kubernetes_relationships", watch.Source,
 			"Which client/resource relationship implements this controller watch, and under what condition?",
 			"watch registration, GVK, resource operations, or conditional branch", watch.Controller, watch.GVK)
@@ -475,10 +506,48 @@ func sourceLocation(source string) (string, string) {
 		return source, ""
 	}
 	line := source[last+1:]
-	if _, err := strconv.Atoi(line); err != nil {
+	if _, _, ok := parseSourceLineRange(line); !ok {
 		return source, ""
 	}
 	return source[:last], line
+}
+
+func behaviorCoversSource(records []model.BehavioralEvidence, kind, source string) bool {
+	path, lineValue := sourceLocation(source)
+	line, _, lineOK := parseSourceLineRange(lineValue)
+	if !lineOK {
+		return false
+	}
+	for _, record := range records {
+		if record.Kind != kind {
+			continue
+		}
+		recordPath, recordRange := sourceLocation(record.Source)
+		start, end, rangeOK := parseSourceLineRange(recordRange)
+		if rangeOK && recordPath == path && start <= line && line <= end {
+			return true
+		}
+	}
+	return false
+}
+
+func parseSourceLineRange(value string) (int, int, bool) {
+	parts := strings.Split(value, "-")
+	if len(parts) == 0 || len(parts) > 2 {
+		return 0, 0, false
+	}
+	start, err := strconv.Atoi(parts[0])
+	if err != nil || start <= 0 {
+		return 0, 0, false
+	}
+	end := start
+	if len(parts) == 2 {
+		end, err = strconv.Atoi(parts[1])
+		if err != nil || end < start {
+			return 0, 0, false
+		}
+	}
+	return start, end, true
 }
 
 func scalarAny(value any) string {

@@ -32,6 +32,7 @@ func Input(input model.Input, options Options) model.Document {
 		CategoryCoverage:     input.CategoryCoverage,
 		SynthesisEvidence:    input.SynthesisEvidence,
 		CrossCuttingEvidence: input.CrossCuttingEvidence,
+		BehavioralEvidence:   append([]model.BehavioralEvidence{}, input.BehavioralEvidence...),
 		Metadata: model.Metadata{
 			Repository:     repositoryURL(input.Repo),
 			Version:        valueOr(input.CommitSHA, "Unknown"),
@@ -343,6 +344,9 @@ func Input(input model.Input, options Options) model.Document {
 			Policy: authentication.Policy,
 		})
 		sources.add(authentication.Source, "Security")
+	}
+	for _, behavior := range input.BehavioralEvidence {
+		sources.add(behavior.Source, "Behavioral Evidence")
 	}
 	document.SecurityEvidence = append(document.SecurityEvidence, input.SecurityEvidence...)
 	for _, evidence := range input.SecurityEvidence {
@@ -804,10 +808,18 @@ func newSourceIndex() *sourceIndex {
 
 func (index *sourceIndex) add(raw, section string) {
 	file, line := splitSource(raw)
-	index.addWithLine(file, parseLine(line), section)
+	index.addWithRange(file, line, section)
 }
 
 func (index *sourceIndex) addWithLine(file string, line int, section string) {
+	lineValue := ""
+	if line > 0 {
+		lineValue = strconv.Itoa(line)
+	}
+	index.addWithRange(file, lineValue, section)
+}
+
+func (index *sourceIndex) addWithRange(file, line, section string) {
 	file = strings.TrimSpace(file)
 	if file == "" {
 		return
@@ -817,8 +829,8 @@ func (index *sourceIndex) addWithLine(file string, line int, section string) {
 		entry = &sourceEntry{lines: map[string]bool{}, sections: map[string]bool{}}
 		index.items[file] = entry
 	}
-	if line > 0 {
-		entry.lines[strconv.Itoa(line)] = true
+	if line != "" {
+		entry.lines[line] = true
 	}
 	for _, part := range strings.Split(section, ",") {
 		if part = strings.TrimSpace(part); part != "" {
@@ -850,15 +862,25 @@ func splitSource(source string) (string, string) {
 	if position < 0 {
 		return source, ""
 	}
-	if _, err := strconv.Atoi(source[position+1:]); err != nil {
+	lineRange := source[position+1:]
+	parts := strings.Split(lineRange, "-")
+	if len(parts) > 2 || len(parts) == 0 {
 		return source, ""
 	}
-	return source[:position], source[position+1:]
-}
-
-func parseLine(line string) int {
-	value, _ := strconv.Atoi(line)
-	return value
+	for _, part := range parts {
+		line, err := strconv.Atoi(part)
+		if err != nil || line < 1 {
+			return source, ""
+		}
+	}
+	if len(parts) == 2 {
+		start, _ := strconv.Atoi(parts[0])
+		end, _ := strconv.Atoi(parts[1])
+		if end < start {
+			return source, ""
+		}
+	}
+	return source[:position], lineRange
 }
 
 func buildRepoLineage(input model.Input, componentMap *model.ComponentMap) []model.RepoLineageRow {

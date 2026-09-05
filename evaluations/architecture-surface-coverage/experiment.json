@@ -1,0 +1,161 @@
+{
+  "schema_version": "architecture-surface-canary/v1",
+  "canary_id": "rhods-operator-surface-coverage-v1",
+  "source": {
+    "repository": "red-hat-data-services/rhods-operator",
+    "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+  },
+  "settings": {
+    "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+    "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+    "analyzer_sources": [
+      "src/arch-analyzer/internal/extractor/evidence.go",
+      "src/arch-analyzer/internal/extractor/extractor.go",
+      "src/arch-analyzer/internal/gosource/behavioral_evidence.go",
+      "src/arch-analyzer/internal/gosource/gosource.go",
+      "src/arch-analyzer/internal/model/document.go",
+      "src/arch-analyzer/internal/model/input.go",
+      "src/arch-analyzer/internal/normalize/normalize.go",
+      "src/arch-analyzer/internal/renderer/evidence.go",
+      "src/arch-analyzer/internal/renderer/markdown.go",
+      "src/arch-analyzer/schema/component-architecture.schema.json"
+    ],
+    "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
+    "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+    "controlled_harness": "deterministic-fixture-replay",
+    "controlled_model": "source-reviewed-expected-outcomes",
+    "route": "partial",
+    "file_budget": 6,
+    "workers_enabled": false,
+    "coverage_enforcement": "warning-only"
+  },
+  "minimum_repeats": 2,
+  "observed_artifacts": [
+    {
+      "harness": "claude",
+      "model": "claude-opus-4-6",
+      "artifact": "architecture/rhoai-3.6-ea.2.claude/rhods-operator.md",
+      "artifact_sha256": "458bdc321a7951979b23bd8bc6fc33986cdbd415f2763378c5b2d472af322eea"
+    },
+    {
+      "harness": "codex",
+      "model": "gpt-5.6-sol",
+      "artifact": "architecture/rhoai-3.6-ea.2/rhods-operator.md",
+      "artifact_sha256": "5cfbf54d76aca7fa8afdb0988eecdf90a36d679f7513498290241efa21df7ebc"
+    }
+  ],
+  "gates": {
+    "minimum_surface_recall": 1.0,
+    "maximum_unsupported_claims": 0
+  },
+  "surfaces": [
+    {
+      "surface_id": "authentication.metrics-enforcement",
+      "required_claims": [
+        {
+          "claim_id": "metrics.secure-conditional-filter",
+          "source_references": [
+            "cmd/main.go:485-500"
+          ]
+        }
+      ]
+    },
+    {
+      "surface_id": "controller.named-resource-watches",
+      "required_claims": [
+        {
+          "claim_id": "watch.models-as-a-service",
+          "source_references": [
+            "internal/controller/services/auth/auth_controller.go:63-69"
+          ]
+        },
+        {
+          "claim_id": "watch.kuadrant-system",
+          "source_references": [
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ]
+        }
+      ]
+    },
+    {
+      "surface_id": "authentication.gateway-modes",
+      "required_claims": [
+        {
+          "claim_id": "gateway.integrated-oauth",
+          "source_references": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-oidc",
+          "source_references": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-auth",
+          "source_references": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ]
+        }
+      ]
+    },
+    {
+      "surface_id": "compliance.runtime-fips",
+      "required_claims": [
+        {
+          "claim_id": "fips.runtime-not-established",
+          "source_references": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        }
+      ]
+    }
+  ],
+  "conditions": [
+    {
+      "condition_id": "baseline",
+      "changed_factor": null,
+      "description": "Analyzer-assisted partial route before surface planning and behavioral extraction.",
+      "factors": {
+        "surface_planning_review": false,
+        "behavioral_extraction": false,
+        "budget_policy": "existing",
+        "subsection_workers": false
+      }
+    },
+    {
+      "condition_id": "surface-planning-review",
+      "changed_factor": "surface_planning_review",
+      "description": "Add seeded surface planning, final evidence review, and promoted-document coverage diagnostics.",
+      "factors": {
+        "surface_planning_review": true,
+        "behavioral_extraction": false,
+        "budget_policy": "existing",
+        "subsection_workers": false
+      }
+    },
+    {
+      "condition_id": "behavioral-extraction",
+      "changed_factor": "behavioral_extraction",
+      "description": "Add exact conditional metrics and literal named-watch analyzer evidence.",
+      "factors": {
+        "surface_planning_review": true,
+        "behavioral_extraction": true,
+        "budget_policy": "existing",
+        "subsection_workers": false
+      }
+    },
+    {
+      "condition_id": "surface-aware-budget",
+      "changed_factor": "budget_policy",
+      "description": "Keep the six-file soft limit while allocating a targeted follow-up to each unresolved required surface.",
+      "factors": {
+        "surface_planning_review": true,
+        "behavioral_extraction": true,
+        "budget_policy": "surface-aware",
+        "subsection_workers": false
+      }
+    }
+  ]
+}

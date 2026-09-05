@@ -591,3 +591,28 @@ func TestInputDeterministicallySortsIntegrationTies(t *testing.T) {
 		t.Fatalf("integration points = %#v, want full-row deterministic ordering", document.IntegrationPoints)
 	}
 }
+
+func TestInputProjectsBehavioralEvidenceAndPreservesSourceRange(t *testing.T) {
+	document := Input(model.Input{
+		Component: "operator",
+		BehavioralEvidence: []model.BehavioralEvidence{{
+			Kind: "conditional-metrics-enforcement", Status: "observed",
+			Identity: "controller-runtime metrics", ServingSurface: "controller-runtime metrics serving surface",
+			ConfigurationBranch: "config.MetricsSecure is true", EnforcementProvider: "filters.WithAuthenticationAndAuthorization",
+			Source: "cmd/main.go:485-500",
+		}},
+	}, Options{})
+
+	if len(document.BehavioralEvidence) != 1 || document.BehavioralEvidence[0].ConfigurationBranch != "config.MetricsSecure is true" {
+		t.Fatalf("behavioral evidence = %#v, want projected branch", document.BehavioralEvidence)
+	}
+	found := false
+	for _, source := range document.Sources {
+		if source.File == "cmd/main.go" && source.Lines == "485-500" && source.Sections == "Behavioral Evidence" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("sources = %#v, want bounded Behavioral Evidence provenance", document.Sources)
+	}
+}

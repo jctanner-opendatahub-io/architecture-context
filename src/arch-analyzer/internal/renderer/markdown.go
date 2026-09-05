@@ -155,6 +155,24 @@ func Markdown(writer io.Writer, document model.Document) error {
 			return []string{row.Kind, row.Target, row.Detail, row.Status}
 		}),
 	)
+	markdown.heading(3, "Behavioral Evidence")
+	markdown.table(
+		[]string{"Behavior", "Status", "Identity", "Surface / Resource", "Condition / Values", "Enforcement / Target", "Source"},
+		mapRows(document.BehavioralEvidence, func(row model.BehavioralEvidence) []string {
+			surface := row.ServingSurface
+			condition := row.ConfigurationBranch
+			outcome := row.EnforcementProvider
+			if row.WatchedGVK != "" {
+				surface = row.WatchedGVK
+				condition = strings.Join(row.LiteralValues, ", ")
+				outcome = row.EventTarget
+			}
+			if row.Status == "unresolved" && len(row.Limitations) > 0 {
+				outcome = "Unresolved: " + strings.Join(row.Limitations, "; ")
+			}
+			return []string{row.Kind, row.Status, row.Identity, surface, condition, outcome, row.Source}
+		}),
+	)
 
 	if len(document.Webhooks) > 0 {
 		markdown.heading(2, "Admission Webhooks")
