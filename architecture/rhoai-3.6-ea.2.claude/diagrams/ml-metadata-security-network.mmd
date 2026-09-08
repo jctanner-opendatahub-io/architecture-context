@@ -1,0 +1,33 @@
+graph TB
+    subgraph Clients["INTERNAL CLIENTS (Platform Services)"]
+        PipelineClient["Data Science Pipelines<br/>Pipeline Client"]
+    end
+
+    subgraph MLMDService["ML METADATA SERVICE"]
+        direction TB
+        Server["metadata_store_server<br/>C++ Binary (Bazel)<br/>Container: UBI9/ubi-minimal-pqc<br/>UID: 65534 (non-root)<br/>Crypto: System OpenSSL"]
+        gRPCEndpoint["MetadataStoreService<br/>8080/TCP gRPC HTTP/2<br/>Optional TLS (SSLConfig)<br/>No app-level AuthN/AuthZ"]
+        Server --- gRPCEndpoint
+    end
+
+    subgraph DatabaseBackend["DATABASE BACKEND"]
+        direction LR
+        MySQL["MySQL / MariaDB<br/>3306/TCP<br/>Optional SSL<br/>SSLOptions: key, cert, ca,<br/>capath, cipher, verify_server_cert"]
+        PostgreSQL["PostgreSQL<br/>5432/TCP<br/>Optional SSL<br/>SSLOptions: sslmode, sslcert,<br/>sslkey, sslrootcert"]
+        SQLite["SQLite<br/>(Embedded, no network)"]
+    end
+
+    %% Flows
+    PipelineClient -->|"gRPC/8080 HTTP/2<br/>Optional TLS (SSLConfig)<br/>Optional mTLS (client_verify)<br/>Auth: None (platform-delegated)"| gRPCEndpoint
+    Server -->|"MySQL protocol/3306<br/>Optional SSL<br/>Auth: DB credentials"| MySQL
+    Server -->|"PostgreSQL protocol/5432<br/>Optional SSL<br/>Auth: DB credentials"| PostgreSQL
+    Server -->|"Embedded (no network)"| SQLite
+
+    %% Styling
+    classDef clients fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef service fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef database fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+
+    class PipelineClient clients
+    class Server,gRPCEndpoint service
+    class MySQL,PostgreSQL,SQLite database

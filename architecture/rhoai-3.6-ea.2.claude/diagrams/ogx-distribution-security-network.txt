@@ -1,0 +1,142 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client]                                                       │
+│         │                                                                │
+│         │ Port: 443/TCP (via platform ingress)                           │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (platform-managed)                             │
+│         │ Auth: OAuth2 Bearer Token (when AUTH_ISSUER configured)        │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  INGRESS (Platform-managed TLS termination)                             │
+│                                                                          │
+│  [OpenShift Route / Istio Gateway]                                       │
+│  - External Port: 443/TCP                                                │
+│  - Internal Port: 8321/TCP                                               │
+│  - TLS Termination: At ingress (app runs --insecure)                    │
+│         │                                                                │
+│         │ Port: 8321/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None (plaintext within cluster)                    │
+│         │ Auth: Passed through from ingress                              │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION TIER                                                        │
+│                                                                          │
+│  [OGX Distribution Server]                                               │
+│  - Port: 8321/TCP (API), metrics/TCP (Prometheus)                       │
+│  - Entrypoint: /opt/app-root/entrypoint.sh                              │
+│  - Runtime: Python (OGX framework)                                       │
+│  - TLS: Disabled (--insecure flag, TLS at ingress)                      │
+│  - Auth: OAuth2 JWT validation (when AUTH_ISSUER set)                   │
+│  - JWKS: Fetched from AUTH_ISSUER/.well-known (AUTH_TLS_CAFILE)         │
+│  - Access Policy:                                                        │
+│    - Public read: system resources (no auth required)                   │
+│    - Authenticated create: valid JWT required                            │
+│    - Owner-scoped CRUD: user owns the resource                          │
+│         │                                                                │
+│         ├──────────────────────────────────────────┐                     │
+│         │                                          │                     │
+│         │ Port: Configurable (VLLM_URL)            │ Port: 5432/TCP      │
+│         │ Protocol: HTTP/HTTPS                     │ Protocol: PostgreSQL │
+│         │ Encryption: TLS verify                   │ Encryption:          │
+│         │   configurable (VLLM_TLS_VERIFY)         │   Configurable       │
+│         │ Auth: None (internal service)            │   (POSTGRES_* env)   │
+│         ▼                                          ▼                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│  BACKEND SERVICES (Internal)                                             │
+│                                                                          │
+│  [vLLM Inference Backend]                                                │
+│  - Port: Configurable (VLLM_URL)                                        │
+│  - Purpose: Primary inference for chat completions, embeddings          │
+│  - Encryption: TLS verify configurable                                   │
+│  - Auth: None (service-to-service)                                       │
+│                                                                          │
+│  [PostgreSQL]                                                            │
+│  - Port: 5432/TCP                                                        │
+│  - Purpose: KV store (ogx_kvstore), SQL store for conversations,        │
+│    batches, files metadata, vector store metadata                       │
+│  - Encryption: Configurable (POSTGRES_* env vars)                       │
+│  - Auth: POSTGRES_USER / POSTGRES_PASSWORD (from _FILE secret mount)    │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OPTIONAL BACKEND SERVICES                                               │
+│                                                                          │
+│  [Milvus Vector DB]                                                      │
+│  - Port: Configurable (MILVUS_ENDPOINT)                                  │
+│  - Protocol: HTTP/gRPC                                                   │
+│  - Encryption: mTLS configurable (ca_pem_path, client_pem_path)         │
+│  - Auth: Milvus token (MILVUS_TOKEN, from _FILE secret mount)           │
+│                                                                          │
+│  [PGVector]                                                              │
+│  - Port: 5432/TCP                                                        │
+│  - Protocol: PostgreSQL                                                  │
+│  - Encryption: Configurable                                              │
+│  - Auth: PostgreSQL credentials                                          │
+│                                                                          │
+│  [Qdrant Vector DB]                                                      │
+│  - Port: 6333/TCP (HTTP), 6334/TCP (gRPC)                              │
+│  - Protocol: HTTP/gRPC                                                   │
+│  - Encryption: HTTPS configurable                                        │
+│  - Auth: API key                                                         │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  EXTERNAL SERVICES                                                       │
+│                                                                          │
+│  [OAuth2 Identity Provider]                                              │
+│  - Port: 443/TCP                                                         │
+│  - Protocol: HTTPS                                                       │
+│  - Purpose: JWKS-based JWT validation                                    │
+│  - Encryption: TLS (AUTH_VERIFY_TLS configurable, AUTH_TLS_CAFILE)      │
+│  - Direction: Outbound from OGX server                                   │
+│                                                                          │
+│  [OpenTelemetry Collector] (optional)                                    │
+│  - Port: Configurable                                                    │
+│  - Protocol: OTLP (HTTP/gRPC)                                           │
+│  - Purpose: Traces and metrics export                                    │
+│  - Activation: When OTEL_SERVICE_NAME is set                            │
+│                                                                          │
+│  [Prometheus / ServiceMonitor]                                           │
+│  - Port: metrics/TCP                                                     │
+│  - Protocol: HTTP                                                        │
+│  - Purpose: Metrics scraping                                             │
+│  - Direction: Inbound to OGX server /metrics endpoint                   │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Secret Resolution Pattern:
+- Entrypoint resolves _FILE environment variables at startup
+- Reads Kubernetes-mounted secret files into env vars
+- Avoids /proc exposure of sensitive values
+- Variables: POSTGRES_PASSWORD_FILE, MILVUS_TOKEN_FILE, etc.
+
+Authentication & Authorization:
+- Mechanism: OAuth2 JWT (optional, when AUTH_ISSUER configured)
+- Token validation: JWKS-based (fetched from AUTH_ISSUER endpoint)
+- TLS for JWKS: Configurable (AUTH_VERIFY_TLS, AUTH_TLS_CAFILE)
+- Access policy (3 rules):
+  1. Public read: Unauthenticated access to system resources
+  2. Create: Requires valid authenticated token
+  3. Owner-scoped CRUD: User must own the resource
+
+RBAC Summary:
+- No Kubernetes RBAC roles defined in this component
+- RBAC is managed by ogx-operator (lifecycle manager)
+
+Service Mesh Configuration:
+- Application runs with --insecure flag (no application-level TLS)
+- TLS termination expected at platform ingress (OpenShift Route / Istio)
+- No PeerAuthentication or AuthorizationPolicy defined in component
+
+Secrets:
+- PostgreSQL credentials: POSTGRES_USER, POSTGRES_PASSWORD (via _FILE mount)
+- Milvus token: MILVUS_TOKEN (via _FILE mount)
+- OAuth2 client: AUTH_ISSUER, AUTH_TLS_CAFILE
+- vLLM connection: VLLM_URL, VLLM_TLS_VERIFY
+- OpenTelemetry: OTEL_SERVICE_NAME (activation trigger)
+
+FIPS Compliance:
+- Python application, no compiled crypto binaries
+- Inherits OpenSSL from AIPCC/UBI base image
+- No explicit FIPS mode enforcement at application level
+- TLS delegated to platform ingress

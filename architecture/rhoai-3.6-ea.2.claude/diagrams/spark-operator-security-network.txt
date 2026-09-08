@@ -1,0 +1,172 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [Data Engineer / User]                                                  │
+│         │                                                                │
+│         │ Tool: kubectl / oc                                             │
+│         │ Protocol: HTTPS                                                │
+│         │ Port: 6443/TCP                                                 │
+│         │ Encryption: TLS 1.2+                                           │
+│         │ Auth: kubeconfig (Bearer Token / x509 cert)                    │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES API SERVER                                                   │
+│                                                                          │
+│  [kube-apiserver]                                                        │
+│  - Port: 6443/TCP                                                        │
+│  - Encryption: TLS 1.2+                                                  │
+│  - Auth: RBAC enforcement for all API operations                         │
+│  - Admission webhook calls to spark-operator-webhook                     │
+│         │                                                                │
+│         │ Port: 443/TCP                                                  │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (cert-manager provisioned)                     │
+│         │ Auth: Kubernetes admission (API server → webhook)              │
+│         │ Failure Policy: Fail (all webhooks)                            │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OPERATOR NAMESPACE (Trusted - RBAC Enforced)                           │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  spark-operator-module-controller-manager (Deployment)          │    │
+│  │  - SA: spark-operator-module-controller-manager                 │    │
+│  │  - ClusterRole: spark-operator-module-manager-role              │    │
+│  │  - Purpose: Manages full operator lifecycle (CRDs, RBAC,        │    │
+│  │    Deployments, cert-manager resources, NetworkPolicies)        │    │
+│  │  - Watches: SparkOperator CR (cluster-scoped, singleton)        │    │
+│  │  - Health: :8081/healthz, :8081/readyz (unauthenticated)        │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│         │                                                                │
+│         │ Creates and manages                                            │
+│         ▼                                                                │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  spark-operator-controller (Deployment)                         │    │
+│  │  - SA: spark-operator-controller                                │    │
+│  │  - ClusterRole: spark-operator-controller                       │    │
+│  │  - Health: :8081/healthz (unauthenticated)                      │    │
+│  │  - Readiness: :8081/readyz (unauthenticated)                    │    │
+│  │  - TLS Profile: Reads config.openshift.io/v1 APIServer          │    │
+│  │  - Fallback: Intermediate (TLS 1.2, AEAD ciphers)              │    │
+│  │                                                                  │    │
+│  │  Reconciles:                                                     │    │
+│  │  - SparkApplication → Driver/Executor Pods, Services, ConfigMaps│    │
+│  │  - ScheduledSparkApplication → cron-triggered SparkApplications │    │
+│  │  - SparkConnect → Spark Connect server Deployments              │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  spark-operator-webhook (Deployment)                            │    │
+│  │  - SA: spark-operator-webhook                                   │    │
+│  │  - ClusterRole: spark-operator-webhook                          │    │
+│  │  - Service: spark-operator-webhook-svc (ClusterIP 443/TCP)      │    │
+│  │  - TLS Cert: spark-operator-webhook-certs (cert-manager)        │    │
+│  │  - Cert Mount: /etc/k8s-webhook-server/serving-certs            │    │
+│  │  - Secret Access: RBAC restricted to named secret only          │    │
+│  │  - TLS Profile: Reads cluster TLS profile at startup            │    │
+│  │  - Ciphers: AEAD only (AES-128-GCM, AES-256-GCM,              │    │
+│  │    ChaCha20-Poly1305)                                           │    │
+│  │                                                                  │    │
+│  │  Admission Webhooks (all failurePolicy: Fail):                  │    │
+│  │  MUTATING:                                                       │    │
+│  │    /mutate--v1-pod (CREATE)                                     │    │
+│  │    /mutate-sparkoperator-k8s-io-v1beta2-sparkapplication        │    │
+│  │    /mutate-sparkoperator-k8s-io-v1beta2-scheduledsparkapplication│   │
+│  │    /mutate-sparkoperator-k8s-io-v1alpha1-sparkconnect           │    │
+│  │  VALIDATING:                                                     │    │
+│  │    /validate-sparkoperator-k8s-io-v1beta2-sparkapplication      │    │
+│  │    /validate-sparkoperator-k8s-io-v1beta2-scheduledsparkapplication│  │
+│  │    /validate-sparkoperator-k8s-io-v1alpha1-sparkconnect         │    │
+│  │  CONVERSION:                                                     │    │
+│  │    /convert (ScheduledSparkApplication version migration)        │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  USER NAMESPACE (Workload Resources)                                     │
+│                                                                          │
+│  [Driver Pod]                                                            │
+│  - Created by: spark-operator-controller                                 │
+│  - Purpose: Runs Spark driver process                                    │
+│                                                                          │
+│  [Executor Pod(s)]                                                       │
+│  - Created by: Driver Pod (via Kubernetes API)                           │
+│  - Mutated by: SparkPodDefaulter webhook                                │
+│  - Purpose: Runs Spark executor processes                                │
+│                                                                          │
+│  [Service]                                                               │
+│  - Created by: spark-operator-controller                                 │
+│  - Purpose: Driver headless service for executor communication           │
+│                                                                          │
+│  [ConfigMap]                                                             │
+│  - Created by: spark-operator-controller                                 │
+│  - Purpose: Prometheus monitoring configuration                         │
+│                                                                          │
+│  [PodDisruptionBudget]                                                   │
+│  - Created by: spark-operator-controller                                 │
+│  - Purpose: Protect driver from voluntary disruptions                    │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PLATFORM SERVICES                                                       │
+│                                                                          │
+│  [cert-manager]                                                          │
+│  - Purpose: Provisions TLS certificates for webhook endpoints            │
+│  - Interaction: Certificate/Issuer CRD CRUD                             │
+│  - Secret: spark-operator-webhook-certs                                  │
+│                                                                          │
+│  [prometheus-operator]                                                   │
+│  - Purpose: Monitoring via PodMonitor CRDs                              │
+│  - Interaction: PodMonitor CRD CRUD                                     │
+│                                                                          │
+│  [ODH Operator]                                                          │
+│  - Purpose: Creates SparkOperator CR to trigger module deployment        │
+│  - Interaction: SparkOperator CR lifecycle management                    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+EGRESS:
+  Destination: Kubernetes API Server
+  - Port: 6443/TCP
+  - Protocol: HTTPS/WSS
+  - Encryption: TLS 1.2+
+  - Auth: ServiceAccount token (in-cluster)
+  - Purpose: All Kubernetes resource operations
+  - Note: No external egress beyond Kubernetes API server
+
+RBAC Summary:
+  Service Account: spark-operator-controller
+  - ClusterRole: spark-operator-controller
+    - core: pods (create, delete, get, list, update, watch)
+    - core: services (create, delete, get, list, patch, update, watch)
+    - core: configmaps (create, get, list, patch, update, watch)
+    - core: events (create, patch, update)
+    - sparkoperator.k8s.io: sparkapplications (create, delete, get, list, watch)
+    - sparkoperator.k8s.io: scheduledsparkapplications, sparkconnects (get, list, watch)
+    - sparkoperator.k8s.io: */status, */finalizers (update)
+    - policy: poddisruptionbudgets (create, delete, get, list, watch)
+    - extensions, networking.k8s.io: ingresses (create, delete, get, update)
+
+  Service Account: spark-operator-webhook
+  - ClusterRole: spark-operator-webhook
+    - core: resourcequotas (list)
+    - core: pods (list, watch)
+    - core: secrets (create - general; get, update - named: spark-operator-webhook-certs)
+    - core: events (create, patch, update)
+    - admissionregistration.k8s.io: webhookconfigurations (get, list, watch, update)
+    - sparkoperator.k8s.io: sparkapplications, scheduledsparkapplications (get, list, watch)
+
+  Service Account: spark-operator-module-controller-manager
+  - ClusterRole: spark-operator-module-manager-role
+    - Full lifecycle management of: Deployments, CRDs, RBAC, Services,
+      ConfigMaps, ServiceAccounts, cert-manager resources, NetworkPolicies,
+      PodMonitors, WebhookConfigurations, SparkOperator CRs
+    - RBAC escalation: bind, escalate on ClusterRoles and Roles
+
+TLS Configuration:
+  - Webhook TLS: cert-manager provisioned, mounted at /etc/k8s-webhook-server/serving-certs
+  - Cipher suites: AEAD only (AES-128-GCM, AES-256-GCM, ChaCha20-Poly1305)
+  - Min TLS version: Reads from OpenShift APIServer TLS profile
+  - Fallback: Intermediate profile (TLS 1.2)
+  - FIPS: GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1 (uses system OpenSSL)
+  - Secret access: RBAC restricted to named secret (spark-operator-webhook-certs)
+
+Secrets:
+  - spark-operator-webhook-certs (TLS) - cert-manager provisioned webhook certificates

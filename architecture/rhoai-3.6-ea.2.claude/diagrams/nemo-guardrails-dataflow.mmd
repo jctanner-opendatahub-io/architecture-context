@@ -1,0 +1,65 @@
+sequenceDiagram
+    participant Client as External Client
+    participant FastAPI as GuardrailsApp<br/>Port 8000<br/>No Auth
+    participant Rails as LLMRails Engine<br/>Colang Runtime
+    participant InputR as Input Rails<br/>Safety Filters
+    participant OutputR as Output Rails<br/>Safety Filters
+    participant Models as Pre-cached Models<br/>MiniLM/Arctic/spaCy
+    participant LLM as LLM Provider<br/>OpenAI / Azure OpenAI<br/>443/TCP HTTPS
+
+    Note over Client,LLM: Flow 1: Chat Completion (Full Pipeline)
+    Client->>FastAPI: POST /v1/chat/completions<br/>Content-Type: application/json<br/>config_id: {optional}
+    FastAPI->>Rails: Route to config<br/>(by config_id or default)
+    Rails->>InputR: Evaluate input rails<br/>(user/system messages)
+    InputR->>Models: Embedding similarity check<br/>Jailbreak detection
+    Models-->>InputR: Evaluation result
+    alt Input blocked
+        InputR-->>Rails: BLOCKED
+        Rails-->>FastAPI: Blocked response
+        FastAPI-->>Client: 200 OK (blocked message)
+    else Input approved
+        InputR-->>Rails: APPROVED
+        Rails->>LLM: POST /v1/chat/completions<br/>HTTPS/443<br/>Auth: API Key
+        LLM-->>Rails: LLM Response
+        Rails->>OutputR: Evaluate output rails<br/>(assistant messages)
+        OutputR->>Models: Content safety check
+        Models-->>OutputR: Evaluation result
+        alt Output blocked
+            OutputR-->>Rails: MODIFIED/BLOCKED
+            Rails-->>FastAPI: Filtered response
+            FastAPI-->>Client: 200 OK (modified message)
+        else Output approved
+            OutputR-->>Rails: APPROVED
+            Rails-->>FastAPI: Original response
+            FastAPI-->>Client: 200 OK (LLM response)
+        end
+    end
+
+    Note over Client,LLM: Flow 2: Guardrail Check Only (No LLM Call)
+    Client->>FastAPI: POST /v1/guardrail/checks<br/>{role: "user"|"assistant"|"tool",<br/> content: "..."}
+    FastAPI->>Rails: Route by message role
+    alt role = user/system
+        Rails->>InputR: Evaluate input rails
+        InputR->>Models: Safety evaluation
+        Models-->>InputR: Result
+        InputR-->>Rails: Pass/Fail + details
+    else role = assistant
+        Rails->>OutputR: Evaluate output rails
+        OutputR->>Models: Safety evaluation
+        Models-->>OutputR: Result
+        OutputR-->>Rails: Pass/Fail + details
+    end
+    Rails-->>FastAPI: Check result
+    FastAPI-->>Client: 200 OK (check result)
+
+    Note over Client,LLM: Flow 3: Standalone Checks (Colang 1.0)
+    Client->>FastAPI: POST /v1/checks<br/>{messages: [...]}
+    FastAPI->>Rails: Evaluate via Colang 1.0
+    Rails->>Models: Rail evaluation
+    Models-->>Rails: Results
+    Rails-->>FastAPI: Check results
+    FastAPI-->>Client: 200 OK
+
+    Note over Client,LLM: Flow 4: Health Check
+    Client->>FastAPI: GET /healthz
+    FastAPI-->>Client: 200 OK

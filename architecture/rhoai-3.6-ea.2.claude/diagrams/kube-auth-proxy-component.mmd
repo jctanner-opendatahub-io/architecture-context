@@ -1,0 +1,84 @@
+graph TB
+    subgraph "kube-auth-proxy"
+        direction TB
+        Entrypoint["kube-auth-proxy Binary<br/>(Go Executable)"]
+
+        subgraph "Pre-Auth Chain"
+            HealthCheck["Health Check<br/>/ping"]
+            HTTPSRedirect["HTTPS Redirect"]
+            Logging["Logging Middleware"]
+            Metrics["Metrics Middleware<br/>(Prometheus)"]
+        end
+
+        subgraph "Session-Aware Chain"
+            SessionLoader["Session Loader"]
+            AuthMiddleware["Auth Middleware<br/>(justinas/alice)"]
+        end
+
+        subgraph "Authentication Providers"
+            OAuth2["OAuth2/OIDC Provider"]
+            OpenShiftOAuth["OpenShift OAuth<br/>(First-class)"]
+            K8sTokenReview["K8s TokenReview<br/>(singleflight + TTL cache)"]
+            BasicAuth["htpasswd Basic Auth"]
+            JWTBearer["JWT Bearer Passthrough"]
+        end
+
+        subgraph "Session Storage"
+            CookieStore["Encrypted Cookie Store<br/>(Default)"]
+            RedisStore["Redis/Valkey Store<br/>(TLS-capable)"]
+        end
+
+        subgraph "Request Handling"
+            Router["gorilla/mux Router"]
+            MLflowHandler["MLflow Auth-Denied Handler"]
+            UpstreamProxy["Upstream Proxy"]
+        end
+
+        Entrypoint --> HealthCheck
+        HealthCheck --> HTTPSRedirect
+        HTTPSRedirect --> Logging
+        Logging --> Metrics
+        Metrics --> SessionLoader
+        SessionLoader --> AuthMiddleware
+
+        AuthMiddleware --> OAuth2
+        AuthMiddleware --> OpenShiftOAuth
+        AuthMiddleware --> K8sTokenReview
+        AuthMiddleware --> BasicAuth
+        AuthMiddleware --> JWTBearer
+
+        SessionLoader --> CookieStore
+        SessionLoader --> RedisStore
+
+        AuthMiddleware --> Router
+        Router --> MLflowHandler
+        Router --> UpstreamProxy
+    end
+
+    %% External interfaces
+    Client[External Client] -->|"Port 4180<br/>HTTP/HTTPS"| Entrypoint
+    Route["OpenShift Route<br/>(TLS Termination)"] -->|"Port 80 → 4180"| Entrypoint
+
+    UpstreamProxy -->|"Forwarded Headers:<br/>X-Forwarded-User<br/>X-Forwarded-Email<br/>X-Forwarded-Groups"| UpstreamService["Upstream Service<br/>(e.g., MLflow)"]
+
+    K8sTokenReview -->|"TokenReview API<br/>Port 6443 HTTPS"| K8sAPI["Kubernetes API Server"]
+    OAuth2 -->|"OIDC Discovery<br/>Authorization Code Flow"| OIDCProvider["OIDC Provider"]
+    OpenShiftOAuth -->|"/.well-known/oauth-authorization-server"| OIDCProvider
+    RedisStore -->|"TLS (optional)<br/>Sentinel/Cluster"| Redis["Redis / Valkey"]
+
+    %% Styling
+    style Entrypoint fill:#4a90e2,stroke:#333,color:#fff
+    style OAuth2 fill:#7ed321,stroke:#333
+    style OpenShiftOAuth fill:#7ed321,stroke:#333
+    style K8sTokenReview fill:#7ed321,stroke:#333
+    style BasicAuth fill:#7ed321,stroke:#333
+    style JWTBearer fill:#7ed321,stroke:#333
+    style CookieStore fill:#f5a623,stroke:#333
+    style RedisStore fill:#f5a623,stroke:#333
+    style Router fill:#4a90e2,stroke:#333,color:#fff
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style OIDCProvider fill:#e8e8e8,stroke:#333
+    style Redis fill:#e8e8e8,stroke:#333
+    style UpstreamService fill:#e8e8e8,stroke:#333
+    style Client fill:#f9f9f9,stroke:#999
+    style Route fill:#f9f9f9,stroke:#999

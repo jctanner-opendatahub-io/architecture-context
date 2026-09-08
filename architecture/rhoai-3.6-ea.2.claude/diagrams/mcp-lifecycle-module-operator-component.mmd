@@ -1,0 +1,72 @@
+graph TB
+    subgraph ModuleOperator["MCP Lifecycle Module Operator"]
+        direction TB
+        Manager["/manager<br/>Go controller-runtime"]
+        Reconciler["MCPLifecycleOperator<br/>Reconciler"]
+        TLSFetcher["TLS Profile<br/>Fetcher"]
+        KustomizeRenderer["Kustomize Manifest<br/>Renderer"]
+        GarbageCollector["Label-based<br/>Garbage Collector"]
+        Manager --> Reconciler
+        Reconciler --> TLSFetcher
+        Reconciler --> KustomizeRenderer
+        Reconciler --> GarbageCollector
+    end
+
+    subgraph Operand["Deployed Operand"]
+        direction TB
+        OperandDeploy["mcp-lifecycle-operator-<br/>controller-manager"]
+        OperandRBAC["Operand RBAC<br/>(ClusterRoles + Bindings)"]
+        OperandSM["ServiceMonitor"]
+        OperandNP["NetworkPolicies"]
+        MCPServerCRD["MCPServer CRD"]
+    end
+
+    %% CRs
+    MCPLifecycleOperatorCR["MCPLifecycleOperator CR<br/>(Cluster-scoped, Singleton)"]
+    MCPServerCR["MCPServer CR<br/>(Namespaced)"]
+
+    %% External dependencies
+    PlatformCM["Platform ConfigMap<br/>(distribution detection)"]
+    APIServer["OpenShift APIServer<br/>(TLS profile)"]
+    K8sAPI["Kubernetes API<br/>6443/TCP"]
+
+    %% Flows
+    MCPLifecycleOperatorCR -->|watched by| Reconciler
+    TLSFetcher -->|reads| APIServer
+    Reconciler -->|reads| PlatformCM
+    KustomizeRenderer -->|SSA applies| OperandDeploy
+    KustomizeRenderer -->|SSA applies| OperandRBAC
+    KustomizeRenderer -->|SSA applies| OperandSM
+    KustomizeRenderer -->|SSA applies| OperandNP
+    KustomizeRenderer -->|SSA applies| MCPServerCRD
+    GarbageCollector -->|label filter<br/>part-of=mcp-lifecycle-operator| Operand
+
+    OperandDeploy -->|reconciles| MCPServerCR
+    Manager -->|authenticates via SA token| K8sAPI
+
+    %% Health probes
+    HealthProbe["Health/Readiness<br/>:8081 /healthz /readyz"]
+    Manager --- HealthProbe
+
+    %% Metrics
+    MetricsSvc["Metrics Service<br/>:8443/TCP ClusterIP"]
+    OperandDeploy --- MetricsSvc
+
+    %% Styling
+    style Manager fill:#4a90e2,stroke:#333,color:#fff
+    style Reconciler fill:#4a90e2,stroke:#333,color:#fff
+    style TLSFetcher fill:#4a90e2,stroke:#333,color:#fff
+    style KustomizeRenderer fill:#4a90e2,stroke:#333,color:#fff
+    style GarbageCollector fill:#4a90e2,stroke:#333,color:#fff
+    style OperandDeploy fill:#7ed321,stroke:#333,color:#fff
+    style OperandRBAC fill:#7ed321,stroke:#333,color:#fff
+    style OperandSM fill:#7ed321,stroke:#333,color:#fff
+    style OperandNP fill:#7ed321,stroke:#333,color:#fff
+    style MCPServerCRD fill:#7ed321,stroke:#333,color:#fff
+    style MCPLifecycleOperatorCR fill:#f5a623,stroke:#333,color:#fff
+    style MCPServerCR fill:#f5a623,stroke:#333,color:#fff
+    style PlatformCM fill:#e8e8e8,stroke:#333
+    style APIServer fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style HealthProbe fill:#ddd,stroke:#999
+    style MetricsSvc fill:#ddd,stroke:#999

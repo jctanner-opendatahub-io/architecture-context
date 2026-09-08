@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant User as External User
+    participant Gateway as Kubeflow Gateway<br/>(Ingress)
+    participant Frontend as Frontend (nginx)<br/>8080/TCP HTTP
+    participant Backend as Backend API<br/>4000/TCP HTTP/TLS1.3
+    participant AuthN as Auth Middleware<br/>(Header Extraction)
+    participant AuthZ as Kubernetes API<br/>SubjectAccessReview
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant Controller as Workspace Controller<br/>(/manager)
+    participant Webhook as Webhook Service<br/>443/TCP HTTPS
+
+    Note over User,Webhook: User Request Flow
+
+    User->>Gateway: HTTPS request
+    Gateway->>Frontend: HTTP/8080<br/>Proxy pass
+    Frontend->>Backend: REST API call<br/>HTTP/4000
+    Backend->>AuthN: Extract user identity<br/>from proxy headers
+    AuthN->>AuthZ: SubjectAccessReview<br/>authorize user action
+    AuthZ-->>AuthN: Allowed/Denied
+    AuthN-->>Backend: Authenticated identity
+    Backend->>K8sAPI: Workspace CRUD<br/>PVC/Secret operations<br/>HTTPS/6443 TLS 1.2+
+    K8sAPI-->>Backend: Response
+    Backend-->>Frontend: JSON Response
+    Frontend-->>User: Rendered UI
+
+    Note over Controller,K8sAPI: Controller Reconciliation Flow
+
+    K8sAPI->>Controller: Watch event:<br/>Workspace/WorkspaceKind CR change
+    Controller->>K8sAPI: Create/Update StatefulSet
+    Controller->>K8sAPI: Create/Update Service
+    Controller->>K8sAPI: Create/Update ServiceAccount
+    Controller->>K8sAPI: Create/Update RoleBinding
+    Controller->>K8sAPI: Create/Update HTTPRoute<br/>or VirtualService
+    Controller->>K8sAPI: Watch Pod readiness
+
+    Note over Webhook,K8sAPI: Admission Flow
+
+    K8sAPI->>Webhook: Admission request<br/>HTTPS/443 TLS
+    Webhook->>Webhook: Validate Workspace/<br/>WorkspaceKind constraints
+    Webhook-->>K8sAPI: Admission response<br/>(allow/deny)

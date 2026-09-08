@@ -1,0 +1,55 @@
+sequenceDiagram
+    autonumber
+
+    participant User as User (CLI/SDK)
+    participant Route as OpenShift Route<br/>443/TCP TLS Passthrough
+    participant Gateway as OpenShell Gateway<br/>8080/TCP gRPC TLS (rustls)
+    participant DB as Database<br/>(SQLite/PostgreSQL)
+    participant K8sAPI as Kubernetes API<br/>443/TCP HTTPS
+    participant Supervisor as Supervisor (in Pod)<br/>mTLS + Sandbox JWT
+    participant Agent as AI Agent Process
+    participant ExtSvc as External Service<br/>443/TCP HTTPS
+
+    rect rgb(230, 245, 255)
+        Note over User,K8sAPI: Flow 1: Sandbox Creation (Kubernetes)
+        User->>Route: gRPC CreateSandbox<br/>TLS 1.2+ / Bearer Token (OIDC JWT)
+        Route->>Gateway: TLS Passthrough
+        Gateway->>Gateway: Auth Chain: OIDC JWT validation<br/>Workspace membership check
+        Gateway->>DB: Persist sandbox record<br/>TCP/5432 or SQLite local
+        DB-->>Gateway: Sandbox ID
+        Gateway->>K8sAPI: Create Pod (supervisor sideloaded)<br/>HTTPS/443 / ServiceAccount Token
+        K8sAPI-->>Gateway: Pod created
+        Gateway-->>Route: Sandbox status response
+        Route-->>User: gRPC Response
+    end
+
+    rect rgb(230, 255, 230)
+        Note over K8sAPI,Supervisor: Supervisor Bootstrap
+        K8sAPI->>Supervisor: Pod scheduled, supervisor starts<br/>Projected SA token
+        Supervisor->>Gateway: IssueSandboxToken<br/>gRPC/8080 TLS / Compute Driver Bootstrap
+        Gateway-->>Supervisor: Sandbox JWT (Ed25519 signed)
+        Supervisor->>Gateway: ConnectSupervisor (bidirectional stream)<br/>gRPC/8080 mTLS / Sandbox JWT
+        Gateway-->>Supervisor: Policy delivery (hot-reloadable)
+        Supervisor->>Gateway: ReportPolicyStatus<br/>gRPC/8080 mTLS / Sandbox JWT
+    end
+
+    rect rgb(255, 245, 230)
+        Note over Agent,ExtSvc: Flow 2: Policy Enforcement (Network Egress)
+        Agent->>Supervisor: HTTP/HTTPS request to external service<br/>Intercepted by nftables redirect
+        Supervisor->>Supervisor: L7 Policy Engine evaluation<br/>Protocol-aware (HTTP/WS/GraphQL/SQL/MCP)
+        alt Policy ALLOWS
+            Supervisor->>ExtSvc: Forward request<br/>HTTPS/443 TLS / Per-policy auth (SigV4/Bearer)
+            ExtSvc-->>Supervisor: Response
+            Supervisor-->>Agent: Proxied response
+        else Policy DENIES (fail-closed)
+            Supervisor-->>Agent: Connection refused / 403
+        end
+    end
+
+    rect rgb(255, 230, 245)
+        Note over Agent,Gateway: Flow 3: Credential Injection
+        Supervisor->>Gateway: GetSandboxProviderEnvironment<br/>gRPC/8080 mTLS / Sandbox JWT
+        Gateway->>Gateway: Decrypt credential (AES-256-GCM)<br/>from Vault/K8s Secrets/DB
+        Gateway-->>Supervisor: Provider credentials (encrypted in transit)
+        Supervisor->>Agent: Inject credentials as env vars<br/>In-process / no network
+    end

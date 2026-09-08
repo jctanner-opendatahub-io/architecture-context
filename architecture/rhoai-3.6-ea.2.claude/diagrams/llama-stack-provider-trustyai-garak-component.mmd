@@ -1,0 +1,59 @@
+graph TB
+    subgraph "Kubernetes Job Pod"
+        subgraph "llama-stack-provider-trustyai-garak"
+            Main["main() Entry Point"]
+            Adapter["GarakAdapter<br/>(FrameworkAdapter)"]
+            AuthResolver["Auth Resolution Chain<br/>API Key → Named Key → Env Var →<br/>Role Convention → DUMMY Fallback"]
+            ProfileResolver["Scan Profile Resolver<br/>OWASP LLM Top 10 / AVID /<br/>CWE / Intents-based"]
+            ResultParser["JSONL Result Parser"]
+        end
+
+        subgraph "Simple Mode"
+            GarakSubprocess["Garak Subprocess<br/>garak CLI"]
+        end
+
+        subgraph "KFP Mode"
+            KFPClient["KFP Pipeline Client"]
+        end
+
+        Sidecar["DefaultCallbacks Sidecar<br/>Result Reporter"]
+    end
+
+    ConfigMap["/meta/job.json<br/>ConfigMap Mount"] -->|reads JobSpec| Main
+    Main -->|instantiates| Adapter
+    Adapter -->|resolves credentials| AuthResolver
+    Adapter -->|selects profile| ProfileResolver
+
+    Adapter -->|simple mode| GarakSubprocess
+    GarakSubprocess -->|JSONL output| ResultParser
+
+    Adapter -->|kfp mode| KFPClient
+    KFPClient -->|submits pipeline| KFPipelines["Kubeflow Pipelines<br/>API Server"]
+
+    ResultParser -->|parsed results| Sidecar
+    Sidecar -->|reports| EvalHub["Eval-Hub Service"]
+
+    Adapter -->|persists artifacts| OCIRegistry["OCI Registry"]
+
+    %% External integrations
+    GarakSubprocess -->|scans| TargetLLM["Target LLM Endpoint"]
+    KFPClient -->|artifact transfer| S3["S3-Compatible Storage"]
+
+    %% Secrets
+    Secrets["Mounted Secrets<br/>API_KEY<br/>KFP_AUTH_TOKEN<br/>OPENAICOMPATIBLE_API_KEY<br/>AWS_SECRET_ACCESS_KEY"] -.->|credentials| AuthResolver
+
+    style Main fill:#4a90e2,stroke:#333
+    style Adapter fill:#4a90e2,stroke:#333
+    style AuthResolver fill:#4a90e2,stroke:#333
+    style ProfileResolver fill:#4a90e2,stroke:#333
+    style ResultParser fill:#4a90e2,stroke:#333
+    style GarakSubprocess fill:#50c878,stroke:#333
+    style KFPClient fill:#50c878,stroke:#333
+    style Sidecar fill:#7ed321,stroke:#333
+    style ConfigMap fill:#f5a623,stroke:#333
+    style Secrets fill:#f5a623,stroke:#333
+    style TargetLLM fill:#e8e8e8,stroke:#333
+    style S3 fill:#e8e8e8,stroke:#333
+    style KFPipelines fill:#e8e8e8,stroke:#333
+    style EvalHub fill:#7ed321,stroke:#333
+    style OCIRegistry fill:#e8e8e8,stroke:#333

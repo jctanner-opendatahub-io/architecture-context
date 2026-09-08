@@ -1,0 +1,55 @@
+graph TB
+    subgraph "llm-d-kv-cache"
+        direction TB
+
+        subgraph "KV Cache Manager"
+            EventProcessor["Event Processor<br/>ZMQ Subscriber"]
+            BlockIndexer["Block Indexer<br/>pkg/kvcache/kvblock"]
+            ScoringAPI["Scoring API<br/>HTTP :8080"]
+            MetricsServer["Metrics Server<br/>/metrics"]
+            EventProcessor -->|indexes blocks| BlockIndexer
+            BlockIndexer -->|cache affinity| ScoringAPI
+        end
+
+        subgraph "gRPC Service"
+            IndexerService["IndexerService<br/>gRPC"]
+            IndexerService -->|reads index| BlockIndexer
+        end
+
+        subgraph "Pod Reconciler"
+            PodReconciler["PodReconciler<br/>controller-runtime"]
+        end
+
+        subgraph "Optional Sidecar"
+            Tokenizer["External Tokenizer<br/>UDS gRPC"]
+        end
+    end
+
+    %% External Inputs
+    vLLM["vLLM Inference Engines"] -->|ZMQ pub/sub<br/>5557/TCP| EventProcessor
+    Router["llm-d-router"] -->|POST /score_completions<br/>8080/TCP| ScoringAPI
+    Router -->|POST /score_chat_completions<br/>8080/TCP| ScoringAPI
+    GRPCClient["gRPC Client"] -->|IndexerService<br/>gRPC| IndexerService
+
+    %% External Dependencies
+    BlockIndexer -->|read/write<br/>TCP/TLS| Redis["Redis / Valkey<br/>6379/TCP"]
+    PodReconciler -->|watch Pods<br/>6443/HTTPS| K8sAPI["Kubernetes API"]
+    EventProcessor -->|OTLP/gRPC| OTel["OpenTelemetry<br/>Collector"]
+    Prometheus["Prometheus"] -->|scrape /metrics| MetricsServer
+    ScoringAPI -->|UDS| Tokenizer
+
+    %% Styling
+    style EventProcessor fill:#4a90e2,color:#fff
+    style BlockIndexer fill:#4a90e2,color:#fff
+    style ScoringAPI fill:#4a90e2,color:#fff
+    style MetricsServer fill:#4a90e2,color:#fff
+    style IndexerService fill:#4a90e2,color:#fff
+    style PodReconciler fill:#4a90e2,color:#fff
+    style Tokenizer fill:#7ed321,color:#fff
+    style vLLM fill:#f5a623,stroke:#333
+    style Router fill:#f5a623,stroke:#333
+    style GRPCClient fill:#f5a623,stroke:#333
+    style Redis fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style OTel fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333

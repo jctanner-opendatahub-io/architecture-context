@@ -1,0 +1,145 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                         │
+│  [Data Scientist / kubectl]                                             │
+│         │                                                               │
+│         │ Port: 6443/TCP                                                │
+│         │ Protocol: HTTPS                                               │
+│         │ Encryption: TLS 1.2+                                          │
+│         │ Auth: kubeconfig / Bearer Token                               │
+│         ▼                                                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES API SERVER                                                  │
+│                                                                         │
+│  [kube-apiserver]                                                       │
+│  - Port: 6443/TCP (external)                                           │
+│  - Encryption: TLS 1.2+                                                │
+│  - Auth: RBAC + ServiceAccount tokens                                  │
+│         │                                                               │
+│         ├─── Admission Webhooks ──────────────────────────────┐        │
+│         │                                                     │        │
+│         │ Port: 443/TCP                                       │        │
+│         │ Protocol: HTTPS                                     │        │
+│         │ Encryption: TLS (OpenShift TLSSecurityProfile)      │        │
+│         │ Auth: Kubernetes admission (API server → webhook)   │        │
+│         │ Failure Policy: Fail                                │        │
+│         ▼                                                     │        │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OPERATOR NAMESPACE (opendatahub)                                       │
+│                                                                         │
+│  Service: kubeflow-trainer-controller-manager (ClusterIP)               │
+│  ┌─────────────────────────────────────────────────────────────┐       │
+│  │  [kubeflow-trainer-controller-manager Pod]                   │       │
+│  │  ServiceAccount: kubeflow-trainer-controller-manager         │       │
+│  │  Image: trainer-controller-manager                           │       │
+│  │  FIPS: CGO_ENABLED=1 GOEXPERIMENT=strictfipsruntime          │       │
+│  │                                                               │       │
+│  │  Ports:                                                       │       │
+│  │  ├── 443/TCP  (webhook)      - TLS (cluster TLSProfile)     │       │
+│  │  │   ├── /mutate-trainer-kubeflow-org-v1alpha1-trainjob      │       │
+│  │  │   ├── /validate-...-trainjob                              │       │
+│  │  │   ├── /validate-...-trainingruntime                       │       │
+│  │  │   └── /validate-...-clustertrainingruntime                │       │
+│  │  │                                                            │       │
+│  │  ├── 8443/TCP (metrics)      - TLS (cluster TLSProfile)     │       │
+│  │  │                                                            │       │
+│  │  ├── 10443/TCP (status-server) - TCP                         │       │
+│  │  │   └── /  (status endpoint)                                │       │
+│  │  │                                                            │       │
+│  │  └── 8081/TCP (health)       - HTTP (plaintext)              │       │
+│  │      ├── /healthz  (unauthenticated, liveness probe)         │       │
+│  │      └── /readyz   (unauthenticated, readiness probe)        │       │
+│  │                                                               │       │
+│  │  TLS Certificate:                                             │       │
+│  │  - Secret: kubeflow-trainer-webhook-cert                      │       │
+│  │  - Managed by: OPA cert-controller                            │       │
+│  │  - Cipher suites: OpenShift TLSSecurityProfile (Intermediate) │       │
+│  │  - Fallback: ECDHE+AES-GCM, CHACHA20-POLY1305, TLS 1.2 min  │       │
+│  └─────────────────────────────────────────────────────────────┘       │
+│         │                                                               │
+│         │ Port: 6443/TCP                                                │
+│         │ Protocol: HTTPS/WSS                                           │
+│         │ Encryption: TLS 1.2+                                          │
+│         │ Auth: ServiceAccount token (in-cluster)                       │
+│         ▼                                                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES API (Cluster Internal)                                      │
+│                                                                         │
+│  Watched Resources:                                                     │
+│  - trainer.kubeflow.org/v1alpha1: TrainJob, TrainingRuntime,           │
+│    ClusterTrainingRuntime                                               │
+│  - jobset.x-k8s.io/v1alpha2: JobSet                                   │
+│  - scheduling.x-k8s.io/v1alpha1: PodGroup (CoScheduling)              │
+│  - scheduling.volcano.sh/v1beta1: PodGroup (Volcano)                  │
+│  - core/v1: ConfigMap, Secret, Pod                                     │
+│                                                                         │
+│  Created Resources:                                                     │
+│  - jobset.x-k8s.io/v1alpha2: JobSet                                   │
+│  - networking.k8s.io/v1: NetworkPolicy                                 │
+│  - scheduling.x-k8s.io: PodGroup (CoScheduling plugin)                │
+│  - scheduling.volcano.sh: PodGroup (Volcano plugin)                   │
+│  - core/v1: ConfigMap, Secret (Flux/MPI plugins)                       │
+│  - events.k8s.io/v1: Event                                            │
+│                                                                         │
+│  Read-only Resources:                                                   │
+│  - config.openshift.io/v1: APIServer (TLS profile)                     │
+│  - node.k8s.io: RuntimeClass                                           │
+│  - core/v1: LimitRange                                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│  TRAINING WORKLOAD NAMESPACE ({user-namespace})                         │
+│                                                                         │
+│  [Training Pods]                                                        │
+│  - Created via JobSet → Jobs → Pods                                    │
+│  - Network isolated by per-TrainJob NetworkPolicy                      │
+│  - Ingress scoped by jobset.sigs.k8s.io/jobset-name label             │
+│  - Init containers: Dataset Initializer, Model Initializer (Python)    │
+│                                                                         │
+│  [NetworkPolicy]                                                        │
+│  - Per-TrainJob ingress rules                                          │
+│  - Selector: jobset.sigs.k8s.io/jobset-name                           │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+─────────────
+  ClusterRole: kubeflow-trainer-controller-manager
+    - ServiceAccount: kubeflow-trainer-controller-manager (Cluster-scoped binding)
+    - API Groups: trainer.kubeflow.org, jobset.x-k8s.io, scheduling.volcano.sh,
+                  scheduling.x-k8s.io, networking.k8s.io, events.k8s.io,
+                  admissionregistration.k8s.io, coordination.k8s.io, node.k8s.io, core
+    - Key verbs: get, list, watch, create, update, patch, delete
+
+  ClusterRole: trainer-tls-profile
+    - ServiceAccount: kubeflow-trainer-controller-manager (ns: opendatahub)
+    - API Groups: config.openshift.io
+    - Resources: apiservers
+    - Verbs: get, list, watch
+
+  User-Facing Roles:
+    - training-admin: Full CRUD on TrainJob, TrainingRuntime, ClusterTrainingRuntime
+    - training-edit: CRUD on TrainJob, read on runtimes
+    - training-view: Read-only on all trainer resources
+
+  Role: kubeflow-trainer-public (ns: opendatahub)
+    - Bound to: system:authenticated (all authenticated users)
+    - Resources: ConfigMaps (get, list, watch) — runtime discovery
+
+Secrets:
+────────
+  - kubeflow-trainer-webhook-cert (type: referenced)
+    Purpose: TLS certificate for webhook server
+    Provisioned by: OPA cert-controller
+    Auto-rotate: Managed by cert-controller
+
+TLS Configuration:
+──────────────────
+  Source: OpenShift TLSSecurityProfile (config.openshift.io/v1/apiservers)
+  Fallback (Intermediate profile):
+    Cipher suites: ECDHE+AES-GCM, CHACHA20-POLY1305
+    Min TLS version: 1.2
+  Applied to: webhook (443/TCP), metrics (8443/TCP)
+
+FIPS Compliance:
+───────────────
+  Build: CGO_ENABLED=1 GOEXPERIMENT=strictfipsruntime (dynamic linking)
+  Crypto: OpenSSL via UBI9 base image (strictfipsruntime)
+  All cipher suites FIPS-approved (AES-GCM, CHACHA20-POLY1305 with ECDHE)

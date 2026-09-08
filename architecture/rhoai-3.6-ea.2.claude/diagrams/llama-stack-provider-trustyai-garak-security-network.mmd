@@ -1,0 +1,57 @@
+graph TB
+    subgraph JobPod["KUBERNETES JOB POD (Ephemeral Batch)"]
+        direction TB
+
+        subgraph Adapter["GarakAdapter"]
+            Main["main() Entry Point<br/>Reads /meta/job.json"]
+            AuthChain["Auth Resolution Chain<br/>API Key → Named Key → Env →<br/>Role Convention → DUMMY"]
+            SimpleMode["Simple Mode<br/>Garak Subprocess"]
+            KFPMode["KFP Mode<br/>Pipeline Client"]
+            Reporter["DefaultCallbacks<br/>Result Reporter"]
+        end
+
+        subgraph Mounts["Mounted Resources"]
+            ConfigMap["ConfigMap<br/>/meta/job.json<br/>JobSpec"]
+            SecretAPIKey["Secret: API_KEY"]
+            SecretKFP["Secret: KFP_AUTH_TOKEN"]
+            SecretOpenAI["Secret: OPENAICOMPATIBLE_API_KEY"]
+            SecretAWS["Secret: AWS_SECRET_ACCESS_KEY"]
+        end
+    end
+
+    subgraph External["EXTERNAL SERVICES (Outbound Only)"]
+        LLM["Target LLM Endpoint<br/>Runtime-configured port<br/>TLS<br/>Bearer Token Auth"]
+        KFPServer["Kubeflow Pipelines<br/>API Server<br/>TLS (ssl_ca_cert override)<br/>KFP_AUTH_TOKEN"]
+        S3["S3-Compatible Storage<br/>443/TCP<br/>TLS 1.2+ (boto3)<br/>AWS IAM Credentials"]
+        OCI["OCI Registry<br/>443/TCP<br/>TLS<br/>Registry Credentials"]
+        EvalHub["Eval-Hub Service<br/>Runtime-configured<br/>HTTP/HTTPS<br/>Internal Auth"]
+    end
+
+    %% No inbound traffic
+    NoInbound["NO INBOUND TRAFFIC<br/>No Services / No Ingress<br/>Batch Job Only"]
+
+    %% Internal flows
+    ConfigMap -.->|read| Main
+    SecretAPIKey -.->|inject| AuthChain
+    SecretKFP -.->|inject| AuthChain
+    SecretOpenAI -.->|inject| AuthChain
+    SecretAWS -.->|inject| AuthChain
+
+    %% Outbound flows
+    SimpleMode -->|"HTTPS<br/>API Key (Bearer)<br/>Red-teaming probes"| LLM
+    KFPMode -->|"HTTPS<br/>KFP_AUTH_TOKEN<br/>Submit 6-step pipeline"| KFPServer
+    KFPMode -->|"HTTPS/443<br/>AWS IAM<br/>Artifact transfer"| S3
+    Adapter -->|"HTTPS/443<br/>Registry creds<br/>Persist artifacts"| OCI
+    Reporter -->|"HTTP/HTTPS<br/>Internal auth<br/>Report results"| EvalHub
+
+    %% Styling
+    classDef jobpod fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef adapter fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef secret fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef warning fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Main,AuthChain,SimpleMode,KFPMode,Reporter adapter
+    class ConfigMap,SecretAPIKey,SecretKFP,SecretOpenAI,SecretAWS secret
+    class LLM,KFPServer,S3,OCI,EvalHub external
+    class NoInbound warning

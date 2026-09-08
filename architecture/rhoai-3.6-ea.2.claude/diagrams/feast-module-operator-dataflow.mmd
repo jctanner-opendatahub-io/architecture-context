@@ -1,0 +1,57 @@
+sequenceDiagram
+    participant User as Platform Admin
+    participant K8s as Kubernetes API<br/>6443/TCP HTTPS TLS1.2+
+    participant Controller as FeastOperator Controller<br/>controller-runtime
+    participant Reconciler as ODH Reconciler Pipeline
+    participant Kustomize as Kustomize Renderer
+    participant AppNS as Applications Namespace
+
+    Note over User,AppNS: Reconciliation Trigger Flow
+
+    User->>K8s: Create/Update FeastOperator CR<br/>(components.platform.opendatahub.io/v1alpha1)
+    K8s->>Controller: Watch event: FeastOperator CR changed
+    Controller->>Reconciler: Start reconciliation pipeline
+
+    Note over Reconciler: Action Pipeline Steps
+
+    Reconciler->>Reconciler: 1. Initialize module state
+    Reconciler->>Reconciler: 2. Check upgrade requirements
+    Reconciler->>K8s: 3. Read platform ConfigMap<br/>(direct API read, not cached)
+    K8s-->>Reconciler: Platform version info
+    Reconciler->>Reconciler: 4. Set kustomize parameters
+    Reconciler->>Kustomize: 5. Render manifests via kustomize
+    Kustomize-->>Reconciler: Rendered Kubernetes manifests
+
+    Reconciler->>K8s: 6. Deploy resources<br/>(Deployments, Services, RBAC, Jobs, etc.)
+    K8s-->>Reconciler: Resources created/updated
+    Reconciler->>K8s: 7. Report deployment status<br/>(Update FeastOperator status)
+    Reconciler->>K8s: 8. Garbage collect stale resources
+
+    Note over Controller,AppNS: External CRD Watch Flow
+
+    K8s->>Controller: Watch event: FeatureStore CR (feast.dev) changed
+    Controller->>Reconciler: Trigger re-reconciliation
+    K8s->>Controller: Watch event: CRD (filtered by label) changed
+    Controller->>Reconciler: Trigger re-reconciliation
+    K8s->>Controller: Watch event: Platform ConfigMap changed
+    Controller->>Reconciler: Trigger re-reconciliation
+
+    Note over Controller,AppNS: Metrics & Health Flow
+
+    participant Prom as Prometheus<br/>ServiceMonitor
+    participant Probes as kubelet
+
+    Probes->>Controller: GET /healthz :8081<br/>HTTP, No Auth
+    Controller-->>Probes: 200 OK (liveness)
+    Probes->>Controller: GET /readyz :8081<br/>HTTP, No Auth
+    Controller-->>Probes: 200 OK (readiness)
+    Prom->>Controller: GET /metrics :8443<br/>HTTPS, TokenReview+SAR
+    Controller-->>Prom: Prometheus metrics
+
+    Note over Reconciler,K8s: Finalizer Cleanup Flow
+
+    K8s->>Controller: FeastOperator CR deletion
+    Controller->>Reconciler: Run finalizer
+    Reconciler->>K8s: Delete ClusterRoles<br/>(no ownerRef GC for cluster-scoped)
+    Reconciler->>K8s: Delete ClusterRoleBindings
+    Reconciler->>K8s: Remove finalizer from CR

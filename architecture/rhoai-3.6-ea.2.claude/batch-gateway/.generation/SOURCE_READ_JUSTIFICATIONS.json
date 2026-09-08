@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "component": "batch-gateway",
+  "reads": [
+    {
+      "path": "internal/apiserver/server/server.go",
+      "line_range": "85-190",
+      "gap_category": ["authentication", "services"],
+      "question": "What authentication middleware is applied to API routes, and how is the HTTP listener configured?",
+      "expected_signal": "middleware chain, filter, policy, enforcement branch, TLS listener setup",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "Data Flows"],
+      "scope_reason": "Two separate read ranges (85-134 and 130-190) needed to cover both middleware registration and server listener startup including TLS configuration"
+    },
+    {
+      "path": "docker/Dockerfile.apiserver.konflux",
+      "line_range": "1-33",
+      "gap_category": ["fips_compliance"],
+      "question": "What build flags and base images are used for FIPS compliance in the apiserver Konflux build?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT=strictfipsruntime, UBI base image, dynamic linking",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "docker/Dockerfile.gc.konflux",
+      "line_range": "1-33",
+      "gap_category": ["fips_compliance"],
+      "question": "What build flags and base images are used for FIPS compliance in the GC Konflux build?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT=strictfipsruntime, UBI base image",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "docker/Dockerfile.processor.konflux",
+      "line_range": "1-33",
+      "gap_category": ["fips_compliance"],
+      "question": "What build flags and base images are used for FIPS compliance in the processor Konflux build?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT=strictfipsruntime, UBI base image",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "internal/tls/tls.go",
+      "line_range": "1-150",
+      "gap_category": ["fips_compliance", "authentication"],
+      "question": "What TLS configuration is used and are there any non-FIPS crypto risks?",
+      "expected_signal": "crypto/tls usage, cipher suite configuration, min TLS version, certificate handling",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "charts/batch-gateway/templates/apiserver-service.yaml",
+      "line_range": "1-25",
+      "gap_category": ["services"],
+      "question": "What Kubernetes Service definitions exist for the batch-gateway component?",
+      "expected_signal": "Service kind, ports, target ports, service type",
+      "outcome": "resolved",
+      "sections": ["Services"]
+    },
+    {
+      "path": "charts/batch-gateway/values.yaml",
+      "line_range": "1-240",
+      "gap_category": ["services", "authentication", "fips_compliance"],
+      "question": "What are the default port, TLS, and service configuration values for all batch-gateway components?",
+      "expected_signal": "port defaults, service type, TLS enabled flag, observability port, auth header configuration",
+      "outcome": "resolved",
+      "sections": ["Services", "Authentication & Authorization", "FIPS Compliance", "Architectural Analysis", "Data Flows"],
+      "scope_reason": "Full values file read needed because port defaults, TLS config, auth header passthrough, service config, and file storage config are distributed across multiple top-level sections"
+    }
+  ]
+}

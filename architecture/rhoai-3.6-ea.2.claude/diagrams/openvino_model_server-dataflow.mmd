@@ -1,0 +1,70 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Nginx as nginx mTLS Sidecar<br/>(optional)<br/>TLS 1.2
+    participant REST as OVMS REST Server<br/>configurable port
+    participant GRPC as OVMS gRPC Server<br/>configurable port
+    participant Router as Request Router
+    participant ModelMgr as Model Manager
+    participant OVRT as OpenVINO Runtime
+    participant Storage as Model Storage<br/>/mnt/models
+
+    rect rgb(230, 245, 255)
+        Note over Client,Storage: Flow 1: REST Inference Request (TFS v1)
+        Client->>REST: POST /v1/models/{model}:predict
+        REST->>Router: Route by URI pattern
+        Router->>ModelMgr: TFS v1 predict handler
+        ModelMgr->>OVRT: Execute inference
+        OVRT-->>ModelMgr: Prediction result
+        ModelMgr-->>REST: JSON response
+        REST-->>Client: 200 OK + prediction
+    end
+
+    rect rgb(230, 255, 230)
+        Note over Client,Storage: Flow 2: REST Inference Request (KServe v2)
+        Client->>REST: POST /v2/models/{model}/infer
+        REST->>Router: Route by URI pattern
+        Router->>ModelMgr: KFS v2 infer handler
+        ModelMgr->>OVRT: Execute inference
+        OVRT-->>ModelMgr: Prediction result
+        ModelMgr-->>REST: JSON response
+        REST-->>Client: 200 OK + inference result
+    end
+
+    rect rgb(255, 245, 230)
+        Note over Client,Storage: Flow 3: OpenAI-compatible v3 (generative)
+        Client->>REST: POST /v3/v1/chat/completions<br/>Auth: Bearer API key (optional)
+        REST->>Router: Route by URI pattern
+        Router->>ModelMgr: OpenAI v3 handler
+        ModelMgr->>OVRT: Execute generation (vLLM)
+        OVRT-->>ModelMgr: Generated response
+        ModelMgr-->>REST: JSON response
+        REST-->>Client: 200 OK + completion
+    end
+
+    rect rgb(245, 230, 255)
+        Note over Client,Storage: Flow 4: gRPC Inference Request
+        Client->>GRPC: PredictionService.Predict()
+        GRPC->>ModelMgr: TFS PredictionService dispatch
+        ModelMgr->>OVRT: Execute inference
+        OVRT-->>ModelMgr: Prediction result
+        ModelMgr-->>GRPC: PredictResponse
+        GRPC-->>Client: gRPC response
+    end
+
+    rect rgb(255, 240, 240)
+        Note over Client,Storage: Flow 5: mTLS Sidecar Pattern (optional)
+        Client->>Nginx: HTTPS + client certificate<br/>TLS 1.2 AES256+EECDH
+        Nginx->>Nginx: Verify client cert<br/>(ssl_verify_client on)
+        Nginx->>REST: proxy_pass to localhost
+        REST->>ModelMgr: Process request
+        ModelMgr-->>REST: Response
+        REST-->>Nginx: Response
+        Nginx-->>Client: TLS-encrypted response
+    end
+
+    rect rgb(240, 240, 240)
+        Note over Client,Storage: Flow 6: Model Loading
+        Storage->>ModelMgr: Model artifacts from<br/>--model_path or --config_path
+        ModelMgr->>OVRT: Load model into runtime
+        Note over ModelMgr: Polls at<br/>--file_system_poll_wait_seconds
+    end

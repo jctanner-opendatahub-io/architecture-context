@@ -1,0 +1,178 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                        │
+│                                                                              │
+│  [External Client / Data Scientist]                                          │
+│         │                                                                    │
+│         │ Port: 6566/TCP                                                     │
+│         │ Protocol: HTTP/HTTPS                                               │
+│         │ Encryption: Configurable (TLS optional)                            │
+│         │ Auth: Configurable (Kubernetes RBAC / OIDC / noAuth)               │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  FEATURE SERVING LAYER (Data Plane)                                          │
+│                                                                              │
+│  [Python Feature Server - FastAPI]                                           │
+│  - Port: 6566/TCP (HTTP/HTTPS)                                              │
+│  - Namespace: {user-namespace}                                               │
+│  - Auth: SecurityManager + AuthManager                                       │
+│    - Kubernetes: TokenReview validation                                      │
+│    - OIDC: JWT validation via pyjwt (Secret-referenced config)              │
+│    - noAuth: Explicitly disabled                                             │
+│  - Endpoints: /get-online-features, /push, /entities, /feature_views, ...   │
+│                                                                              │
+│  [Go Feature Server]                                                         │
+│  - Port: Configurable (HTTP + gRPC)                                         │
+│  - Namespace: {user-namespace}                                               │
+│  - Auth: NONE (no auth interceptors in handler chain)                       │
+│  - Middleware: metricsMiddleware, recoverMiddleware only                     │
+│  - Endpoints: /get-online-features, /health, /metrics                       │
+│                                                                              │
+│  [Registry Server - Python gRPC + REST]                                      │
+│  - Port: 6566/TCP (shared with feature server)                              │
+│  - Protocol: gRPC + HTTP                                                     │
+│  - Auth: Configurable (same as feature server)                               │
+│  - 48 gRPC RPCs for registry CRUD                                           │
+│         │                                                                    │
+│         │ Port: Varies by backend                                            │
+│         │ Protocol: TCP/HTTPS                                                │
+│         │ Encryption: Configured by runtime                                  │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  ONLINE STORE BACKENDS                                                       │
+│                                                                              │
+│  [PostgreSQL]                                                                │
+│  - Port: 5432/TCP                                                            │
+│  - Protocol: PostgreSQL wire protocol                                        │
+│  - Encryption: Configured by runtime                                         │
+│  - Auth: Database credentials                                                │
+│  - Client: pgx (Go), psycopg (Python)                                       │
+│                                                                              │
+│  [Redis / Valkey]                                                            │
+│  - Port: 6379/TCP                                                            │
+│  - Protocol: RESP                                                            │
+│  - Encryption: Configured by runtime                                         │
+│  - Auth: Redis AUTH / ACL                                                    │
+│  - Client: go-redis (Go), redis-py (Python)                                 │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  OPERATOR CONTROL PLANE                                                      │
+│                                                                              │
+│  [feast-operator-controller-manager]                                         │
+│  - Namespace: feast-operator-system                                          │
+│  - ServiceAccount: feast-operator-controller-manager                         │
+│  - Single replica with leader election                                       │
+│  - TLS: Platform-delegated via OpenShift APIServer TLS profile              │
+│    - Cipher suites: Cluster-aligned (Intermediate profile fallback)         │
+│  - FIPS: CGO_ENABLED=1, GOEXPERIMENT=strictfipsruntime                      │
+│  - Base image: registry.redhat.io/ubi9/ubi-minimal-pqc                      │
+│         │                                                                    │
+│         │ Port: 8443/TCP                                                     │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS (controller-runtime self-signed cert)             │
+│         │ Auth: TokenReview + SubjectAccessReview                            │
+│         ▼                                                                    │
+│  [Metrics Endpoint]                                                          │
+│  - Service: feast-operator-controller-manager-metrics-service               │
+│  - Port: 8443/TCP                                                            │
+│  - Encryption: TLS (self-signed)                                             │
+│  - Auth: TokenReview + SubjectAccessReview                                   │
+│                                                                              │
+│  [Health Probes]                                                             │
+│  - /healthz: GET :8081 (unauthenticated by design)                          │
+│  - /readyz: GET :8081 (unauthenticated by design)                           │
+│         │                                                                    │
+│         │ Port: 6443/TCP                                                     │
+│         │ Protocol: HTTPS/WSS                                                │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: ServiceAccount token (in-cluster)                            │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  PLATFORM SERVICES                                                           │
+│                                                                              │
+│  [Kubernetes API Server]                                                     │
+│  - Port: 6443/TCP                                                            │
+│  - Protocol: HTTPS/WSS                                                       │
+│  - Encryption: TLS 1.2+                                                      │
+│  - Auth: ServiceAccount token                                                │
+│  - RBAC: feast-operator-manager-role ClusterRole                            │
+│                                                                              │
+│  [Prometheus (via ServiceMonitor)]                                           │
+│  - Scrapes operator metrics (:8443) with TLS + auth                         │
+│  - Scrapes Go feature server (/metrics)                                     │
+│                                                                              │
+│  [OpenShift APIServer Config]                                                │
+│  - apiservers.config.openshift.io/cluster                                   │
+│  - Purpose: TLS profile bootstrap (cipher suites, min version)              │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  EXTERNAL SERVICES                                                           │
+│                                                                              │
+│  [S3-compatible Storage]                                                     │
+│  - Purpose: Registry backend / model artifact storage                       │
+│  - Port: 443/TCP                                                             │
+│  - Protocol: HTTPS                                                           │
+│  - Encryption: TLS                                                           │
+│  - Auth: AWS IAM credentials (AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN)     │
+│                                                                              │
+│  [Google Cloud Storage]                                                      │
+│  - Purpose: Registry backend / object storage                               │
+│  - Port: 443/TCP                                                             │
+│  - Protocol: HTTPS                                                           │
+│  - Encryption: TLS                                                           │
+│  - Auth: GCP credentials                                                    │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- ClusterRole: feast-operator-manager-role
+  - SA: feast-operator-controller-manager (feast-operator-system)
+  - Core API: configmaps, namespaces, PVCs, services, pods, secrets, serviceaccounts
+  - feast.dev: featurestores (full CRUD + finalizers + status)
+  - apps: deployments (full CRUD)
+  - autoscaling: HPA (full CRUD)
+  - batch: cronjobs (full CRUD)
+  - policy: PDB (full CRUD)
+  - rbac.authorization.k8s.io: roles, rolebindings, clusterroles, clusterrolebindings
+  - route.openshift.io: routes (full CRUD)
+  - kubeflow.org: notebooks (read-only)
+  - mlflow.opendatahub.io: mlflows (read-only)
+  - monitoring.coreos.com: servicemonitors (CRUD)
+  - sparkoperator.k8s.io: sparkapplications (create, delete, get)
+  - authentication.k8s.io: tokenreviews (create)
+
+- ClusterRole: feast-operator-metrics-auth-role
+  - SA: feast-operator-controller-manager
+  - authentication.k8s.io: tokenreviews (create)
+  - authorization.k8s.io: subjectaccessreviews (create)
+
+- ClusterRole: feast-operator-featurestore-editor-role
+  - feast.dev: featurestores (full CRUD + status read)
+
+- ClusterRole: feast-operator-featurestore-viewer-role
+  - feast.dev: featurestores (read-only + status read)
+
+- Role: feast-operator-leader-election-role (feast-operator-system)
+  - configmaps, leases, events (leader election)
+
+Authentication Modes (CRD-configurable):
+1. Kubernetes RBAC: TokenReview validation against kube-apiserver
+2. OIDC: JWT validation via pyjwt, Secret-referenced configuration
+3. noAuth: Explicitly disabled (requires explicit opt-in)
+   Note: Exactly one mode must be selected in FeatureStore CR AuthzConfig
+
+Security Considerations:
+- Go feature server has NO authentication interceptors (relies on network isolation)
+- Python SDK enforces auth when SecurityManager is initialized
+- Operator metrics endpoint enforces TokenReview + SubjectAccessReview
+- Health probes (:8081) are unauthenticated by design
+- FIPS: Operator built with strictfipsruntime, UBI9-pqc base image
+- TLS profile delegated to OpenShift cluster configuration
+
+Secrets:
+- AWS_SECRET_ACCESS_KEY (env var) - S3 credentials, runtime environment provisioned
+- AWS_SESSION_TOKEN (env var) - AWS session token, runtime environment provisioned
+- FEAST_OIDC_TOKEN (env var) - OIDC token for auth, runtime environment provisioned
+- FEAST_RAY_AUTH_TOKEN (env var) - Ray cluster auth, runtime environment provisioned
+- LOCAL_K8S_TOKEN (env var) - Kubernetes token, runtime environment provisioned
+- GITHUB_TOKEN (env var) - GitHub access, runtime environment provisioned
+- VAULT_TOKEN (env var) - Vault access, runtime environment provisioned

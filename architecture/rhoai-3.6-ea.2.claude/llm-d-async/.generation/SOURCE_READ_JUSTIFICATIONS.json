@@ -1,0 +1,166 @@
+{
+  "component": "llm-d-async",
+  "reads": [
+    {
+      "expected_signal": "main function, imported packages, server initialization",
+      "gap_category": [
+        "integration_points",
+        "internal_dependencies"
+      ],
+      "line_range": "1-32",
+      "outcome": "resolved",
+      "path": "cmd/main.go",
+      "question": "What is the main entrypoint structure and what packages does it import?",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "crypto/tls import, Redis/PubSub imports, health server, metrics server",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance"
+      ],
+      "line_range": "1-80",
+      "outcome": "resolved",
+      "path": "pkg/server/runner.go",
+      "question": "What imports and server initialization does the runner use, including TLS and auth?",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis",
+        "Security",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "health port, metrics port, transport selection, worker pool setup",
+      "gap_category": [
+        "integration_points",
+        "services"
+      ],
+      "line_range": "80-180",
+      "outcome": "resolved",
+      "path": "pkg/server/runner.go",
+      "question": "How are the health server, metrics server, and inference client initialized?",
+      "sections": [
+        "Architectural Analysis",
+        "Integration Points",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "TLS MinVersion, cert pool, mTLS support, metrics auth filters, health server creation",
+      "gap_category": [
+        "fips_compliance",
+        "authentication",
+        "integration_points"
+      ],
+      "line_range": "320-438",
+      "outcome": "resolved",
+      "path": "pkg/server/runner.go",
+      "question": "What is the TLS configuration for outbound inference and how are health/metrics servers configured?",
+      "sections": [
+        "Security",
+        "FIPS Compliance",
+        "Authentication & Authorization",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "HealthPort, MetricsPort, MetricsEndpointAuth, TLS flags, transport types",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "services",
+        "fips_compliance"
+      ],
+      "line_range": "1-160",
+      "outcome": "resolved",
+      "path": "pkg/server/options.go",
+      "question": "What configuration options define the server ports, TLS flags, transport types, and auth settings?",
+      "sections": [
+        "Architectural Analysis",
+        "Authentication & Authorization",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1, UBI base image",
+      "gap_category": [
+        "fips_compliance"
+      ],
+      "line_range": "1-37",
+      "outcome": "resolved",
+      "path": "Dockerfile.konflux",
+      "question": "What build flags and base images are used for FIPS compliance?",
+      "sections": [
+        "FIPS Compliance"
+      ]
+    },
+    {
+      "expected_signal": "route registration for /healthz and /readyz, port binding, no TLS/auth",
+      "gap_category": [
+        "authentication",
+        "services"
+      ],
+      "line_range": "1-80",
+      "outcome": "resolved",
+      "path": "internal/health/health.go",
+      "question": "What health endpoints are registered and is there authentication on the health server?",
+      "sections": [
+        "Authentication & Authorization",
+        "HTTP Endpoints"
+      ]
+    },
+    {
+      "expected_signal": "grpc client usage for Cloud Pub/Sub API, no server registration",
+      "gap_category": [
+        "grpc_services",
+        "integration_points"
+      ],
+      "line_range": "1-60",
+      "outcome": "resolved",
+      "path": "pkg/pubsub/pubsubimpl.go",
+      "question": "Does the GCP Pub/Sub implementation register any gRPC services or is grpc used only as a client?",
+      "sections": [
+        "gRPC Services",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "redis.ParseURL, connection options",
+      "gap_category": [
+        "integration_points"
+      ],
+      "line_range": "1-20",
+      "outcome": "resolved",
+      "path": "pkg/redis/redis_conn.go",
+      "question": "How does the Redis connection module establish client connections?",
+      "sections": [
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "grpc_services",
+        "services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "pkg/redis/connection.go",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    }
+  ],
+  "schema_version": 1
+}

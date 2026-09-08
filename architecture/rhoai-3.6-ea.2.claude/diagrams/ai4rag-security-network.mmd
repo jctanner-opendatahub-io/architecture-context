@@ -1,0 +1,45 @@
+graph TB
+    subgraph Application["CONSUMING APPLICATION (Trust Boundary)"]
+        direction TB
+        App["Application / Notebook<br/>Imports ai4rag<br/>No listening ports"]
+
+        subgraph Library["ai4rag Python Library"]
+            S3Client["S3 Client<br/>(boto3)"]
+            MaaSClient["MaaS Client<br/>(OpenAI SDK)"]
+            VectorConfig["Vector Store Config<br/>(BaseVectorStoreConfig)"]
+        end
+    end
+
+    subgraph ExternalMaaS["OUTBOUND: Model-as-a-Service"]
+        MaaS["OpenAI-Compatible Endpoint<br/>Port: 443/TCP (typical)<br/>HTTPS / TLS<br/>Auth: API Key<br/>⚠ verify=False fallback"]
+    end
+
+    subgraph ExternalS3["OUTBOUND: Object Storage"]
+        S3["S3-Compatible Storage<br/>Port: 443/TCP (typical)<br/>HTTPS / TLS<br/>Auth: AWS IAM Credentials"]
+    end
+
+    subgraph ExternalVector["OUTBOUND: Vector Store (one of)"]
+        Milvus["Milvus Server<br/>Port: 19530 (default)<br/>gRPC/HTTPS<br/>Auth: MILVUS_TOKEN<br/>Optional: custom PEM cert"]
+        PGVector["PostgreSQL + pgvector<br/>Port: 5432 (default)<br/>PostgreSQL wire protocol<br/>Auth: PGVECTOR_PASSWORD"]
+        Chroma["ChromaDB<br/>Port: 8000 (default)<br/>HTTP<br/>Auth: varies by mode"]
+    end
+
+    %% Flows
+    App --> Library
+    MaaSClient -->|"HTTPS<br/>TLS (⚠ fallback verify=False)<br/>API Key Auth"| MaaS
+    S3Client -->|"HTTPS<br/>TLS<br/>AWS_ACCESS_KEY_ID /<br/>AWS_SECRET_ACCESS_KEY"| S3
+    VectorConfig -->|"gRPC/HTTPS<br/>TLS + custom cert<br/>MILVUS_TOKEN"| Milvus
+    VectorConfig -->|"PostgreSQL<br/>TLS (optional)<br/>PGVECTOR_PASSWORD"| PGVector
+    VectorConfig -->|"HTTP<br/>mode-dependent"| Chroma
+
+    %% Styling
+    classDef appBoundary fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef library fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    classDef external fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef warning fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class App appBoundary
+    class S3Client,MaaSClient,VectorConfig library
+    class S3 external
+    class Milvus,PGVector,Chroma external
+    class MaaS warning

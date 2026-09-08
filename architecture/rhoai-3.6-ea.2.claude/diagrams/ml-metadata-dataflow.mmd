@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Client as Pipeline Client<br/>(Data Science Pipelines)
+    participant Server as metadata_store_server<br/>8080/TCP gRPC HTTP/2
+    participant DB as Database<br/>(MySQL 3306 / PostgreSQL 5432)
+
+    Note over Client,DB: Flow 1: Metadata Store Read/Write
+
+    Client->>Server: gRPC: PutArtifacts / PutExecutions / PutContexts<br/>Optional TLS (SSLConfig)<br/>Auth: None (platform-delegated)
+    activate Server
+    Server->>DB: SQL INSERT/UPDATE<br/>Optional SSL (DB-specific SSLOptions)<br/>Auth: Database credentials
+    activate DB
+    DB-->>Server: Write confirmation
+    deactivate DB
+    Server-->>Client: gRPC Response<br/>(Artifact/Execution/Context IDs)
+    deactivate Server
+
+    Client->>Server: gRPC: GetArtifacts / GetExecutions / GetContexts<br/>Optional TLS (SSLConfig)<br/>Auth: None (platform-delegated)
+    activate Server
+    Server->>DB: SQL SELECT<br/>Optional SSL<br/>Auth: Database credentials
+    activate DB
+    DB-->>Server: Query results
+    deactivate DB
+    Server-->>Client: gRPC Response<br/>(Metadata entities)
+    deactivate Server
+
+    Note over Client,DB: Flow 2: Lineage Query
+
+    Client->>Server: gRPC: GetEventsByArtifactIDs /<br/>GetContextsByExecution<br/>Optional TLS (SSLConfig)
+    activate Server
+    Server->>DB: SQL JOIN queries<br/>(Events, Associations, Attributions)
+    activate DB
+    DB-->>Server: Lineage graph data
+    deactivate DB
+    Server-->>Client: gRPC Response<br/>(Events / Context associations)
+    deactivate Server

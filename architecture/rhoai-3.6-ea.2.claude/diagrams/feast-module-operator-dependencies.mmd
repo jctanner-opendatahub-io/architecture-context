@@ -1,0 +1,53 @@
+graph LR
+    FMO["Feast Module<br/>Operator"]
+
+    %% Runtime Framework Dependencies
+    FMO -->|"operator SDK"| ODHOperator["opendatahub-operator<br/>v2 SDK"]
+    FMO -->|"platform helpers"| ODHPlatformUtils["odh-platform-utilities"]
+    FMO -->|"controller framework"| ControllerRuntime["controller-runtime<br/>0.24.1"]
+    FMO -->|"Go runtime"| GoRuntime["Go 1.26.4<br/>strictfipsruntime"]
+
+    %% Kubernetes API Dependencies
+    FMO -->|"API client"| K8sClientGo["k8s.io/client-go<br/>0.36.1"]
+    FMO -->|"API types"| K8sAPI["k8s.io/api<br/>0.36.1"]
+    FMO -->|"CRD extensions"| K8sApiExt["apiextensions-apiserver<br/>0.36.1"]
+
+    %% Internal RHOAI Dependencies (CRD interactions)
+    FMO -->|"watches CRs"| Feast["Feast FeatureStore<br/>feast.dev"]
+    FMO -->|"CRUD CRs"| Notebooks["Kubeflow Notebooks<br/>kubeflow.org"]
+    FMO -->|"watches CRs"| MLflow["MLflow<br/>mlflow.opendatahub.io"]
+    FMO -->|"ServiceMonitors"| PromOp["prometheus-operator<br/>0.74.0"]
+
+    %% OpenShift Dependencies
+    FMO -->|"route mgmt"| OpenShift["OpenShift Routes<br/>route.openshift.io"]
+    FMO -->|"Spark workloads"| SparkOp["Spark Operator<br/>sparkoperator.k8s.io"]
+
+    %% Build Dependencies
+    FMO -.->|"CLI framework"| Cobra["spf13/cobra<br/>1.10.2"]
+    FMO -.->|"config mgmt"| Viper["spf13/viper<br/>1.21.0"]
+    FMO -.->|"manifest rendering"| Kustomize["kustomize"]
+
+    %% Styling
+    style FMO fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    %% Internal RHOAI
+    style ODHOperator fill:#7ed321,stroke:#333,color:#fff
+    style ODHPlatformUtils fill:#7ed321,stroke:#333,color:#fff
+    style Feast fill:#7ed321,stroke:#333,color:#fff
+    style Notebooks fill:#7ed321,stroke:#333,color:#fff
+    style MLflow fill:#7ed321,stroke:#333,color:#fff
+    style PromOp fill:#7ed321,stroke:#333,color:#fff
+
+    %% External / Platform
+    style ControllerRuntime fill:#999,stroke:#333,color:#fff
+    style GoRuntime fill:#999,stroke:#333,color:#fff
+    style K8sClientGo fill:#999,stroke:#333,color:#fff
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style K8sApiExt fill:#999,stroke:#333,color:#fff
+    style OpenShift fill:#f5a623,stroke:#333,color:#fff
+    style SparkOp fill:#f5a623,stroke:#333,color:#fff
+
+    %% Build-time
+    style Cobra fill:#e8e8e8,stroke:#333
+    style Viper fill:#e8e8e8,stroke:#333
+    style Kustomize fill:#e8e8e8,stroke:#333

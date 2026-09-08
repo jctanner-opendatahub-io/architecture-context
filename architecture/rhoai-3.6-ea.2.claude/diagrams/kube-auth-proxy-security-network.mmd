@@ -1,0 +1,66 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client<br/>(Browser / API)"]
+    end
+
+    subgraph Ingress["INGRESS (TLS Termination)"]
+        Route["OpenShift Route<br/>your-app.apps.cluster.example.com<br/>HTTPS TLS<br/>Edge/Reencrypt"]
+    end
+
+    subgraph ClusterInternal["CLUSTER INTERNAL"]
+        direction TB
+
+        subgraph ProxyNS["kube-auth-proxy Namespace"]
+            ProxySvc["kube-auth-proxy Service<br/>ClusterIP 80/TCP → 4180/TCP"]
+            ProxyPod["kube-auth-proxy Pod<br/>Port: 4180/TCP<br/>FIPS: strictfipsruntime<br/>Image: ubi9/ubi-minimal-pqc<br/>CGO_ENABLED=1"]
+            ProxySecret["Secret: kube-auth-proxy-secret<br/>Type: Opaque<br/>Cookie secret, client credentials"]
+        end
+
+        subgraph ExampleNS["Example App Namespace"]
+            ExampleSvc["example-app Service<br/>ClusterIP 8080/TCP → 8080/TCP"]
+            ExamplePod["example-app Pod<br/>hashicorp/http-echo"]
+        end
+
+        ProxySvc --> ProxyPod
+        ProxyPod -->|"Reads"| ProxySecret
+        ExampleSvc --> ExamplePod
+    end
+
+    subgraph PlatformServices["PLATFORM SERVICES"]
+        K8sAPI["Kubernetes API Server<br/>Port: 6443/TCP<br/>HTTPS/WSS<br/>TLS 1.2+"]
+        OAuthServer["OpenShift OAuth Server<br/>/.well-known/oauth-authorization-server<br/>HTTPS"]
+    end
+
+    subgraph ExternalServices["EXTERNAL SERVICES (Optional)"]
+        Redis["Redis / Valkey<br/>TLS (configurable)<br/>Custom CA support<br/>Sentinel / Cluster topology"]
+        OIDCProvider["External OIDC Provider<br/>HTTPS<br/>Authorization Code Flow"]
+    end
+
+    %% Flows
+    Client -->|"HTTPS<br/>TLS<br/>Browser / Bearer Token"| Route
+    Route -->|"HTTP/80 → 4180/TCP<br/>Internal"| ProxySvc
+
+    ProxyPod -->|"Authenticated requests<br/>X-Forwarded-User/Email/Groups<br/>HTTP"| ExampleSvc
+
+    ProxyPod -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount Token<br/>TokenReview API"| K8sAPI
+
+    ProxyPod -->|"HTTPS<br/>OAuth2 Authorization Code<br/>Token Exchange"| OAuthServer
+
+    ProxyPod -->|"TCP/TLS<br/>Optional custom CA<br/>Username/Password Auth"| Redis
+
+    ProxyPod -->|"HTTPS<br/>OIDC Discovery<br/>Token Validation"| OIDCProvider
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef clusterinternal fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef platform fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef externalservice fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef secret fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Client external
+    class Route ingress
+    class ProxySvc,ProxyPod,ExampleSvc,ExamplePod clusterinternal
+    class K8sAPI,OAuthServer platform
+    class Redis,OIDCProvider externalservice
+    class ProxySecret secret

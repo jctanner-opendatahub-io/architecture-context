@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "kubeflow",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "kubeflow-kube-rbac-proxy-injection-001",
+      "claim": "The odh-notebook-controller mutating webhook injects a kube-rbac-proxy sidecar into every notebook pod, making per-notebook authentication a hard dependency on the kube-rbac-proxy container image.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "components/odh-notebook-controller/controllers/notebook_mutating_webhook.go:54-68"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "components/odh-notebook-controller/main.go:150-174"
+        }
+      ],
+      "reasoning": "The kube-rbac-proxy-image flag is required at startup (the controller exits if unset). The mutating webhook injects this container as a sidecar named 'kube-rbac-proxy' into every notebook pod. This creates a hard runtime dependency: if the image is unavailable or misconfigured, notebook pods cannot start with authentication.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "kubeflow-tls-profile-adaptive-002",
+      "claim": "The controller adaptively configures TLS cipher suites from the OpenShift APIServer TLS profile, falling back to hardened defaults on non-OpenShift clusters or transient API errors.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "components/odh-notebook-controller/main.go:179-208"
+        }
+      ],
+      "reasoning": "At startup the controller attempts to fetch config.openshift.io/v1/APIServer to read the TLS profile. It distinguishes transient API errors (where it registers a watcher for self-healing) from permanent absence (non-OpenShift cluster). This adaptive pattern ensures the controller can run on both OpenShift and vanilla Kubernetes while preferring platform-managed TLS posture.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "kubeflow-dspa-optional-integration-003",
+      "claim": "The DataSciencePipelinesApplication CRD integration is gracefully optional: the controller skips Elyra secret provisioning when the DSPA CRD is not installed or no DSPA instance exists.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "components/odh-notebook-controller/controllers/notebook_dspa_secret.go:49-60"
+        }
+      ],
+      "reasoning": "The getDSPAInstance function explicitly handles both IsNotFound (no DSPA CR in namespace) and IsNoMatchError (CRD not installed) by returning nil without error. This makes the DSPA integration a soft dependency that does not block notebook creation when the pipelines component is absent.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

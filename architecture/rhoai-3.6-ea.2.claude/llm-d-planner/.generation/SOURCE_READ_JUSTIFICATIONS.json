@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "component": "llm-d-planner",
+  "reads": [
+    {
+      "path": "src/planner/api/app.py",
+      "line_range": "1-100",
+      "gap_category": ["authentication"],
+      "question": "Does the FastAPI application register any authentication middleware or security dependencies?",
+      "expected_signal": "middleware registration, security dependency, OAuth, JWT, or auth filter",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis"]
+    },
+    {
+      "path": "src/planner/llm/factory.py",
+      "line_range": "1-70",
+      "gap_category": ["integration_points", "internal_dependencies"],
+      "question": "What LLM providers are supported and how are they constructed?",
+      "expected_signal": "client construction, provider selection, protocol, endpoint configuration",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Internal Platform Dependencies", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "Dockerfile",
+      "line_range": "1-66",
+      "gap_category": ["fips_compliance"],
+      "question": "Does the container build use a UBI/FIPS-capable base image or configure FIPS-mode crypto?",
+      "expected_signal": "UBI base image, FIPS build flags, OpenSSL FIPS configuration, GOEXPERIMENT=strictfipsruntime",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "src/planner/llm/vertex_client.py",
+      "line_range": "1-142",
+      "gap_category": ["integration_points"],
+      "question": "What protocol and authentication does the Vertex AI integration use?",
+      "expected_signal": "client construction, credential setup, HTTPS endpoint, GCP authentication",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Architectural Analysis"]
+    },
+    {
+      "path": "src/planner/api/routes/database.py",
+      "line_range": "1-80",
+      "gap_category": ["authentication"],
+      "question": "Do the database admin routes implement any authentication mechanism?",
+      "expected_signal": "password check, auth header, HMAC verification, access control",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "src/planner/cluster/gpu_detector.py",
+      "line_range": "1-80",
+      "gap_category": ["integration_points", "internal_dependencies"],
+      "question": "How does the backend interact with the Kubernetes API and what resources does it access?",
+      "expected_signal": "kubernetes client import, API call, resource type, caching strategy",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Internal Platform Dependencies", "Architectural Analysis", "Data Flows"]
+    }
+  ]
+}

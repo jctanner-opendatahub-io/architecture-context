@@ -1,0 +1,89 @@
+graph TB
+    subgraph MLflow["MLflow Tracking Server (Port 5000)"]
+        direction TB
+        Entrypoint["Container Entrypoint<br/>mlflow server --host 0.0.0.0 --port 5000"]
+
+        subgraph ServerLayer["Server Layer"]
+            Gunicorn["gunicorn<br/>WSGI Server"]
+            Uvicorn["uvicorn<br/>ASGI Server"]
+        end
+
+        subgraph AppLayer["Application Layer"]
+            Flask["Flask App<br/>Tracking API"]
+            FastAPI["FastAPI App<br/>Gateway & MCP"]
+        end
+
+        subgraph AuthLayer["Authentication"]
+            K8sAuth["kubernetes-auth Plugin<br/>(mlflow-kubernetes-plugins==1.5.0)"]
+            RequestAuth["KubernetesRequestAuthProvider<br/>Bearer Token + X-MLFLOW-WORKSPACE"]
+        end
+
+        subgraph CoreServices["Core Services"]
+            TrackingAPI["Tracking API<br/>/ajax-api/3.0/mlflow/*"]
+            AssistantAPI["Assistant API<br/>/ajax-api/3.0/mlflow/assistant/*"]
+            JobsAPI["Jobs API<br/>/ajax-api/3.0/jobs/*"]
+        end
+
+        subgraph GatewayServices["AI Gateway"]
+            GatewayProxy["Gateway Proxy<br/>/gateway/proxy/*"]
+            ChatAPI["Chat Completions<br/>/v1/chat/completions"]
+            EmbeddingsAPI["Embeddings<br/>/v1/embeddings"]
+            MCPAPI["MCP Server<br/>Model Context Protocol"]
+        end
+
+        subgraph SDKLayer["SDK Components"]
+            MLflowSkinny["mlflow-skinny<br/>Lightweight Client"]
+            MLflowTracing["mlflow-tracing<br/>Tracing SDK"]
+        end
+
+        subgraph K8sIntegration["Kubernetes Integration"]
+            BatchV1["BatchV1Api<br/>Job Execution"]
+        end
+
+        Entrypoint --> Gunicorn
+        Entrypoint --> Uvicorn
+        Gunicorn --> Flask
+        Uvicorn --> FastAPI
+        Flask --> K8sAuth
+        FastAPI --> K8sAuth
+        Flask --> TrackingAPI
+        Flask --> AssistantAPI
+        Flask --> JobsAPI
+        FastAPI --> GatewayProxy
+        FastAPI --> ChatAPI
+        FastAPI --> EmbeddingsAPI
+        FastAPI --> MCPAPI
+        JobsAPI --> BatchV1
+    end
+
+    %% External Interactions
+    Client["Client<br/>(Data Scientist / SDK)"] -->|"Bearer Token<br/>+ X-MLFLOW-WORKSPACE"| Entrypoint
+    RequestAuth -->|"reads SA token"| SAToken["/var/run/secrets/<br/>serviceaccount/token"]
+
+    GatewayProxy -->|"HTTPS/443"| OpenAI["api.openai.com"]
+    GatewayProxy -->|"HTTPS"| Bedrock["AWS Bedrock"]
+    GatewayProxy -->|"HTTPS"| Cohere["Cohere API"]
+
+    BatchV1 -->|"creates Jobs"| K8sAPI["Kubernetes API"]
+
+    TrackingAPI -->|"store artifacts"| S3["S3-Compatible Storage<br/>(boto3)"]
+    TrackingAPI -->|"store artifacts"| GCS["Google Cloud Storage"]
+
+    %% Styling
+    style MLflow fill:#e8f0fe,stroke:#4a90e2,stroke-width:2px
+    style K8sAuth fill:#f5a623,stroke:#333
+    style RequestAuth fill:#f5a623,stroke:#333
+    style TrackingAPI fill:#4a90e2,stroke:#333,color:#fff
+    style AssistantAPI fill:#4a90e2,stroke:#333,color:#fff
+    style JobsAPI fill:#4a90e2,stroke:#333,color:#fff
+    style GatewayProxy fill:#7ed321,stroke:#333
+    style ChatAPI fill:#7ed321,stroke:#333
+    style EmbeddingsAPI fill:#7ed321,stroke:#333
+    style MCPAPI fill:#7ed321,stroke:#333
+    style OpenAI fill:#e8e8e8,stroke:#999
+    style Bedrock fill:#e8e8e8,stroke:#999
+    style Cohere fill:#e8e8e8,stroke:#999
+    style S3 fill:#e8e8e8,stroke:#999
+    style GCS fill:#e8e8e8,stroke:#999
+    style K8sAPI fill:#e8e8e8,stroke:#999
+    style BatchV1 fill:#d5e8d4,stroke:#82b366

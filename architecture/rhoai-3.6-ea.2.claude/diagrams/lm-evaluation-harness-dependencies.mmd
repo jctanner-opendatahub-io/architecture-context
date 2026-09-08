@@ -1,0 +1,73 @@
+graph LR
+    LMEval["lm-evaluation-harness<br/>(Batch Job)"]
+
+    %% Platform / Operator Dependency
+    LMEval -.->|"managed by"| LMESOperator["LMES Operator<br/>(trustyai-service-operator)"]
+
+    %% Core Runtime Libraries
+    LMEval -->|"model loading"| Transformers["transformers >=4.48.0"]
+    LMEval -->|"tensor compute"| PyTorch["torch >=2.6.0"]
+    LMEval -->|"GPU acceleration"| CUDA["NVIDIA CUDA 12.4<br/>(amd64/arm64 only)"]
+    LMEval -->|"model optimization"| Accelerate["accelerate >=1.0.1"]
+    LMEval -->|"adapter tuning"| PEFT["peft >=0.13.2"]
+    LMEval -->|"task definitions"| Unitxt["unitxt >=1.17.2"]
+    LMEval -->|"eval hub integration"| EvalHubSDK["eval-hub-sdk ~1.0.0"]
+
+    %% Data Libraries
+    LMEval -->|"dataset loading"| Datasets["datasets >=3.1.0"]
+    LMEval -->|"data processing"| NumPy["numpy ==2.4.2"]
+    LMEval -->|"data frames"| Pandas["pandas ==2.2.3"]
+    LMEval -->|"ML metrics"| ScikitLearn["scikit-learn >=1.5.2"]
+
+    %% External API Client Libraries
+    LMEval -->|"OpenAI/vLLM client"| HTTPX["httpx ==0.28.1"]
+    LMEval -->|"HTTP client"| Requests["requests ==2.32.5"]
+    LMEval -->|"async HTTP"| AioHTTP["aiohttp ==3.13.3"]
+    LMEval -->|"S3 client"| Boto3["boto3 >=1.42.12"]
+    LMEval -->|"IBM WatsonX"| WatsonXAI["ibm-watsonx-ai ==1.4.11"]
+    LMEval -->|"IBM COS"| IBMCOS["ibm-cos-sdk ==2.14.3"]
+
+    %% External Services (Runtime)
+    LMEval ==>|"HTTPS/TLS<br/>API key auth"| OpenAIAPI["OpenAI-Compatible API<br/>(OpenAI / vLLM)"]
+    LMEval ==>|"HTTPS/TLS<br/>API key auth"| AnthropicAPI["Anthropic API"]
+    LMEval ==>|"HTTPS/TLS<br/>API key auth"| WatsonXAPI["IBM WatsonX API"]
+    LMEval ==>|"HTTPS/443<br/>HF_TOKEN"| HFHub["HuggingFace Hub<br/>datasets-server.huggingface.co"]
+    LMEval ==>|"HTTPS/TLS<br/>AWS IAM"| S3["S3-Compatible Storage<br/>(AWS / IBM COS)"]
+
+    %% Build Dependencies
+    LMEval -.->|"build"| Python["Python >=3.11,<3.13"]
+    LMEval -.->|"base image"| UBI["UBI9 / CUDA Base Image"]
+
+    %% Styling
+    style LMEval fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    style LMESOperator fill:#7ed321,stroke:#333,color:#fff
+
+    style Transformers fill:#9b59b6,stroke:#333,color:#fff
+    style PyTorch fill:#9b59b6,stroke:#333,color:#fff
+    style CUDA fill:#9b59b6,stroke:#333,color:#fff
+    style Accelerate fill:#9b59b6,stroke:#333,color:#fff
+    style PEFT fill:#9b59b6,stroke:#333,color:#fff
+    style Unitxt fill:#9b59b6,stroke:#333,color:#fff
+    style EvalHubSDK fill:#9b59b6,stroke:#333,color:#fff
+
+    style Datasets fill:#3498db,stroke:#333,color:#fff
+    style NumPy fill:#3498db,stroke:#333,color:#fff
+    style Pandas fill:#3498db,stroke:#333,color:#fff
+    style ScikitLearn fill:#3498db,stroke:#333,color:#fff
+
+    style HTTPX fill:#e67e22,stroke:#333,color:#fff
+    style Requests fill:#e67e22,stroke:#333,color:#fff
+    style AioHTTP fill:#e67e22,stroke:#333,color:#fff
+    style Boto3 fill:#e67e22,stroke:#333,color:#fff
+    style WatsonXAI fill:#e67e22,stroke:#333,color:#fff
+    style IBMCOS fill:#e67e22,stroke:#333,color:#fff
+
+    style OpenAIAPI fill:#e8e8e8,stroke:#333
+    style AnthropicAPI fill:#e8e8e8,stroke:#333
+    style WatsonXAPI fill:#e8e8e8,stroke:#333
+    style HFHub fill:#e8e8e8,stroke:#333
+    style S3 fill:#e8e8e8,stroke:#333
+
+    style Python fill:#95a5a6,stroke:#333,color:#fff
+    style UBI fill:#95a5a6,stroke:#333,color:#fff

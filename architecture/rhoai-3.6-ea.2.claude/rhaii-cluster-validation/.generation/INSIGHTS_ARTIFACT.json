@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "component": "rhaii-cluster-validation",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "rhaii-cluster-validation-privilege-split-001",
+      "claim": "The tool employs an intentional privilege-split design: the controller runs under the operator's kubeconfig with full API access, while workload pods run under a ServiceAccount with zero Kubernetes API permissions and only the privileged SCC for host device access.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "deploy/rbac.yaml:12-14"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "deploy/rbac.go:139-158"
+        }
+      ],
+      "reasoning": "The ClusterRole bound to rhaii-validator has an empty rules set (deploy/rbac.yaml:19), and the rbac.yaml comment at line 14 explicitly states 'The controller runs under the invoking admin's kubeconfig, not this SA. Workload pods never call the Kubernetes API.' The SCC binding grants device access without API permissions, implementing least-privilege for the ephemeral probe Jobs.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "rhaii-cluster-validation-fips-strictruntime-002",
+      "claim": "The Konflux build uses GOEXPERIMENT=strictfipsruntime (not the older boringcrypto tag), indicating adoption of the Go 1.24+ strict FIPS runtime mode which fails hard rather than silently falling back to non-FIPS crypto.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:11"
+        }
+      ],
+      "reasoning": "The build command 'CGO_ENABLED=1 GOOS=linux GOEXPERIMENT=strictfipsruntime go build' at Dockerfile.konflux:11 uses strictfipsruntime rather than GOEXPERIMENT=boringcrypto. Combined with the absence of any direct crypto/tls imports in the codebase, all TLS operations flow through client-go's Kubernetes client which inherits the FIPS-validated OpenSSL backend.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

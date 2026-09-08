@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "feast-module-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "feast-module-operator-pattern-001",
+      "claim": "The feast-module-operator uses the opendatahub-operator reconciler framework with a standardized action pipeline (initialize → upgrade → kustomize params → releases → platform version → render → deploy → status → gc), establishing a reusable modular operator pattern for RHOAI components.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/feastoperator/feastoperator_controller.go:115-136"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/internal_dependencies"
+        }
+      ],
+      "reasoning": "The controller chains reconciliation actions from the opendatahub-operator SDK in a specific order. This pattern is likely shared across other RHOAI module operators, making the action pipeline a cross-component architectural convention.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "feast-module-operator-pattern-002",
+      "claim": "The operator's runtime base image uses ubi9/ubi-minimal-pqc (post-quantum cryptography variant) combined with GOEXPERIMENT=strictfipsruntime, indicating preparation for both FIPS compliance and future PQC readiness.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:25,30"
+        }
+      ],
+      "reasoning": "The PQC base image is a newer UBI variant that includes post-quantum cryptography libraries. Combined with strictfipsruntime, this represents a forward-looking security posture that exceeds current FIPS requirements. Other RHOAI components may or may not use the PQC variant.",
+      "applicability": "cross-component",
+      "confidence": "medium"
+    },
+    {
+      "id": "feast-module-operator-risk-001",
+      "claim": "The operator's RBAC scope is unusually broad for a module operator, with 27 rule entries spanning 13 API groups including Spark applications, OpenShift Routes, and full CRD lifecycle management, which creates a large blast radius if the operator is compromised.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/security/rbac"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/feastoperator/feastoperator_controller.go:50-77"
+        }
+      ],
+      "reasoning": "The manager-role includes create/delete permissions on pods/exec, persistentvolumeclaims, customresourcedefinitions, sparkapplications, and routes. This breadth is needed because the operator deploys the full Feast ecosystem, but it means a compromised operator pod could modify or delete cluster-wide CRDs and create arbitrary pod exec sessions.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

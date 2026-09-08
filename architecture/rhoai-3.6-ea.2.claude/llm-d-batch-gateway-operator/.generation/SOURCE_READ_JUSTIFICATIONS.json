@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "component": "llm-d-batch-gateway-operator",
+  "reads": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "80-199",
+      "gap_category": ["authentication", "services", "fips_compliance", "integration_points"],
+      "question": "What authentication is applied to the metrics endpoint, what services are configured, and how is TLS resolved?",
+      "expected_signal": "metrics server options, auth filters, health probe setup, TLS resolution, Helm renderer construction",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Data Flows"],
+      "scope_reason": "Main function contains all startup configuration including metrics server, health probes, TLS, and controller setup in a single contiguous block"
+    },
+    {
+      "path": "internal/tls/profile.go",
+      "line_range": "1-151",
+      "gap_category": ["fips_compliance"],
+      "question": "How does the operator configure TLS and what crypto libraries does it use?",
+      "expected_signal": "TLS profile resolution, cipher suite configuration, crypto/tls usage, FIPS-relevant provider selection",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-52",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags (CGO_ENABLED, GOEXPERIMENT) and base images are used?",
+      "expected_signal": "CGO_ENABLED=1, strictfipsruntime, dynamic linking, UBI base image",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "config/manager/manager.yaml",
+      "line_range": "1-82",
+      "gap_category": ["services", "authentication"],
+      "question": "What container ports are declared and what service configuration exists in the deployment manifest?",
+      "expected_signal": "container ports, probe configuration, environment variables, service account",
+      "outcome": "resolved",
+      "sections": ["Services", "Authentication & Authorization", "Data Flows"]
+    },
+    {
+      "path": "internal/monitoring/controller.go",
+      "line_range": "1-170",
+      "gap_category": ["services", "integration_points", "internal_dependencies"],
+      "question": "What Service, ServiceMonitor, and PrometheusRule does the MetricsController create?",
+      "expected_signal": "Service spec with port, annotations, ServiceMonitor and PrometheusRule creation, conditional CRD watches",
+      "outcome": "resolved",
+      "sections": ["Services", "Integration Points", "Internal Platform Dependencies", "Data Flows"]
+    }
+  ]
+}

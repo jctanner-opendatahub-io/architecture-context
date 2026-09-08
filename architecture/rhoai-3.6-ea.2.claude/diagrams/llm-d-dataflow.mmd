@@ -1,0 +1,39 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Envoy as Envoy Sidecar<br/>8081/TCP HTTP
+    participant EPP as Endpoint Picker Plugin<br/>9002/TCP gRPC
+    participant Decode as Decode Pod (vllm)<br/>8000/TCP HTTP
+    participant Prefill as Prefill Pod (vllm)<br/>8000/TCP HTTP
+    participant Nixl as nixl RDMA<br/>5600/TCP
+    participant OTel as OTel Collector<br/>4317/TCP gRPC
+    participant Jaeger as Jaeger<br/>4317/TCP
+
+    Note over Client,Decode: Flow 1: Standard Inference Request
+
+    Client->>Envoy: POST /v1/chat/completions<br/>HTTP 8081
+    Envoy->>EPP: ext_proc ProcessingRequest<br/>gRPC 9002 (localhost)
+    EPP->>EPP: Evaluate InferencePool<br/>membership & load
+    EPP-->>Envoy: Set x-gateway-destination-endpoint<br/>header response
+    Envoy->>Decode: Forward request (ORIGINAL_DST)<br/>HTTP 8000
+    Decode-->>Envoy: JSON response<br/>(OpenAI-compatible)
+    Envoy-->>Client: JSON response
+
+    Note over Prefill,Nixl: Flow 2: Disaggregated KV-Cache Transfer
+
+    Client->>Envoy: POST /v1/completions<br/>HTTP 8081
+    Envoy->>EPP: ext_proc routing<br/>gRPC 9002
+    EPP-->>Envoy: Route to prefill pod
+    Envoy->>Prefill: Forward request<br/>HTTP 8000
+    Prefill->>Prefill: Compute prefill (attention)
+    Prefill->>Nixl: KV-cache state<br/>RDMA 5600 (bypasses mesh)
+    Nixl->>Decode: Transfer KV-cache<br/>nixlv2 connector
+    Decode->>Decode: Continue decode phase
+    Decode-->>Envoy: Streamed response<br/>HTTP 8000
+    Envoy-->>Client: Streamed JSON response
+
+    Note over Decode,Jaeger: Flow 3: Observability Pipeline
+
+    Decode->>OTel: OTLP traces<br/>gRPC 4317
+    Prefill->>OTel: OTLP traces<br/>gRPC 4317
+    EPP->>OTel: OTLP traces<br/>gRPC 4317
+    OTel->>Jaeger: Batch forward<br/>gRPC 4317

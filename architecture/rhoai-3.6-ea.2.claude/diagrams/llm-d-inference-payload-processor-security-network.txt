@@ -1,0 +1,129 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client]                                                       │
+│         │                                                                │
+│         │ Port: 8081/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: Unknown                                            │
+│         │ Auth: None                                                     │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PROXY LAYER (Envoy)                                                    │
+│                                                                          │
+│  [Envoy Proxy - envoyproxy/envoy:distroless-v1.33.2]                    │
+│  - Service Type: NodePort                                                │
+│  - Port: 8081/TCP (external) → 8081/TCP (internal)                      │
+│  - Role: Request routing, ExtProc integration                           │
+│         │                                                                │
+│         │ Port: 9004/TCP                                                 │
+│         │ Protocol: gRPC (HTTP/2)                                        │
+│         │ Encryption: Self-signed TLS (default, RSA-4096)               │
+│         │ Auth: None (no application-level auth interceptor)            │
+│         │ Note: TLS is configuration-dependent (SecureServing flag)     │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PROCESSING LAYER (payload-processor)                                   │
+│                                                                          │
+│  [Payload Processor - ExtProc Service]                                   │
+│  - Namespace: ${NAMESPACE}                                               │
+│  - ServiceAccount: payload-processor                                     │
+│  - User: 65532 (nonroot)                                                 │
+│  - Image: distroless/static:nonroot base                                 │
+│  - Build: CGO_ENABLED=0 (upstream, static linking)                      │
+│                                                                          │
+│  Ports:                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐            │
+│  │ 9004/TCP - gRPC ExtProc                                  │            │
+│  │   Protocol: gRPC (HTTP/2)                                │            │
+│  │   Encryption: Self-signed TLS (RSA-4096, default Go      │            │
+│  │                cipher suites) OR plaintext               │            │
+│  │   Auth: None                                             │            │
+│  │   Service Type: NodePort                                 │            │
+│  ├──────────────────────────────────────────────────────────┤            │
+│  │ 9005/TCP - gRPC Health                                   │            │
+│  │   Protocol: gRPC (HTTP/2)                                │            │
+│  │   Encryption: None (plaintext)                           │            │
+│  │   Auth: None                                             │            │
+│  │   Purpose: Liveness/readiness probes                     │            │
+│  ├──────────────────────────────────────────────────────────┤            │
+│  │ 9090/TCP - HTTP Metrics                                  │            │
+│  │   Protocol: HTTP/1.1                                     │            │
+│  │   Encryption: Unknown                                    │            │
+│  │   Auth: Kubernetes TokenReview/SubjectAccessReview       │            │
+│  │         (default enabled via controller-runtime)         │            │
+│  │   Service Type: NodePort                                 │            │
+│  └──────────────────────────────────────────────────────────┘            │
+│         │                                                                │
+│         │ Port: 6443/TCP                                                 │
+│         │ Protocol: HTTPS/WSS                                            │
+│         │ Encryption: TLS 1.2+                                           │
+│         │ Auth: ServiceAccount token                                     │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PLATFORM SERVICES                                                       │
+│                                                                          │
+│  [Kubernetes API Server]                                                 │
+│  - Port: 6443/TCP                                                        │
+│  - Protocol: HTTPS/WSS                                                   │
+│  - Encryption: TLS 1.2+                                                  │
+│  - Auth: ServiceAccount token                                            │
+│  - Purpose: ConfigMap watch, resource operations                        │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  MODEL SERVING LAYER                                                     │
+│                                                                          │
+│  [vllm-deepseek-r1]                                                      │
+│  - Service Type: ClusterIP                                               │
+│  - Port: 8000/TCP                                                        │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: Unknown                                                   │
+│  - Auth: Unknown                                                         │
+│  - Purpose: Model inference (DeepSeek R1)                               │
+│                                                                          │
+│  [vllm-llama3-8b-instruct]                                               │
+│  - Service Type: ClusterIP                                               │
+│  - Port: 8000/TCP                                                        │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: Unknown                                                   │
+│  - Auth: Unknown                                                         │
+│  - Purpose: Model inference (Llama 3 8B Instruct)                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- ClusterRole: payload-processor-auth-reviewer
+  - API Groups: (core)
+  - Resources: configmaps
+  - Verbs: get, list, watch
+
+- RoleBinding: payload-processor-auth-reviewer-binding
+  - Namespace: ${NAMESPACE}
+  - Role: payload-processor-auth-reviewer (ClusterRole)
+  - ServiceAccount: payload-processor
+
+CRD:
+- PayloadProcessorConfig (llm-d.ai/v1alpha1) - Namespaced
+  - Purpose: Declarative pipeline configuration for pre/post-processors and profile picker
+
+TLS Configuration:
+- ExtProc gRPC (9004): Self-signed TLS with RSA-4096 key, default Go cipher suites
+  - Certificate generated at runtime (internal/tls/tls.go)
+  - SecureServing=true by default, configurable
+- Health gRPC (9005): Plaintext (no TLS)
+- Metrics HTTP (9090): Unknown encryption, Kubernetes TokenReview auth
+
+FIPS Compliance:
+- Upstream build: CGO_ENABLED=0, static linking, NOT FIPS compliant
+- No GOEXPERIMENT=strictfipsruntime or -tags strictfipsruntime
+- Downstream builds may override via BASE_IMAGE and LDFLAGS for FIPS compliance
+- Uses Go stdlib crypto/tls (no custom/non-FIPS crypto detected)
+
+Secrets:
+- No secrets directly referenced
+- TLS certificates generated at runtime (RSA-4096 self-signed)
+- ServiceAccount token used for Kubernetes API authentication
+
+Security Context:
+- Runs as non-root user 65532
+- Distroless base image (gcr.io/distroless/static:nonroot)
+- No privilege escalation

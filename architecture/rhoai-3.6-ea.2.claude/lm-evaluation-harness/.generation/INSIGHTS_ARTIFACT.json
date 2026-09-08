@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "component": "lm-evaluation-harness",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "lm-evaluation-harness-pattern-001",
+      "claim": "The component delegates all FIPS compliance to the container base image with no application-level crypto configuration, making FIPS posture entirely dependent on the build-time base image selection.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux.lmes-job:1-9"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/external_dependencies"
+        }
+      ],
+      "reasoning": "The Konflux Dockerfile uses parameterized CUDA_BASE_IMAGE and CPU_BASE_IMAGE build args. No FIPS build flags, crypto library pinning, or ssl module configuration exist in the application code. The cffi and certifi packages are present in the dependency tree but are not configured for FIPS. If the base images are not FIPS-validated, the entire TLS stack operates in non-FIPS mode without any application-layer safeguard.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "lm-evaluation-harness-pattern-002",
+      "claim": "All model backend authentication relies on environment-variable injection with no credential rotation, validation, or centralized secret management within the harness.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "lm_eval/models/openai_completions.py:103-104"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "lm_eval/models/anthropic_llms.py:178-179"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "lm_eval/models/ibm_watsonx_ai.py:59-63"
+        }
+      ],
+      "reasoning": "Each model backend independently reads its API key from an environment variable (OPENAI_API_KEY, ANTHROPIC_API_KEY, WATSONX_API_KEY, HF_TOKEN, AWS_SECRET_ACCESS_KEY). The harness does not validate credentials before starting evaluation, check for expiration, or support credential rotation during a long-running evaluation job. This is a reasonable trade-off for a batch job pattern but means the LMES operator must ensure correct and valid credentials at Job creation time.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

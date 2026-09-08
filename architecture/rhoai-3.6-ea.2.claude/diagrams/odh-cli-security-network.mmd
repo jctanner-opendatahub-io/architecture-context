@@ -1,0 +1,58 @@
+graph TB
+    subgraph UserZone["USER WORKSTATION / CI RUNNER"]
+        Admin["Cluster Admin / CI Pipeline<br/>Auth: kubeconfig"]
+    end
+
+    subgraph CLIProcess["CLI PROCESS (FIPS-compliant)"]
+        direction TB
+        CLI["rhai-cli<br/>/opt/rhai-cli/bin/rhai-cli<br/>GOEXPERIMENT=strictfipsruntime<br/>Base: ose-cli-rhel9"]
+        RBAC["SelfSubjectAccessReview<br/>Pre-flight check"]
+        CLI --> RBAC
+    end
+
+    subgraph ClusterServices["KUBERNETES CLUSTER"]
+        direction TB
+
+        K8sAPI["Kubernetes API Server<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>Auth: RBAC"]
+
+        subgraph OLMZone["OLM Services"]
+            OLM["Operator Lifecycle Manager<br/>Subscriptions & CSVs"]
+        end
+
+        subgraph InCluster["In-Cluster Services"]
+            TrustYAI["TrustYAI Service<br/>443/TCP HTTPS<br/>TLS 1.2+ (self-signed)<br/>Auth: Bearer Token"]
+            Routes["OpenShift Routes<br/>Service discovery"]
+        end
+    end
+
+    subgraph MCPZone["MCP SERVER MODE (optional)"]
+        MCPServer["MCP HTTP Server<br/>localhost:8080/TCP<br/>HTTP/SSE<br/>No encryption (localhost)"]
+        AIAgent["AI Agent / MCP Client<br/>JSON-RPC over SSE"]
+    end
+
+    %% Flows
+    Admin -->|"kubectl plugin invocation<br/>kubeconfig credentials"| CLI
+
+    CLI -->|"HTTPS/6443<br/>TLS 1.2+<br/>bearer token / client cert / OIDC"| K8sAPI
+    RBAC -->|"SelfSubjectAccessReview<br/>HTTPS/6443"| K8sAPI
+    K8sAPI --> OLM
+
+    CLI -->|"Route lookup<br/>HTTPS/6443"| Routes
+    Routes -.->|"discovered host"| CLI
+    CLI -->|"HTTPS/443<br/>TLS 1.2+ InsecureSkipVerify=true<br/>Bearer Token"| TrustYAI
+
+    AIAgent -->|"HTTP/8080<br/>SSE (no TLS)<br/>localhost-only"| MCPServer
+    MCPServer -->|"inherits kubeconfig<br/>credentials"| CLI
+
+    %% Styling
+    classDef userzone fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef cliprocess fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef cluster fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef warning fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef mcp fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+
+    class Admin userzone
+    class CLI,RBAC cliprocess
+    class K8sAPI,OLM,Routes cluster
+    class TrustYAI warning
+    class MCPServer,AIAgent mcp

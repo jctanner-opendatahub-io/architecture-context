@@ -1,0 +1,90 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  LIBRARY BOUNDARY (No inbound network exposure)                         │
+│                                                                          │
+│  Training Hub is a pure Python library with NO:                          │
+│    - HTTP/gRPC endpoints                                                 │
+│    - Kubernetes Services                                                 │
+│    - Ingress resources                                                   │
+│    - CRDs                                                                │
+│    - Deployment manifests                                                │
+│                                                                          │
+│  All network activity is OUTBOUND client-side only.                      │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐     │
+│  │  Training Hub Python Package                                     │     │
+│  │                                                                   │     │
+│  │  [AlgorithmRegistry]                                              │     │
+│  │       │                                                           │     │
+│  │       ├── [SFT Backend] ─── torchrun subprocess (local)           │     │
+│  │       ├── [OSFT Backend] ── Mini-Trainer (local)                  │     │
+│  │       ├── [LoRA Backend] ── Unsloth (local)                       │     │
+│  │       ├── [GRPO Backend] ── ART/OpenPipe (local + vLLM co-proc)  │     │
+│  │       ├── [VeRL Backend] ── Distributed GRPO (local)              │     │
+│  │       ├── [GEPA Standalone] ── gepa library (local)               │     │
+│  │       └── [GEPA MLflow] ── gepa + MLflow (local + outbound)       │     │
+│  │                                                                   │     │
+│  └─────────────────────────────────────────────────────────────────┘     │
+│         │                              │                                 │
+│         │ OUTBOUND                     │ OUTBOUND                        │
+│         │                              │                                 │
+│         ▼                              ▼                                 │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OUTBOUND CONNECTIONS (Client-initiated only)                            │
+│                                                                          │
+│  1. OpenAI-compatible Inference API                                      │
+│     ─────────────────────────────────                                    │
+│     Used by: GEPA algorithm (both backends)                              │
+│     Protocol: HTTP/HTTPS                                                 │
+│     Port: Configurable (via OPENAI_API_BASE env var)                     │
+│     Encryption: Depends on endpoint configuration                        │
+│     Auth: OPENAI_API_KEY (Bearer token)                                  │
+│     Client: LiteLLM library                                              │
+│     Purpose: LLM inference for prompt optimization                       │
+│                                                                          │
+│  2. MLflow Tracking Server                                               │
+│     ─────────────────────────                                            │
+│     Used by: GEPA MLflow backend                                         │
+│     Protocol: HTTP/HTTPS (REST API)                                      │
+│     Port: Configurable (MLflow tracking URI)                             │
+│     Encryption: Depends on server configuration                          │
+│     Auth: Depends on MLflow server configuration                         │
+│     Purpose: Experiment tracking, metric logging, prompt registry        │
+│                                                                          │
+│  3. vLLM Engine (co-located)                                             │
+│     ─────────────────────────                                            │
+│     Used by: GRPO backend                                                │
+│     Protocol: In-process / Subprocess                                    │
+│     Port: N/A (no network, GPU time-sharing)                             │
+│     Encryption: N/A                                                      │
+│     Auth: N/A                                                            │
+│     Purpose: Co-located inference engine for GRPO rollout generation     │
+│     Note: AsyncLLM + EngineCore subprocess managed with explicit         │
+│           shutdown to prevent zombie processes and GPU memory leaks       │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+  No Kubernetes RBAC roles or bindings defined.
+  Training Hub is a library dependency — it runs within the security
+  context of the consuming component (notebook, training job, etc.).
+
+Service Mesh Configuration:
+  N/A — Training Hub does not deploy Kubernetes workloads.
+  Service mesh participation is inherited from the consuming component.
+
+Secrets:
+  - OPENAI_API_KEY (environment variable)
+    Type: Opaque (env var)
+    Purpose: Authentication for outbound LLM inference via LiteLLM
+    Provisioned by: Runtime environment (user-configured)
+    Auto-Rotate: Unknown
+    Note: Set at runtime by GEPA backends, restored to original value
+          after optimization completes. Stored only in process memory.
+
+FIPS Compliance:
+  Training Hub performs no direct cryptographic operations.
+  No imports of ssl, hashlib, or cryptography modules found.
+  All TLS behavior is inherited from the runtime environment and
+  transitive dependencies (requests, aiohttp, urllib3) which use
+  the system OpenSSL installation. FIPS compliance is entirely
+  delegated to the consuming component's container image.

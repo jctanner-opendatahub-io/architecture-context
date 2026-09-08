@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "odh-model-controller",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "odh-model-controller-dual-deployment-001",
+      "claim": "odh-model-controller uses a dual-deployment architecture: a controller-runtime manager and a separate model-serving-api HTTP server, each with distinct authentication models.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/architecture_components"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "server/server.go:16-44"
+        }
+      ],
+      "reasoning": "The analyzer identifies two Deployment workloads (odh-model-controller and model-serving-api). Source inspection reveals the model-serving-api server implements Bearer token authentication via its own middleware, while the controller-runtime manager uses TokenReview/SubjectAccessReview for metrics. This split means authentication failures in one deployment do not affect the other.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "odh-model-controller-webhook-fail-closed-002",
+      "claim": "All 8 admission webhooks use failurePolicy: Fail, prioritizing correctness over availability for model serving resources.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/webhooks"
+        }
+      ],
+      "reasoning": "The analyzer extracted 5 mutating and 3 validating webhooks, all with Fail policy. This fail-closed design means webhook unavailability blocks Pod creation, InferenceService updates, and NIM Account changes cluster-wide. Operators should ensure webhook Deployment availability to avoid blocking legitimate resource mutations.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "odh-model-controller-metrics-auth-gap-003",
+      "claim": "The model-serving-api /metrics endpoint on port 8080 is TLS-encrypted but lacks application-level authentication, unlike the controller-runtime /metrics endpoint which uses TokenReview + SubjectAccessReview.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "server/observability/observability.go:85-97"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:197-202"
+        }
+      ],
+      "reasoning": "The controller-runtime metrics endpoint at :8443/metrics applies WithAuthenticationAndAuthorization filters, but the model-serving-api metrics at :8080/metrics uses promhttp.Handler() directly behind TLS without authentication. Any client with network access to port 8080 can scrape metrics. In a zero-trust network model, this is an authentication gap relative to the controller metrics.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

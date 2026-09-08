@@ -1,0 +1,67 @@
+graph TB
+    subgraph OperatorPlane["Feast Operator (Control Plane)"]
+        direction TB
+        Controller["FeatureStoreReconciler<br/>Go controller-runtime"]
+        NotebookReconciler["NotebookConfigMapReconciler<br/>ConfigMap injection"]
+        Webhook["Webhook Server<br/>TLS via platform profile"]
+        MetricsEndpoint["Metrics Endpoint<br/>:8443/TCP TLS<br/>TokenReview + SAR"]
+        Controller --> Webhook
+        Controller --> MetricsEndpoint
+    end
+
+    subgraph DataPlane["Feature Serving (Data Plane)"]
+        direction TB
+        GoServer["Go Feature Server<br/>HTTP + gRPC"]
+        PythonServer["Python Feature Server<br/>FastAPI :6566/TCP"]
+        RegistryServer["Registry Server<br/>gRPC + REST"]
+        PythonServer --- RegistryServer
+    end
+
+    subgraph ManagedResources["Managed Kubernetes Resources"]
+        direction TB
+        Deployments["Deployments"]
+        Services["Services"]
+        ConfigMaps["ConfigMaps"]
+        ServiceAccounts["ServiceAccounts"]
+        RBAC["Roles / RoleBindings"]
+        HPA["HorizontalPodAutoscalers"]
+        PDB["PodDisruptionBudgets"]
+        CronJobs["CronJobs"]
+        Routes["OpenShift Routes"]
+        ServiceMonitors["ServiceMonitors"]
+    end
+
+    User["Data Scientist / Client"] -->|"creates"| FeatureStoreCR["FeatureStore CR<br/>feast.dev/v1alpha1"]
+    FeatureStoreCR -->|"watched by"| Controller
+    Controller -->|"reconciles"| ManagedResources
+    NotebookReconciler -->|"watches"| FeatureStoreCR
+    NotebookReconciler -->|"watches"| KubeflowNotebook["Kubeflow Notebook CR"]
+    NotebookReconciler -->|"injects ConfigMap"| ConfigMaps
+
+    Controller -->|"watches"| MLflowCR["MLflow CR"]
+    Controller -->|"creates"| SparkApp["SparkApplication CR"]
+
+    User -->|"POST /get-online-features"| GoServer
+    User -->|"POST /get-online-features"| PythonServer
+    User -->|"gRPC GetOnlineFeatures"| GoServer
+
+    GoServer -->|"reads"| OnlineStore["Online Store<br/>(PostgreSQL / Redis / Valkey)"]
+    PythonServer -->|"reads"| OnlineStore
+    RegistryServer -->|"persists"| RegistryBackend["Registry Backend<br/>(S3 / GCS / Database)"]
+
+    ServiceMonitors -->|"scraped by"| Prometheus["Prometheus"]
+
+    style Controller fill:#4a90e2,color:#fff
+    style NotebookReconciler fill:#4a90e2,color:#fff
+    style Webhook fill:#4a90e2,color:#fff
+    style MetricsEndpoint fill:#4a90e2,color:#fff
+    style GoServer fill:#50b5e9,color:#fff
+    style PythonServer fill:#50b5e9,color:#fff
+    style RegistryServer fill:#50b5e9,color:#fff
+    style FeatureStoreCR fill:#f5a623,color:#fff
+    style MLflowCR fill:#f5a623,color:#fff
+    style KubeflowNotebook fill:#f5a623,color:#fff
+    style SparkApp fill:#f5a623,color:#fff
+    style OnlineStore fill:#e8e8e8,stroke:#333
+    style RegistryBackend fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#7ed321,color:#fff

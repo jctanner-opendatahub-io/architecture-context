@@ -1,0 +1,68 @@
+graph TB
+    subgraph "Kubeflow SDK"
+        direction TB
+
+        subgraph "Core SDK"
+            TrainerAPI[kubeflow.trainer<br/>Training Job Management]
+            CommonTypes[kubeflow.common.types<br/>CustomTrainer / HuggingFaceTrainer]
+            Backends[kubeflow.trainer.backends<br/>Backend Abstraction Layer]
+            K8sBackend[kubeflow.trainer.backends.kubernetes<br/>Kubernetes Backend]
+        end
+
+        subgraph "RHAI Extensions"
+            SpecDecoding[SpeculativeDecodingTrainer<br/>Eagle3 Draft Model Training]
+            TrainingHub[TrainingHubTrainer<br/>Centralized Training Workflows]
+            JITCheckpoint[JIT Checkpoint Injection<br/>Model Checkpoint Management]
+        end
+
+        subgraph "Optional Integrations"
+            PipelinesNS[kubeflow.pipelines<br/>Pipeline Definition & Execution]
+            KatibNS[kubeflow.katib<br/>Hyperparameter Tuning]
+            SparkNS[kubeflow.spark<br/>Spark Workloads]
+            ModelRegNS[kubeflow.model_registry<br/>Model Registry Client]
+        end
+    end
+
+    %% Internal flows
+    CommonTypes -->|defines trainers| Backends
+    Backends -->|dispatches to| K8sBackend
+    TrainerAPI -->|uses| CommonTypes
+    SpecDecoding -->|extends| K8sBackend
+    TrainingHub -->|extends| K8sBackend
+    JITCheckpoint -->|injects into| K8sBackend
+
+    %% External dependencies
+    K8sBackend -->|creates CRs via| K8sAPI[Kubernetes API Server]
+    K8sBackend -->|uses models from| TrainerAPIModels[kubeflow-trainer-api<br/>TrainJob CRD Models]
+    KatibNS -->|uses models from| KatibAPIModels[kubeflow-katib-api<br/>Katib Models]
+    PipelinesNS -->|wraps| KFP[kfp SDK<br/>Kubeflow Pipelines]
+    SparkNS -->|uses| SparkAPI[kubeflow-spark-api<br/>Spark Models]
+    ModelRegNS -->|uses| ModelReg[model-registry<br/>Model Registry Client]
+
+    %% CRDs
+    K8sBackend -->|creates| TrainJobCR[TrainJob CR]
+    SparkNS -->|manages| SparkConnectCR[SparkConnect CR<br/>sparkoperator.k8s.io/v1alpha1]
+
+    TrainJobCR -->|watched by| TrainerController[Kubeflow Trainer Controller]
+
+    %% Styling
+    style TrainerAPI fill:#4a90e2,stroke:#333
+    style CommonTypes fill:#4a90e2,stroke:#333
+    style Backends fill:#4a90e2,stroke:#333
+    style K8sBackend fill:#4a90e2,stroke:#333
+    style SpecDecoding fill:#e24a4a,stroke:#333,color:#fff
+    style TrainingHub fill:#e24a4a,stroke:#333,color:#fff
+    style JITCheckpoint fill:#e24a4a,stroke:#333,color:#fff
+    style PipelinesNS fill:#7ed321,stroke:#333
+    style KatibNS fill:#7ed321,stroke:#333
+    style SparkNS fill:#7ed321,stroke:#333
+    style ModelRegNS fill:#7ed321,stroke:#333
+    style TrainJobCR fill:#f5a623,stroke:#333
+    style SparkConnectCR fill:#f5a623,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style TrainerAPIModels fill:#e8e8e8,stroke:#333
+    style KatibAPIModels fill:#e8e8e8,stroke:#333
+    style KFP fill:#e8e8e8,stroke:#333
+    style SparkAPI fill:#e8e8e8,stroke:#333
+    style ModelReg fill:#e8e8e8,stroke:#333
+    style TrainerController fill:#e8e8e8,stroke:#333

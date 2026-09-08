@@ -1,0 +1,60 @@
+graph TB
+    subgraph "Guardrails Detectors"
+        subgraph "Common Layer"
+            BaseAPI["DetectorBaseAPI<br/>(FastAPI base class)<br/>Health, error handling,<br/>Prometheus instrumentation"]
+        end
+
+        subgraph "Built-in Detector"
+            BuiltInApp["Built-in Detector<br/>Port: 8080<br/>/app/bin/regex-detector"]
+            RegexEngine["Regex & File-Type<br/>Pattern Matching"]
+            BuiltInApp --> RegexEngine
+        end
+
+        subgraph "HuggingFace Detector"
+            HFApp["HuggingFace Detector<br/>Port: 8000<br/>uvicorn workers=1"]
+            HFModel["AutoModelForSequenceClassification<br/>/ GraniteForCausalLM"]
+            HFApp --> HFModel
+        end
+
+        subgraph "LLM Judge Detector"
+            JudgeApp["LLM Judge Detector<br/>Port: 8000<br/>uvicorn workers=4"]
+            VLLMJudge["vllm-judge Library<br/>Evaluation Metrics:<br/>safety, toxicity,<br/>accuracy, helpfulness"]
+            JudgeApp --> VLLMJudge
+        end
+
+        BaseAPI -.->|base class| BuiltInApp
+        BaseAPI -.->|base class| HFApp
+        BaseAPI -.->|base class| JudgeApp
+    end
+
+    %% External Interactions
+    Orchestrator["FMS Guardrails<br/>Orchestrator"] -->|"POST /api/v1/text/contents"| BuiltInApp
+    Orchestrator -->|"POST /api/v1/text/contents"| HFApp
+    Orchestrator -->|"POST /api/v1/text/contents"| JudgeApp
+
+    %% Dependencies
+    HFModel -->|"loads models"| MinIO["MinIO<br/>9000/TCP<br/>Model Storage"]
+    VLLMJudge -->|"HTTP 8080/TCP"| vLLM["vLLM Inference Server<br/>(qwen2-predictor)"]
+
+    %% Platform
+    KServe["KServe<br/>ServingRuntime CRD"] -.->|"deploys"| HFApp
+    KServe -.->|"deploys"| JudgeApp
+
+    %% Observability
+    Prometheus["Prometheus"] -->|"GET /metrics"| BuiltInApp
+    Prometheus -->|"GET /metrics"| HFApp
+    Prometheus -->|"GET /metrics"| JudgeApp
+
+    %% Styling
+    style BaseAPI fill:#4a90e2,stroke:#333,color:#fff
+    style BuiltInApp fill:#4a90e2,stroke:#333,color:#fff
+    style HFApp fill:#4a90e2,stroke:#333,color:#fff
+    style JudgeApp fill:#4a90e2,stroke:#333,color:#fff
+    style RegexEngine fill:#6baed6,stroke:#333
+    style HFModel fill:#6baed6,stroke:#333
+    style VLLMJudge fill:#6baed6,stroke:#333
+    style Orchestrator fill:#f5a623,stroke:#333
+    style MinIO fill:#e8e8e8,stroke:#333
+    style vLLM fill:#e8e8e8,stroke:#333
+    style KServe fill:#7ed321,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333

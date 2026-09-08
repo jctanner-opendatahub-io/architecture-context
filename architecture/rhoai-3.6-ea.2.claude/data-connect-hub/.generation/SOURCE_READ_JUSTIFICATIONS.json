@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "component": "data-connect-hub",
+  "reads": [
+    {
+      "path": "dc-controller/cmd/main.go",
+      "line_range": "130-259",
+      "gap_category": ["authentication", "integration_points", "fips_compliance"],
+      "question": "How is controller-runtime metrics authentication configured, what controllers are registered, and what images are deployed?",
+      "expected_signal": "metricsServerOptions filter, controller setup, image references",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Data Flows", "FIPS Compliance"],
+      "scope_reason": "Need to see metrics auth filter setup (line 148-153), all controller registrations (197-243), and health probe registration (246-250) which span 130 lines of the main function"
+    },
+    {
+      "path": "services/rest/src/main.rs",
+      "line_range": "1-89",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "What routes does the REST service expose and how is authentication wired?",
+      "expected_signal": "route registration, middleware application, auth headers",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Data Flows"]
+    },
+    {
+      "path": "services/rest/src/rest/middleware.rs",
+      "line_range": "1-57",
+      "gap_category": ["authentication"],
+      "question": "What does the validate_headers middleware enforce — which headers are required and how is tenant isolation implemented?",
+      "expected_signal": "header extraction, validation logic, tenant ID enforcement",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "Cargo.toml",
+      "line_range": "60-81",
+      "gap_category": ["fips_compliance"],
+      "question": "Which cryptographic provider is explicitly selected for rustls, and is the FIPS feature enabled?",
+      "expected_signal": "rustls features, aws_lc_rs feature flag, fips feature presence",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "dc-controller/internal/controller/dataconnectservice_controller.go",
+      "line_range": "340-372",
+      "gap_category": ["integration_points", "internal_dependencies", "authentication"],
+      "question": "How does the controller deploy REST/Flight services, configure kube-rbac-proxy, and manage Gateway API resources?",
+      "expected_signal": "kustomize rendering, image injection, kube-rbac-proxy configuration, token review audiences, gateway resolution",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Internal Platform Dependencies", "Data Flows"]
+    },
+    {
+      "path": "dc-controller/internal/controller/dataconnectservice_controller.go",
+      "line_range": "500-538",
+      "gap_category": ["internal_dependencies", "integration_points"],
+      "question": "How does the controller resolve Gateway configuration and what platform resources does it read?",
+      "expected_signal": "Gateway resolution logic, platform config references",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "Architectural Analysis"]
+    }
+  ]
+}

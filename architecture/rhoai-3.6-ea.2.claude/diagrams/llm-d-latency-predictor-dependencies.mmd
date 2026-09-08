@@ -1,0 +1,53 @@
+graph LR
+    LLP["llm-d-latency-predictor"]
+
+    %% Runtime Framework
+    LLP -->|"ASGI framework"| FastAPI["FastAPI 0.138.1"]
+    LLP -->|"ASGI transport"| Uvicorn["uvicorn 0.49.0"]
+    FastAPI -->|"built on"| Starlette["Starlette 1.3.1"]
+
+    %% ML Libraries
+    LLP -->|"TTFT/TPOT models"| XGBoost["XGBoost 3.3.0"]
+    LLP -->|"TTFT/TPOT models"| LightGBM["LightGBM 4.6.0"]
+    LLP -->|"preprocessing"| ScikitLearn["scikit-learn 1.9.0"]
+    LLP -->|"data handling"| NumPy["NumPy 2.5.0"]
+    LLP -->|"data handling"| Pandas["Pandas 3.0.3"]
+    LLP -->|"online learning"| River["River 0.25.0"]
+
+    %% HTTP/Networking
+    LLP -->|"HTTP client"| HTTPX["httpx"]
+    LLP -->|"HTTP client"| Requests["requests 2.34.2"]
+    LLP -->|"async HTTP"| Aiohttp["aiohttp 3.14.1"]
+
+    %% Serialization
+    LLP -->|"JSON serialization"| ORJSON["orjson 3.11.9"]
+    LLP -->|"data validation"| Pydantic["Pydantic 2.13.4"]
+
+    %% Internal Platform Dependencies
+    LLP -->|"model sync via HTTP<br/>polling every 10s"| TrainingService["training-service<br/>(self, port 8000)"]
+
+    %% Base Image
+    LLP -->|"container base"| BaseImage["AIPCC CPU Base Image<br/>quay.io/aipcc/base-images/cpu:3.5.0"]
+
+    %% Runtime
+    LLP -->|"runtime"| Python["Python >=3.11"]
+
+    %% Styling
+    style LLP fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style FastAPI fill:#009688,stroke:#333,color:#fff
+    style Uvicorn fill:#009688,stroke:#333,color:#fff
+    style Starlette fill:#009688,stroke:#333,color:#fff
+    style XGBoost fill:#7ed321,stroke:#333,color:#fff
+    style LightGBM fill:#7ed321,stroke:#333,color:#fff
+    style ScikitLearn fill:#7ed321,stroke:#333,color:#fff
+    style NumPy fill:#7ed321,stroke:#333,color:#fff
+    style Pandas fill:#7ed321,stroke:#333,color:#fff
+    style River fill:#7ed321,stroke:#333,color:#fff
+    style HTTPX fill:#f5a623,stroke:#333,color:#fff
+    style Requests fill:#f5a623,stroke:#333,color:#fff
+    style Aiohttp fill:#f5a623,stroke:#333,color:#fff
+    style ORJSON fill:#9b59b6,stroke:#333,color:#fff
+    style Pydantic fill:#9b59b6,stroke:#333,color:#fff
+    style TrainingService fill:#e74c3c,stroke:#333,color:#fff
+    style BaseImage fill:#999,stroke:#333,color:#fff
+    style Python fill:#999,stroke:#333,color:#fff

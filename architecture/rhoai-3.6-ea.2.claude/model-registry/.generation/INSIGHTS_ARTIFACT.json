@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "component": "model-registry",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "model-registry-pqc-base-001",
+      "claim": "The model-registry Go binary runs on ubi-minimal-pqc, a post-quantum crypto UBI variant, indicating early adoption of PQC-ready infrastructure ahead of broader RHOAI adoption.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:26"
+        }
+      ],
+      "reasoning": "The runtime base image registry.redhat.io/ubi9/ubi-minimal-pqc is a post-quantum cryptography variant of UBI minimal. This is a forward-looking security choice that prepares the component for PQC migration while maintaining FIPS compliance via system OpenSSL.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "model-registry-fips-strict-002",
+      "claim": "Model Registry uses GOEXPERIMENT=strictfipsruntime which is stricter than the older boringcrypto approach, actively failing at runtime if non-FIPS crypto paths are taken rather than silently falling back.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:24"
+        }
+      ],
+      "reasoning": "strictfipsruntime is the Go 1.24+ replacement for GOEXPERIMENT=boringcrypto. Unlike the older approach which silently substituted BoringCrypto, strictfipsruntime panics if any non-FIPS crypto operation is attempted, providing fail-fast guarantees for FIPS compliance.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "model-registry-cipher-validation-003",
+      "claim": "The TLS configuration module explicitly validates cipher suites against Go's InsecureCipherSuites() list and rejects any match, providing defense-in-depth beyond build-time FIPS enforcement.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/platform/tls/config.go:121-123"
+        }
+      ],
+      "reasoning": "This runtime cipher validation complements the build-time FIPS flags by ensuring that even if a cipher suite name is passed via configuration, it will be rejected if Go classifies it as insecure. This is a defense-in-depth pattern not commonly seen in other RHOAI components.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "model-registry-controller-no-konflux-004",
+      "claim": "The controller binary (cmd/controller) has no Konflux Dockerfile, meaning its FIPS build posture is not independently verified through the Konflux pipeline.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/architecture_components"
+        }
+      ],
+      "reasoning": "Only two Konflux Dockerfiles exist: Dockerfile.konflux (main Go binary) and jobs/async-upload/Dockerfile.konflux (Python job). The controller is built via cmd/controller/Dockerfile.controller which does not have a Konflux variant, so it may not pass through the same FIPS validation pipeline.",
+      "applicability": "component",
+      "confidence": "medium"
+    }
+  ]
+}

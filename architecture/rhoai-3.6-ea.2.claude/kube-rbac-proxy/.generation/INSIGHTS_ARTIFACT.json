@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "component": "kube-rbac-proxy",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "kube-rbac-proxy-dual-authn-001",
+      "claim": "kube-rbac-proxy supports two mutually exclusive authentication modes (OIDC and delegating TokenReview), selected at startup based on whether an OIDC issuer URL is configured.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/kube-rbac-proxy/app/kube-rbac-proxy.go:234-255"
+        }
+      ],
+      "reasoning": "The authenticator initialization at lines 234-255 shows a conditional branch: if OIDC IssuerURL is non-empty, an OIDC authenticator is created; otherwise, a delegating authenticator using Kubernetes AuthenticationV1 TokenReview is used. This means platform operators must choose one mode per proxy instance, and RHOAI deployments default to the delegating (TokenReview) path unless OIDC is explicitly configured.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "kube-rbac-proxy-union-authz-002",
+      "claim": "The authorization chain uses a union pattern where any single authorizer (hardcoded metrics, static, or SAR) granting access is sufficient, creating a permissive-by-default authorization model.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/kube-rbac-proxy/app/kube-rbac-proxy.go:268-275"
+        }
+      ],
+      "reasoning": "The union.New() authorizer at lines 268-275 chains HardCodedMetricsAuthorizer, StaticAuthorizer, and SarAuthorizer. Union authorization returns allow if any authorizer allows, meaning the hardcoded metrics authorizer grants access to well-known OpenShift monitoring identities regardless of SAR policy. The TODO comment at line 271 suggests this hardcoded path is intended to be temporary.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "kube-rbac-proxy-fips-runtime-003",
+      "claim": "The Konflux build enforces FIPS compliance through strictfipsruntime Go experiment with dynamic linking, and the runtime uses ubi-minimal-pqc (post-quantum cryptography) base image.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:8-10"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:15"
+        }
+      ],
+      "reasoning": "The Dockerfile.konflux sets GOEXPERIMENT=strictfipsruntime, GOFLAGS with -tags=strictfipsruntime, and CGO_ENABLED=1 ensuring dynamic linking through OpenSSL. The runtime base image is ubi-minimal-pqc, which is the post-quantum cryptography variant of UBI minimal, indicating forward-looking cryptographic posture beyond standard FIPS compliance.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "kube-rbac-proxy-ignore-paths-004",
+      "claim": "Configured ignore-paths bypass the entire authentication and authorization handler chain, creating paths where requests reach the upstream without any identity verification.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/kube-rbac-proxy/app/kube-rbac-proxy.go:300-337"
+        }
+      ],
+      "reasoning": "Lines 300-337 show that when a request URL matches an ignore-path pattern, the handler skips WithAuthentication, WithAuthorization, and WithAuthHeaders, forwarding the request directly to the reverse proxy. This is by design for paths like healthz or readiness probes, but misconfiguration of ignore-paths could expose application endpoints without authentication.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        User["User / Platform Operator<br/>(kubectl / API client)"]
+    end
+
+    subgraph K8sControl["KUBERNETES CONTROL PLANE"]
+        K8sAPI["Kubernetes API Server<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>ServiceAccount Token Auth"]
+        OSAPIServer["OpenShift APIServer<br/>config.openshift.io<br/>TLS Profile Source"]
+    end
+
+    subgraph OperatorNS["OPERATOR NAMESPACE (llm-d-batch-gateway-operator-system)"]
+        direction TB
+
+        subgraph OperatorPod["Operator Pod"]
+            Manager["manager<br/>SA: llm-d-batch-gateway-operator<br/>Image: controller:latest"]
+        end
+
+        MetricsSvc["Metrics Service<br/>ClusterIP 8443/TCP<br/>HTTPS (serving-cert)<br/>TokenReview + SubjectAccessReview"]
+    end
+
+    subgraph WorkloadNS["WORKLOAD NAMESPACE (target namespace)"]
+        direction TB
+        APIServer["apiserver Deployment"]
+        Processor["processor Deployment"]
+        GC["gc Deployment"]
+        Async["async Deployment"]
+        WorkloadSvc["Workload Services"]
+        WorkloadHTTPRoute["HTTPRoutes<br/>(Gateway API)"]
+        WorkloadCert["Certificates<br/>(cert-manager)"]
+    end
+
+    subgraph PlatformServices["PLATFORM SERVICES"]
+        CertManager["cert-manager<br/>Certificate Provisioning<br/>TLS"]
+        GatewayAPI["Gateway API<br/>HTTPRoute / ReferenceGrant<br/>Conditional"]
+        PromOperator["prometheus-operator<br/>ServiceMonitor / PrometheusRule<br/>Conditional"]
+    end
+
+    subgraph Monitoring["MONITORING"]
+        Prometheus["Prometheus<br/>(via ServiceMonitor)"]
+    end
+
+    %% External to K8s
+    User -->|"HTTPS/6443<br/>TLS 1.2+<br/>Bearer Token / kubeconfig"| K8sAPI
+
+    %% Operator to K8s API
+    Manager -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token"| K8sAPI
+
+    %% Operator reads TLS profile
+    Manager -->|"HTTPS<br/>TLS 1.2+<br/>SA Token<br/>GET apiservers"| OSAPIServer
+
+    %% Operator manages workloads
+    Manager -->|"Kubernetes API<br/>TLS<br/>Create/Update/Delete<br/>Deployments, Services,<br/>ConfigMaps, Secrets"| WorkloadNS
+
+    %% Operator to platform services
+    Manager -.->|"CRD CRUD<br/>Certificates"| CertManager
+    Manager -.->|"CRD CRUD<br/>HTTPRoutes, ReferenceGrants<br/>(conditional)"| GatewayAPI
+    Manager -.->|"CRD CRUD<br/>ServiceMonitor, PrometheusRule<br/>(conditional)"| PromOperator
+
+    %% Metrics flow
+    Manager --> MetricsSvc
+    Prometheus -->|"HTTPS/8443<br/>TLS (serving-cert)<br/>TokenReview + SAR"| MetricsSvc
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef controlplane fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef operator fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef workload fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef platform fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef monitoring fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+
+    class User external
+    class K8sAPI,OSAPIServer controlplane
+    class Manager,MetricsSvc operator
+    class APIServer,Processor,GC,Async,WorkloadSvc,WorkloadHTTPRoute,WorkloadCert workload
+    class CertManager,GatewayAPI,PromOperator platform
+    class Prometheus monitoring

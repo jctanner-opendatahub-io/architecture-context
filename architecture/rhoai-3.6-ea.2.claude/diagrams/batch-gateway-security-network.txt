@@ -1,0 +1,123 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client]                                                       │
+│         │                                                                │
+│         │ Port: 443/TCP (via HTTPRoute)                                  │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (terminated at gateway)                        │
+│         │ Auth: Bearer Token (optional, passed through)                  │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  INGRESS (Platform Gateway)                                             │
+│                                                                          │
+│  [llm-d-inference-gateway]                                               │
+│  - Type: Gateway API HTTPRoute                                          │
+│  - External auth enforcement point                                      │
+│  - TLS Termination: At gateway level                                    │
+│         │                                                                │
+│         │ Port: 8000/TCP                                                 │
+│         │ Protocol: HTTP or HTTPS                                        │
+│         │ Encryption: Optional TLS (configurable, min TLS 1.2)          │
+│         │ Auth: X-MaaS-Username header for tenant identification        │
+│         │       Authorization header passed through to downstream       │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION LAYER (batch-gateway)                                      │
+│                                                                          │
+│  [batch-gateway-apiserver]                                               │
+│  - Image: batch-gateway-apiserver (FIPS: strictfipsruntime, CGO)        │
+│  - API Listener: 8000/TCP (optional TLS, min TLS 1.2, ALPN h2+http/1.1)│
+│  - Obs Listener: 8081/TCP (always plain HTTP)                           │
+│  - Middleware: Recovery → RequestMiddleware → SecurityHeaders            │
+│  - No application-level authentication enforcement                      │
+│  - Tenant ID extracted from X-MaaS-Username header                      │
+│         │                                                                │
+│         ├──────────────────────────────────────────────────┐             │
+│         │                                                  │             │
+│         │ Port: Configured by runtime                      │             │
+│         │ Protocol: TCP                                    │             │
+│         │ Encryption: Configurable TLS                     │             │
+│         │ Auth: Connection credentials                     │             │
+│         ▼                                                  ▼             │
+│  [PostgreSQL]                                  [Redis/Valkey]            │
+│  - Purpose: Job metadata, status tracking      - Purpose: Job queue,    │
+│  - OTel instrumented (otelpgx)                   messaging exchange     │
+│  - TLS: Configurable                           - OTel instrumented      │
+│                                                  (redisotel)            │
+│                                                - TLS: Configurable      │
+│                                                                          │
+│  [batch-gateway-processor]                                               │
+│  - Image: batch-gateway-processor (FIPS: strictfipsruntime, CGO)        │
+│  - Obs Listener: 8081/TCP (plain HTTP, /ready, /health, /metrics)       │
+│  - Debug: pprof on 8081                                                  │
+│         │                                                                │
+│         │ Port: Configured by runtime                                    │
+│         │ Protocol: HTTP/HTTPS                                           │
+│         │ Encryption: Configurable TLS                                   │
+│         │ Auth: Authorization header passthrough from original request   │
+│         ▼                                                                │
+│  [llm-d inference gateway]                                               │
+│  - Purpose: Downstream inference endpoint                                │
+│  - Protocol: HTTP/HTTPS                                                  │
+│  - Auth: Bearer token (passed through from client)                       │
+│                                                                          │
+│  [batch-gateway-gc]                                                      │
+│  - Image: batch-gateway-gc (FIPS: strictfipsruntime, CGO)               │
+│  - Obs Listener: 8081/TCP (plain HTTP, /health, /metrics)               │
+│  - Periodic cleanup of expired jobs and files                            │
+│         │                                                                │
+│         │ Port: Configured by runtime                                    │
+│         │ Protocol: HTTP/HTTPS                                           │
+│         │ Encryption: Configurable TLS                                   │
+│         │ Auth: AWS credentials or filesystem access                     │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  EXTERNAL SERVICES                                                       │
+│                                                                          │
+│  [S3-compatible Storage]                                                 │
+│  - Purpose: Batch input/output file storage                              │
+│  - Protocol: HTTP/HTTPS                                                  │
+│  - Auth: AWS SDK credentials (access key + secret key)                  │
+│  - File size limit: 200 MB (configurable)                               │
+│  - File expiration: 90 days (configurable)                              │
+│                                                                          │
+│  [OpenTelemetry Collector]                                               │
+│  - Purpose: Distributed tracing                                          │
+│  - Protocol: OTLP/gRPC                                                  │
+│  - Encryption: Configurable                                              │
+│  - Connected from: apiserver, processor, gc                              │
+└─────────────────────────────────────────────────────────────────────────┘
+
+FIPS Compliance Summary:
+- Build flags: GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1
+- Linking: Dynamic (CGO) on UBI9 ubi-minimal base
+- OpenSSL: Yes (via UBI9 base image)
+- TLS Config: crypto/tls with configurable min version (default TLS 1.2)
+- Cipher suites: Go-managed (FIPS-validated via OpenSSL with strictfipsruntime)
+- ALPN: h2, http/1.1 (default)
+- Certificate handling: X509 key pair from file paths, cert-manager integration
+- Non-FIPS crypto risks: None detected
+
+Authentication & Authorization Summary:
+- API endpoints (/v1/batches, /v1/files):
+  - No application-level auth enforcement
+  - Authorization header captured and passed through to downstream inference
+  - Authentication expected to be enforced by external platform gateway
+  - Tenant identification via X-MaaS-Username header
+- Observability endpoints (/health, /ready, /metrics):
+  - No authentication
+  - Runs on separate listener (port 8081, always plain HTTP)
+  - No middleware applied
+
+RBAC Summary:
+- No ClusterRoles or RoleBindings defined in component manifests
+- RBAC is expected to be managed externally or via operator
+
+Secrets:
+- No secrets explicitly defined in component manifests
+- Runtime credentials for PostgreSQL, Redis, S3 expected via Helm values or environment
+
+Network Listeners:
+- 8000/TCP: API server (HTTP/HTTPS, optional TLS)
+- 8081/TCP: Observability (always plain HTTP) - all three components

@@ -1,0 +1,127 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_DCM["dc-controller-manager"]
+        SA_MGR["manager"]
+    end
+
+    subgraph ClusterRoleBindings["ClusterRole Bindings"]
+        CRB_DCM["dc-controller-manager<br/>-rolebinding"]
+        CRB_DCMA["dc-controller-metrics<br/>-auth-rolebinding"]
+        CRB_MGR["manager-rolebinding"]
+        CRB_MA["metrics-auth<br/>-rolebinding"]
+    end
+
+    subgraph RoleBindings["Role Bindings (Namespaced)"]
+        RB_DCLE["dc-controller-leader<br/>-election-rolebinding<br/>(dc-controller-system)"]
+        RB_LE["leader-election<br/>-rolebinding<br/>(system)"]
+    end
+
+    subgraph ClusterRoles_Operator["Operator ClusterRoles"]
+        CR_DCM["dc-controller-manager-role"]
+        CR_MGR["manager-role"]
+    end
+
+    subgraph ClusterRoles_Metrics["Metrics ClusterRoles"]
+        CR_DCMA["dc-controller-metrics<br/>-auth-role"]
+        CR_MA["metrics-auth-role"]
+    end
+
+    subgraph Roles_LE["Leader Election Roles"]
+        R_DCLE["dc-controller-leader<br/>-election-role"]
+        R_LE["leader-election-role"]
+    end
+
+    subgraph ClusterRoles_User["User-Facing ClusterRoles"]
+        CR_ADMIN["dataconnecthub-admin-role"]
+        CR_EDITOR["dataconnecthub-editor-role"]
+        CR_VIEWER["dataconnecthub-viewer-role"]
+    end
+
+    subgraph Resources_Core["Core Resources"]
+        ConfigMaps["ConfigMaps<br/>CRUD"]
+        Secrets["Secrets<br/>get,list,patch,update,watch"]
+        Services["Services<br/>CRUD"]
+        ServiceAccounts_R["ServiceAccounts<br/>CRUD"]
+        Deployments["Deployments<br/>CRUD"]
+    end
+
+    subgraph Resources_DCH["DataConnectHub Resources"]
+        DCS["DataConnectServices<br/>CRUD + finalizers"]
+        IDC["InitDataConnections<br/>get,list,watch"]
+        IDCT["InitDataConnectionTypes<br/>get,list,watch"]
+        DCTypes["data-connection-types<br/>CRUD"]
+        DConns["data-connections<br/>CRUD"]
+    end
+
+    subgraph Resources_Net["Network Resources"]
+        Gateways["Gateways<br/>get,list,watch"]
+        HTTPRoutes["HTTPRoutes<br/>CRUD"]
+        NetPol["NetworkPolicies<br/>CRUD"]
+    end
+
+    subgraph Resources_Auth["Auth Resources"]
+        TokenReviews["TokenReviews<br/>create"]
+        SAR["SubjectAccessReviews<br/>create"]
+    end
+
+    %% SA to Binding connections
+    SA_DCM -->|"bound via"| CRB_DCM
+    SA_DCM -->|"bound via"| CRB_DCMA
+    SA_DCM -->|"bound via"| RB_DCLE
+    SA_MGR -->|"bound via"| CRB_MGR
+    SA_MGR -->|"bound via"| CRB_MA
+    SA_MGR -->|"bound via"| RB_LE
+
+    %% Binding to Role connections
+    CRB_DCM -->|"grants"| CR_DCM
+    CRB_DCMA -->|"grants"| CR_DCMA
+    CRB_MGR -->|"grants"| CR_MGR
+    CRB_MA -->|"grants"| CR_MA
+    RB_DCLE -->|"grants"| R_DCLE
+    RB_LE -->|"grants"| R_LE
+
+    %% Operator roles to resources
+    CR_DCM -->|"manages"| ConfigMaps
+    CR_DCM -->|"reads"| Secrets
+    CR_DCM -->|"manages"| Services
+    CR_DCM -->|"manages"| ServiceAccounts_R
+    CR_DCM -->|"manages"| Deployments
+    CR_DCM -->|"manages"| DCS
+    CR_DCM -->|"watches"| IDC
+    CR_DCM -->|"watches"| IDCT
+    CR_DCM -->|"manages"| DCTypes
+    CR_DCM -->|"manages"| DConns
+    CR_DCM -->|"watches"| Gateways
+    CR_DCM -->|"manages"| HTTPRoutes
+    CR_DCM -->|"manages"| NetPol
+    CR_DCM -->|"creates"| TokenReviews
+    CR_DCM -->|"creates"| SAR
+
+    %% Metrics roles
+    CR_DCMA -->|"creates"| TokenReviews
+    CR_DCMA -->|"creates"| SAR
+
+    %% User-facing roles
+    CR_ADMIN -->|"full CRUD"| DCS
+    CR_EDITOR -->|"full CRUD"| DCS
+    CR_VIEWER -->|"read-only"| DCS
+
+    %% Styling
+    style SA_DCM fill:#4a90e2,color:#fff
+    style SA_MGR fill:#4a90e2,color:#fff
+    style CR_DCM fill:#f5a623
+    style CR_MGR fill:#f5a623
+    style CR_DCMA fill:#f5a623
+    style CR_MA fill:#f5a623
+    style R_DCLE fill:#f5a623
+    style R_LE fill:#f5a623
+    style CR_ADMIN fill:#9b59b6,color:#fff
+    style CR_EDITOR fill:#9b59b6,color:#fff
+    style CR_VIEWER fill:#9b59b6,color:#fff
+    style DCS fill:#7ed321
+    style IDC fill:#7ed321
+    style IDCT fill:#7ed321
+    style DCTypes fill:#7ed321
+    style DConns fill:#7ed321
+    style TokenReviews fill:#e74c3c,color:#fff
+    style SAR fill:#e74c3c,color:#fff

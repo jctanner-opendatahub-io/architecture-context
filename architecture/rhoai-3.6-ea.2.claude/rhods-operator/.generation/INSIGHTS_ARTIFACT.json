@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "rhods-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "rhods-operator-fips-cloudmanager-gap-001",
+      "claim": "The cloudmanager binary build uses CGO_ENABLED=${CGO_ENABLED} as a build-arg rather than an explicit CGO_ENABLED=1, creating a potential FIPS compliance gap if the build-arg is not set.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfiles/Dockerfile.konflux:61"
+        }
+      ],
+      "reasoning": "The manager binary explicitly sets CGO_ENABLED=1 with GOEXPERIMENT=strictfipsruntime (line 58), ensuring dynamic linking to OpenSSL for FIPS-approved crypto. The cloudmanager binary on line 61 uses CGO_ENABLED=${CGO_ENABLED} which depends on a build-arg that is not defined with a default in this Dockerfile. If CGO is not enabled, the binary would statically link Go crypto and fail check-payload validation.",
+      "applicability": "component",
+      "confidence": "medium"
+    },
+    {
+      "id": "rhods-operator-tls-restart-pattern-002",
+      "claim": "The operator cannot dynamically rotate its TLS configuration; it relies on SecurityProfileWatcher to cancel the manager context and trigger a pod restart when the OpenShift APIServer TLS profile changes.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:621-628"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:478"
+        }
+      ],
+      "reasoning": "TLS options are fetched once at startup (line 478) and passed to both the webhook server and metrics server. The SecurityProfileWatcher (lines 621-628) watches for changes to the cluster TLS security profile and cancels the manager context when a change is detected, causing the pod to restart. This restart-based approach means there is a brief window where the operator is unavailable during TLS profile rotation.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "rhods-operator-kuadrant-namespace-coupling-003",
+      "claim": "The auth service controller has a runtime coupling to the kuadrant-system namespace, reconciling RBAC permissions when that namespace appears or disappears, establishing kuadrant as an optional platform integration point.",
+      "category": "cross-component",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/services/auth/auth_controller.go:70-76"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/security"
+        }
+      ],
+      "reasoning": "The auth controller watches for namespace lifecycle events on the kuadrant-system namespace (line 75). Combined with the data-science-admingroup-kuadrant-role RBAC role that grants metrics.k8s.io/pods create and get access, this establishes kuadrant as an optional dependency whose presence or absence triggers RBAC reconfiguration. This is an integration coupling that platform operators need to understand when deploying or removing kuadrant.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

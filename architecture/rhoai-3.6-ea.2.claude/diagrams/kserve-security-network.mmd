@@ -1,0 +1,93 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client"]
+    end
+
+    subgraph Ingress["INGRESS (Platform-managed)"]
+        GatewayAPI["Gateway API HTTPRoute<br/>/ OpenShift Route<br/>/ Istio VirtualService<br/>443/TCP<br/>TLS 1.2+ (configurable)"]
+    end
+
+    subgraph ControlPlane["KSERVE CONTROL PLANE (Namespace: kserve)"]
+        direction TB
+
+        subgraph MetricsStack["Metrics Endpoint"]
+            KRBACProxy["kube-rbac-proxy<br/>8443/TCP TLS<br/>TokenReview + SAR"]
+            ManagerMetrics["KServe Manager<br/>8080/TCP HTTP<br/>(localhost only)"]
+        end
+
+        WebhookSvc["Webhook Server Service<br/>443/TCP TLS<br/>cert-manager cert<br/>Fail policy<br/>17 webhooks"]
+
+        RouterSvc["InferenceGraph Router<br/>TokenReview + SAR<br/>per-resource RBAC"]
+
+        LLMISVCCtrl["LLMInferenceService Controller<br/>SA: llmisvc-serviceAccountName"]
+
+        KserveModule["kserve-module Controller<br/>SA: kserve-module-controller-manager<br/>CRD + webhook + RBAC mgmt"]
+
+        LocalModelCtrl["LocalModel Controllers<br/>SA: kserve-localmodel-controller-manager<br/>SA: kserve-localmodelnode-agent"]
+    end
+
+    subgraph DataPlane["MODEL SERVING DATA PLANE (Namespace: user-namespace)"]
+        Predictor["Predictor Pod<br/>V2 Inference Protocol<br/>HTTP (FastAPI) + gRPC<br/>No auth middleware"]
+    end
+
+    subgraph K8sCluster["KUBERNETES CLUSTER SERVICES"]
+        K8sAPI["kube-apiserver<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>SA token + RBAC"]
+        CertManager["cert-manager<br/>TLS cert provisioning"]
+        Prometheus["Prometheus<br/>Metrics scraping<br/>8443/TCP via kube-rbac-proxy"]
+    end
+
+    subgraph ExternalServices["EXTERNAL SERVICES"]
+        S3["S3-compatible Storage<br/>443/TCP HTTPS<br/>IAM / Access Keys"]
+        Azure["Azure Blob Storage<br/>443/TCP HTTPS<br/>Azure AD / Client Secret"]
+        GCS["Google Cloud Storage<br/>443/TCP HTTPS<br/>Google credentials"]
+    end
+
+    %% External flows
+    Client -->|"HTTPS/443<br/>TLS 1.2+<br/>Bearer Token (optional)"| GatewayAPI
+
+    %% Ingress to data plane
+    GatewayAPI -->|"HTTP/HTTPS<br/>V2 Inference Protocol"| Predictor
+    GatewayAPI -->|"HTTP<br/>InferenceGraph requests"| RouterSvc
+
+    %% Router auth flow
+    RouterSvc -->|"HTTPS/6443<br/>TokenReview"| K8sAPI
+    RouterSvc -->|"HTTPS/6443<br/>SubjectAccessReview"| K8sAPI
+    RouterSvc -->|"HTTP<br/>Fan-out to models"| Predictor
+
+    %% Control plane to K8s API
+    KserveModule -->|"HTTPS/6443<br/>SA token<br/>CRDs, webhooks, RBAC"| K8sAPI
+    LLMISVCCtrl -->|"HTTPS/6443<br/>SA token<br/>Deployments, HPAs, HTTPRoutes"| K8sAPI
+    LocalModelCtrl -->|"HTTPS/6443<br/>SA token<br/>PVs, PVCs, Jobs"| K8sAPI
+    ManagerMetrics ---|"localhost"| KRBACProxy
+
+    %% K8s API to webhooks
+    K8sAPI -->|"HTTPS/443<br/>Admission requests"| WebhookSvc
+
+    %% cert-manager
+    CertManager -->|"Certificate provisioning"| WebhookSvc
+
+    %% Monitoring
+    Prometheus -->|"HTTPS/8443<br/>TLS + RBAC auth"| KRBACProxy
+
+    %% Data plane to external
+    Predictor -->|"HTTPS/443<br/>IAM Auth"| S3
+    Predictor -->|"HTTPS/443<br/>Azure AD"| Azure
+    Predictor -->|"HTTPS/443<br/>Google Auth"| GCS
+
+    %% Local model caching
+    LocalModelCtrl -->|"Model download<br/>via Jobs"| S3
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef controlplane fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef dataplane fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef k8scluster fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef externalservice fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+
+    class Client external
+    class GatewayAPI ingress
+    class KRBACProxy,ManagerMetrics,WebhookSvc,RouterSvc,LLMISVCCtrl,KserveModule,LocalModelCtrl controlplane
+    class Predictor dataplane
+    class K8sAPI,CertManager,Prometheus k8scluster
+    class S3,Azure,GCS externalservice

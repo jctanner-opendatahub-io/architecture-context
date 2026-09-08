@@ -1,0 +1,59 @@
+graph TB
+    subgraph "vllm-gaudi Container Image"
+        direction TB
+        subgraph "Application Layer"
+            EntryPoint["vllm.entrypoints.openai.api_server<br/>OpenAI-Compatible API Server"]
+            VllmEngine["vLLM Inference Engine<br/>Core LLM serving framework"]
+            GaudiPlugin["vllm_gaudi Plugin<br/>HPU device backend"]
+        end
+
+        subgraph "Runtime Libraries"
+            PyTorch["PyTorch 2.9.0<br/>HPU support"]
+            SynapseAI["Habana SynapseAI 1.23.0<br/>Gaudi driver stack"]
+            Transformers["Transformers >= 4.56.0<br/>Model loading"]
+            Ray["Ray >= 2.48.0<br/>Distributed execution"]
+        end
+
+        subgraph "Base Image"
+            UBI9["UBI 9<br/>Non-root UID 2000"]
+            OpenSSL["OpenSSL<br/>(FIPS provider removed)"]
+        end
+    end
+
+    subgraph "Platform (External)"
+        KServe["KServe ServingRuntime<br/>Pod lifecycle & networking"]
+        Istio["Istio / Service Mesh<br/>mTLS & auth"]
+    end
+
+    subgraph "Hardware"
+        GaudiHPU["Intel Gaudi HPU<br/>Hardware accelerator"]
+    end
+
+    Client[Client] -->|"POST /v1/..."| KServe
+    KServe -->|manages| EntryPoint
+    EntryPoint --> VllmEngine
+    VllmEngine --> GaudiPlugin
+    GaudiPlugin --> PyTorch
+    PyTorch --> SynapseAI
+    SynapseAI --> GaudiHPU
+    VllmEngine --> Transformers
+    VllmEngine -.-> Ray
+
+    EntryPoint --> UBI9
+    UBI9 --> OpenSSL
+
+    KServe --> Istio
+
+    style EntryPoint fill:#4a90e2,stroke:#333,color:#fff
+    style VllmEngine fill:#4a90e2,stroke:#333,color:#fff
+    style GaudiPlugin fill:#4a90e2,stroke:#333,color:#fff
+    style PyTorch fill:#6baed6,stroke:#333
+    style SynapseAI fill:#6baed6,stroke:#333
+    style Transformers fill:#6baed6,stroke:#333
+    style Ray fill:#6baed6,stroke:#333
+    style UBI9 fill:#bbb,stroke:#333
+    style OpenSSL fill:#e74c3c,stroke:#333,color:#fff
+    style KServe fill:#7ed321,stroke:#333
+    style Istio fill:#7ed321,stroke:#333
+    style GaudiHPU fill:#f5a623,stroke:#333
+    style Client fill:#f9f9f9,stroke:#999

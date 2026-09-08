@@ -1,0 +1,39 @@
+graph TB
+    subgraph "vllm-orchestrator-gateway"
+        direction TB
+        ConfigLoader["Config Loader<br/>(YAML Parser)<br/>serde_yml"]
+        Router["Axum Router<br/>(Dynamic Route Creation)<br/>Port 8090/TCP"]
+        StreamHandler["Streaming Handler<br/>(SSE Response Proxy)"]
+        NonStreamHandler["Non-Streaming Handler<br/>(JSON Response Proxy)"]
+        DetectorEnricher["Detector Enricher<br/>(Injects detector configs<br/>per route)"]
+        FallbackHandler["Fallback Handler<br/>(Substitutes flagged content)"]
+        TLSClient["reqwest HTTP Client<br/>(Optional mTLS via OpenSSL)"]
+
+        ConfigLoader -->|"loads routes & detectors"| Router
+        Router -->|"streaming=true"| StreamHandler
+        Router -->|"streaming=false"| NonStreamHandler
+        StreamHandler --> DetectorEnricher
+        NonStreamHandler --> DetectorEnricher
+        DetectorEnricher --> TLSClient
+        TLSClient -->|"response"| FallbackHandler
+        FallbackHandler -->|"SSE chunks"| StreamHandler
+        FallbackHandler -->|"JSON body"| NonStreamHandler
+    end
+
+    Client["Client<br/>(OpenAI-compatible)"] -->|"POST /{route}/v1/chat/completions<br/>8090/TCP HTTP"| Router
+    TLSClient -->|"POST /api/v2/chat/completions-detection<br/>HTTP or HTTPS (optional mTLS)"| Orchestrator["TrustyAI Orchestrator<br/>(vllm-orchestrator)<br/>Port 8085 default"]
+
+    ConfigFile["config.yaml<br/>(Routes & Detectors)"] -.->|"read at startup"| ConfigLoader
+    TLSCerts["/etc/tls/private/<br/>tls.crt, tls.key<br/>/etc/tls/ca/service-ca.crt"] -.->|"optional mTLS certs"| TLSClient
+
+    style Router fill:#4a90e2,stroke:#333,color:#fff
+    style DetectorEnricher fill:#4a90e2,stroke:#333,color:#fff
+    style TLSClient fill:#4a90e2,stroke:#333,color:#fff
+    style FallbackHandler fill:#4a90e2,stroke:#333,color:#fff
+    style StreamHandler fill:#4a90e2,stroke:#333,color:#fff
+    style NonStreamHandler fill:#4a90e2,stroke:#333,color:#fff
+    style ConfigLoader fill:#4a90e2,stroke:#333,color:#fff
+    style Client fill:#f5a623,stroke:#333
+    style Orchestrator fill:#7ed321,stroke:#333
+    style ConfigFile fill:#e8e8e8,stroke:#999
+    style TLSCerts fill:#e8e8e8,stroke:#999

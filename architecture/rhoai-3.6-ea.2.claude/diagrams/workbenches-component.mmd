@@ -1,0 +1,68 @@
+graph TB
+    subgraph "Workbenches Component"
+        subgraph "Controller Binary (/manager)"
+            WorkspaceCtrl["Workspace Controller<br/>(Reconciler)"]
+            WorkspaceKindCtrl["WorkspaceKind Controller<br/>(Reconciler)"]
+            ValidatingWH["Validating Webhooks"]
+            ConversionWH["Conversion Webhook"]
+            WorkspaceCtrl -->|validates| ValidatingWH
+            WorkspaceKindCtrl -->|validates| ValidatingWH
+            WorkspaceKindCtrl -->|converts| ConversionWH
+        end
+
+        subgraph "Backend Binary (/backend)"
+            RestAPI["REST API Server<br/>:4000"]
+            AuthMiddleware["Auth Middleware<br/>(Header + SAR)"]
+            RestAPI -->|enforces| AuthMiddleware
+        end
+
+        subgraph "Frontend (nginx)"
+            UI["React SPA<br/>:8080"]
+        end
+    end
+
+    User[User / Data Scientist] -->|browses| UI
+    UI -->|API calls| RestAPI
+
+    %% CRDs
+    WorkspaceCR["Workspace CR<br/>(kubeflow.org/v1beta1)<br/>Namespaced"]
+    WorkspaceKindCR["WorkspaceKind CR<br/>(kubeflow.org/v1beta1)<br/>Cluster-scoped"]
+
+    User -->|creates| WorkspaceCR
+    Admin[Platform Admin] -->|defines| WorkspaceKindCR
+
+    WorkspaceCR -->|watched by| WorkspaceCtrl
+    WorkspaceKindCR -->|watched by| WorkspaceKindCtrl
+    WorkspaceKindCR -->|watched by| WorkspaceCtrl
+
+    %% Owned Resources
+    WorkspaceCtrl -->|creates| StatefulSet[StatefulSet]
+    WorkspaceCtrl -->|creates| Service[Service]
+    WorkspaceCtrl -->|creates| SA[ServiceAccount]
+    WorkspaceCtrl -->|creates| RB[RoleBinding]
+    WorkspaceCtrl -->|creates| IngressRes["HTTPRoute /<br/>VirtualService"]
+
+    %% External Dependencies
+    WorkspaceCtrl -->|routes via| GatewayAPI["Gateway API /<br/>Istio"]
+    AuthMiddleware -->|SubjectAccessReview| K8sAPI["Kubernetes API<br/>:6443"]
+    WorkspaceCtrl -->|reconciles| K8sAPI
+
+    %% Webhook Service
+    AdmissionReq["Admission Request"] -->|port 443| ValidatingWH
+
+    style WorkspaceCtrl fill:#4a90e2,color:#fff
+    style WorkspaceKindCtrl fill:#4a90e2,color:#fff
+    style ValidatingWH fill:#4a90e2,color:#fff
+    style ConversionWH fill:#4a90e2,color:#fff
+    style RestAPI fill:#50c878,color:#fff
+    style AuthMiddleware fill:#50c878,color:#fff
+    style UI fill:#9b59b6,color:#fff
+    style WorkspaceCR fill:#f5a623,color:#fff
+    style WorkspaceKindCR fill:#f5a623,color:#fff
+    style GatewayAPI fill:#e8e8e8
+    style K8sAPI fill:#e8e8e8
+    style StatefulSet fill:#ddd
+    style Service fill:#ddd
+    style SA fill:#ddd
+    style RB fill:#ddd
+    style IngressRes fill:#ddd

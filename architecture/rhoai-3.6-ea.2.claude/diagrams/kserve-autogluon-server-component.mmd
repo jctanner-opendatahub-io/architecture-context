@@ -1,0 +1,93 @@
+graph TB
+    subgraph ControlPlane["KServe Control Plane (kserve namespace)"]
+        direction TB
+        subgraph Manager["kserve-controller-manager Deployment"]
+            ManagerOp["Manager Operator<br/>/manager"]
+            KubeRBACProxy["kube-rbac-proxy<br/>8443→8080 TLS termination"]
+            Webhook["Webhook Server<br/>443/TCP TLS"]
+        end
+
+        LLMISVCOp["LLMInferenceService Operator<br/>cmd/llmisvc"]
+        LocalModelOp["LocalModel Operator<br/>cmd/localmodel"]
+        LocalModelNodeOp["LocalModelNode Operator<br/>cmd/localmodelnode"]
+    end
+
+    subgraph Controllers["Controller Reconcilers"]
+        ISCtrl["InferenceService Controller"]
+        IGCtrl["InferenceGraph Controller"]
+        TMCtrl["TrainedModel Controller"]
+        LLMCtrl["LLMInferenceService Controller"]
+        LMCCtrl["LocalModelCache Controller"]
+        LMNSCtrl["LocalModelNamespaceCache Controller"]
+        LMNCtrl["LocalModelNode Controller"]
+    end
+
+    subgraph DataPlane["Data Plane (user namespaces)"]
+        AutoGluon["AutoGluon Server<br/>python -m autogluonserver<br/>HTTP V1/V2 + gRPC V2"]
+        Router["Inference Router<br/>cmd/router"]
+    end
+
+    subgraph CRDs["Custom Resource Definitions"]
+        ISVC["InferenceService<br/>v1beta1"]
+        IG["InferenceGraph<br/>v1alpha1"]
+        TM["TrainedModel<br/>v1alpha1"]
+        LLMISVC["LLMInferenceService<br/>v1alpha1/v1alpha2"]
+        LLMConfig["LLMInferenceServiceConfig<br/>v1alpha1/v1alpha2"]
+        CSR["ClusterServingRuntime<br/>v1alpha1"]
+        SR["ServingRuntime<br/>v1alpha1"]
+        LMC["LocalModelCache<br/>v1alpha1"]
+        LMNSC["LocalModelNamespaceCache<br/>v1alpha1"]
+        LMN["LocalModelNode<br/>v1alpha1"]
+        LMNG["LocalModelNodeGroup<br/>v1alpha1"]
+        CSC["ClusterStorageContainer<br/>v1alpha1"]
+    end
+
+    %% Controller-CRD relationships
+    ManagerOp --> ISCtrl
+    ManagerOp --> IGCtrl
+    ManagerOp --> TMCtrl
+    LLMISVCOp --> LLMCtrl
+    LocalModelOp --> LMCCtrl
+    LocalModelOp --> LMNSCtrl
+    LocalModelNodeOp --> LMNCtrl
+
+    ISCtrl -->|reconciles| ISVC
+    IGCtrl -->|reconciles| IG
+    TMCtrl -->|reconciles| TM
+    LLMCtrl -->|reconciles| LLMISVC
+    LMCCtrl -->|reconciles| LMC
+    LMNSCtrl -->|reconciles| LMNSC
+    LMNCtrl -->|reconciles| LMN
+
+    ISCtrl -->|watches| CSR
+    ISCtrl -->|watches| SR
+    ISCtrl -->|creates| AutoGluon
+
+    %% Webhook validates CRDs
+    Webhook -->|validates/mutates| ISVC
+    Webhook -->|validates/mutates| LLMISVC
+    Webhook -->|validates| IG
+    Webhook -->|validates| TM
+    Webhook -->|validates| CSR
+    Webhook -->|validates| SR
+    Webhook -->|validates| LMC
+
+    %% User interaction
+    User[Data Scientist] -->|creates| ISVC
+    User -->|creates| LLMISVC
+
+    %% Styling
+    style ManagerOp fill:#4a90e2,color:#fff
+    style LLMISVCOp fill:#4a90e2,color:#fff
+    style LocalModelOp fill:#4a90e2,color:#fff
+    style LocalModelNodeOp fill:#4a90e2,color:#fff
+    style AutoGluon fill:#7ed321,color:#fff
+    style Router fill:#7ed321,color:#fff
+    style KubeRBACProxy fill:#f5a623,color:#fff
+    style Webhook fill:#f5a623,color:#fff
+    style ISVC fill:#e8e8e8
+    style IG fill:#e8e8e8
+    style TM fill:#e8e8e8
+    style LLMISVC fill:#e8e8e8
+    style LMC fill:#e8e8e8
+    style CSR fill:#e8e8e8

@@ -1,0 +1,222 @@
+{
+  "component": "llm-d-kv-cache",
+  "reads": [
+    {
+      "expected_signal": "Service resource references or patches",
+      "gap_category": [
+        "services"
+      ],
+      "line_range": "1-37",
+      "outcome": "partially-resolved",
+      "path": "deploy/kustomization.yaml",
+      "question": "What Kubernetes Service resources are defined in the kustomize manifests?",
+      "sections": [
+        "Network Architecture / Services"
+      ]
+    },
+    {
+      "expected_signal": "Container port definitions, service account, probes",
+      "gap_category": [
+        "services"
+      ],
+      "line_range": "1-20",
+      "outcome": "partially-resolved",
+      "path": "deploy/common/statefulset.yaml",
+      "question": "What container ports and service mapping does the StatefulSet define?",
+      "sections": [
+        "Network Architecture / Services"
+      ]
+    },
+    {
+      "expected_signal": "Service ports, container ports, env vars, auth configuration",
+      "gap_category": [
+        "services",
+        "authentication",
+        "integration_points"
+      ],
+      "line_range": "1-111",
+      "outcome": "resolved",
+      "path": "vllm-setup-helm/templates/kv-cache-manager.yaml",
+      "question": "What Service and Deployment resources does the Helm chart define for the kv-cache-manager?",
+      "sections": [
+        "Network Architecture / Services",
+        "Security / Authentication & Authorization",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "Port defaults, Redis connection settings, service type",
+      "gap_category": [
+        "services",
+        "integration_points"
+      ],
+      "line_range": "97-217",
+      "outcome": "resolved",
+      "path": "vllm-setup-helm/values.yaml",
+      "question": "What are the default service ports and Redis/LMCache configuration values?",
+      "sections": [
+        "Network Architecture / Services",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "Redis Service resource with port mapping",
+      "gap_category": [
+        "services",
+        "integration_points"
+      ],
+      "line_range": "1-19",
+      "outcome": "resolved",
+      "path": "vllm-setup-helm/templates/redis-service.yaml",
+      "question": "Is there a Redis Service definition in the Helm chart?",
+      "sections": [
+        "Network Architecture / Services",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "Auth middleware, TLS config, or credential checks in handler registration",
+      "gap_category": [
+        "authentication",
+        "services"
+      ],
+      "line_range": "55-322",
+      "outcome": "resolved",
+      "path": "examples/kv_events/online/main.go",
+      "question": "Do the HTTP scoring endpoints have authentication middleware or TLS configuration?",
+      "scope_reason": "Needed to inspect handler registration (mux.Handle/HandleFunc), server construction (http.Server), and ListenAndServe call to confirm absence of TLS and auth across the full HTTP setup function",
+      "sections": [
+        "Security / Authentication & Authorization",
+        "APIs Exposed / HTTP Endpoints"
+      ]
+    },
+    {
+      "expected_signal": "grpc.Creds, auth interceptor, or TLS configuration in server construction",
+      "gap_category": [
+        "authentication"
+      ],
+      "line_range": "85-107",
+      "outcome": "resolved",
+      "path": "examples/kv_cache_index_service/server/main.go",
+      "question": "Does the gRPC IndexerService use TLS credentials or auth interceptors?",
+      "sections": [
+        "Security / Authentication & Authorization",
+        "APIs Exposed / gRPC Services"
+      ]
+    },
+    {
+      "expected_signal": "TLS configuration, password/auth, URL parsing for rediss:// scheme",
+      "gap_category": [
+        "authentication",
+        "fips_compliance",
+        "integration_points"
+      ],
+      "line_range": "1-133",
+      "outcome": "resolved",
+      "path": "pkg/kvcache/kvblock/redis.go",
+      "question": "How does the Redis/Valkey client configure TLS, authentication, and connection security?",
+      "sections": [
+        "Security / Authentication & Authorization",
+        "Security / FIPS Compliance",
+        "Integration Points"
+      ]
+    },
+    {
+      "expected_signal": "FIPS build flags, OpenSSL installation, dynamic linking configuration",
+      "gap_category": [
+        "fips_compliance"
+      ],
+      "line_range": "1-58",
+      "outcome": "resolved",
+      "path": "Dockerfile",
+      "question": "Are there FIPS build flags (GOEXPERIMENT, CGO_ENABLED, strictfipsruntime) or OpenSSL in the build?",
+      "sections": [
+        "Security / FIPS Compliance"
+      ]
+    },
+    {
+      "expected_signal": "github.com/llm-d/* imports, crypto library dependencies",
+      "gap_category": [
+        "internal_dependencies",
+        "fips_compliance"
+      ],
+      "line_range": "1-34",
+      "outcome": "resolved",
+      "path": "go.mod",
+      "question": "Does the module depend on other llm-d platform components or FIPS-specific crypto libraries?",
+      "sections": [
+        "Dependencies / Internal Platform Dependencies",
+        "Security / FIPS Compliance"
+      ]
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/common/patch-service.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/common/service.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/rbac/exec-rbac-role.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/rbac/exec-rbac-rolebinding.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    }
+  ],
+  "schema_version": 1
+}

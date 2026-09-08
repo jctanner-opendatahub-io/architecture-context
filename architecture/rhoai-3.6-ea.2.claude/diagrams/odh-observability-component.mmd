@@ -1,0 +1,78 @@
+graph TB
+    subgraph External["External Access"]
+        User[External Client / Dashboard]
+    end
+
+    subgraph Routes["OpenShift Routes (TLS Terminated)"]
+        ClusterRoute["data-science-prometheus-cluster-proxy<br/>Route (HTTPS)"]
+        NSRoute["data-science-prometheus-route<br/>Route (HTTPS)"]
+        ThanosRoute["data-science-thanos-querier-route<br/>Route (HTTPS)"]
+    end
+
+    subgraph Operator["odh-observability Operator"]
+        Manager["Manager Process<br/>(controller-runtime)"]
+        Reconciler["MonitoringReconciler"]
+        WebhookServer["Webhook Server<br/>:9443/TCP TLS"]
+        HealthEndpoints["/healthz & /readyz<br/>:8081/TCP"]
+        Manager --> Reconciler
+        Manager --> WebhookServer
+        Manager --> HealthEndpoints
+    end
+
+    subgraph ManagedResources["Controller-Managed Resources"]
+        ClusterProxy["data-science-prometheus-<br/>cluster-proxy<br/>Deployment<br/>(kube-rbac-proxy)<br/>:8443/TCP"]
+        NSProxy["data-science-prometheus-<br/>namespace-proxy<br/>Deployment<br/>(kube-rbac-proxy + prom-label-proxy)<br/>:8443/TCP"]
+        Collector["data-science-collector<br/>Services<br/>:8889/TCP, :8890/TCP"]
+        PrometheusOp["prometheus-operated<br/>:9090/TCP"]
+    end
+
+    subgraph CRDs["Custom Resources"]
+        MonitoringCR["Monitoring CR<br/>services.platform.opendatahub.io/v1alpha1<br/>(Cluster-scoped, Singleton)"]
+    end
+
+    subgraph PlatformDeps["Platform Dependencies"]
+        PrometheusOperator["prometheus-operator"]
+        ODHPlatformUtils["odh-platform-utilities"]
+        OpenShiftAPI["OpenShift APIServer<br/>(TLS Profile)"]
+    end
+
+    %% External access flows
+    User -->|HTTPS| ClusterRoute
+    User -->|HTTPS| NSRoute
+    User -->|HTTPS| ThanosRoute
+
+    %% Route to proxy flows
+    ClusterRoute -->|8443/TCP| ClusterProxy
+    NSRoute -->|8443/TCP| NSProxy
+
+    %% Proxy to Prometheus
+    ClusterProxy -->|9090/TCP<br/>mTLS| PrometheusOp
+    NSProxy -->|9090/TCP<br/>mTLS| PrometheusOp
+
+    %% Operator watches and manages
+    MonitoringCR -->|watched by| Reconciler
+    Reconciler -->|creates/manages| ClusterProxy
+    Reconciler -->|creates/manages| NSProxy
+    Reconciler -->|creates/manages| Collector
+    Reconciler -->|reads TLS profile| OpenShiftAPI
+    Reconciler -->|uses deployer| ODHPlatformUtils
+    Reconciler -->|creates CRs for| PrometheusOperator
+
+    %% Webhook
+    WebhookServer -->|mutates| PodMonitors["PodMonitors /<br/>ServiceMonitors"]
+
+    %% Styling
+    style Manager fill:#4a90e2,color:#fff
+    style Reconciler fill:#4a90e2,color:#fff
+    style WebhookServer fill:#4a90e2,color:#fff
+    style MonitoringCR fill:#f5a623,color:#000
+    style ClusterProxy fill:#7ed321,color:#000
+    style NSProxy fill:#7ed321,color:#000
+    style Collector fill:#7ed321,color:#000
+    style PrometheusOp fill:#7ed321,color:#000
+    style PrometheusOperator fill:#e8e8e8,color:#000
+    style ODHPlatformUtils fill:#e8e8e8,color:#000
+    style OpenShiftAPI fill:#e8e8e8,color:#000
+    style ClusterRoute fill:#ffe6cc,color:#000
+    style NSRoute fill:#ffe6cc,color:#000
+    style ThanosRoute fill:#ffe6cc,color:#000

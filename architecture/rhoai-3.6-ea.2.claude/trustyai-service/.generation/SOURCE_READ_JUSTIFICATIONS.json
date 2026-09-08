@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "component": "trustyai-service",
+  "reads": [
+    {
+      "path": "src/trustyai_service/main.py",
+      "line_range": "1-60",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "What middleware and routers are registered, and is there authentication middleware?",
+      "expected_signal": "middleware registration, auth middleware, router includes",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Integration Points"]
+    },
+    {
+      "path": "src/trustyai_service/main.py",
+      "line_range": "230-280",
+      "gap_category": ["authentication"],
+      "question": "What is the root endpoint and how are explainer/drift routers registered?",
+      "expected_signal": "route registration, feature-flag gating, auth enforcement",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Authentication & Authorization"]
+    },
+    {
+      "path": "src/trustyai_service/main.py",
+      "line_range": "60-140",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "What middleware is applied and how is the app configured?",
+      "expected_signal": "CORS, gzip, auth middleware, lifespan handler",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Authentication & Authorization"]
+    },
+    {
+      "path": "src/trustyai_service/main.py",
+      "line_range": "136-230",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "How are consumer routers registered and what middleware is applied?",
+      "expected_signal": "router registration, consumer endpoint binding, feature-flag gating",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Integration Points", "Data Flows"]
+    },
+    {
+      "path": "src/trustyai_service/main.py",
+      "line_range": "278-358",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "How are health/consumer endpoints bound and what is the TLS configuration?",
+      "expected_signal": "health_app binding, consume_cloud_event registration, TLS cert paths",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Integration Points", "Data Flows", "FIPS Compliance"]
+    },
+    {
+      "path": "src/trustyai_service/main.py",
+      "line_range": "357-416",
+      "gap_category": ["authentication", "fips_compliance"],
+      "question": "What ports does the server bind to and how is TLS configured?",
+      "expected_signal": "loopback binding, port configuration, PolicyAwareConfig usage, TLS cert paths",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-47",
+      "gap_category": ["fips_compliance"],
+      "question": "What base image is used and are there FIPS build flags?",
+      "expected_signal": "base image, build flags, CGO_ENABLED, OpenSSL",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "src/trustyai_service/service/tls.py",
+      "line_range": "1-42",
+      "gap_category": ["fips_compliance", "authentication"],
+      "question": "How does TLS configuration honor system crypto policy and FIPS?",
+      "expected_signal": "ssl.create_default_context, cipher delegation, PolicyAwareConfig",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis", "Authentication & Authorization"]
+    },
+    {
+      "path": "src/trustyai_service/service/data/storage/__init__.py",
+      "line_range": "1-139",
+      "gap_category": ["integration_points", "internal_dependencies"],
+      "question": "What storage backends are available and how is MariaDB connected?",
+      "expected_signal": "storage interface, MariaDB config, TLS CA cert, PVC storage",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Data Flows", "Internal Platform Dependencies"]
+    },
+    {
+      "path": "src/trustyai_service/endpoints/consumer/consumer_endpoint.py",
+      "line_range": "1-140",
+      "gap_category": ["integration_points"],
+      "question": "What inference consumer endpoints exist and how do they process data?",
+      "expected_signal": "KServe v2 consumer, CloudEvent handler, ModelMesh payload parsing",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Data Flows"]
+    },
+    {
+      "path": "src/trustyai_service/endpoints/routes.py",
+      "line_range": "1-86",
+      "gap_category": ["integration_points"],
+      "question": "What are all the API route paths including consumer and health endpoints?",
+      "expected_signal": "route constants, consumer paths, health paths, metrics path",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Data Flows"]
+    },
+    {
+      "path": "pyproject.toml",
+      "line_range": "1-21",
+      "gap_category": ["fips_compliance"],
+      "question": "Are there cryptography libraries in runtime dependencies?",
+      "expected_signal": "cryptography package, pyOpenSSL, or other crypto libraries",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "src/trustyai_service/endpoints/consumer/__init__.py",
+      "line_range": "1-60",
+      "gap_category": ["integration_points"],
+      "question": "What data models are used for KServe inference payloads?",
+      "expected_signal": "InferencePartialPayload, KServeInferenceRequest models",
+      "outcome": "resolved",
+      "sections": ["Integration Points"]
+    }
+  ]
+}

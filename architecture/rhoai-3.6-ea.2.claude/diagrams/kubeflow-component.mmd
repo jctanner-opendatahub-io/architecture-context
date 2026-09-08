@@ -1,0 +1,59 @@
+graph TB
+    subgraph "Kubeflow Notebook Controllers"
+        direction TB
+
+        subgraph "Upstream Controller"
+            NotebookController["Notebook Controller<br/>/manager"]
+            CullingReconciler["Culling Reconciler"]
+            NotebookController --> CullingReconciler
+        end
+
+        subgraph "ODH Controller"
+            ODHController["ODH Notebook Controller<br/>/manager"]
+            MutatingWebhook["Mutating Webhook<br/>/mutate-notebook-v1<br/>port 8443"]
+            ValidatingWebhook["Validating Webhook<br/>/validate-notebook-v1<br/>port 8443"]
+            ConversionWebhook["Conversion Webhook<br/>/convert"]
+            ODHController --> MutatingWebhook
+            ODHController --> ValidatingWebhook
+            ODHController --> ConversionWebhook
+        end
+    end
+
+    User[Data Scientist] -->|creates/updates| NotebookCR["Notebook CR<br/>kubeflow.org/v1"]
+    NotebookCR -->|admission| MutatingWebhook
+    MutatingWebhook -->|injects| KubeRBACProxy["kube-rbac-proxy<br/>sidecar"]
+    MutatingWebhook -->|validates| ValidatingWebhook
+
+    NotebookCR -->|reconciled by| NotebookController
+    NotebookController -->|creates| StatefulSet["StatefulSet"]
+    NotebookController -->|creates| Service["Service"]
+
+    NotebookCR -->|reconciled by| ODHController
+    ODHController -->|creates| NetworkPolicy["NetworkPolicy"]
+    ODHController -->|creates| HTTPRoute["HTTPRoute"]
+    ODHController -->|creates| ReferenceGrant["ReferenceGrant"]
+    ODHController -->|creates| ElyraSecret["ds-pipeline-config<br/>Secret"]
+
+    CullingReconciler -->|scales to zero| StatefulSet
+
+    ODHController -->|reads| DSPA["DataSciencePipelinesApplication CR"]
+    ODHController -->|routes via| Gateway["data-science-gateway<br/>Gateway"]
+    ODHController -->|reads| TLSProfile["OpenShift APIServer<br/>TLS Profile"]
+
+    style NotebookController fill:#4a90e2,stroke:#333
+    style ODHController fill:#4a90e2,stroke:#333
+    style CullingReconciler fill:#4a90e2,stroke:#333
+    style MutatingWebhook fill:#e8744f,stroke:#333
+    style ValidatingWebhook fill:#e8744f,stroke:#333
+    style ConversionWebhook fill:#e8744f,stroke:#333
+    style NotebookCR fill:#f5a623,stroke:#333
+    style StatefulSet fill:#7ed321,stroke:#333
+    style Service fill:#7ed321,stroke:#333
+    style NetworkPolicy fill:#7ed321,stroke:#333
+    style HTTPRoute fill:#7ed321,stroke:#333
+    style ReferenceGrant fill:#7ed321,stroke:#333
+    style ElyraSecret fill:#7ed321,stroke:#333
+    style KubeRBACProxy fill:#bd10e0,stroke:#333
+    style Gateway fill:#e8e8e8,stroke:#333
+    style DSPA fill:#e8e8e8,stroke:#333
+    style TLSProfile fill:#e8e8e8,stroke:#333

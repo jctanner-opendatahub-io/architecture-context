@@ -1,0 +1,36 @@
+graph TD
+    subgraph "model-metadata-collection RBAC"
+        direction TB
+
+        Note["No RBAC Defined"]
+        Description["This component has no Kubernetes RBAC<br/>resources (ClusterRoles, RoleBindings,<br/>or ServiceAccounts) defined in its repository.<br/><br/>The data sidecar container runs as<br/>UID 1001 (non-root) and requires<br/>no Kubernetes API access.<br/><br/>Deployment and RBAC are managed externally<br/>by the platform operator."]
+
+        Note --- Description
+    end
+
+    subgraph "CI/CD Credentials (Build-Time Only)"
+        direction TB
+
+        HFToken["HF_TOKEN<br/>(env var, optional)<br/>HuggingFace Bearer Token"]
+        GHToken["GITHUB_TOKEN<br/>(env var, optional)<br/>GitHub Bearer Token"]
+        RegistryCreds["OCI Registry Credentials<br/>(containers/image chain)"]
+    end
+
+    subgraph "Runtime Security"
+        direction TB
+
+        NonRoot["Non-Root Execution<br/>UID 1001"]
+        DataOnly["Data-Only Container<br/>No binaries shipped"]
+        NoListeners["No Network Listeners<br/>No ports exposed"]
+        FIPSBase["FIPS via Base Image<br/>ubi-minimal-pqc"]
+    end
+
+    style Note fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    style Description fill:#fff2cc,stroke:#d6b656
+    style HFToken fill:#e1d5e7,stroke:#9673a6
+    style GHToken fill:#e1d5e7,stroke:#9673a6
+    style RegistryCreds fill:#e1d5e7,stroke:#9673a6
+    style NonRoot fill:#d5e8d4,stroke:#82b366
+    style DataOnly fill:#d5e8d4,stroke:#82b366
+    style NoListeners fill:#d5e8d4,stroke:#82b366
+    style FIPSBase fill:#d5e8d4,stroke:#82b366

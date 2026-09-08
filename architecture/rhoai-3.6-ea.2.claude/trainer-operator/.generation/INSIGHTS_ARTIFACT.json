@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "trainer-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "trainer-operator-tls-profile-watcher-001",
+      "claim": "The operator implements a dynamic TLS profile lifecycle: it resolves the OpenShift APIServer TLS profile at startup and installs a watcher that triggers graceful shutdown when the profile changes, ensuring cipher suite compliance without manual restarts.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/tls/profile.go:127-155"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:97-101"
+        }
+      ],
+      "reasoning": "The SetupWatcher function registers a SecurityProfileWatcher that cancels the manager context on TLS profile or adherence policy changes, triggering a clean restart. This is a mature security pattern that ensures the operator always serves with cluster-compliant TLS settings.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "trainer-operator-cache-hardening-002",
+      "claim": "The operator uses label-scoped cache selectors for Deployments, Services, and ValidatingWebhookConfigurations, and disables caching for Namespace objects to avoid cluster-wide informer overhead.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:117-145"
+        }
+      ],
+      "reasoning": "Cache hardening via ByObject label selectors and DisableFor reduces the operator's RBAC footprint and API server load. The APPLICATIONS_NAMESPACE environment variable further scopes the cache to a single namespace when set by the platform operator.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "trainer-operator-jobset-dependency-003",
+      "claim": "The training stack deployment is gated on JobSet operator availability via a dynamic CRD watch with reconciler.CrdExists, making trainer-operator a conditional consumer of the jobset.x-k8s.io API group.",
+      "category": "cross-component implication",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/trainer_controller.go:198-201"
+        }
+      ],
+      "reasoning": "The Dynamic(reconciler.CrdExists(jobSetOperatorGVK)) pattern enables the operator to function in clusters without the JobSet operator installed, but gates trainer deployment on its presence. This has platform-level implications for installation ordering and dependency management.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

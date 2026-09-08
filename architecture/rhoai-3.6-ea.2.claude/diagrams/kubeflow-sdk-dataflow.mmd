@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant User as Data Scientist<br/>(Python Code)
+    participant SDK as Kubeflow SDK<br/>kubeflow.trainer
+    participant Backend as Kubernetes Backend<br/>kubeflow.trainer.backends.kubernetes
+    participant K8sClient as kubernetes Python Client<br/>CustomObjectsApi / CoreV1Api
+    participant K8sAPI as Kubernetes API Server<br/>HTTPS/6443
+    participant Controller as Kubeflow Trainer Controller
+
+    Note over User,Controller: Standard Training Job Flow
+
+    User->>SDK: trainer = CustomTrainer(...)<br/>or HuggingFaceTrainer(...)
+    SDK->>Backend: dispatch training definition
+    Backend->>K8sClient: load_kube_config() or<br/>load_incluster_config()
+    K8sClient-->>Backend: authenticated client
+
+    Backend->>K8sClient: create_namespaced_custom_object()<br/>TrainJob CR
+    K8sClient->>K8sAPI: POST /apis/kubeflow.org/v2alpha1/<br/>namespaces/{ns}/trainjobs<br/>Auth: kube-config / SA token
+    K8sAPI-->>K8sClient: 201 Created
+    K8sClient-->>Backend: TrainJob resource
+    Backend-->>SDK: job handle
+    SDK-->>User: training job submitted
+
+    K8sAPI->>Controller: Watch event: TrainJob created
+    Controller->>K8sAPI: Create training pods
+
+    Note over User,Controller: RHAI Speculative Decoding Flow
+
+    User->>SDK: trainer = SpeculativeDecodingTrainer(<br/>  model="llama3", draft_model="eagle3")
+    SDK->>Backend: dispatch with RHAI config<br/>(draft model params, Eagle3 settings)
+    Backend->>K8sClient: create_namespaced_custom_object()<br/>TrainJob CR with RHAI extensions
+    K8sClient->>K8sAPI: POST TrainJob (RHAI-extended)
+    K8sAPI-->>K8sClient: 201 Created
+    K8sClient-->>Backend: TrainJob resource
+    Backend-->>User: speculative decoding job submitted
+
+    Note over User,Controller: Pipeline Integration Flow (Optional)
+
+    User->>SDK: from kubeflow.pipelines import ...<br/>define pipeline components
+    SDK->>K8sClient: pipeline execution via kfp SDK
+    K8sClient->>K8sAPI: Create pipeline resources
+    K8sAPI-->>User: pipeline run started

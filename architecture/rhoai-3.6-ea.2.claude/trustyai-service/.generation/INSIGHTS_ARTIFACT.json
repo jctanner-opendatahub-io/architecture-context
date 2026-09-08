@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "trustyai-service",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "trustyai-service-pattern-001",
+      "claim": "TrustyAI Service uses a split-listener architecture that enforces authentication by binding the main API to loopback, requiring kube-rbac-proxy as a mandatory sidecar for external access.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/trustyai_service/main.py:373-374"
+        }
+      ],
+      "reasoning": "The main API binds to 127.0.0.1:8081 while health/consumer endpoints bind to 0.0.0.0:8080. This architectural split means the application has no authentication code of its own; it delegates entirely to the kube-rbac-proxy sidecar, which is a common RHOAI pattern but creates a hard dependency on correct sidecar deployment.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "trustyai-service-pattern-002",
+      "claim": "PolicyAwareConfig deliberately overrides Hypercorn's TLS defaults to delegate cipher and version selection to the operating system crypto policy, enabling automatic FIPS compliance.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/trustyai_service/service/tls.py:1-41"
+        }
+      ],
+      "reasoning": "The module docstring and implementation show this is a conscious design decision to work around Hypercorn's hardcoded cipher list. Using ssl.create_default_context(Purpose.CLIENT_AUTH) without overriding ciphers or min_version means the RHEL crypto policy (including FIPS mode) governs TLS behavior at runtime. This is a best practice for Python services in FIPS-regulated environments.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "trustyai-service-risk-001",
+      "claim": "The health/consumer port (8080) accepts unauthenticated inference data from KServe and ModelMesh without any request validation beyond payload schema checks.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/trustyai_service/main.py:336-340"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "src/trustyai_service/endpoints/consumer/consumer_endpoint.py:74-116"
+        }
+      ],
+      "reasoning": "Port 8080 is bound to all interfaces (0.0.0.0) and serves both health probes and inference data consumers without authentication. While this is standard for kubelet probe access, the inference consumer endpoints on the same port accept and persist data from any pod in the cluster. Network policies or service mesh authorization policies would be needed to restrict access to legitimate KServe/ModelMesh sources.",
+      "applicability": "component",
+      "confidence": "medium"
+    }
+  ]
+}

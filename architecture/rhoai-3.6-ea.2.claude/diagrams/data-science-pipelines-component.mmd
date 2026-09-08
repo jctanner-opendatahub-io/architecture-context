@@ -1,0 +1,95 @@
+graph TB
+    subgraph DSP["Data Science Pipelines"]
+        direction TB
+
+        subgraph ControlPlane["Control Plane"]
+            APIServer["ml-pipeline<br/>(API Server)<br/>Go · gRPC + REST<br/>Ports: 8887/8888/8443"]
+            Webhook["Admission Webhooks<br/>Validating + Mutating<br/>Port: 8443/TLS"]
+            APIServer -->|serves| Webhook
+        end
+
+        subgraph Execution["Execution Engine"]
+            WorkflowCtrl["workflow-controller<br/>(Argo Workflows v3.7.14)"]
+            Driver["Driver<br/>Go · Pipeline step driver"]
+            Launcher["Launcher-v2<br/>Go · Pipeline step launcher"]
+            WorkflowCtrl -->|orchestrates| Driver
+            WorkflowCtrl -->|orchestrates| Launcher
+        end
+
+        subgraph Supporting["Supporting Services"]
+            PersistenceAgent["Persistence Agent<br/>Workflow state sync"]
+            ScheduledWF["Scheduled Workflow<br/>Controller<br/>Recurring runs"]
+            CacheServer["Cache Server<br/>Execution caching<br/>Port: 443"]
+            ViewerCtrl["Viewer Controller<br/>Visualization CRDs"]
+            VizServer["Visualization Server<br/>Port: 8888"]
+        end
+
+        subgraph Metadata["ML Metadata"]
+            MetadataWriter["Metadata Writer<br/>Python"]
+            MetadataEnvoy["Metadata Envoy<br/>Port: 9090"]
+            MetadataGRPC["Metadata gRPC Store<br/>ml_metadata_store_server<br/>Port: 8080"]
+            MetadataWriter -->|writes via| MetadataEnvoy
+            MetadataEnvoy -->|proxies to| MetadataGRPC
+        end
+
+        subgraph DataTier["Data Tier"]
+            MySQL["MySQL 8.4<br/>Port: 3306"]
+            SeaweedFS["SeaweedFS<br/>S3-compatible storage<br/>Ports: 8333/9333"]
+        end
+
+        subgraph Frontend["Frontend"]
+            UI["ml-pipeline-ui<br/>Node.js<br/>Port: 3000"]
+        end
+    end
+
+    %% External actors
+    User["Data Scientist / Client"]
+    PipelineCR["Pipeline CR<br/>pipelines.kubeflow.org/v2beta1"]
+    PipelineVersionCR["PipelineVersion CR<br/>pipelines.kubeflow.org/v2beta1"]
+
+    %% User interactions
+    User -->|"gRPC/REST API"| APIServer
+    User -->|"Web UI"| UI
+    User -->|creates| PipelineCR
+    User -->|creates| PipelineVersionCR
+
+    %% CR watches
+    PipelineVersionCR -->|"validated by"| Webhook
+    PipelineCR -->|"watched by"| APIServer
+
+    %% Internal flows
+    APIServer -->|"creates workflows"| WorkflowCtrl
+    APIServer -->|"stores metadata"| MySQL
+    APIServer -->|"stores artifacts"| SeaweedFS
+    PersistenceAgent -->|"syncs state from"| WorkflowCtrl
+    PersistenceAgent -->|"reports to"| APIServer
+    ScheduledWF -->|"triggers"| APIServer
+    CacheServer -->|"intercepts steps"| WorkflowCtrl
+    MetadataWriter -->|"watches"| WorkflowCtrl
+    Driver -->|"reads/writes"| SeaweedFS
+    Launcher -->|"reads/writes"| SeaweedFS
+    UI -->|"queries"| APIServer
+    UI -->|"reads"| MySQL
+    MetadataGRPC -->|"stores in"| MySQL
+    VizServer -->|"serves to"| UI
+
+    %% Styling
+    style APIServer fill:#4a90e2,stroke:#333,color:#fff
+    style Webhook fill:#4a90e2,stroke:#333,color:#fff
+    style WorkflowCtrl fill:#e67e22,stroke:#333,color:#fff
+    style Driver fill:#e67e22,stroke:#333,color:#fff
+    style Launcher fill:#e67e22,stroke:#333,color:#fff
+    style PersistenceAgent fill:#9b59b6,stroke:#333,color:#fff
+    style ScheduledWF fill:#9b59b6,stroke:#333,color:#fff
+    style CacheServer fill:#9b59b6,stroke:#333,color:#fff
+    style ViewerCtrl fill:#9b59b6,stroke:#333,color:#fff
+    style VizServer fill:#9b59b6,stroke:#333,color:#fff
+    style MetadataWriter fill:#1abc9c,stroke:#333,color:#fff
+    style MetadataEnvoy fill:#1abc9c,stroke:#333,color:#fff
+    style MetadataGRPC fill:#1abc9c,stroke:#333,color:#fff
+    style MySQL fill:#e74c3c,stroke:#333,color:#fff
+    style SeaweedFS fill:#e74c3c,stroke:#333,color:#fff
+    style UI fill:#3498db,stroke:#333,color:#fff
+    style PipelineCR fill:#f5a623,stroke:#333
+    style PipelineVersionCR fill:#f5a623,stroke:#333
+    style User fill:#ecf0f1,stroke:#333

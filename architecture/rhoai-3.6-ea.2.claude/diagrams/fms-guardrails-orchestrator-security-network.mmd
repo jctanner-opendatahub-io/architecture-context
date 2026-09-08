@@ -1,0 +1,57 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["Client Application"]
+    end
+
+    subgraph GuardrailsServer["GUARDRAILS SERVER (Application Boundary)"]
+        direction TB
+
+        TLSAcceptor["TLS Acceptor<br/>8033/TCP<br/>TLS 1.2+ (optional)<br/>mTLS (optional)<br/>Crypto: ring (NOT FIPS)"]
+        Router["Axum Router<br/>Header Passthrough<br/>X-Forwarded-Access-Token → Bearer"]
+
+        TLSAcceptor --> Router
+    end
+
+    subgraph HealthZone["HEALTH SERVER (Unauthenticated)"]
+        HealthServer["Health Server<br/>8034/TCP HTTP<br/>No TLS, No Auth<br/>/health, /info"]
+    end
+
+    subgraph Downstream["DOWNSTREAM SERVICES"]
+        direction TB
+
+        Chunker["Chunker Services<br/>8085/TCP gRPC<br/>TLS optional (named profile)"]
+        Detector["Detector Services<br/>8080/TCP REST<br/>TLS optional (named profile)<br/>Bearer token optional"]
+        DetectorHealth["Detector Health<br/>8081/TCP REST<br/>No TLS, No Auth"]
+        TGIS["TGIS Generation<br/>8033/TCP gRPC<br/>No TLS, No Auth"]
+        OpenAIGen["OpenAI-compat Generation<br/>(optional)<br/>HTTP/HTTPS"]
+    end
+
+    subgraph Observability["OBSERVABILITY (Optional)"]
+        OTLP["OTLP Endpoint<br/>gRPC/HTTP<br/>Traces + Metrics"]
+    end
+
+    %% Flows
+    Client -->|"HTTPS/8033<br/>TLS 1.2+ (optional)<br/>Passthrough Headers"| TLSAcceptor
+    Client -->|"HTTP/8034<br/>No TLS, No Auth"| HealthServer
+
+    Router -->|"gRPC/8085<br/>TLS optional<br/>Named TLS profile"| Chunker
+    Router -->|"REST/8080<br/>TLS optional<br/>Bearer token optional"| Detector
+    Router -->|"REST/8081<br/>No encryption<br/>No auth"| DetectorHealth
+    Router -->|"gRPC/8033<br/>No TLS<br/>No auth"| TGIS
+    Router -->|"REST/configurable<br/>HTTP/HTTPS"| OpenAIGen
+    Router -.->|"gRPC/HTTP<br/>OTLP export"| OTLP
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef server fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef health fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef downstream fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef observability fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef warning fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Client external
+    class TLSAcceptor warning
+    class Router server
+    class HealthServer health
+    class Chunker,Detector,DetectorHealth,TGIS,OpenAIGen downstream
+    class OTLP observability

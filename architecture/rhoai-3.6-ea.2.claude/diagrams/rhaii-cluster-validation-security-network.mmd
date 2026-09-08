@@ -1,0 +1,50 @@
+graph TB
+    subgraph OperatorZone["OPERATOR WORKSTATION (Trusted - Admin Context)"]
+        CLI["rhaii-validator CLI<br/>kubectl-rhaii_validate<br/>FIPS: strictfipsruntime + UBI9 OpenSSL<br/>No listening ports"]
+    end
+
+    subgraph ControlPlane["KUBERNETES CONTROL PLANE"]
+        KubeAPI["kube-apiserver<br/>6443/TCP<br/>TLS 1.2+<br/>RequestAuthentication"]
+    end
+
+    subgraph WorkerNodes["WORKER NODES (GPU-equipped)"]
+        subgraph NS_Validation["Namespace: rhaii-validation"]
+            SA["ServiceAccount: rhaii-validator<br/>SCC: privileged<br/>K8s API perms: NONE"]
+            ProbeJobs["Probe Job Pods<br/>Image: rhaii-validator (agent mode)<br/>SA: rhaii-validator"]
+            ConfigMaps["ConfigMaps<br/>(mesh-topology results)"]
+        end
+
+        subgraph HostDevices["Host Device Access (via privileged SCC)"]
+            GPU["/sys/class/drm/*<br/>nvidia-smi<br/>GPU driver, ECC"]
+            RDMA["/sys/class/infiniband/*<br/>RDMA devices, NIC status"]
+            PCI["/sys/bus/pci/devices/*<br/>PCI topology, GPU-NIC affinity"]
+        end
+    end
+
+    %% Flows
+    CLI -->|"HTTPS + WSS / 6443<br/>TLS 1.2+ (FIPS)<br/>kubeconfig credentials<br/>(bearer / client cert / OIDC)"| KubeAPI
+
+    KubeAPI -->|"Schedules Jobs<br/>Creates NS, SA, RBAC,<br/>Jobs, ConfigMaps"| ProbeJobs
+
+    KubeAPI -.->|"Log API + ConfigMap GET<br/>(result collection)"| ConfigMaps
+
+    SA -.->|"SCC binding only<br/>No API permissions"| ProbeJobs
+
+    ProbeJobs -->|"Host sysfs read<br/>(privileged SCC)"| GPU
+    ProbeJobs -->|"Host sysfs read<br/>(privileged SCC)"| RDMA
+    ProbeJobs -->|"Host sysfs read<br/>(privileged SCC)"| PCI
+
+    ProbeJobs -->|"stdout + ConfigMap write"| ConfigMaps
+
+    %% Styling
+    classDef operator fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef controlplane fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef workload fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef hostdevice fill:#f8cecc,stroke:#b85450,stroke-width:2px
+    classDef storage fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+
+    class CLI operator
+    class KubeAPI controlplane
+    class SA,ProbeJobs workload
+    class GPU,RDMA,PCI hostdevice
+    class ConfigMaps storage

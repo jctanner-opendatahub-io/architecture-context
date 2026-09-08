@@ -1,0 +1,116 @@
+graph TD
+    subgraph ModuleOperatorSA["Module Operator Service Account"]
+        SA_Module["mcp-lifecycle-module-operator-<br/>controller-manager"]
+    end
+
+    subgraph OperandSA["Operand Service Account"]
+        SA_Operand["mcp-lifecycle-operator-<br/>controller-manager"]
+    end
+
+    subgraph ModuleBindings["Module Operator Bindings"]
+        CRB_Module["mcp-lifecycle-module-operator-<br/>manager-rolebinding<br/>(ClusterRoleBinding)"]
+    end
+
+    subgraph OperandBindings["Operand Bindings"]
+        CRB_Operand["mcp-lifecycle-operator-<br/>manager-rolebinding<br/>(ClusterRoleBinding)"]
+        CRB_Metrics["mcp-lifecycle-operator-<br/>metrics-auth-rolebinding<br/>(ClusterRoleBinding)"]
+        RB_Leader["mcp-lifecycle-operator-<br/>leader-election-rolebinding<br/>(RoleBinding)"]
+    end
+
+    subgraph ModuleRole["Module Operator ClusterRole"]
+        CR_Module["mcp-lifecycle-module-operator-<br/>manager-role<br/>(20 rules)"]
+    end
+
+    subgraph OperandRoles["Operand ClusterRoles"]
+        CR_Operand["mcp-lifecycle-operator-<br/>manager-role<br/>(9 rules)"]
+        CR_Metrics["mcp-lifecycle-operator-<br/>metrics-auth-role"]
+        R_Leader["mcp-lifecycle-operator-<br/>leader-election-role<br/>(Role - namespaced)"]
+    end
+
+    subgraph AggregationRoles["RBAC Aggregation (MCPServer Self-Service)"]
+        CR_Admin["mcpserver-admin-role<br/>aggregate-to-admin"]
+        CR_Editor["mcpserver-editor-role<br/>aggregate-to-edit"]
+        CR_Viewer["mcpserver-viewer-role<br/>aggregate-to-view"]
+    end
+
+    subgraph ModuleResources["Module Operator Resources"]
+        MCPLifecycleOpCR["components.platform.opendatahub.io<br/>MCPLifecycleOperator<br/>full CRUD + finalizers + status"]
+        MCPServerFull["mcp.x-k8s.io<br/>MCPServer<br/>full CRUD + deletecollection"]
+        CoreResources["core<br/>configmaps, namespaces,<br/>serviceaccounts, services<br/>full CRUD"]
+        AppsResources["apps<br/>deployments<br/>full CRUD"]
+        RBACResources["rbac.authorization.k8s.io<br/>clusterroles, clusterrolebindings,<br/>roles, rolebindings<br/>full CRUD"]
+        CRDResources["apiextensions.k8s.io<br/>customresourcedefinitions<br/>full CRUD"]
+        MonitorResources["monitoring.coreos.com<br/>servicemonitors<br/>full CRUD"]
+        NetResources["networking.k8s.io<br/>networkpolicies<br/>full CRUD"]
+        OSResources["config.openshift.io<br/>apiservers<br/>get, list, watch"]
+    end
+
+    subgraph OperandResources["Operand Resources"]
+        MCPServerOp["mcp.x-k8s.io<br/>MCPServer<br/>get, list, patch, update, watch"]
+        CoreOp["core<br/>configmaps, secrets (read-only)<br/>services (CRUD)"]
+        AppsOp["apps<br/>deployments (CRUD)"]
+        NetOp["networking.k8s.io<br/>networkpolicies (CRUD)"]
+    end
+
+    subgraph AggregatedResources["Aggregated Resources"]
+        MCPServerAdmin["mcp.x-k8s.io/MCPServer<br/>full CRUD + deletecollection + status"]
+        MCPServerEdit["mcp.x-k8s.io/MCPServer<br/>full CRUD + status"]
+        MCPServerView["mcp.x-k8s.io/MCPServer<br/>get, list, watch + status"]
+    end
+
+    %% Module operator chain
+    SA_Module -->|bound via| CRB_Module
+    CRB_Module -->|grants| CR_Module
+    CR_Module -->|access| MCPLifecycleOpCR
+    CR_Module -->|access| MCPServerFull
+    CR_Module -->|access| CoreResources
+    CR_Module -->|access| AppsResources
+    CR_Module -->|access| RBACResources
+    CR_Module -->|access| CRDResources
+    CR_Module -->|access| MonitorResources
+    CR_Module -->|access| NetResources
+    CR_Module -->|access| OSResources
+
+    %% Operand chain
+    SA_Operand -->|bound via| CRB_Operand
+    SA_Operand -->|bound via| CRB_Metrics
+    SA_Operand -->|bound via| RB_Leader
+    CRB_Operand -->|grants| CR_Operand
+    CRB_Metrics -->|grants| CR_Metrics
+    RB_Leader -->|grants| R_Leader
+    CR_Operand -->|access| MCPServerOp
+    CR_Operand -->|access| CoreOp
+    CR_Operand -->|access| AppsOp
+    CR_Operand -->|access| NetOp
+
+    %% Aggregation chain
+    CR_Admin -->|access| MCPServerAdmin
+    CR_Editor -->|access| MCPServerEdit
+    CR_Viewer -->|access| MCPServerView
+
+    %% Styling
+    style SA_Module fill:#4a90e2,stroke:#333,color:#fff
+    style SA_Operand fill:#7ed321,stroke:#333,color:#fff
+    style CR_Module fill:#f5a623,stroke:#333,color:#fff
+    style CR_Operand fill:#f5a623,stroke:#333,color:#fff
+    style CR_Metrics fill:#f5a623,stroke:#333,color:#fff
+    style R_Leader fill:#f5a623,stroke:#333,color:#fff
+    style CR_Admin fill:#e06666,stroke:#333,color:#fff
+    style CR_Editor fill:#e06666,stroke:#333,color:#fff
+    style CR_Viewer fill:#e06666,stroke:#333,color:#fff
+    style MCPLifecycleOpCR fill:#d5e8d4,stroke:#82b366
+    style MCPServerFull fill:#d5e8d4,stroke:#82b366
+    style CoreResources fill:#d5e8d4,stroke:#82b366
+    style AppsResources fill:#d5e8d4,stroke:#82b366
+    style RBACResources fill:#d5e8d4,stroke:#82b366
+    style CRDResources fill:#d5e8d4,stroke:#82b366
+    style MonitorResources fill:#d5e8d4,stroke:#82b366
+    style NetResources fill:#d5e8d4,stroke:#82b366
+    style OSResources fill:#d5e8d4,stroke:#82b366
+    style MCPServerOp fill:#d5e8d4,stroke:#82b366
+    style CoreOp fill:#d5e8d4,stroke:#82b366
+    style AppsOp fill:#d5e8d4,stroke:#82b366
+    style NetOp fill:#d5e8d4,stroke:#82b366
+    style MCPServerAdmin fill:#d5e8d4,stroke:#82b366
+    style MCPServerEdit fill:#d5e8d4,stroke:#82b366
+    style MCPServerView fill:#d5e8d4,stroke:#82b366

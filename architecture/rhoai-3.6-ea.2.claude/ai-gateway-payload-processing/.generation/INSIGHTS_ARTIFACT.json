@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "ai-gateway-payload-processing",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "ai-gateway-payload-processing-pattern-001",
+      "claim": "The component implements a dual-plane architecture with a CRD-driven control plane and an Envoy ExtProc data plane, requiring Istio service mesh integration for external provider connectivity.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/controller/externalprovider/reconciler.go:59-136"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/runner.go:88-96"
+        }
+      ],
+      "reasoning": "The ExternalProvider controller creates Istio ServiceEntry and DestinationRule resources alongside Kubernetes Services, establishing a hard dependency on Istio service mesh for external provider routing and TLS origination. This pattern couples the component to Istio-enabled clusters.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "ai-gateway-payload-processing-pattern-002",
+      "claim": "The ExtProc server is a hand-maintained fork of the upstream llm-d-inference-payload-processor runner, requiring manual synchronization when the upstream dependency is updated.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/runner.go:85-96"
+        }
+      ],
+      "reasoning": "The source comments explicitly document that cmd/runner.go is a hand-maintained copy of the upstream runner required because upstream offers no hook to wrap the ext-proc server. The KEEP IN SYNC comment indicates ongoing maintenance burden when bumping the dependency version.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "ai-gateway-payload-processing-trade-off-001",
+      "claim": "The ExtProc gRPC server uses self-signed certificates for optional TLS rather than integrating with a certificate management system, trading operational simplicity for certificate lifecycle management.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/runner.go:277-286"
+        }
+      ],
+      "reasoning": "The newExtProcRunnable function generates a self-signed certificate at startup when secureServing is enabled. This avoids external cert-manager dependencies but means certificates are ephemeral and regenerated on each pod restart, which may complicate mTLS verification by upstream Envoy proxies.",
+      "applicability": "component",
+      "confidence": "medium"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client / Application]                                         │
+│         │                                                                │
+│         │ Port: 443/TCP (platform-managed)                               │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (platform-managed)                             │
+│         │ Auth: Platform-delegated (KServe / Istio)                      │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PLATFORM LAYER (KServe / Service Mesh)                                 │
+│                                                                          │
+│  [KServe ServingRuntime]                                                 │
+│  - Manages pod lifecycle, networking, ingress                            │
+│  - Consumes vllm-gaudi container image                                   │
+│  - Handles TLS termination and authentication                            │
+│                                                                          │
+│  [Istio / Service Mesh] (if configured)                                  │
+│  - mTLS between services                                                 │
+│  - RequestAuthentication / AuthorizationPolicy                           │
+│         │                                                                │
+│         │ Port: 8000/TCP (default, runtime-configurable)                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: mTLS (if service mesh enabled)                     │
+│         │ Auth: Service Identity (Istio) or None                         │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION CONTAINER (vllm-gaudi)                                     │
+│                                                                          │
+│  [vLLM OpenAI-Compatible API Server]                                     │
+│  - Entrypoint: python3 -m vllm.entrypoints.openai.api_server            │
+│  - Runtime user: UID 2000 (non-root)                                     │
+│  - Base image: UBI 9                                                     │
+│  - OpenSSL FIPS provider: REMOVED (non-FIPS)                             │
+│                                                                          │
+│  Endpoints (defined by upstream vLLM, not this repo):                    │
+│  - /v1/chat/completions     POST   HTTP   Inference                      │
+│  - /v1/completions          POST   HTTP   Inference                      │
+│  - /v1/models               GET    HTTP   Model listing                  │
+│  - /health                  GET    HTTP   Health check                    │
+│                                                                          │
+│  [vllm_gaudi Plugin]                                                     │
+│  - HPU device backend for vLLM                                           │
+│  - Interfaces with SynapseAI runtime                                     │
+│         │                                                                │
+│         │ Internal (in-process)                                          │
+│         │ Protocol: SynapseAI Runtime API                                │
+│         │ Encryption: N/A (local hardware)                               │
+│         │ Auth: N/A                                                      │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  HARDWARE LAYER                                                          │
+│                                                                          │
+│  [Intel Gaudi HPU]                                                       │
+│  - SynapseAI Runtime: 1.23.0                                            │
+│  - PyTorch HPU: 2.9.0                                                   │
+│  - Purpose: Accelerated tensor operations for LLM inference             │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  MODEL STORAGE                                                           │
+│                                                                          │
+│  [Volume Mount / Storage Path]                                           │
+│  - Purpose: Model weight storage                                         │
+│  - Access: Filesystem read (configured at runtime)                       │
+│  - Auth: Kubernetes volume mount permissions                             │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- No ClusterRoles or RoleBindings defined by this component
+- All RBAC is managed by the KServe platform layer
+- Container runs as non-root user (UID 2000)
+
+Authentication & Authorization:
+- Endpoint: OpenAI-compatible API (/v1/*)
+  Methods: All
+  Auth Mechanism: None (platform-delegated)
+  Enforcement Point: KServe / Istio
+  Policy: Platform-managed
+
+FIPS Compliance:
+- OpenSSL FIPS provider (openssl-fips-provider-so) is EXPLICITLY REMOVED
+  from the container image during build
+- All three Dockerfile variants remove the FIPS provider
+- Runtime OpenSSL operates in non-FIPS mode
+- TLS for external traffic is delegated to the platform (KServe/Istio)
+- Sources: Dockerfile.konflux.gaudi:59-63, Dockerfile.hpu.ubi:59-63,
+  .cd/Dockerfile.rhel.ubi.vllm:60-64
+
+Secrets:
+- No secrets defined by this component
+- Model storage credentials managed by KServe platform layer
+
+Service Mesh Configuration:
+- Not configured by this component
+- Delegated to KServe / RHOAI platform layer
+- mTLS enforcement depends on platform configuration
+
+Container Security:
+- Non-root execution: UID 2000
+- Base image: Red Hat UBI 9
+- No privilege escalation
+- No host networking
+- No additional capabilities required beyond Gaudi device access

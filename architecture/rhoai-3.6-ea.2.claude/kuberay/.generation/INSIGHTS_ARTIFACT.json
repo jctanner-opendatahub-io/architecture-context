@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "component": "kuberay",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "kuberay-pattern-001",
+      "claim": "KubeRay uses a dual-mode authentication architecture that supports both OpenShift Integrated OAuth and standalone OIDC via the same kube-rbac-proxy sidecar injection mechanism, with mode detection at reconciliation time rather than operator startup.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "ray-operator/controllers/ray/authentication_controller.go:147-161"
+        }
+      ],
+      "reasoning": "The AuthenticationController detects the authentication mode (ModeIntegratedOAuth vs ModeOIDC) during each reconciliation cycle and routes both to the same handleOIDCConfiguration path. This runtime detection means a single operator deployment can serve clusters with different authentication requirements, and the mode can change without operator restart.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "kuberay-pattern-002",
+      "claim": "The operator reads the OpenShift cluster-wide TLS security profile at startup and applies platform-mandated cipher suites to its webhook server, establishing a dependency on the OpenShift config API that is gracefully degraded on non-OpenShift clusters.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "ray-operator/pkg/tls/tls.go:65-110"
+        }
+      ],
+      "reasoning": "The tls.Resolve function reads apiservers.config.openshift.io/cluster and maps the TLS profile to Go cipher suites. When the OpenShift API is absent (NoMatchError) or unavailable (transient errors), it falls back to hardened Intermediate defaults. This pattern ensures the operator works on both OpenShift and vanilla Kubernetes while conforming to platform security policy when available.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "kuberay-risk-001",
+      "claim": "The kube-rbac-proxy image used for Ray dashboard authentication defaults to a hardcoded registry.redhat.io digest, creating a potential disconnected-environment failure if the RELATED_IMAGE_ODH_KUBE_RBAC_PROXY_IMAGE override is not set via the CSV relatedImages mechanism.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "ray-operator/controllers/ray/authentication_controller.go:50-74"
+        }
+      ],
+      "reasoning": "The defaultOIDCProxyContainerImage constant uses a registry.redhat.io digest reference. The init() function checks RELATED_IMAGE_ODH_KUBE_RBAC_PROXY_IMAGE for overrides. In disconnected environments without image mirroring configured for registry.redhat.io, the default image would fail to pull if the environment variable is not injected by the ODH/RHOAI operator CSV.",
+      "applicability": "cross-component",
+      "confidence": "medium"
+    }
+  ]
+}

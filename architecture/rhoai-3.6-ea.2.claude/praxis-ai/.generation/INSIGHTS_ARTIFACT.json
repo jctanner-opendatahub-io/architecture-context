@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "praxis-ai",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "praxis-ai-pattern-001",
+      "claim": "Praxis AI uses ring as its TLS crypto provider throughout (via rustls), which is not FIPS-validated. aws-lc-rs is present as a transitive dependency but not selected as the active provider.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/cross_cutting_evidence/security"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "Cargo.toml:51,62,106-108"
+        }
+      ],
+      "reasoning": "The workspace Cargo.toml explicitly selects rustls with ring for reqwest, sqlx (tls-rustls-ring feature), and pingora-core. The analyzer identified both ring and aws-lc-rs in Cargo.lock, but no code or feature flag activates aws-lc-rs as the provider or enables its FIPS mode. For RHOAI deployment requiring FIPS compliance, the crypto provider would need to be switched to aws-lc-rs with FIPS features enabled.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "praxis-ai-pattern-002",
+      "claim": "The ext_proc integration is a gRPC client filter (not a gRPC service), designed exclusively for llm-d compatibility. It adds a network hop and failure domain to the request path.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "integrations/llmd/ext-proc/src/lib.rs:1-55"
+        }
+      ],
+      "reasoning": "The ext_proc module documentation explicitly warns that external processing adds gRPC latency and a new failure domain. It uses tonic Channel (client) not tonic Server. The crate is marked publish=false and scoped to llm-d only, with native Praxis filters recommended for general extension work. This architectural choice trades latency for compatibility with llm-d's existing EPP protocol.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "praxis-ai-pattern-003",
+      "claim": "Security filters (credential_inject, provider_route) are distinguished from non-security filters at registration, enabling closed-failure-mode enforcement that rejects requests by default when a security filter fails.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "server/src/lib.rs:146-158"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "server/src/server.rs:260-288"
+        }
+      ],
+      "reasoning": "The test code verifies that provider_route and credential_inject are marked as security filters while intelligent_route is not. The insecure_options.allow_open_security_filters warning confirms that security filter failure mode defaults to closed (reject) unless explicitly overridden. This is a defense-in-depth pattern for AI proxy deployments where credential leakage to wrong providers would be a security incident.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

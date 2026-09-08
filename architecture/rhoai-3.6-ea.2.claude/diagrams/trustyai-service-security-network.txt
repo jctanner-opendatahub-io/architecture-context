@@ -1,0 +1,127 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client]                                                       │
+│         │                                                                │
+│         │ Port: 8443/TCP                                                 │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (platform-managed)                             │
+│         │ Auth: Bearer Token / ServiceAccount (Kubernetes RBAC)          │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  AUTHENTICATION BOUNDARY (kube-rbac-proxy sidecar)                      │
+│                                                                          │
+│  [kube-rbac-proxy]                                                       │
+│  - Port: 8443/TCP (external) → 8081/TCP (loopback)                     │
+│  - TLS Termination: Yes (platform-managed certificates)                 │
+│  - AuthN: Kubernetes TokenReview / SubjectAccessReview                   │
+│  - AuthZ: Kubernetes RBAC                                                │
+│  - Binding: External (all interfaces)                                    │
+│         │                                                                │
+│         │ Port: 8081/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None (loopback 127.0.0.1 only)                    │
+│         │ Auth: Pre-authenticated by kube-rbac-proxy                     │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION (TrustyAI Service Container)                               │
+│                                                                          │
+│  [Main FastAPI App - Hypercorn]                                          │
+│  - Namespace: {user-namespace}                                           │
+│  - Bind: 127.0.0.1:8081 (loopback only)                                │
+│  - Endpoints: Fairness, Drift, Explainability, Metadata                 │
+│  - Auth: None (relies on kube-rbac-proxy)                                │
+│                                                                          │
+│  [Health/Consumer FastAPI App - Hypercorn]                                │
+│  - Bind: 0.0.0.0:8080 (all interfaces)                                  │
+│  - Endpoints:                                                            │
+│    - GET /health (kubelet probes)                                        │
+│    - POST / (KServe CloudEvent consumer)                                 │
+│    - POST /consumer/kserve/v2 (ModelMesh consumer)                       │
+│    - GET /q/metrics (Prometheus scrape)                                   │
+│  - Auth: None (internal cluster traffic)                                 │
+│                                                                          │
+│  [Optional HTTPS Listener - Hypercorn]                                   │
+│  - Bind: 0.0.0.0:4443                                                   │
+│  - TLS: PolicyAwareConfig (system crypto policy)                         │
+│  - Certs: /etc/tls/internal/tls.crt, /etc/tls/internal/tls.key         │
+│  - Cipher selection: Delegated to OS (FIPS-compatible)                   │
+│  - Auth: TLS client certificate (optional)                               │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  INTERNAL CLUSTER (Trusted - in-cluster traffic)                        │
+│                                                                          │
+│  [Kubelet]                                                               │
+│         │ Port: 8080/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Auth: None                                                     │
+│         │ Purpose: Liveness/Readiness probes                             │
+│         ▼ GET /health                                                    │
+│  [Health/Consumer App]                                                   │
+│                                                                          │
+│  [KServe Inference Logger]                                               │
+│         │ Port: 8080/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Auth: None                                                     │
+│         │ Purpose: Inference data ingestion                              │
+│         ▼ POST / (CloudEvent)                                            │
+│  [Health/Consumer App]                                                   │
+│                                                                          │
+│  [ModelMesh Agent]                                                       │
+│         │ Port: 8080/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Auth: None                                                     │
+│         │ Purpose: Inference data ingestion                              │
+│         ▼ POST /consumer/kserve/v2                                       │
+│  [Health/Consumer App]                                                   │
+│                                                                          │
+│  [Prometheus]                                                            │
+│         │ Port: 8080/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Auth: None                                                     │
+│         │ Purpose: Metrics scraping                                      │
+│         ▼ GET /q/metrics                                                 │
+│  [Health/Consumer App]                                                   │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  STORAGE BACKENDS                                                        │
+│                                                                          │
+│  [PVC - HDF5 Files]                                                      │
+│  - Protocol: Filesystem (local mount)                                    │
+│  - Encryption: At-rest (cluster storage class dependent)                 │
+│  - Auth: Kubernetes PVC mount                                            │
+│  - Purpose: Default inference data and model metadata storage            │
+│                                                                          │
+│  [MariaDB] (optional)                                                    │
+│  - Port: 3306/TCP                                                        │
+│  - Protocol: MySQL                                                       │
+│  - Encryption: TLS (optional, via CA cert at /etc/tls/db/ca.crt)        │
+│  - Auth: DATABASE_PASSWORD or QUARKUS_DATASOURCE_PASSWORD env vars      │
+│  - Purpose: Alternative persistent storage backend                       │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Port Summary:
+  8443/TCP - kube-rbac-proxy external (TLS, authenticated)
+  8081/TCP - Main API loopback (HTTP, pre-authenticated)
+  8080/TCP - Health/Consumer API (HTTP, unauthenticated, internal)
+  4443/TCP - Optional HTTPS listener (TLS, system crypto policy)
+  3306/TCP - MariaDB (MySQL, optional TLS)
+
+FIPS Compliance:
+- TLS Configuration: PolicyAwareConfig delegates to ssl.create_default_context()
+- Cipher Selection: System crypto policy (no application overrides)
+- Crypto Libraries: Python stdlib ssl only; cryptography package explicitly removed
+- Certificate Paths:
+  - /etc/tls/internal/tls.crt (service TLS cert)
+  - /etc/tls/internal/tls.key (service TLS key)
+  - /etc/tls/db/ca.crt (MariaDB CA cert)
+
+Secrets:
+- DATABASE_PASSWORD (environment variable) - MariaDB credentials, runtime provisioned
+- QUARKUS_DATASOURCE_PASSWORD (environment variable) - Legacy Quarkus-compat DB password, runtime provisioned
+
+Authentication Summary:
+  Main API (8081):        Platform-delegated via kube-rbac-proxy (Kubernetes RBAC)
+  Health/Consumer (8080): Unauthenticated (kubelet probes, KServe, ModelMesh, Prometheus)
+  HTTPS Listener (4443):  TLS client certificate (optional), system crypto policy

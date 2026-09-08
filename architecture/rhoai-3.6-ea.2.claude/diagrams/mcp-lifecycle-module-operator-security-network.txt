@@ -1,0 +1,140 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  CLUSTER INTERNAL (Trusted - In-cluster ServiceAccount Auth)            │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────┐            │
+│  │  Namespace: system (Module Operator)                     │            │
+│  │                                                           │            │
+│  │  [mcp-lifecycle-module-operator-controller-manager]       │            │
+│  │  - Image: /manager                                        │            │
+│  │  - SA: mcp-lifecycle-module-operator-controller-manager   │            │
+│  │  - Build: GOEXPERIMENT=strictfipsruntime                  │            │
+│  │  - Base: ubi9/ubi-minimal-pqc                             │            │
+│  │  - Health: :8081/healthz, :8081/readyz (HTTP, unauth)     │            │
+│  │         │                                                  │            │
+│  │         │ Port: 6443/TCP                                   │            │
+│  │         │ Protocol: HTTPS/WSS                              │            │
+│  │         │ Encryption: TLS 1.2+                             │            │
+│  │         │ Auth: ServiceAccount token (in-cluster)          │            │
+│  │         │                                                  │            │
+│  └─────────┼──────────────────────────────────────────────────┘            │
+│            │                                                              │
+│            ▼                                                              │
+│  ┌──────────────────────────────────────────────────────────┐            │
+│  │  Kubernetes API Server                                    │            │
+│  │  - Port: 6443/TCP                                         │            │
+│  │  - Protocol: HTTPS                                        │            │
+│  │  - Encryption: TLS 1.2+                                   │            │
+│  │  - Auth: ServiceAccount token                             │            │
+│  │                                                            │            │
+│  │  Resources accessed (module operator):                     │            │
+│  │  - components.platform.opendatahub.io/MCPLifecycleOperator│            │
+│  │  - mcp.x-k8s.io/MCPServer (CRUD + deletecollection)      │            │
+│  │  - apps/Deployments, /ConfigMaps, /Services               │            │
+│  │  - rbac.authorization.k8s.io/* (ClusterRoles, Bindings)   │            │
+│  │  - apiextensions.k8s.io/CRDs                              │            │
+│  │  - monitoring.coreos.com/ServiceMonitors                  │            │
+│  │  - networking.k8s.io/NetworkPolicies                      │            │
+│  │  - config.openshift.io/APIServers (read-only)             │            │
+│  │  - coordination.k8s.io/Leases (leader election)           │            │
+│  └──────────────────────────────────────────────────────────┘            │
+│            │                                                              │
+│            │ SSA (Server-Side Apply)                                      │
+│            ▼                                                              │
+│  ┌──────────────────────────────────────────────────────────┐            │
+│  │  Namespace: mcp-lifecycle-operator-system (Operand)       │            │
+│  │                                                            │            │
+│  │  [mcp-lifecycle-operator-controller-manager]              │            │
+│  │  - Image: quay.io/opendatahub/odh-mcp-lifecycle-operator │            │
+│  │  - SA: mcp-lifecycle-operator-controller-manager          │            │
+│  │  - TLS: Cluster-derived TLS profile                       │            │
+│  │         │                                                  │            │
+│  │         │ Port: 6443/TCP                                   │            │
+│  │         │ Protocol: HTTPS                                  │            │
+│  │         │ Encryption: TLS 1.2+                             │            │
+│  │         │ Auth: ServiceAccount token                       │            │
+│  │         │                                                  │            │
+│  │  [mcp-lifecycle-operator-controller-manager-              │            │
+│  │   metrics-service]                                        │            │
+│  │  - Type: ClusterIP                                        │            │
+│  │  - Port: 8443/TCP                                         │            │
+│  │  - Auth: RBAC-gated (TokenReview/SubjectAccessReview)     │            │
+│  └──────────────────────────────────────────────────────────┘            │
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────┐            │
+│  │  OpenShift APIServer (config.openshift.io)                │            │
+│  │  - Purpose: TLS profile configuration source              │            │
+│  │  - Access: get, list, watch (read-only)                   │            │
+│  │  - Fallback: Intermediate profile (TLS 1.2+) on          │            │
+│  │              non-OpenShift clusters                        │            │
+│  └──────────────────────────────────────────────────────────┘            │
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────┐            │
+│  │  Platform ConfigMap                                       │            │
+│  │  - Purpose: Distribution detection (RHOAI vs standalone)  │            │
+│  │  - Access: get, list, watch                               │            │
+│  │  - Watch: Name/namespace predicate filter                 │            │
+│  └──────────────────────────────────────────────────────────┘            │
+│                                                                          │
+│  ┌──────────────────────────────────────────────────────────┐            │
+│  │  Prometheus Operator (monitoring.coreos.com)              │            │
+│  │  - Purpose: Manage ServiceMonitor resources               │            │
+│  │  - Protocol: HTTPS                                        │            │
+│  │  - Encryption: TLS 1.2+                                   │            │
+│  └──────────────────────────────────────────────────────────┘            │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+
+Module Operator (mcp-lifecycle-module-operator-manager-role):
+  SA: mcp-lifecycle-module-operator-controller-manager
+  Namespace binding: system
+  Scope: 20 rules covering:
+  - Core: configmaps, namespaces, serviceaccounts, services (full CRUD)
+  - Core: pods (get, list), secrets (get, list, watch)
+  - Events: events.k8s.io/events (create, patch)
+  - CRDs: apiextensions.k8s.io/customresourcedefinitions (full CRUD)
+  - Apps: deployments (full CRUD)
+  - Auth: tokenreviews + subjectaccessreviews (create)
+  - MCPLifecycleOperator CR: full CRUD + finalizers + status
+  - MCPServer: full CRUD + deletecollection + finalizers + status
+  - OpenShift: config.openshift.io/apiservers (read-only)
+  - Leader election: coordination.k8s.io/leases (full CRUD)
+  - Monitoring: servicemonitors (full CRUD)
+  - Networking: networkpolicies (full CRUD)
+  - RBAC: clusterroles, clusterrolebindings, roles, rolebindings (full CRUD)
+
+Operand (mcp-lifecycle-operator-manager-role):
+  SA: mcp-lifecycle-operator-controller-manager
+  Namespace binding: mcp-lifecycle-operator-system
+  Scope: 9 rules covering:
+  - Core: configmaps, secrets (read-only), pods (get, list), services (CRUD)
+  - Events: events (create, patch)
+  - Apps: deployments (CRUD minus delete)
+  - MCPServer: get, list, patch, update, watch + finalizers + status
+  - Networking: networkpolicies (CRUD minus delete)
+
+RBAC Aggregation (MCPServer self-service):
+  - mcp-lifecycle-operator-mcpserver-admin-role: full CRUD + deletecollection
+  - mcp-lifecycle-operator-mcpserver-editor-role: full CRUD (no deletecollection)
+  - mcp-lifecycle-operator-mcpserver-viewer-role: read-only (get, list, watch)
+  Aggregated into: built-in admin, edit, view ClusterRoles
+
+Leader Election:
+  - mcp-lifecycle-operator-leader-election-role (Role, not ClusterRole)
+  - Resources: configmaps, leases, events
+  - Namespace: mcp-lifecycle-operator-system
+
+FIPS Compliance:
+  - Build: GOEXPERIMENT=strictfipsruntime
+  - Base image: ubi9/ubi-minimal-pqc (post-quantum cryptography)
+  - TLS: Cluster-derived profile (Intermediate/TLS 1.2+ fallback)
+  - Crypto: stdlib crypto/tls backed by OpenSSL at runtime
+
+Network Services:
+  - Health probes: :8081/TCP HTTP (unauthenticated, internal)
+  - Metrics: :8443/TCP (RBAC-gated via TokenReview/SubjectAccessReview)
+  - Kubernetes API: 6443/TCP HTTPS (ServiceAccount token auth)
+
+Secrets:
+  - No application-managed secrets detected
+  - ServiceAccount tokens are auto-provisioned by Kubernetes

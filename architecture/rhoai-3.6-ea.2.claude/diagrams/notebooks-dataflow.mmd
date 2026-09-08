@@ -1,0 +1,51 @@
+sequenceDiagram
+    participant User as Data Scientist<br/>Browser
+    participant Dashboard as RHOAI Dashboard
+    participant Controller as odh-notebook-controller
+    participant Route as OpenShift Route<br/>443/TCP HTTPS
+    participant OAuth as OAuth Proxy Sidecar<br/>TLS Termination
+    participant JupyterLab as JupyterLab<br/>8888/TCP HTTP
+    participant CodeServer as nginx → code-server<br/>8787/TCP HTTP
+    participant K8sAPI as Kubernetes API<br/>443/TCP HTTPS
+    participant S3 as S3-Compatible Storage<br/>443/TCP HTTPS
+
+    Note over User,S3: Workbench Creation Flow
+
+    User->>Dashboard: Select notebook image & config
+    Dashboard->>Controller: Create Notebook CR
+    Controller->>Controller: Inject OAuth proxy sidecar
+    Controller->>Controller: Set NB_PREFIX, NOTEBOOK_ARGS env vars
+    Controller->>JupyterLab: Create workbench pod<br/>(start-notebook.sh entrypoint)
+
+    Note over User,S3: JupyterLab User Access Flow
+
+    User->>Route: HTTPS request
+    Route->>OAuth: Forward request
+    OAuth->>OAuth: Validate user identity<br/>(OpenShift OAuth)
+    OAuth->>JupyterLab: Forward authenticated request<br/>HTTP/8888
+    JupyterLab-->>OAuth: Response
+    OAuth-->>Route: Response
+    Route-->>User: Notebook UI
+
+    Note over User,S3: Code-Server User Access Flow
+
+    User->>Route: HTTPS request
+    Route->>OAuth: Forward request
+    OAuth->>OAuth: Validate user identity
+    OAuth->>CodeServer: Forward via NB_PREFIX path<br/>HTTP/8787
+    CodeServer-->>OAuth: Response
+    OAuth-->>Route: Response
+    Route-->>User: Code-Server IDE
+
+    Note over User,S3: User Workload Data Access (Optional)
+
+    JupyterLab->>K8sAPI: kubernetes Python client<br/>HTTPS/443 (TLS)
+    K8sAPI-->>JupyterLab: Cluster resources
+    JupyterLab->>S3: boto3 / minio client<br/>HTTPS/443 (TLS)
+    S3-->>JupyterLab: Data / model artifacts
+
+    Note over User,S3: Platform Configuration Injection
+
+    Controller->>JupyterLab: NB_PREFIX → ServerApp.base_url
+    Controller->>JupyterLab: NOTEBOOK_ARGS → server config
+    Controller->>CodeServer: NB_PREFIX → nginx location block

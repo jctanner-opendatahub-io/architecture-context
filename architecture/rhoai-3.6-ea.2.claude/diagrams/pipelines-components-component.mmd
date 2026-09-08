@@ -1,0 +1,64 @@
+graph TB
+    subgraph "pipelines-components"
+        subgraph "Init Container"
+            Entrypoint["init_managed_pipelines<br/>Python entrypoint"]
+            PipelineYAMLs["Pre-compiled Pipeline YAMLs<br/>/app"]
+            Entrypoint -->|reads| PipelineYAMLs
+            Entrypoint -->|"recompiles if<br/>RELATED_IMAGE set"| PipelineYAMLs
+        end
+
+        subgraph "Component Library"
+            TabularLoader["Tabular Data Loader<br/>AutoML data loading"]
+            ParseChunk["Parse & Chunk<br/>Document processing"]
+            SDGComponent["SDG Component<br/>Synthetic data generation"]
+            AutoRAG["AutoRAG<br/>RAG optimization"]
+            DatasetDownload["Dataset Download<br/>Data retrieval"]
+        end
+
+        subgraph "Pipeline Definitions"
+            AutoMLPipeline["AutoML Training Pipeline"]
+            AutoRAGPipeline["AutoRAG Pipeline"]
+            SDGPipeline["SDG Pipeline"]
+        end
+    end
+
+    SharedVolume["/config/managed-pipelines<br/>Shared Volume"]
+    Entrypoint -->|"copies YAMLs to"| SharedVolume
+
+    KFPServer["KFP API Server"]
+    SharedVolume -->|"consumed by"| KFPServer
+    KFPServer -->|"orchestrates as<br/>task pods"| TabularLoader
+    KFPServer -->|"orchestrates as<br/>task pods"| ParseChunk
+    KFPServer -->|"orchestrates as<br/>task pods"| SDGComponent
+    KFPServer -->|"orchestrates as<br/>task pods"| AutoRAG
+
+    S3["S3-Compatible Storage"]
+    TabularLoader -->|"boto3 HTTPS"| S3
+    ParseChunk -->|"boto3 HTTPS"| S3
+    DatasetDownload -->|"boto3 HTTPS"| S3
+
+    K8sAPI["Kubernetes API"]
+    ParseChunk -->|"in-cluster SA token"| K8sAPI
+
+    RayCluster["Ray Cluster<br/>(via CodeFlare SDK)"]
+    ParseChunk -->|"RayJob submission"| RayCluster
+
+    SDGHub["SDG Hub"]
+    SDGComponent -->|"SDK calls"| SDGHub
+
+    AI4RAG["ai4rag"]
+    AutoRAG -->|"optimization"| AI4RAG
+
+    style Entrypoint fill:#4a90e2,stroke:#333
+    style TabularLoader fill:#4a90e2,stroke:#333
+    style ParseChunk fill:#4a90e2,stroke:#333
+    style SDGComponent fill:#4a90e2,stroke:#333
+    style AutoRAG fill:#4a90e2,stroke:#333
+    style DatasetDownload fill:#4a90e2,stroke:#333
+    style SharedVolume fill:#f5a623,stroke:#333
+    style KFPServer fill:#7ed321,stroke:#333
+    style S3 fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style RayCluster fill:#e8e8e8,stroke:#333
+    style SDGHub fill:#e8e8e8,stroke:#333
+    style AI4RAG fill:#e8e8e8,stroke:#333

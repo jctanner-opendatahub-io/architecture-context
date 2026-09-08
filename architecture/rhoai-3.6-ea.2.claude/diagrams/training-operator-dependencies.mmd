@@ -1,0 +1,49 @@
+graph LR
+    TrainingOp["Training Operator"]
+
+    %% Runtime Framework
+    TrainingOp -->|"operator framework"| ControllerRuntime["controller-runtime<br/>v0.19.1"]
+    TrainingOp -->|"API types"| K8sAPI["k8s.io/api<br/>v0.31.3"]
+    TrainingOp -->|"API machinery"| K8sApimachinery["k8s.io/apimachinery<br/>v0.31.7"]
+    TrainingOp -->|"cluster client"| K8sClientGo["k8s.io/client-go<br/>v0.31.3"]
+
+    %% Gang Scheduling
+    TrainingOp -->|"gang scheduling"| Volcano["Volcano APIs<br/>v1.9.0"]
+    TrainingOp -->|"gang scheduling"| SchedulerPlugins["Scheduler Plugins<br/>v0.28.9"]
+
+    %% Observability
+    TrainingOp -->|"metrics"| PromClient["prometheus/client_golang<br/>v1.20.2"]
+    TrainingOp -->|"structured logging"| Zap["go.uber.org/zap<br/>v1.27.0"]
+    TrainingOp -->|"logging interface"| Logr["go-logr/logr<br/>v1.4.2"]
+
+    %% Certificate Management
+    TrainingOp -->|"cert rotation"| CertController["cert-controller<br/>v0.12.0"]
+
+    %% Platform Integration
+    TrainingOp -->|"TLS profile"| OpenShiftAPI["OpenShift APIServer<br/>config.openshift.io/v1"]
+    Prometheus["Prometheus"] -->|"scrapes :8080"| TrainingOp
+
+    %% Build
+    TrainingOp -->|"build toolchain"| Go["Go 1.26.4<br/>FIPS: strictfipsruntime"]
+    TrainingOp -->|"base image"| UBI9["UBI9 ubi-minimal"]
+
+    %% Kubernetes Platform
+    TrainingOp -->|"resource operations"| KubeAPIServer["Kubernetes API<br/>6443/TCP HTTPS"]
+
+    %% Styling
+    style TrainingOp fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style ControllerRuntime fill:#5b9bd5,stroke:#333,color:#fff
+    style K8sAPI fill:#5b9bd5,stroke:#333,color:#fff
+    style K8sApimachinery fill:#5b9bd5,stroke:#333,color:#fff
+    style K8sClientGo fill:#5b9bd5,stroke:#333,color:#fff
+    style Volcano fill:#999,stroke:#333,color:#fff
+    style SchedulerPlugins fill:#999,stroke:#333,color:#fff
+    style PromClient fill:#7ed321,stroke:#333,color:#fff
+    style Zap fill:#7ed321,stroke:#333,color:#fff
+    style Logr fill:#7ed321,stroke:#333,color:#fff
+    style CertController fill:#999,stroke:#333,color:#fff
+    style OpenShiftAPI fill:#f5a623,stroke:#333
+    style Prometheus fill:#7ed321,stroke:#333,color:#fff
+    style Go fill:#e8e8e8,stroke:#333
+    style UBI9 fill:#e8e8e8,stroke:#333
+    style KubeAPIServer fill:#f5a623,stroke:#333

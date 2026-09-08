@@ -1,0 +1,55 @@
+sequenceDiagram
+    participant User as Data Scientist
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS TLS 1.2+
+    participant Webhook as Webhook Server<br/>443/TCP TLS
+    participant Manager as KServe Controller Manager
+    participant LMOp as LocalModel Operator
+    participant LMNAgent as LocalModelNode Agent
+    participant Storage as Object Storage<br/>(S3/GCS/Azure)
+    participant AutoGluon as AutoGluon Server<br/>HTTP V1/V2 + gRPC V2
+    participant Prometheus as Prometheus
+    participant KubeRBACProxy as kube-rbac-proxy<br/>8443/TCP TLS
+
+    Note over User,AutoGluon: Model Deployment Lifecycle
+
+    User->>K8sAPI: kubectl apply InferenceService CR<br/>Auth: ServiceAccount Token
+    K8sAPI->>Webhook: Admission webhook<br/>POST /mutate-...-inferenceservice<br/>TLS
+    Webhook-->>K8sAPI: Mutated/Validated CR
+    K8sAPI-->>Manager: Watch event: InferenceService created
+
+    Manager->>K8sAPI: Get ClusterServingRuntime<br/>(kserve-autogluonserver)
+    K8sAPI-->>Manager: Runtime spec (autogluon:1)
+
+    Manager->>K8sAPI: Create Deployment<br/>(autogluonserver container)
+    Manager->>K8sAPI: Create Service
+    Manager->>K8sAPI: Create HTTPRoute/VirtualService/Ingress
+    Manager->>K8sAPI: Update InferenceService status
+
+    Note over AutoGluon,Storage: Model Loading
+
+    AutoGluon->>Storage: Download model artifacts<br/>HTTPS/443 (AWS IAM / Azure AD / GCS SA)
+    Storage-->>AutoGluon: Model files (TabularPredictor/TimeSeriesPredictor)
+    AutoGluon->>AutoGluon: Load AutoGluon model<br/>autogluon.tabular v1.5.0+rhaiv.3
+
+    Note over User,AutoGluon: Inference Request
+
+    User->>AutoGluon: POST /v1/models/model:predict<br/>or POST /v2/models/model/infer
+    AutoGluon-->>User: Prediction response (JSON)
+
+    Note over LMOp,LMNAgent: Local Model Caching Flow
+
+    User->>K8sAPI: Create LocalModelCache CR
+    K8sAPI-->>LMOp: Watch event: LocalModelCache created
+    LMOp->>K8sAPI: Create PersistentVolume/PVC
+    LMOp->>K8sAPI: Create LocalModelNode resources
+    K8sAPI-->>LMNAgent: Watch event: LocalModelNode created
+    LMNAgent->>K8sAPI: Create batch/v1 Job<br/>(download model to local PV)
+    LMNAgent->>Storage: Download model to local storage
+
+    Note over Prometheus,KubeRBACProxy: Metrics Collection
+
+    Prometheus->>KubeRBACProxy: GET /metrics<br/>8443/TCP TLS
+    KubeRBACProxy->>KubeRBACProxy: Authenticate via TokenReview/SubjectAccessReview
+    KubeRBACProxy->>Manager: Proxy to 8080/TCP HTTP
+    Manager-->>KubeRBACProxy: Metrics response
+    KubeRBACProxy-->>Prometheus: Metrics (authenticated)

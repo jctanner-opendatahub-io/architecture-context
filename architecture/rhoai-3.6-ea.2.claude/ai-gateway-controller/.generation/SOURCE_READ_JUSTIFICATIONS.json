@@ -1,0 +1,117 @@
+{
+  "component": "ai-gateway-controller",
+  "reads": [
+    {
+      "expected_signal": "container port definitions, probe configuration, service account, lifecycle configuration",
+      "gap_category": [
+        "services",
+        "authentication"
+      ],
+      "line_range": "1-87",
+      "outcome": "resolved",
+      "path": "config/self/manager/manager.yaml",
+      "question": "Which container ports, probes, and service mappings expose this workload, and what security context is configured?",
+      "scope_reason": "Full deployment manifest needed to establish complete port inventory, probe configuration, security context, and env var parameterization",
+      "sections": [
+        "Services",
+        "Data Flows",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT, strictfipsruntime, OpenSSL, dynamic linking",
+      "gap_category": [
+        "fips_compliance"
+      ],
+      "line_range": "1-37",
+      "outcome": "resolved",
+      "path": "Dockerfile.konflux",
+      "question": "What FIPS build-time signals are present in the Konflux Dockerfile?",
+      "sections": [
+        "Security"
+      ]
+    },
+    {
+      "expected_signal": "controller setup, auth middleware, health probe registration, integration client construction",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "services"
+      ],
+      "line_range": "1-150",
+      "outcome": "resolved",
+      "path": "cmd/manager/main.go",
+      "question": "What controllers, auth middleware, and integration patterns are configured in the manager entrypoint?",
+      "scope_reason": "Full main.go needed to establish all flag definitions, manager configuration, health probe registration, and installer setup which collectively define the controller's integration surface",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis",
+        "Data Flows",
+        "Integration Points",
+        "Authentication & Authorization"
+      ]
+    },
+    {
+      "expected_signal": "render loop, SSA apply, resync interval, managed resource types",
+      "gap_category": [
+        "integration_points",
+        "services"
+      ],
+      "line_range": "1-99",
+      "outcome": "resolved",
+      "path": "pkg/render/installer.go",
+      "question": "How does the installer render and apply manifests, and what is the resync/reconciliation pattern?",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "DestinationRule, EnvoyFilter, ServiceEntry targets in kustomize patches",
+      "gap_category": [
+        "integration_points"
+      ],
+      "line_range": "1-35",
+      "outcome": "resolved",
+      "path": "config/manifests/praxis-extproc/overlays/odh/pre-processing/kustomization.yaml",
+      "question": "What Istio networking resources does the praxis-extproc overlay manage?",
+      "sections": [
+        "Integration Points",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "Service kind, port, protocol, type",
+      "gap_category": [
+        "services",
+        "integration_points"
+      ],
+      "line_range": "1-12",
+      "outcome": "resolved",
+      "path": "config/manifests/praxis-extproc/base/instance/service.yaml",
+      "question": "What Service is defined for the praxis-extproc managed workload?",
+      "sections": [
+        "Data Flows",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "fips_compliance",
+        "services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "pkg/render",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    }
+  ],
+  "schema_version": 1
+}

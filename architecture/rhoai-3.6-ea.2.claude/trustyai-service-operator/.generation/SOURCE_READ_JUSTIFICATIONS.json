@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "component": "trustyai-service-operator",
+  "reads": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "145-194",
+      "gap_category": ["authentication", "fips_compliance"],
+      "question": "How is the controller-runtime metrics endpoint authenticated, and what TLS configuration is applied?",
+      "expected_signal": "middleware, filter, policy, or enforcement branch for metrics authentication",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "pkg/tracing/tracing.go",
+      "line_range": "360-389",
+      "gap_category": ["integration_points"],
+      "question": "What runtime configuration and protocol options does the OpenTelemetry Collector gRPC client support?",
+      "expected_signal": "client construction, request path, protocol, or failure handling",
+      "outcome": "resolved",
+      "sections": ["Data Flows", "Architectural Analysis"]
+    },
+    {
+      "path": "trustyai-operator-module/cmd/trustyai-operator-module/main.go",
+      "line_range": "10-74",
+      "gap_category": ["internal_dependencies", "authentication"],
+      "question": "How does odh-platform-utilities integrate at runtime, and how does the module authenticate to the Kubernetes API?",
+      "expected_signal": "import, client call, or controller handoff for odh-platform-utilities; ServiceAccount token usage",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "Purpose", "Architectural Analysis"]
+    },
+    {
+      "path": "pkg/tls/tls.go",
+      "line_range": "85-119",
+      "gap_category": ["internal_dependencies", "fips_compliance"],
+      "question": "How does the ProfileWatcher read the OpenShift APIServer configuration, and what TLS/crypto settings are applied?",
+      "expected_signal": "APIServer resource read, TLS configuration, cipher suites, fallback behavior",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-51",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags, linking mode, and base image are used for the operator binary?",
+      "expected_signal": "GOEXPERIMENT, CGO_ENABLED, build tags, base image with FIPS/PQC support",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "controllers/dsc/config.go",
+      "line_range": "1-80",
+      "gap_category": ["internal_dependencies"],
+      "question": "What source-backed runtime behavior uses the DSC ConfigMap reference, and what is the interaction boundary with the OpenDataHub operator?",
+      "expected_signal": "ConfigMap name, keys, reader pattern, and policy configuration",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "Purpose", "Data Flows", "Architectural Analysis"]
+    }
+  ]
+}

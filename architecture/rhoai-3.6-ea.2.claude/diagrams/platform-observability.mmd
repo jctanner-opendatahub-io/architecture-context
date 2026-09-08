@@ -1,0 +1,105 @@
+graph TB
+    subgraph Prometheus["Prometheus Scrape Targets (redhat-ods-monitoring)"]
+        direction TB
+        P_Desc["ServiceMonitor-based discovery<br/>All operators expose metrics on<br/>dedicated ports via kube-rbac-proxy"]
+        P1["rhods-operator<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P2["kserve controllers<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P3["odh-model-controller<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P4["odh-dashboard<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P5["kubeflow notebook-controller<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P6["data-science-pipelines<br/>Port 8888/TCP<br/>Application auth"]
+        P7["models-as-a-service<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P8["model-registry-operator<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P9["kueue-operator<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P10["kuberay<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+        P11["46+ operator metrics endpoints<br/>Port 8443/TCP<br/>kube-rbac-proxy"]
+    end
+
+    subgraph MetricsAccess["Metrics Access Routes (odh-observability)"]
+        direction TB
+        R1["Route: data-science-prometheus-<br/>cluster-proxy<br/>TLS passthrough<br/>kube-rbac-proxy backend<br/>SAR: metrics.k8s.io/nodes:get"]
+        R2["Route: data-science-prometheus-<br/>route<br/>TLS passthrough<br/>kube-rbac-proxy backend"]
+        R3["Route: thanos-querier<br/>TLS passthrough<br/>kube-rbac-proxy backend<br/>Namespace-scoped SAR"]
+    end
+
+    subgraph MonitoringStack["Monitoring Stack (redhat-ods-monitoring)"]
+        direction TB
+        Prom_Server["Prometheus Server<br/>ServiceMonitor discovery<br/>Cluster-wide operator metrics"]
+        Thanos["Thanos Querier<br/>Federated query across<br/>Prometheus instances"]
+        KRBP_Cluster["kube-rbac-proxy<br/>(cluster proxy)<br/>metrics.k8s.io/nodes:get SAR"]
+        KRBP_NS["kube-rbac-proxy<br/>(namespace proxy)<br/>Query-parameter rewriting<br/>for namespace-scoped SAR"]
+    end
+
+    subgraph Tracing["Distributed Tracing (Optional)"]
+        direction TB
+        OTel["OpenTelemetry Collector<br/>OTLP gRPC receiver"]
+        T1["maas-api<br/>OTLP traces"]
+        T2["odh-model-controller<br/>OTLP traces"]
+        T3["odh-dashboard<br/>OTLP traces"]
+        T4["trustyai-service-operator<br/>OTLP traces"]
+    end
+
+    subgraph WebhookMonitoring["Webhook Availability Monitoring"]
+        direction TB
+        WH1["kserve webhooks: 30<br/>(8M + 21V + 1C)<br/>failurePolicy: Fail"]
+        WH2["kueue-operator webhooks: 70<br/>(34M + 36V)<br/>failurePolicy: Fail"]
+        WH3["odh-model-controller: 16<br/>(10M + 6V)<br/>failurePolicy: Fail"]
+        WH4["Total: 213 webhooks<br/>ALL failurePolicy: Fail<br/>Outage blocks resource creation"]
+    end
+
+    subgraph HAMonitoring["High Availability Monitoring"]
+        direction TB
+        HA1["Leader Election Health<br/>19 components use<br/>coordination.k8s.io Leases"]
+        HA2["All controllers: 1 replica<br/>Leader election for<br/>single-active-replica"]
+        HA3["Lease objects to monitor:<br/>rhods-operator, kserve,<br/>kubeflow, kuberay, kueue,<br/>dspo, model-registry-op,<br/>maas, trainer, training-op,<br/>ai-gateway-op, workbenches,<br/>+ 7 more"]
+    end
+
+    subgraph PipelineObs["Pipeline Observability"]
+        direction TB
+        PO1["DSP API Server<br/>Port 8888/TCP<br/>Pipeline run status"]
+        PO2["ml-metadata<br/>gRPC via metadata-envoy<br/>Artifact lineage tracking"]
+        PO3["Argo Workflows<br/>Workflow controller<br/>Step-level status"]
+    end
+
+    %% Prometheus scraping
+    Prom_Server -->|"ServiceMonitor"| P1
+    Prom_Server -->|"ServiceMonitor"| P2
+    Prom_Server -->|"ServiceMonitor"| P3
+    Prom_Server -->|"ServiceMonitor"| P4
+    Prom_Server -->|"ServiceMonitor"| P5
+    Prom_Server -->|"ServiceMonitor"| P6
+    Prom_Server -->|"ServiceMonitor"| P7
+    Prom_Server -->|"ServiceMonitor"| P11
+
+    %% Thanos federation
+    Thanos -->|"query"| Prom_Server
+
+    %% Access routes
+    R1 -->|"TLS passthrough"| KRBP_Cluster
+    R2 -->|"TLS passthrough"| Prom_Server
+    R3 -->|"TLS passthrough"| KRBP_NS
+    KRBP_Cluster -->|"proxy"| Prom_Server
+    KRBP_NS -->|"proxy"| Thanos
+
+    %% Tracing flows
+    T1 -->|"OTLP/gRPC"| OTel
+    T2 -->|"OTLP/gRPC"| OTel
+    T3 -->|"OTLP/gRPC"| OTel
+    T4 -->|"OTLP/gRPC"| OTel
+
+    %% Styling
+    classDef prom fill:#e8d5b7,stroke:#b8860b
+    classDef route fill:#ffe6cc,stroke:#d79b00
+    classDef stack fill:#d5e8d4,stroke:#82b366
+    classDef trace fill:#dae8fc,stroke:#6c8ebf
+    classDef webhook fill:#f8cecc,stroke:#b85450
+    classDef ha fill:#e1d5e7,stroke:#9673a6
+    classDef pipeline fill:#fff2cc,stroke:#d6b656
+
+    class P_Desc,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,P11 prom
+    class R1,R2,R3 route
+    class Prom_Server,Thanos,KRBP_Cluster,KRBP_NS stack
+    class OTel,T1,T2,T3,T4 trace
+    class WH1,WH2,WH3,WH4 webhook
+    class HA1,HA2,HA3 ha
+    class PO1,PO2,PO3 pipeline

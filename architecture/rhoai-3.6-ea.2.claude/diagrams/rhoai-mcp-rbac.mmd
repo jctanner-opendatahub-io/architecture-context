@@ -1,0 +1,98 @@
+graph TD
+    subgraph "Service Account"
+        SA["rhoai-mcp<br/>(Namespace: rhoai-mcp)"]
+    end
+
+    subgraph "ClusterRole Binding"
+        CRB["rhoai-mcp<br/>(ClusterRoleBinding)"]
+    end
+
+    subgraph "ClusterRole"
+        CR["rhoai-mcp<br/>(ClusterRole)"]
+    end
+
+    SA -->|"bound via"| CRB
+    CRB -->|"grants"| CR
+
+    subgraph "Core Resources (no API group)"
+        Events["events"]
+        Nodes["nodes"]
+        Pods["pods, pods/log"]
+        Services["services"]
+        Namespaces["namespaces"]
+        PVs["persistentvolumes"]
+        PVCs["persistentvolumeclaims"]
+        Secrets["secrets"]
+    end
+
+    subgraph "Kubeflow (kubeflow.org)"
+        Notebooks["notebooks"]
+    end
+
+    subgraph "KServe (serving.kserve.io)"
+        InferenceServices["inferenceservices"]
+        ServingRuntimes["servingruntimes"]
+    end
+
+    subgraph "Training (trainer.kubeflow.org)"
+        TrainJobs["trainjobs"]
+        TrainingRuntimes["trainingruntimes"]
+        ClusterTrainingRuntimes["clustertrainingruntimes"]
+    end
+
+    subgraph "Pipelines (datasciencepipelinesapplications.opendatahub.io)"
+        DSPApps["datasciencepipelinesapplications"]
+    end
+
+    subgraph "Storage (storage.k8s.io)"
+        StorageClasses["storageclasses"]
+    end
+
+    %% Core resource permissions
+    CR -->|"get, list, watch"| Events
+    CR -->|"get, list, watch"| Nodes
+    CR -->|"get, list, watch, create"| Pods
+    CR -->|"get, list, watch"| Services
+    CR -->|"create, delete, get,<br/>list, patch, watch"| Namespaces
+    CR -->|"create"| PVs
+    CR -->|"create, delete, get,<br/>list, watch"| PVCs
+    CR -->|"create, delete, get,<br/>list, watch"| Secrets
+
+    %% Kubeflow permissions
+    CR -->|"create, delete, get,<br/>list, patch, watch"| Notebooks
+
+    %% KServe permissions
+    CR -->|"create, delete, get,<br/>list, watch"| InferenceServices
+    CR -->|"create, get, list, watch"| ServingRuntimes
+
+    %% Training permissions
+    CR -->|"create, delete, get, list,<br/>patch, update, watch"| TrainJobs
+    CR -->|"get, list, watch"| TrainingRuntimes
+    CR -->|"create, delete, get,<br/>list, watch"| ClusterTrainingRuntimes
+
+    %% Pipelines permissions
+    CR -->|"create, delete, get,<br/>list, watch"| DSPApps
+
+    %% Storage permissions
+    CR -->|"list"| StorageClasses
+
+    %% Styling
+    style SA fill:#4a90e2,stroke:#333,color:#fff
+    style CRB fill:#3498db,stroke:#333,color:#fff
+    style CR fill:#f5a623,stroke:#333
+    style Events fill:#d5e8d4,stroke:#82b366
+    style Nodes fill:#d5e8d4,stroke:#82b366
+    style Pods fill:#d5e8d4,stroke:#82b366
+    style Services fill:#d5e8d4,stroke:#82b366
+    style Namespaces fill:#d5e8d4,stroke:#82b366
+    style PVs fill:#d5e8d4,stroke:#82b366
+    style PVCs fill:#d5e8d4,stroke:#82b366
+    style Secrets fill:#ffe6cc,stroke:#d79b00
+    style Notebooks fill:#7ed321,stroke:#333
+    style InferenceServices fill:#7ed321,stroke:#333
+    style ServingRuntimes fill:#7ed321,stroke:#333
+    style TrainJobs fill:#7ed321,stroke:#333
+    style TrainingRuntimes fill:#7ed321,stroke:#333
+    style ClusterTrainingRuntimes fill:#7ed321,stroke:#333
+    style DSPApps fill:#7ed321,stroke:#333
+    style StorageClasses fill:#d5e8d4,stroke:#82b366

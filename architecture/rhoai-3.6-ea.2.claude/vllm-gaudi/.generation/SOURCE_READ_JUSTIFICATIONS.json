@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "component": "vllm-gaudi",
+  "reads": [
+    {
+      "path": "Dockerfile.konflux.gaudi",
+      "line_range": "1-50",
+      "gap_category": ["fips_compliance", "internal_dependencies"],
+      "question": "What base image and build arguments configure the Konflux container? Are there FIPS build flags?",
+      "expected_signal": "Base image, FIPS flags, build configuration",
+      "outcome": "resolved",
+      "sections": ["Security", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile.konflux.gaudi",
+      "line_range": "55-66",
+      "gap_category": ["fips_compliance"],
+      "question": "Does the Konflux Dockerfile configure or remove FIPS crypto providers?",
+      "expected_signal": "FIPS provider configuration, OpenSSL setup",
+      "outcome": "resolved",
+      "sections": ["Security"]
+    },
+    {
+      "path": "Dockerfile.konflux.gaudi",
+      "line_range": "180-244",
+      "gap_category": ["http_endpoints", "integration_points", "internal_dependencies", "services"],
+      "question": "What is the vLLM installation process, entrypoint, and are there EXPOSE or service definitions?",
+      "expected_signal": "Entrypoint command, port exposure, vllm dependency installation",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Data Flows", "Integration Points", "Architectural Analysis"]
+    },
+    {
+      "path": ".cd/entrypoints/entrypoint_main.py",
+      "line_range": "1-228",
+      "gap_category": ["http_endpoints", "services"],
+      "question": "Does the alternative entrypoint define HTTP endpoints or services?",
+      "expected_signal": "HTTP route definitions, port bindings, service configuration",
+      "outcome": "resolved",
+      "sections": ["Data Flows"],
+      "scope_reason": "Needed to understand full entrypoint logic including server mode dispatch, config loading, and script generation - no single symbol was sufficient"
+    },
+    {
+      "path": ".cd/Dockerfile.rhel.ubi.vllm",
+      "line_range": "55-66",
+      "gap_category": ["fips_compliance"],
+      "question": "Does the RHEL development Dockerfile also remove the FIPS provider?",
+      "expected_signal": "FIPS provider removal confirmation across variants",
+      "outcome": "resolved",
+      "sections": ["Security"]
+    },
+    {
+      "path": "Dockerfile.hpu.ubi",
+      "line_range": "55-66",
+      "gap_category": ["fips_compliance"],
+      "question": "Does the HPU UBI Dockerfile also remove the FIPS provider?",
+      "expected_signal": "FIPS provider removal confirmation across variants",
+      "outcome": "resolved",
+      "sections": ["Security"]
+    },
+    {
+      "path": "requirements.txt",
+      "line_range": "1-6",
+      "gap_category": ["internal_dependencies"],
+      "question": "What runtime dependencies does vllm-gaudi require?",
+      "expected_signal": "Python package dependencies for HPU support",
+      "outcome": "resolved",
+      "sections": ["Dependencies"]
+    },
+    {
+      "path": "pyproject.toml",
+      "line_range": "1-60",
+      "gap_category": ["internal_dependencies"],
+      "question": "What is the package metadata and dependency specification?",
+      "expected_signal": "Package name, description, dependency declarations",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Dependencies"]
+    }
+  ]
+}

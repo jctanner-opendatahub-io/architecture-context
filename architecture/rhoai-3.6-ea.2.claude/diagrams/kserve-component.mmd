@@ -1,0 +1,104 @@
+graph TB
+    subgraph KServeControlPlane["KServe Control Plane"]
+        direction TB
+
+        subgraph CoreController["Core Controller (cmd/manager)"]
+            ISController["InferenceService<br/>Controller"]
+            IGController["InferenceGraph<br/>Controller"]
+            TMController["TrainedModel<br/>Controller"]
+            APIController["APIServer<br/>Controller"]
+        end
+
+        subgraph LLMController["LLM Controller (cmd/llmisvc)"]
+            LLMISVCController["LLMInferenceService<br/>Controller"]
+            LLMConfigController["LLMInferenceServiceConfig<br/>Controller"]
+        end
+
+        subgraph LocalModelControllers["Local Model Controllers"]
+            LMCacheController["LocalModelCache<br/>Controller"]
+            LMNSCacheController["LocalModelNamespaceCache<br/>Controller"]
+            LMNodeController["LocalModelNode<br/>Controller"]
+        end
+
+        subgraph PlatformOperator["Platform Operator (cmd/kserve-module)"]
+            KserveModuleController["Kserve Module<br/>Controller"]
+        end
+
+        WebhookServer["Webhook Server<br/>(17 webhooks, Fail policy)"]
+        KubeRBACProxy["kube-rbac-proxy<br/>Sidecar<br/>(8443→8080)"]
+        Router["InferenceGraph<br/>Router<br/>(cmd/router)"]
+    end
+
+    subgraph PythonSDK["Python SDK & Model Servers"]
+        direction LR
+        HFServer["HuggingFace<br/>Server"]
+        SKLearnServer["scikit-learn<br/>Server"]
+        LGBServer["LightGBM<br/>Server"]
+        XGBServer["XGBoost<br/>Server"]
+        VLLMServer["vLLM<br/>Runtime"]
+        OVMSServer["OVMS<br/>Runtime"]
+        MLServer["MLServer<br/>Runtime"]
+    end
+
+    subgraph CRDs["Custom Resource Definitions"]
+        ISCR["InferenceService<br/>(v1beta1)"]
+        IGCR["InferenceGraph<br/>(v1alpha1)"]
+        LLMCR["LLMInferenceService<br/>(v1alpha1/v1alpha2)"]
+        TMCR["TrainedModel<br/>(v1alpha1)"]
+        LMCR["LocalModelCache<br/>(v1alpha1)"]
+        KserveCR["Kserve CR<br/>(components.platform)"]
+        CSRCR["ClusterServingRuntime<br/>(v1alpha1)"]
+    end
+
+    %% User interactions
+    User["Data Scientist / User"] -->|creates| ISCR
+    User -->|creates| LLMCR
+    User -->|creates| IGCR
+
+    %% CR → Controller mappings
+    ISCR -->|watched by| ISController
+    IGCR -->|watched by| IGController
+    LLMCR -->|watched by| LLMISVCController
+    TMCR -->|watched by| TMController
+    LMCR -->|watched by| LMCacheController
+    KserveCR -->|watched by| KserveModuleController
+    CSRCR -->|watched by| ISController
+
+    %% Controller outputs
+    ISController -->|creates| Deployment["Deployments"]
+    ISController -->|creates| HPAs["HPAs / KEDA ScaledObjects"]
+    ISController -->|creates| IngressRes["HTTPRoutes / Routes<br/>/ VirtualServices"]
+    LLMISVCController -->|creates| Deployment
+    LLMISVCController -->|creates| LWS["LeaderWorkerSets"]
+    LLMISVCController -->|creates| InferencePool["InferencePools"]
+    KserveModuleController -->|manages| WebhookServer
+    KserveModuleController -->|installs| CRDs
+    KserveModuleController -->|provisions| CSRCR
+
+    %% Router flow
+    Router -->|TokenReview| K8sAPI["Kubernetes API"]
+    Router -->|SubjectAccessReview| K8sAPI
+
+    %% Local model flow
+    LMCacheController -->|creates| PVs["PersistentVolumes"]
+    LMNodeController -->|creates| Jobs["Download Jobs"]
+
+    %% Styling
+    style ISController fill:#4a90e2,color:#fff
+    style IGController fill:#4a90e2,color:#fff
+    style LLMISVCController fill:#4a90e2,color:#fff
+    style KserveModuleController fill:#4a90e2,color:#fff
+    style LMCacheController fill:#4a90e2,color:#fff
+    style LMNodeController fill:#4a90e2,color:#fff
+    style WebhookServer fill:#e67e22,color:#fff
+    style KubeRBACProxy fill:#e67e22,color:#fff
+    style Router fill:#8e44ad,color:#fff
+    style ISCR fill:#f5a623
+    style IGCR fill:#f5a623
+    style LLMCR fill:#f5a623
+    style KserveCR fill:#f5a623
+    style CSRCR fill:#f5a623
+    style HFServer fill:#7ed321,color:#fff
+    style VLLMServer fill:#7ed321,color:#fff
+    style OVMSServer fill:#7ed321,color:#fff
+    style User fill:#3498db,color:#fff

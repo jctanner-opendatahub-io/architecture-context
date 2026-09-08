@@ -1,0 +1,70 @@
+graph TB
+    subgraph OVMS["OpenVINO Model Server"]
+        direction TB
+        Binary["/ovms/bin/ovms<br/>C++ Inference Server"]
+
+        subgraph GRPCLayer["gRPC Server"]
+            TFSPrediction["TFS PredictionService"]
+            TFSModel["TFS ModelService"]
+            KFSInference["KFS GRPCInferenceService"]
+        end
+
+        subgraph RESTLayer["REST Server"]
+            TFSV1["TFS v1 Handler<br/>/v1/models/..."]
+            KFSV2["KFS v2 Handler<br/>/v2/..."]
+            OpenAIV3["OpenAI v3 Handler<br/>/v3/..."]
+            Metrics["Prometheus Metrics<br/>/metrics"]
+        end
+
+        subgraph ModelMgr["Model Manager"]
+            ModelLoader["Model Loader"]
+            OpenVINORT["OpenVINO Runtime"]
+            ModelLoader -->|loads into| OpenVINORT
+        end
+
+        Binary --> GRPCLayer
+        Binary --> RESTLayer
+        GRPCLayer -->|dispatches| ModelMgr
+        RESTLayer -->|dispatches| ModelMgr
+    end
+
+    subgraph ServingRuntimes["KServe Serving Runtimes"]
+        CSR["kserve-openvino<br/>ClusterServingRuntime<br/>gRPC:9000 REST:8080"]
+        NSR["kserve-ovms-2026-2<br/>ServingRuntime (Namespaced)<br/>gRPC:8001 REST:8888<br/>GPU + vLLM"]
+    end
+
+    subgraph OptionalSidecar["Optional mTLS Sidecar"]
+        Nginx["nginx reverse proxy<br/>TLS 1.2 termination<br/>Client cert verification"]
+    end
+
+    Client[External Client] -->|REST / gRPC| Nginx
+    Nginx -->|proxy_pass / grpc_pass<br/>to localhost| Binary
+
+    Client -->|REST / gRPC<br/>direct| Binary
+
+    KServe[KServe Controller] -->|creates pods via| ServingRuntimes
+    ServingRuntimes -->|deploys| OVMS
+
+    ModelStorage["Model Storage<br/>/mnt/models<br/>(PVC / S3)"] -->|model artifacts| ModelLoader
+    Prometheus["Prometheus"] -->|scrapes| Metrics
+
+    InferenceServiceCR["InferenceService CR"] -->|references| ServingRuntimes
+
+    style Binary fill:#4a90e2,stroke:#333,color:#fff
+    style TFSPrediction fill:#6baed6,stroke:#333
+    style TFSModel fill:#6baed6,stroke:#333
+    style KFSInference fill:#6baed6,stroke:#333
+    style TFSV1 fill:#9ecae1,stroke:#333
+    style KFSV2 fill:#9ecae1,stroke:#333
+    style OpenAIV3 fill:#9ecae1,stroke:#333
+    style Metrics fill:#9ecae1,stroke:#333
+    style ModelLoader fill:#74c476,stroke:#333
+    style OpenVINORT fill:#74c476,stroke:#333
+    style CSR fill:#f5a623,stroke:#333
+    style NSR fill:#f5a623,stroke:#333
+    style Nginx fill:#e6550d,stroke:#333,color:#fff
+    style KServe fill:#e8e8e8,stroke:#333
+    style ModelStorage fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333
+    style InferenceServiceCR fill:#f5a623,stroke:#333
+    style Client fill:#f9f9f9,stroke:#999

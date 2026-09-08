@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "mcp-lifecycle-module-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "mcp-lifecycle-module-operator-pattern-001",
+      "claim": "The operator follows a two-tier deployment pattern where the module operator deploys and manages a separate operand controller, creating a management hierarchy that separates lifecycle concerns from domain-specific MCPServer reconciliation.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:133-148"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/mcplifecycleoperator_reconciler.go:170-194"
+        }
+      ],
+      "reasoning": "The module operator renders and applies an entire operand Deployment (mcp-lifecycle-operator-controller-manager) with its own RBAC, CRDs, and monitoring resources. This two-tier pattern is consistent across RHOAI module operators and is evidenced by the RELATED_IMAGE environment variable injection and the embedded Kustomize manifest rendering in the reconciler.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "mcp-lifecycle-module-operator-pattern-002",
+      "claim": "The operator uses PQC (post-quantum cryptography) variant base images, indicating early adoption of quantum-resistant cryptographic primitives ahead of broader platform migration.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:24"
+        }
+      ],
+      "reasoning": "The runtime stage uses ubi9/ubi-minimal-pqc rather than the standard ubi9/ubi-minimal. The recent change log confirms 'Migrate runtime base image to PQC variant' (commit 4a53c73, 2026-08-26). This is a forward-looking supply chain choice that may introduce compatibility considerations with older TLS clients.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "mcp-lifecycle-module-operator-risk-001",
+      "claim": "The operator has no RPM lock file or Hermeto prefetch configuration on this branch, leaving OS-level package dependencies non-hermetic for reproducible builds.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:1-57"
+        }
+      ],
+      "reasoning": "While go.sum provides hermetic Go module resolution, no rpms.lock.yaml or artifacts.lock.yaml was found. The Dockerfile does not source cachi2.env for Hermeto prefetch. This gap may be addressed on downstream release branches but represents a supply chain risk on this branch.",
+      "applicability": "component",
+      "confidence": "medium"
+    }
+  ]
+}

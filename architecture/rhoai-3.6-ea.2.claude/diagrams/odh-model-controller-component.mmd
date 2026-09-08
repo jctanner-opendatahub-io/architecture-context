@@ -1,0 +1,128 @@
+graph TB
+    subgraph ODH_Model_Controller["odh-model-controller (Deployment)"]
+        direction TB
+        Manager["Manager Process<br/>/manager"]
+
+        subgraph Controllers["Reconciliation Controllers"]
+            direction LR
+            ISVCCtrl["InferenceService<br/>Controller"]
+            GWCtrl["Gateway<br/>Controller"]
+            SRCtrl["ServingRuntime<br/>Controller"]
+            LLMISVCCtrl["LLMInferenceService<br/>Controller"]
+            IGCtrl["InferenceGraph<br/>Controller"]
+            AcctCtrl["Account<br/>Controller"]
+            CMCtrl["ConfigMap<br/>Controller"]
+            SecretCtrl["Secret<br/>Controller"]
+            PodCtrl["Pod<br/>Controller"]
+            APIServerCtrl["APIServer<br/>Controller"]
+        end
+
+        subgraph Webhooks["Admission Webhooks (port 9443)"]
+            direction LR
+            MutPod["Mutating:<br/>Pod CREATE"]
+            MutISVC["Mutating:<br/>InferenceService"]
+            MutIG["Mutating:<br/>InferenceGraph"]
+            MutLLM1["Mutating:<br/>LLMInferenceService v1alpha1"]
+            MutLLM2["Mutating:<br/>LLMInferenceService v1alpha2"]
+            ValNIM["Validating:<br/>NIM Account"]
+            ValIG["Validating:<br/>InferenceGraph"]
+            ValISVC["Validating:<br/>InferenceService"]
+        end
+
+        Manager --> Controllers
+        Manager --> Webhooks
+    end
+
+    subgraph Model_Serving_API["model-serving-api (Deployment)"]
+        direction TB
+        Server["HTTP Server<br/>port 8443 (TLS)"]
+        GWEndpoint["/api/v1/gateways<br/>Bearer Auth"]
+        SamplesEndpoint["/api/v1/samples/llm-d<br/>Unauthenticated"]
+        MetricsEndpoint["/metrics<br/>port 8080"]
+        Server --> GWEndpoint
+        Server --> SamplesEndpoint
+        Server --> MetricsEndpoint
+    end
+
+    %% CRDs watched
+    ISVC_CR["InferenceService CR"]
+    LLMISVC_CR["LLMInferenceService CR"]
+    IG_CR["InferenceGraph CR"]
+    SR_CR["ServingRuntime CR"]
+    NIM_CR["NIM Account CR"]
+    CM_CR["ConfigMap"]
+    Secret_CR["Secret"]
+
+    %% Resources created
+    Route["Route"]
+    NetworkPolicy["NetworkPolicy"]
+    ServiceMonitor["ServiceMonitor"]
+    HTTPRoute["HTTPRoute"]
+    EnvoyFilter["EnvoyFilter"]
+    AuthPolicy["AuthPolicy"]
+    TriggerAuth["TriggerAuthentication"]
+    RBAC_Res["ClusterRoleBinding<br/>Role / RoleBinding"]
+
+    %% Watch relationships
+    ISVC_CR -->|watched by| ISVCCtrl
+    LLMISVC_CR -->|watched by| LLMISVCCtrl
+    IG_CR -->|watched by| IGCtrl
+    SR_CR -->|watched by| SRCtrl
+    NIM_CR -->|watched by| AcctCtrl
+    CM_CR -->|watched by| CMCtrl
+    Secret_CR -->|watched by| SecretCtrl
+
+    %% Created resources
+    ISVCCtrl -->|creates| Route
+    ISVCCtrl -->|creates| NetworkPolicy
+    ISVCCtrl -->|creates| ServiceMonitor
+    ISVCCtrl -->|creates| TriggerAuth
+    ISVCCtrl -->|creates| RBAC_Res
+    GWCtrl -->|creates| HTTPRoute
+    GWCtrl -->|creates| EnvoyFilter
+    GWCtrl -->|creates| AuthPolicy
+
+    %% Platform CRs watched
+    DSC["DataScienceCluster CR"]
+    DSCI["DSCInitialization CR"]
+    APIServerCR["OpenShift APIServer CR"]
+
+    DSC -.->|platform config| ISVCCtrl
+    DSCI -.->|platform init| ISVCCtrl
+    APIServerCR -->|TLS profile| APIServerCtrl
+
+    %% Styling
+    style ODH_Model_Controller fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style Model_Serving_API fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style Controllers fill:#bbdefb,stroke:#1565c0
+    style Webhooks fill:#bbdefb,stroke:#1565c0
+
+    style ISVCCtrl fill:#4a90e2,color:#fff
+    style GWCtrl fill:#4a90e2,color:#fff
+    style SRCtrl fill:#4a90e2,color:#fff
+    style LLMISVCCtrl fill:#4a90e2,color:#fff
+    style IGCtrl fill:#4a90e2,color:#fff
+    style AcctCtrl fill:#4a90e2,color:#fff
+    style CMCtrl fill:#4a90e2,color:#fff
+    style SecretCtrl fill:#4a90e2,color:#fff
+    style PodCtrl fill:#4a90e2,color:#fff
+    style APIServerCtrl fill:#4a90e2,color:#fff
+
+    style ISVC_CR fill:#f5a623,color:#fff
+    style LLMISVC_CR fill:#f5a623,color:#fff
+    style IG_CR fill:#f5a623,color:#fff
+    style SR_CR fill:#f5a623,color:#fff
+    style NIM_CR fill:#f5a623,color:#fff
+
+    style DSC fill:#e8e8e8,stroke:#666
+    style DSCI fill:#e8e8e8,stroke:#666
+    style APIServerCR fill:#e8e8e8,stroke:#666
+
+    style Route fill:#7ed321
+    style NetworkPolicy fill:#7ed321
+    style ServiceMonitor fill:#7ed321
+    style HTTPRoute fill:#7ed321
+    style EnvoyFilter fill:#7ed321
+    style AuthPolicy fill:#7ed321
+    style TriggerAuth fill:#7ed321
+    style RBAC_Res fill:#7ed321

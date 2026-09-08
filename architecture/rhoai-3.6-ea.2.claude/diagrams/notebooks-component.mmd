@@ -1,0 +1,78 @@
+graph TB
+    subgraph "Notebooks Image Factory"
+        direction TB
+
+        subgraph "JupyterLab Workbenches"
+            StartNotebook["start-notebook.sh<br/>Entrypoint Script"]
+            Minimal["minimal-notebook<br/>UBI9 Python 3.12"]
+            DataScience["datascience-notebook<br/>+ scikit-learn, pandas, boto3"]
+            PyTorch["pytorch-notebook<br/>+ PyTorch, CUDA/ROCm"]
+            TensorFlow["tensorflow-notebook<br/>+ TensorFlow, CUDA/ROCm"]
+            TrustyAI["trustyai-notebook<br/>+ TrustyAI SDK"]
+            LLMCompressor["pytorch+llmcompressor<br/>+ LLM Compressor, CUDA"]
+
+            Minimal -->|extends| DataScience
+            DataScience -->|extends| PyTorch
+            DataScience -->|extends| TensorFlow
+            DataScience -->|extends| TrustyAI
+            PyTorch -->|extends| LLMCompressor
+
+            StartNotebook -.->|launches| Minimal
+        end
+
+        subgraph "Code-Server Workbenches"
+            RunCodeServer["run-code-server.sh<br/>Entrypoint Script"]
+            Nginx["nginx Reverse Proxy<br/>Path routing via NB_PREFIX"]
+            CodeServer["code-server<br/>Port 8787"]
+
+            RunCodeServer -->|starts| Nginx
+            RunCodeServer -->|starts| CodeServer
+            Nginx -->|proxies to| CodeServer
+        end
+
+        subgraph "Build Utilities (Go)"
+            BuildInputs["buildinputs<br/>Build input resolver"]
+            CheckPayload["check-payload<br/>FIPS compliance scanner"]
+        end
+    end
+
+    subgraph "Platform Layer"
+        Controller["odh-notebook-controller<br/>Pod lifecycle management"]
+        OAuthProxy["OAuth Proxy Sidecar<br/>Authentication"]
+        Dashboard["RHOAI Dashboard<br/>Workbench management UI"]
+    end
+
+    User[User / Data Scientist] -->|creates workbench via| Dashboard
+    Dashboard -->|triggers| Controller
+    Controller -->|creates pod with| OAuthProxy
+    Controller -->|injects NB_PREFIX,<br/>NOTEBOOK_ARGS| StartNotebook
+    Controller -->|injects NB_PREFIX| RunCodeServer
+
+    subgraph "Accelerator Variants"
+        CPU["CPU<br/>UBI9 base"]
+        CUDA["NVIDIA CUDA<br/>GPU acceleration"]
+        ROCm["AMD ROCm<br/>GPU acceleration"]
+    end
+
+    Minimal -.->|built for| CPU
+    Minimal -.->|built for| CUDA
+    Minimal -.->|built for| ROCm
+
+    style StartNotebook fill:#4a90e2,stroke:#333
+    style RunCodeServer fill:#4a90e2,stroke:#333
+    style Minimal fill:#7ed321,stroke:#333
+    style DataScience fill:#7ed321,stroke:#333
+    style PyTorch fill:#7ed321,stroke:#333
+    style TensorFlow fill:#7ed321,stroke:#333
+    style TrustyAI fill:#7ed321,stroke:#333
+    style LLMCompressor fill:#7ed321,stroke:#333
+    style CodeServer fill:#7ed321,stroke:#333
+    style Nginx fill:#4a90e2,stroke:#333
+    style Controller fill:#f5a623,stroke:#333
+    style OAuthProxy fill:#f5a623,stroke:#333
+    style Dashboard fill:#f5a623,stroke:#333
+    style BuildInputs fill:#999,stroke:#333
+    style CheckPayload fill:#999,stroke:#333
+    style CPU fill:#e8e8e8,stroke:#333
+    style CUDA fill:#76b900,stroke:#333
+    style ROCm fill:#ed1c24,stroke:#333,color:#fff

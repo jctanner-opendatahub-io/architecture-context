@@ -1,0 +1,75 @@
+graph LR
+    LLMDAsync["llm-d-async<br/>(Async Inference Processor)"]
+
+    %% Runtime Framework
+    LLMDAsync -->|"operator framework"| ControllerRuntime["controller-runtime<br/>0.22.5"]
+
+    %% Message Queue Transports
+    LLMDAsync -->|"redis transport"| GoRedis["go-redis/v9<br/>9.22.0"]
+    LLMDAsync -->|"gcp transport"| GCPPubSub["cloud.google.com/go<br/>pubsub/v2 2.7.0"]
+    LLMDAsync -->|"redis tracing"| RedisOTel["redisotel/v9<br/>9.22.0"]
+
+    %% Internal ODH Dependencies
+    LLMDAsync -->|"flow-control primitives"| GatewayAPIExt["gateway-api-inference-<br/>extension 1.2.1"]
+    LLMDAsync -->|"async API types"| LLMDAsyncAPI["llm-d-async/api<br/>0.9.0"]
+    LLMDAsync -->|"pipeline abstraction"| LLMDAsyncPipeline["llm-d-async/pipeline<br/>0.9.0"]
+    LLMDAsync -->|"producer client"| LLMDAsyncProducer["llm-d-async/producer<br/>0.9.0"]
+
+    %% Observability
+    LLMDAsync -->|"HTTP tracing"| OTelHTTP["otelhttp<br/>0.71.0"]
+    LLMDAsync -->|"trace SDK"| OTelSDK["otel/sdk<br/>1.46.0"]
+    LLMDAsync -->|"trace export"| OTLPTrace["otlptracegrpc<br/>1.46.0"]
+    LLMDAsync -->|"metrics client"| PromClient["prometheus/client_golang<br/>1.24.1"]
+    LLMDAsync -->|"structured logging"| Zap["go.uber.org/zap<br/>1.28.0"]
+    LLMDAsync -->|"log interface"| Logr["go-logr/logr<br/>1.4.4"]
+
+    %% Kubernetes
+    LLMDAsync -->|"K8s client"| K8sClientGo["k8s.io/client-go<br/>0.34.11"]
+
+    %% Runtime Dependencies
+    LLMDAsync -->|"gRPC transport"| GRPC["google.golang.org/grpc<br/>1.83.2"]
+    LLMDAsync -->|"serialization"| Protobuf["google.golang.org/protobuf<br/>1.36.12"]
+
+    %% Build Toolchain
+    LLMDAsync -->|"build toolchain"| Go["Go 1.26"]
+
+    %% External Services (runtime)
+    Redis["Redis Server<br/>:6379/TCP"] -.->|"runtime dependency"| LLMDAsync
+    GCPService["GCP Pub/Sub Service<br/>:443/gRPC"] -.->|"runtime dependency"| LLMDAsync
+    InferenceGW["Inference Gateway<br/>(Model Server)"] -.->|"runtime dependency"| LLMDAsync
+    Prometheus["Prometheus<br/>:9090/HTTP"] -.->|"runtime dependency"| LLMDAsync
+    K8sAPI["Kubernetes API<br/>:6443/HTTPS"] -.->|"runtime dependency"| LLMDAsync
+    OTelCollector["OTel Collector<br/>gRPC OTLP"] -.->|"runtime dependency"| LLMDAsync
+
+    %% Styling
+    style LLMDAsync fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    %% Internal ODH / llm-d ecosystem
+    style GatewayAPIExt fill:#7ed321,stroke:#333,color:#fff
+    style LLMDAsyncAPI fill:#7ed321,stroke:#333,color:#fff
+    style LLMDAsyncPipeline fill:#7ed321,stroke:#333,color:#fff
+    style LLMDAsyncProducer fill:#7ed321,stroke:#333,color:#fff
+
+    %% Go module dependencies
+    style ControllerRuntime fill:#999,stroke:#333,color:#fff
+    style GoRedis fill:#999,stroke:#333,color:#fff
+    style GCPPubSub fill:#999,stroke:#333,color:#fff
+    style RedisOTel fill:#999,stroke:#333,color:#fff
+    style OTelHTTP fill:#999,stroke:#333,color:#fff
+    style OTelSDK fill:#999,stroke:#333,color:#fff
+    style OTLPTrace fill:#999,stroke:#333,color:#fff
+    style PromClient fill:#999,stroke:#333,color:#fff
+    style Zap fill:#999,stroke:#333,color:#fff
+    style Logr fill:#999,stroke:#333,color:#fff
+    style K8sClientGo fill:#999,stroke:#333,color:#fff
+    style GRPC fill:#999,stroke:#333,color:#fff
+    style Protobuf fill:#999,stroke:#333,color:#fff
+    style Go fill:#999,stroke:#333,color:#fff
+
+    %% External runtime services
+    style Redis fill:#f5a623,stroke:#333,color:#fff
+    style GCPService fill:#f5a623,stroke:#333,color:#fff
+    style InferenceGW fill:#f5a623,stroke:#333,color:#fff
+    style Prometheus fill:#f5a623,stroke:#333,color:#fff
+    style K8sAPI fill:#f5a623,stroke:#333,color:#fff
+    style OTelCollector fill:#f5a623,stroke:#333,color:#fff

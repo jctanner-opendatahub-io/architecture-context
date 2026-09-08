@@ -1,0 +1,158 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [Data Scientist / kubectl]                                              │
+│         │                                                                │
+│         │ Port: 6443/TCP                                                 │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS 1.2+                                           │
+│         │ Auth: ServiceAccount / kubeconfig                              │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES API SERVER                                                   │
+│                                                                          │
+│  [Kubernetes API Server]                                                 │
+│  - Port: 6443/TCP (HTTPS)                                               │
+│  - Encryption: TLS 1.2+                                                 │
+│  - AuthN: ServiceAccount tokens, x509 certificates                      │
+│         │                                                                │
+│         │ Admission webhooks                                             │
+│         │ Port: 8443/TCP                                                 │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (OpenShift APIServer profile)                  │
+│         │ Auth: Kubernetes admission (API server → webhook)              │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  CONTROLLER NAMESPACE (Trusted)                                          │
+│                                                                          │
+│  [Notebook Controller - /manager]                                        │
+│  - SA: notebook-controller-service-account                               │
+│  - Image: ghcr.io/kubeflow/kubeflow/notebook-controller                 │
+│  - Health: :8081/healthz (HTTP, unauthenticated)                        │
+│  - Ready: :8081/readyz (HTTP, unauthenticated)                          │
+│  - Build: GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1                 │
+│  - Base: UBI9 ubi-minimal-pqc                                           │
+│                                                                          │
+│  [ODH Notebook Controller - /manager]                                    │
+│  - SA: manager                                                           │
+│  - Webhooks:                                                             │
+│    - /mutate-notebook-v1 (MutatingWebhookConfiguration, failurePolicy=  │
+│      fail)                                                               │
+│    - /validate-notebook-v1 (ValidatingWebhookConfiguration, failurePolicy│
+│      =fail)                                                              │
+│    - /convert (ConversionWebhook)                                        │
+│  - Webhook port: 8443/TCP                                                │
+│  - Webhook TLS: OpenShift APIServer TLS profile (cipher suites +         │
+│    min version); hardened defaults when profile unavailable               │
+│  - Cert dir: /tmp/k8s-webhook-server/serving-certs                      │
+│  - Build: GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1                 │
+│  - Base: UBI9 ubi-minimal-pqc                                           │
+│                                                                          │
+│  [notebook-controller-service]                                           │
+│  - Type: ClusterIP                                                       │
+│  - Port: 443/TCP → 443                                                  │
+│  - Protocol: TCP                                                         │
+│  - Exposure: Internal                                                    │
+│         │                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  USER NAMESPACE (Tenant-scoped)                                          │
+│                                                                          │
+│  [Notebook StatefulSet Pod]                                              │
+│  - Container 1: Notebook workbench (user-selected image)                 │
+│  - Container 2: kube-rbac-proxy sidecar (injected by mutating webhook)  │
+│    - Purpose: Per-notebook authentication enforcement                    │
+│    - AuthN: TokenReview + SubjectAccessReview                            │
+│                                                                          │
+│  [NetworkPolicy] ←── Created by OpenshiftNotebookReconciler              │
+│  - Per-notebook tenant isolation                                         │
+│                                                                          │
+│  [ds-pipeline-config Secret]                                             │
+│  - Elyra runtime config mounted at /opt/app-root/runtimes               │
+│  - Created when DSPA "dspa" exists and is ready                          │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OPENSHIFT INGRESS NAMESPACE (openshift-ingress)                         │
+│                                                                          │
+│  [data-science-gateway Gateway]                                          │
+│  - HTTPRoutes managed by ODH Notebook Controller                         │
+│  - ReferenceGrants for cross-namespace access                            │
+│  - Protocol: HTTPS                                                       │
+│  - Encryption: TLS 1.2+                                                  │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  INTERNAL PLATFORM SERVICES                                              │
+│                                                                          │
+│  [DataSciencePipelinesApplication CR]                                    │
+│  - Watched by ODH Notebook Controller                                    │
+│  - Read-only (get, list, watch)                                          │
+│  - Provides pipeline server URL for Elyra config                         │
+│                                                                          │
+│  [OpenShift APIServer]                                                    │
+│  - config.openshift.io/v1/APIServer                                      │
+│  - Read-only (get, list, watch)                                          │
+│  - Provides TLS cipher suites and min TLS version                        │
+│                                                                          │
+│  [OpenShift Proxy]                                                        │
+│  - config.openshift.io/v1/Proxy                                          │
+│  - Read-only (list)                                                      │
+│  - Provides corporate proxy environment variables                        │
+│                                                                          │
+│  [OpenShift Image Streams]                                               │
+│  - image.openshift.io/v1/ImageStream                                     │
+│  - Read-only (get, list)                                                 │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+
+notebook-controller-service-account:
+- ClusterRole: notebook-controller-role
+  - core: events (create, get, list, patch, watch)
+  - core: pods (delete, get, list, watch)
+  - core: services (*)
+  - apps: statefulsets (*)
+  - kubeflow.org: notebooks, notebooks/finalizers, notebooks/status (*)
+  - networking.istio.io: virtualservices (*)
+
+manager (SA):
+- ClusterRole: manager-role
+  - core: configmaps, secrets, serviceaccounts, services (create, get, list, patch, update, watch)
+  - core: events (create, patch)
+  - authentication.k8s.io: tokenreviews (create)
+  - authorization.k8s.io: subjectaccessreviews (create)
+  - config.openshift.io: apiservers, proxies (get, list, watch)
+  - datasciencepipelinesapplications.opendatahub.io: datasciencepipelinesapplications (get, list, watch)
+  - datasciencepipelinesapplications.opendatahub.io: datasciencepipelinesapplications/api (create, delete, get, patch, update)
+  - gateway.networking.k8s.io: gateways (get, list, watch)
+  - gateway.networking.k8s.io: httproutes, referencegrants (create, delete, get, list, patch, update, watch)
+  - image.openshift.io: imagestreams (get, list, watch)
+  - kubeflow.org: notebooks (get, list, patch, update, watch)
+  - kubeflow.org: notebooks/finalizers (patch, update)
+  - kubeflow.org: notebooks/status (get)
+  - networking.k8s.io: networkpolicies (create, get, list, patch, update, watch)
+  - networking.k8s.io: networkpolicies/finalizers (patch, update)
+  - oauth.openshift.io: oauthclients (delete, get, list, patch, update, watch)
+  - rbac.authorization.k8s.io: clusterrolebindings, rolebindings (create, delete, get, list, patch, update, watch)
+  - rbac.authorization.k8s.io: clusterroles (get)
+  - rbac.authorization.k8s.io: roles (create, get, list, patch, update, watch)
+  - route.openshift.io: routes (get, list, watch)
+
+Aggregated Roles:
+- kubeflow-notebooks-edit / notebooks-edit: notebooks, notebooks/status (full CRUD)
+- kubeflow-notebooks-view / notebooks-view: notebooks, notebooks/status (read-only)
+
+Leader Election:
+- controller-manager (SA): leader-election-role (Role)
+  - core: configmaps (full CRUD), events (create, patch)
+  - coordination.k8s.io: leases (full CRUD)
+
+FIPS Compliance:
+- Build: GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1
+- Base image: UBI9 ubi-minimal-pqc (OpenSSL provider)
+- TLS: Platform APIServer TLS profile with hardened defaults
+- No non-FIPS crypto risks detected
+
+Webhook Security:
+- Mutating webhook: failurePolicy=fail (blocks non-conformant notebooks)
+- Validating webhook: failurePolicy=fail
+- kube-rbac-proxy sidecar: enforces per-user authentication on notebook access

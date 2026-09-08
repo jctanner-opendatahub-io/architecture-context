@@ -1,0 +1,57 @@
+graph TB
+    subgraph "llm-d-latency-predictor"
+        subgraph TrainingPod["Training Server Pod"]
+            TrainingApp["Training Server<br/>FastAPI + uvicorn<br/>Port 8000"]
+            XGBTrainer["XGBoost Trainer"]
+            LGBTrainer["LightGBM Trainer"]
+            DataStore["In-Memory<br/>Telemetry Store"]
+            ModelArtifacts["Trained Model<br/>Artifacts"]
+
+            TrainingApp -->|accumulates data| DataStore
+            DataStore -->|feeds| XGBTrainer
+            DataStore -->|feeds| LGBTrainer
+            XGBTrainer -->|produces| ModelArtifacts
+            LGBTrainer -->|produces| ModelArtifacts
+        end
+
+        subgraph PredictionPod["Prediction Server Pod"]
+            PredictionApp["Prediction Server<br/>FastAPI + uvicorn<br/>Port 8001"]
+            ModelSyncer["ModelSyncer<br/>Background Thread"]
+            LocalModels["Local Model<br/>Cache"]
+
+            ModelSyncer -->|downloads &<br/>updates| LocalModels
+            PredictionApp -->|loads| LocalModels
+        end
+
+        ModelSyncer -->|"HTTP polling<br/>GET /model/{name}/info<br/>GET /model/{name}/download<br/>every 10s"| TrainingApp
+    end
+
+    InferenceProxy["llm-d Inference Proxy<br/>/ Monitoring System"] -->|"POST /add_training_data_bulk<br/>Port 8000"| TrainingApp
+    Client["Prediction Client"] -->|"POST /predict<br/>POST /predict/bulk<br/>POST /predict/bulk/strict<br/>Port 8001"| PredictionApp
+
+    subgraph K8sServices["Kubernetes Services"]
+        TrainingSvc["training-service<br/>ClusterIP 8000/TCP"]
+        PredictionSvc["prediction-service<br/>ClusterIP 80/TCP → 8001"]
+    end
+
+    TrainingSvc -->|routes to| TrainingApp
+    PredictionSvc -->|routes to| PredictionApp
+
+    Prometheus["Prometheus"] -->|"GET /metrics<br/>Port 8000"| TrainingApp
+    K8s["Kubernetes"] -->|"GET /healthz, /readyz<br/>Ports 8000, 8001"| TrainingApp
+    K8s -->|"GET /healthz, /readyz<br/>Port 8001"| PredictionApp
+
+    style TrainingApp fill:#4a90e2,color:#fff
+    style PredictionApp fill:#4a90e2,color:#fff
+    style ModelSyncer fill:#6baed6,color:#fff
+    style XGBTrainer fill:#74c476,color:#fff
+    style LGBTrainer fill:#74c476,color:#fff
+    style DataStore fill:#fdae6b
+    style ModelArtifacts fill:#fdae6b
+    style LocalModels fill:#fdae6b
+    style TrainingSvc fill:#bcbddc
+    style PredictionSvc fill:#bcbddc
+    style InferenceProxy fill:#e8e8e8
+    style Client fill:#e8e8e8
+    style Prometheus fill:#e8e8e8
+    style K8s fill:#e8e8e8

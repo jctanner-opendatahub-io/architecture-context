@@ -1,0 +1,51 @@
+sequenceDiagram
+    participant App as Consuming Application<br/>or Notebook
+    participant S3 as S3-Compatible Storage<br/>HTTPS / TLS
+    participant S3Client as ai4rag S3 Client<br/>(boto3)
+    participant Docling as Text Extraction<br/>(docling-slim)
+    participant Chunker as Chunking Engine<br/>(AI4RAGChunk)
+    participant MaaS as OpenAI-Compatible<br/>MaaS Endpoint<br/>HTTPS / TLS
+    participant VectorStore as Vector Store<br/>(Milvus / PGVector / ChromaDB)
+
+    Note over App,VectorStore: Document Ingestion Flow
+
+    App->>S3Client: Ingest documents
+    S3Client->>S3: GET objects<br/>Auth: AWS_ACCESS_KEY_ID /<br/>AWS_SECRET_ACCESS_KEY
+    S3-->>S3Client: Document bytes
+    S3Client->>Docling: Raw documents
+    Docling->>Chunker: Extracted text
+    Note right of Chunker: Generates deterministic<br/>SHA-256 chunk IDs
+
+    Note over App,VectorStore: Embedding Generation Flow
+
+    Chunker->>MaaS: POST embeddings<br/>Auth: API Key<br/>Batch size: up to 1024 chunks
+    Note right of MaaS: TLS verification fallback:<br/>retries with verify=False<br/>on SSL cert error
+    MaaS-->>Chunker: Embedding vectors
+
+    Note over App,VectorStore: Vector Storage Flow
+
+    alt Milvus Backend
+        Chunker->>VectorStore: Store embeddings<br/>gRPC/HTTPS<br/>Auth: MILVUS_TOKEN<br/>Optional: custom PEM cert
+    else PGVector Backend
+        Chunker->>VectorStore: Store embeddings<br/>PostgreSQL connection<br/>Auth: PGVECTOR_PASSWORD
+    else ChromaDB Backend
+        Chunker->>VectorStore: Store embeddings<br/>HTTP / ephemeral / persistent
+    end
+
+    Note over App,VectorStore: Retrieval Flow
+
+    App->>Chunker: Query text
+    Chunker->>MaaS: POST embedding for query<br/>Auth: API Key
+    MaaS-->>Chunker: Query embedding
+    Chunker->>VectorStore: Similarity search
+    VectorStore-->>Chunker: Top-k results
+    Chunker-->>App: Retrieved chunks + metadata
+
+    Note over App,VectorStore: Evaluation Flow (Optional)
+
+    App->>Chunker: Run evaluation
+    Note right of Chunker: ragas (>=0.3,<0.5)<br/>unitxt (~1.26.1)
+    Chunker->>MaaS: LLM evaluation calls<br/>POST chat/completions
+    MaaS-->>Chunker: Evaluation results
+    Note right of Chunker: pygam optimization<br/>on evaluation metrics
+    Chunker-->>App: Optimized RAG configuration

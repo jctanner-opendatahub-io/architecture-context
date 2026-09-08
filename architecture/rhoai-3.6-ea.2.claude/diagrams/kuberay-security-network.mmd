@@ -1,0 +1,86 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        User["User / kubectl"]
+    end
+
+    subgraph K8sAPIBoundary["KUBERNETES API (Trust Boundary)"]
+        K8sAPI["kube-apiserver<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>RBAC AuthZ"]
+    end
+
+    subgraph OperatorNS["OPERATOR NAMESPACE (redhat-ods-applications)"]
+        direction TB
+
+        subgraph OperatorPod["kuberay-operator Deployment"]
+            direction LR
+            Metrics["Metrics Server<br/>:8080/TCP HTTP<br/>No Auth"]
+            Health["Health Probes<br/>:8082/TCP HTTP<br/>No Auth<br/>/healthz /readyz"]
+            WebhookSrv["Webhook Server<br/>HTTPS TLS<br/>Cluster TLS Profile"]
+        end
+    end
+
+    subgraph UserNS["USER NAMESPACE (mTLS STRICT zone)"]
+        direction TB
+
+        subgraph HeadPod["Ray Head Pod"]
+            direction LR
+            RayHead["Ray Head<br/>:6379 :8265 :10001<br/>mTLS (cert-manager)"]
+            RBACProxy["kube-rbac-proxy<br/>:8443/TCP HTTPS<br/>OAuth/OIDC Auth"]
+        end
+
+        subgraph Workers["Ray Worker Pods"]
+            RayWorker["Ray Workers<br/>mTLS (cert-manager)<br/>Secret: ray-worker-secret"]
+        end
+
+        NetPol["NetworkPolicy<br/>Pod-level isolation"]
+    end
+
+    subgraph GatewayZone["GATEWAY / INGRESS"]
+        GatewayRoute["Gateway API HTTPRoute<br/>+ ReferenceGrant<br/>Authenticated Dashboard Access"]
+    end
+
+    subgraph PlatformSvc["PLATFORM SERVICES"]
+        CertManager["cert-manager<br/>TLS 1.2+<br/>CA Issuer + Certificates"]
+        Prometheus["Prometheus<br/>Scrape :8080/TCP HTTP<br/>prometheus.io/scrape"]
+        OSConfig["OpenShift APIServer Config<br/>TLS Profile Resolution<br/>Read-only"]
+    end
+
+    %% External flows
+    User -->|"HTTPS/6443<br/>TLS 1.2+<br/>Bearer Token"| K8sAPI
+
+    %% API to Operator
+    K8sAPI -->|"Admission Webhooks<br/>HTTPS TLS<br/>fail policy"| WebhookSrv
+    K8sAPI <-->|"Watch/CRUD<br/>HTTPS/6443<br/>SA Token"| OperatorPod
+
+    %% Operator creates user namespace resources
+    OperatorPod -->|"Creates Pods<br/>Services Secrets"| HeadPod
+    OperatorPod -->|"Creates Workers"| Workers
+    OperatorPod -->|"Creates"| NetPol
+    OperatorPod -->|"Creates HTTPRoute<br/>ReferenceGrant"| GatewayRoute
+
+    %% Gateway to dashboard
+    GatewayRoute -->|"Authenticated<br/>HTTPS :8443<br/>OAuth/OIDC"| RBACProxy
+
+    %% mTLS between Ray nodes
+    RayHead <-->|"mTLS<br/>cert-manager certs"| RayWorker
+
+    %% Platform service flows
+    OperatorPod -->|"CRD CRUD<br/>Issuer + Certificate"| CertManager
+    Prometheus -->|"GET /metrics<br/>HTTP :8080"| Metrics
+    OperatorPod -->|"GET apiserver<br/>TLS profile"| OSConfig
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef apiserver fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef operator fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef userns fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef gateway fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef platform fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef security fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class User external
+    class K8sAPI apiserver
+    class Metrics,Health,WebhookSrv operator
+    class RayHead,RayWorker,NetPol userns
+    class RBACProxy security
+    class GatewayRoute gateway
+    class CertManager,Prometheus,OSConfig platform

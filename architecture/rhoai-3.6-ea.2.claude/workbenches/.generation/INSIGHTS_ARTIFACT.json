@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "workbenches",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "workbenches-fips-gap-001",
+      "claim": "The backend component lacks a Konflux Dockerfile and its upstream Dockerfile uses CGO_ENABLED=0 with a distroless base, which would fail check-payload FIPS validation.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "workspaces/backend/Dockerfile:25-28"
+        }
+      ],
+      "reasoning": "The controller has a proper Dockerfile.konflux with strictfipsruntime and UBI PQC base, but the backend has only an upstream Dockerfile that statically links Go (CGO_ENABLED=0) and uses gcr.io/distroless/static:nonroot. A Konflux Dockerfile for the backend is likely maintained outside this checkout or has not yet been added for this branch.",
+      "applicability": "component",
+      "confidence": "medium"
+    },
+    {
+      "id": "workbenches-pattern-001",
+      "claim": "The backend delegates authentication to an upstream proxy via configurable request headers and performs fine-grained authorization via Kubernetes SubjectAccessReview, enabling platform-level identity integration without managing credentials.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "workspaces/backend/internal/auth/authentication.go:31-81"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "workspaces/backend/internal/auth/authorization.go:41-74"
+        }
+      ],
+      "reasoning": "The backend uses Kubernetes headerrequest authenticator to extract user identity from upstream proxy headers and a delegating authorizer that performs SubjectAccessReview checks against the Kubernetes API. This pattern aligns with RHOAI's proxy-based authentication model where Istio or OAuth2 Proxy sits in front of services.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "workbenches-pattern-002",
+      "claim": "The controller supports dual ingress modes (Gateway API HTTPRoute and Istio VirtualService) through conditional reconciliation, enabling deployment across both Gateway API and Istio-based clusters.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/integration_points"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/external_dependencies"
+        }
+      ],
+      "reasoning": "The integration points table shows both gateway.networking.k8s.io/v1/HTTPRoute CRUD operations and networking/v1/VirtualService controller watches. The external dependencies include both sigs.k8s.io/gateway-api and istio.io/client-go. This dual-mode support allows the component to work in different RHOAI deployment configurations.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

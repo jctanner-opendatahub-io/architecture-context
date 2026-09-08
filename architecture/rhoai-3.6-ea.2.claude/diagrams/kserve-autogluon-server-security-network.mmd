@@ -1,0 +1,85 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["Data Scientist / External Client"]
+    end
+
+    subgraph K8sAPILayer["KUBERNETES API"]
+        K8sAPI["kube-apiserver<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>AuthN: SA Tokens, X.509<br/>AuthZ: RBAC"]
+    end
+
+    subgraph ControlPlane["KSERVE CONTROL PLANE (kserve namespace)"]
+        direction TB
+
+        subgraph WebhookService["Webhook Service"]
+            WebhookSvc["kserve-webhook-server-service<br/>443/TCP → webhook-server<br/>TLS (cert-injected)<br/>Auth: Kubernetes admission<br/>18 webhook endpoints<br/>Failure Policy: Fail"]
+        end
+
+        subgraph ManagerDeployment["Controller Manager Deployment"]
+            KubeRBACProxy["kube-rbac-proxy<br/>8443/TCP TLS → 8080/TCP HTTP<br/>Auth: TokenReview + SAR<br/>Image: kube-rbac-proxy:v0.18.0"]
+            ManagerMetrics["Controller Metrics<br/>8080/TCP HTTP (localhost)<br/>No auth (proxied)"]
+            HealthProbes["Health Probes<br/>8081/TCP HTTP<br/>/healthz, /readyz<br/>No auth (by design)"]
+        end
+
+        subgraph Operators["Operators"]
+            ManagerCtrl["kserve-controller-manager<br/>SA: kserve-controller-manager"]
+            LLMISVCCtrl["LLMInferenceService Operator<br/>SA: llmisvc-serviceAccountName"]
+            LocalModelCtrl["LocalModel Operator<br/>SA: kserve-localmodel-controller-manager"]
+            LocalModelNodeCtrl["LocalModelNode Agent<br/>SA: kserve-localmodelnode-agent"]
+        end
+    end
+
+    subgraph UserNS["DATA PLANE (user namespaces)"]
+        AutoGluonPod["AutoGluon Server Pod<br/>Base: rhai/base-image-cpu-rhel9 (UBI9)<br/>HTTP REST V1/V2 + gRPC V2<br/>No auth middleware<br/>FIPS: Platform-delegated (RHEL)"]
+    end
+
+    subgraph ExternalServices["EXTERNAL SERVICES"]
+        S3["S3 Storage<br/>s3.amazonaws.com<br/>443/TCP HTTPS TLS 1.2+<br/>Auth: AWS IAM"]
+        GCS["Google Cloud Storage<br/>storage.googleapis.com<br/>443/TCP HTTPS TLS 1.2+<br/>Auth: GCS SA"]
+        AzureBlob["Azure Blob Storage<br/>*.blob.core.windows.net<br/>443/TCP HTTPS TLS 1.2+<br/>Auth: Azure AD / Client Secret"]
+    end
+
+    subgraph Monitoring["MONITORING"]
+        Prometheus["Prometheus<br/>Scrapes via annotations"]
+    end
+
+    %% External → API
+    Client -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token / kubeconfig"| K8sAPI
+
+    %% API → Webhooks
+    K8sAPI -->|"HTTPS/443<br/>TLS (cert-injected)<br/>Admission webhooks"| WebhookSvc
+
+    %% API ↔ Operators
+    K8sAPI <-->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token + RBAC"| ManagerCtrl
+    K8sAPI <-->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token + RBAC"| LLMISVCCtrl
+    K8sAPI <-->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token + RBAC"| LocalModelCtrl
+    K8sAPI <-->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token + RBAC"| LocalModelNodeCtrl
+
+    %% Manager creates data plane
+    ManagerCtrl -->|"Creates Deployment<br/>via K8s API"| AutoGluonPod
+
+    %% Data plane → storage
+    AutoGluonPod -->|"HTTPS/443<br/>TLS 1.2+<br/>AWS IAM"| S3
+    AutoGluonPod -->|"HTTPS/443<br/>TLS 1.2+<br/>GCS SA"| GCS
+    AutoGluonPod -->|"HTTPS/443<br/>TLS 1.2+<br/>Azure AD"| AzureBlob
+
+    %% Monitoring
+    Prometheus -->|"HTTPS/8443<br/>TLS<br/>TokenReview + SAR"| KubeRBACProxy
+    KubeRBACProxy -->|"HTTP/8080<br/>localhost"| ManagerMetrics
+
+    %% Inference traffic (from external via ingress)
+    Client -.->|"Inference requests<br/>(via platform ingress)<br/>Auth enforced at ingress"| AutoGluonPod
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef k8sapi fill:#dce6f7,stroke:#4a6fa5,stroke-width:2px
+    classDef controlplane fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef dataplane fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef externalservice fill:#f8cecc,stroke:#b85450,stroke-width:2px
+    classDef monitoring fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+
+    class Client external
+    class K8sAPI k8sapi
+    class WebhookSvc,KubeRBACProxy,ManagerMetrics,HealthProbes,ManagerCtrl,LLMISVCCtrl,LocalModelCtrl,LocalModelNodeCtrl controlplane
+    class AutoGluonPod dataplane
+    class S3,GCS,AzureBlob externalservice
+    class Prometheus monitoring

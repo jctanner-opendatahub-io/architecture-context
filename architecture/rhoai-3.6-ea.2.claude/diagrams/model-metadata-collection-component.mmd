@@ -1,0 +1,41 @@
+graph TB
+    subgraph "model-metadata-collection (CI/CD Build Phase)"
+        ModelExtractor["model-extractor<br/>Go CLI"]
+        MetadataReport["metadata-report<br/>Go CLI"]
+        DataDir["data/<br/>YAML Catalogs & Index Files"]
+
+        ModelExtractor -->|"generates"| DataDir
+        DataDir -->|"read by"| MetadataReport
+        MetadataReport -->|"generates"| Reports["Completeness Reports"]
+    end
+
+    subgraph "model-metadata-collection (Runtime Phase)"
+        Container["Data Sidecar Container<br/>ubi-minimal-pqc<br/>UID 1001<br/>CMD: sleep infinity"]
+        VolumeMount["/app/data<br/>Volume Mount Point"]
+        Container --- VolumeMount
+    end
+
+    subgraph "External Sources (CI/CD Only)"
+        HuggingFace["HuggingFace API<br/>huggingface.co/api<br/>443/TCP HTTPS"]
+        GitHubAPI["GitHub API<br/>api.github.com<br/>443/TCP HTTPS"]
+        OCIRegistries["OCI Container Registries<br/>443/TCP HTTPS"]
+    end
+
+    ModelExtractor -->|"fetch model collections,<br/>model cards, enrichment"| HuggingFace
+    ModelExtractor -->|"fetch agent metadata,<br/>README files"| GitHubAPI
+    ModelExtractor -->|"inspect image manifests<br/>for architectures"| OCIRegistries
+
+    DataDir -.->|"packaged into<br/>container image"| VolumeMount
+
+    PlatformComponents["Other RHOAI Components"] -->|"mount volume<br/>read catalog data"| VolumeMount
+
+    style ModelExtractor fill:#4a90e2,stroke:#333,color:#fff
+    style MetadataReport fill:#4a90e2,stroke:#333,color:#fff
+    style Container fill:#7ed321,stroke:#333,color:#fff
+    style VolumeMount fill:#7ed321,stroke:#333
+    style DataDir fill:#f5a623,stroke:#333,color:#fff
+    style Reports fill:#f5a623,stroke:#333,color:#fff
+    style HuggingFace fill:#e8e8e8,stroke:#333
+    style GitHubAPI fill:#e8e8e8,stroke:#333
+    style OCIRegistries fill:#e8e8e8,stroke:#333
+    style PlatformComponents fill:#d5e8d4,stroke:#82b366

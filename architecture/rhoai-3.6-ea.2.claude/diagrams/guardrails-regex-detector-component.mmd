@@ -1,0 +1,49 @@
+graph TB
+    subgraph "guardrails-regex-detector"
+        direction TB
+        subgraph "Axum HTTP Server"
+            Router[Axum Router<br/>Port 8080/TCP]
+            HealthHandler[Health Handler<br/>GET /health]
+            DetectionHandler[Detection Handler<br/>POST /api/v1/text/contents]
+            Router --> HealthHandler
+            Router --> DetectionHandler
+        end
+
+        subgraph "Detection Engine"
+            Dispatcher[Detector Dispatcher<br/>HashMap Lookup + Fallback]
+            EmailDetector[Email Detector<br/>Built-in Regex]
+            SSNDetector[SSN Detector<br/>Built-in Regex]
+            CCDetector[Credit Card Detector<br/>Built-in Regex]
+            CustomRegex[Custom Regex<br/>User-Provided Patterns]
+            DetectionHandler -->|resolves detectors| Dispatcher
+            Dispatcher --> EmailDetector
+            Dispatcher --> SSNDetector
+            Dispatcher --> CCDetector
+            Dispatcher -->|fallback| CustomRegex
+        end
+
+        subgraph "Runtime"
+            Tokio[Tokio Async Runtime]
+            TcpListener[TCP Listener<br/>0.0.0.0:HTTP_PORT]
+            Tracing[Tracing Subscriber<br/>Structured Logging]
+        end
+    end
+
+    Orchestrator[Guardrails Orchestrator<br/>Upstream Caller] -->|POST /api/v1/text/contents<br/>JSON payload| Router
+    K8sProbe[Kubernetes Probes] -->|GET /health| Router
+
+    DetectionHandler -->|JSON response<br/>detections with positions| Orchestrator
+
+    style Router fill:#4a90e2,stroke:#333
+    style DetectionHandler fill:#4a90e2,stroke:#333
+    style HealthHandler fill:#4a90e2,stroke:#333
+    style Dispatcher fill:#7ed321,stroke:#333
+    style EmailDetector fill:#7ed321,stroke:#333
+    style SSNDetector fill:#7ed321,stroke:#333
+    style CCDetector fill:#7ed321,stroke:#333
+    style CustomRegex fill:#7ed321,stroke:#333
+    style Tokio fill:#b8b8b8,stroke:#333
+    style TcpListener fill:#b8b8b8,stroke:#333
+    style Tracing fill:#b8b8b8,stroke:#333
+    style Orchestrator fill:#f5a623,stroke:#333
+    style K8sProbe fill:#e8e8e8,stroke:#333

@@ -1,0 +1,43 @@
+graph LR
+    WO["Workbenches Operator<br/>controller-runtime 0.23.3<br/>Go 1.26.2"]
+
+    %% Internal RHOAI Dependencies
+    WO -->|"CR field projection<br/>gatewayDomain, mlflowEnabled"| Orchestrator["Platform Orchestrator"]
+    WO -->|"reads ConfigMap<br/>distribution, version"| OdhConfig["odh-workbenches-config<br/>ConfigMap"]
+    WO -->|"GET HardwareProfile CRs<br/>for webhook injection"| HardwareProfile["HardwareProfile CRDs<br/>infrastructure.opendatahub.io"]
+    WO -->|"reads mlflowEnabled state<br/>(via orchestrator)"| MLflow["DSC MLflowOperator"]
+    WO -->|"reads gatewayDomain<br/>(via orchestrator)"| GatewayConfig["GatewayConfig"]
+
+    %% Managed Operands
+    WO -->|"server-side apply<br/>deploys & manages"| NotebookCtrl["Kubeflow Notebook Controller<br/>kubeflow.org"]
+    WO -->|"mutates notebooks<br/>on CREATE/UPDATE"| NotebookCRs["Notebook CRs<br/>kubeflow.org"]
+
+    %% Infrastructure Dependencies
+    WO -->|"webhook TLS certs<br/>(primary)"| ServiceCA["OpenShift service-ca"]
+    WO -.->|"webhook TLS certs<br/>(fallback)"| CertManager["cert-manager"]
+    WO -->|"TLS security profile<br/>cipher suites"| APIServer["OpenShift APIServer<br/>config.openshift.io"]
+    WO -->|"image references"| ImageStreams["OpenShift Image Streams<br/>image.openshift.io"]
+
+    %% Kubernetes Platform
+    WO -->|"resource CRUD<br/>6443/HTTPS"| K8sAPI["Kubernetes API<br/>6443/TCP"]
+    WO -->|"leader election"| Leases["coordination.k8s.io<br/>Leases"]
+
+    %% Consumers of this operator
+    Orchestrator -->|"creates Workbenches CR"| WO
+    K8sAPI -->|"admission requests<br/>443→9443/TCP"| WO
+
+    %% Styling
+    style WO fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style Orchestrator fill:#7ed321,stroke:#333
+    style OdhConfig fill:#7ed321,stroke:#333
+    style HardwareProfile fill:#7ed321,stroke:#333
+    style MLflow fill:#7ed321,stroke:#333
+    style GatewayConfig fill:#7ed321,stroke:#333
+    style NotebookCtrl fill:#4a90e2,stroke:#333,color:#fff
+    style NotebookCRs fill:#4a90e2,stroke:#333,color:#fff
+    style ServiceCA fill:#999,stroke:#333,color:#fff
+    style CertManager fill:#999,stroke:#333,color:#fff
+    style APIServer fill:#999,stroke:#333,color:#fff
+    style ImageStreams fill:#999,stroke:#333,color:#fff
+    style K8sAPI fill:#f5a623,stroke:#333
+    style Leases fill:#f5a623,stroke:#333

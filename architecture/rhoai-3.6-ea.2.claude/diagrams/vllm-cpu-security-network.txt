@@ -1,0 +1,125 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client / Model Consumer]                                      │
+│         │                                                                │
+│         │ Port: configurable (default 8000)                              │
+│         │ Protocol: HTTP/HTTPS                                           │
+│         │ Encryption: Configurable (TLS via platform/service mesh)       │
+│         │ Auth: Bearer Token (conditional on VLLM_API_KEY / --api-key)   │
+│         │                                                                │
+│         ├────────── HTTP Path ──────────┐                                │
+│         │                               │                                │
+│         ▼                               ▼                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION LAYER (vllm-cpu Pod)                                       │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐     │
+│  │  FastAPI HTTP Server                                            │     │
+│  │  Port: configurable (default 8000)                              │     │
+│  │  Protocol: HTTP/HTTPS                                           │     │
+│  │  Encryption: Configurable (TLS via Python ssl / platform)       │     │
+│  │                                                                 │     │
+│  │  ┌───────────────────────────────────────────────────────────┐  │     │
+│  │  │  AuthenticationMiddleware (ASGI)                          │  │     │
+│  │  │  - Active ONLY when --api-key or VLLM_API_KEY is set     │  │     │
+│  │  │  - Guards paths: /v1/*, /v2/*, /inference/*               │  │     │
+│  │  │  - Token validation: SHA-256 hash + secrets.compare_digest│  │     │
+│  │  │  - Timing-attack resistant (constant-time comparison)     │  │     │
+│  │  └───────────────────────────────────────────────────────────┘  │     │
+│  │                                                                 │     │
+│  │  Guarded Endpoints (require Bearer token when auth active):     │     │
+│  │  - POST /v1/chat/completions      (Chat inference)              │     │
+│  │  - POST /v1/completions           (Text completions)            │     │
+│  │  - POST /v1/embeddings            (Embedding generation)        │     │
+│  │  - POST /v1/rerank, /v2/rerank    (Reranking)                   │     │
+│  │  - POST /v1/messages              (Anthropic compat)            │     │
+│  │  - POST /v1/audio/transcriptions  (Audio STT)                   │     │
+│  │  - POST /v1/responses             (Responses API)               │     │
+│  │  - POST /v2/embed                 (Embedding v2)                │     │
+│  │  - POST /inference/v1/generate    (Custom inference)            │     │
+│  │  - GET  /v1/models                (Model listing)               │     │
+│  │  - WEBSOCKET /v1/realtime         (Realtime streaming)          │     │
+│  │  - 30+ additional guarded routes                                │     │
+│  │                                                                 │     │
+│  │  Unguarded Endpoints (always accessible, no auth):              │     │
+│  │  - GET /health                    (Liveness probe)              │     │
+│  │  - GET /ready                     (Readiness probe)             │     │
+│  │  - GET /readyz                    (Readiness probe alt)         │     │
+│  │  - GET /load                      (Load status)                 │     │
+│  │  - GET /docs                      (OpenAPI docs)                │     │
+│  │  - GET|POST /ping                 (SageMaker health)            │     │
+│  │  - GET /version                   (Version info)                │     │
+│  └─────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐     │
+│  │  gRPC Server (Optional - separate process)                      │     │
+│  │  Port: 50051/TCP                                                │     │
+│  │  Protocol: gRPC (HTTP/2)                                        │     │
+│  │  Encryption: NONE (insecure port)                               │     │
+│  │  Auth: NONE                                                     │     │
+│  │  ⚠️  Requires service mesh or sidecar for transport encryption  │     │
+│  │                                                                 │     │
+│  │  Services:                                                      │     │
+│  │  - VllmEngine (smg-grpc-servicer) — LLM inference               │     │
+│  │  - grpc.health.v1.Health — Kubernetes health probes              │     │
+│  │  - Server Reflection — tooling compatibility                    │     │
+│  └─────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐     │
+│  │  AsyncLLM Engine (Core)                                         │     │
+│  │  - CPU-optimized model inference                                │     │
+│  │  - Receives requests from both HTTP and gRPC servers            │     │
+│  │  - No external network connections (model loaded at startup)    │     │
+│  └─────────────────────────────────────────────────────────────────┘     │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES CONTROL PLANE                                               │
+│                                                                          │
+│  [Kubernetes]                                                            │
+│  - Liveness:  GET /health (HTTP) or grpc.health.v1.Health (gRPC)        │
+│  - Readiness: GET /ready or /readyz (HTTP) or grpc.health.v1 (gRPC)    │
+│  - No RBAC roles or role bindings defined for this component            │
+│  - No CRDs defined or watched                                           │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+FIPS Compliance:
+- Base image: registry.redhat.io/ubi9/ubi-minimal-pqc (UBI9 with PQC support)
+- GRPC_PYTHON_BUILD_SYSTEM_OPENSSL=1 (gRPC uses system OpenSSL, not BoringSSL)
+- Crypto: hashlib (SHA-256), secrets (constant-time) — both delegate to system OpenSSL
+- TLS: Delegated to Python ssl module backed by system OpenSSL
+- FIPS mode: Inherited from RHEL/OpenShift node (not explicitly enforced by app)
+- No third-party crypto libraries for core functionality
+
+Secrets / Environment Variables:
+- VLLM_API_KEY (Opaque) - Bearer token for API authentication
+- OPENAI_API_KEY (Opaque) - OpenAI API key (for compatible clients)
+- S3_SECRET_ACCESS_KEY (Opaque) - S3 storage access credentials
+- GH_TOKEN / GITHUB_TOKEN (Opaque) - GitHub access tokens
+- EXA_API_KEY (Opaque) - Exa API integration key
+- MODELSCOPE_API_TOKEN (Opaque) - ModelScope access token
+- VLLM_USE_FASTOKENS (Opaque) - Feature flag
+- VLLM_BENCH_MAX_TOKENS (Opaque) - Benchmark configuration
+- VLLM_MAX_TOKENS_PER_EXPERT_FP4_MOE (Opaque) - MoE configuration
+- VLLM_SHARED_EXPERTS_STREAM_TOKEN_THRESHOLD (Opaque) - Streaming threshold
+- VLLM_MULTI_STREAM_GEMM_TOKEN_THRESHOLD (Opaque) - Multi-stream GEMM threshold
+
+Authentication Summary:
+- HTTP API: Bearer token auth is OPT-IN (only active when VLLM_API_KEY or --api-key set)
+- Guarded prefixes: /v1/*, /v2/*, /inference/*
+- Unguarded: /health, /ready, /readyz, /load, /docs, /ping
+- gRPC API: NO authentication (port 50051 is insecure)
+- Token comparison: SHA-256 hashing with constant-time comparison (timing-attack resistant)
+
+RBAC Summary:
+- No ClusterRoles defined
+- No RoleBindings defined
+- No ServiceAccount-specific permissions declared
+
+Network Security Notes:
+- gRPC server binds to insecure port with no built-in TLS
+- Transport encryption for gRPC requires service mesh or sidecar proxy
+- HTTP server TLS is platform-delegated (not configured at application level)
+- No mTLS configuration at application level
+- Certificate handling delegated to platform (OpenShift/Istio)

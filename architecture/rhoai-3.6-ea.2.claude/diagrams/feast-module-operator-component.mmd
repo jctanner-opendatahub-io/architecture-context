@@ -1,0 +1,99 @@
+graph TB
+    subgraph "Feast Module Operator"
+        direction TB
+        Manager["/manager<br/>Container Entrypoint"]
+        Controller["FeastOperator Controller<br/>controller-runtime"]
+        Reconciler["ODH Reconciler Pipeline<br/>opendatahub-operator SDK"]
+        Kustomize["Kustomize Manifest Renderer"]
+        ChartGen["chartgen subcommand<br/>Manifest Generation"]
+        MetricsServer["Metrics Server<br/>:8443/HTTPS"]
+        HealthProbes["Health Probes<br/>:8081/HTTP"]
+
+        Manager --> Controller
+        Manager --> ChartGen
+        Controller --> Reconciler
+        Reconciler --> Kustomize
+        Controller --> MetricsServer
+        Controller --> HealthProbes
+    end
+
+    %% Custom Resource
+    FeastOperatorCR["FeastOperator CR<br/>components.platform.opendatahub.io/v1alpha1"]
+    FeastOperatorCR -->|"watched by"| Controller
+
+    %% Owned Resources
+    subgraph "Owned Resources (Applications Namespace)"
+        Deployment["Deployments"]
+        Services["Services"]
+        ConfigMaps["ConfigMaps"]
+        ServiceAccounts["ServiceAccounts"]
+        Roles["Roles / RoleBindings"]
+        Jobs["Jobs / CronJobs"]
+        ServiceMonitor["ServiceMonitors"]
+        PDBs["PodDisruptionBudgets"]
+        HPAs["HorizontalPodAutoscalers"]
+        PVCs["PersistentVolumeClaims"]
+    end
+
+    Reconciler -->|"creates/manages"| Deployment
+    Reconciler -->|"creates/manages"| Services
+    Reconciler -->|"creates/manages"| ConfigMaps
+    Reconciler -->|"creates/manages"| ServiceAccounts
+    Reconciler -->|"creates/manages"| Roles
+    Reconciler -->|"creates/manages"| Jobs
+    Reconciler -->|"creates/manages"| ServiceMonitor
+    Reconciler -->|"creates/manages"| PDBs
+    Reconciler -->|"creates/manages"| HPAs
+    Reconciler -->|"creates/manages"| PVCs
+
+    %% Cluster-Scoped Owned Resources
+    ClusterRoles["ClusterRoles / ClusterRoleBindings"]
+    Routes["OpenShift Routes"]
+    Reconciler -->|"creates/manages"| ClusterRoles
+    Reconciler -->|"creates/manages"| Routes
+
+    %% External CRD Watches
+    FeatureStoreCR["FeatureStore CR<br/>feast.dev"]
+    NotebooksCR["Notebooks CR<br/>kubeflow.org"]
+    MLflowCR["MLflow CR<br/>mlflow.opendatahub.io"]
+    CRDs["CustomResourceDefinitions<br/>apiextensions.k8s.io"]
+    PlatformCM["Platform ConfigMap"]
+
+    FeatureStoreCR -->|"watched by"| Controller
+    NotebooksCR -->|"watched by"| Controller
+    MLflowCR -->|"watched by"| Controller
+    CRDs -->|"watched by"| Controller
+    PlatformCM -->|"watched by"| Controller
+
+    %% External Dependencies
+    K8sAPI["Kubernetes API<br/>:6443/HTTPS"]
+    PrometheusOp["prometheus-operator"]
+    ODHOperator["opendatahub-operator<br/>Go SDK"]
+    ODHPlatformUtils["odh-platform-utilities<br/>Go Library"]
+    SparkApps["SparkApplications<br/>sparkoperator.k8s.io"]
+
+    Controller -->|"API calls"| K8sAPI
+    ServiceMonitor -->|"scraped by"| PrometheusOp
+    Controller -.->|"imports SDK"| ODHOperator
+    Controller -.->|"imports library"| ODHPlatformUtils
+    Reconciler -->|"creates/manages"| SparkApps
+
+    %% Styling
+    style Manager fill:#4a90e2,color:#fff
+    style Controller fill:#4a90e2,color:#fff
+    style Reconciler fill:#4a90e2,color:#fff
+    style Kustomize fill:#4a90e2,color:#fff
+    style MetricsServer fill:#4a90e2,color:#fff
+    style HealthProbes fill:#4a90e2,color:#fff
+    style ChartGen fill:#4a90e2,color:#fff
+    style FeastOperatorCR fill:#f5a623,color:#fff
+    style FeatureStoreCR fill:#f5a623,color:#fff
+    style NotebooksCR fill:#f5a623,color:#fff
+    style MLflowCR fill:#f5a623,color:#fff
+    style CRDs fill:#f5a623,color:#fff
+    style PlatformCM fill:#f5a623,color:#fff
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style PrometheusOp fill:#7ed321,color:#fff
+    style ODHOperator fill:#7ed321,color:#fff
+    style ODHPlatformUtils fill:#7ed321,color:#fff
+    style SparkApps fill:#e8e8e8,stroke:#333

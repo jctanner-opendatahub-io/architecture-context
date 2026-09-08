@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant Client as External Client
+    participant TLS as kube-rbac-proxy<br/>8443/TCP TLS
+    participant AuthN as Authentication<br/>(OIDC or TokenReview)
+    participant AuthZ as Authorization<br/>(Metrics+Static+SAR)
+    participant Proxy as Reverse Proxy
+    participant Upstream as Upstream App<br/>8080/TCP HTTP
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+
+    Note over Client,Upstream: Authenticated Request Flow
+
+    Client->>TLS: HTTPS Request<br/>Port 8443, TLS 1.2+
+    TLS->>TLS: TLS Termination<br/>(cert hot-reload, FIPS crypto)
+
+    alt allow-paths check passes
+        TLS->>AuthN: Forward to auth chain
+
+        alt ignore-paths match
+            AuthN-->>Proxy: Bypass auth (ignored path)
+        else OIDC mode configured
+            AuthN->>AuthN: Validate OIDC token locally
+        else Delegated mode (default)
+            AuthN->>K8sAPI: TokenReview<br/>POST /apis/authentication.k8s.io/v1/tokenreviews
+            K8sAPI-->>AuthN: TokenReview Response<br/>(authenticated: true/false)
+        end
+
+        AuthN->>AuthZ: Authenticated request
+
+        alt Hardcoded metrics authorizer
+            AuthZ->>AuthZ: Check OpenShift<br/>monitoring identity
+        else Static policy authorizer
+            AuthZ->>AuthZ: Check file-based<br/>policy rules
+        else SAR authorizer
+            AuthZ->>K8sAPI: SubjectAccessReview<br/>POST /apis/authorization.k8s.io/v1/subjectaccessreviews
+            K8sAPI-->>AuthZ: SAR Response<br/>(allowed: true/false)
+        end
+
+        AuthZ->>Proxy: Authorized request +<br/>auth headers injected
+        Proxy->>Upstream: HTTP forward<br/>localhost:8080
+        Upstream-->>Proxy: Response
+        Proxy-->>Client: HTTPS Response
+    else allow-paths check fails
+        TLS-->>Client: 403 Forbidden
+    end
+
+    Note over Client,Upstream: Health Check Flow (Separate Port)
+
+    Client->>TLS: GET /healthz<br/>proxy-endpoints port, TLS
+    TLS-->>Client: 200 OK<br/>(no auth required)

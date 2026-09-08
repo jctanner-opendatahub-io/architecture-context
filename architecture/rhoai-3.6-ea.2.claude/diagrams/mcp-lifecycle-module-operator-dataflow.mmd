@@ -1,0 +1,46 @@
+sequenceDiagram
+    participant User as Cluster Admin
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant Reconciler as MCPLifecycleOperator<br/>Reconciler
+    participant PlatformCM as Platform ConfigMap
+    participant APIServer as OpenShift APIServer
+    participant Kustomize as Kustomize Renderer
+    participant SSA as Server-Side Apply
+    participant Operand as mcp-lifecycle-operator-<br/>controller-manager
+    participant MCPServer as MCPServer CR
+
+    Note over User,MCPServer: CR Reconciliation Flow
+
+    User->>K8sAPI: Create MCPLifecycleOperator CR<br/>(cluster-scoped singleton)
+    K8sAPI-->>Reconciler: Watch event triggers reconciliation<br/>SA token auth
+
+    Reconciler->>PlatformCM: Read platform ConfigMap<br/>Distribution detection (RHOAI vs standalone)
+    PlatformCM-->>Reconciler: Distribution name + version
+
+    Reconciler->>APIServer: Get cluster TLS profile<br/>config.openshift.io/v1/APIServer
+    APIServer-->>Reconciler: TLS cipher suites + min version<br/>(fallback: Intermediate/TLS 1.2+)
+
+    Reconciler->>Kustomize: Render embedded manifests<br/>Params: operand image, namespace, TLS profile
+    Kustomize-->>Reconciler: Rendered resource set
+
+    Reconciler->>SSA: Apply resources via SSA<br/>Field owner: mcp-lifecycle-module-operator
+    SSA-->>K8sAPI: Create/Update Deployment, RBAC,<br/>ServiceMonitor, NetworkPolicies, CRD
+
+    Note over Reconciler,Operand: Verify Operand Readiness
+
+    Reconciler->>K8sAPI: Get operand Deployment status
+    K8sAPI-->>Reconciler: Deployment ready/not ready
+
+    Reconciler->>K8sAPI: Update CR status conditions<br/>(Ready, ProvisioningSucceeded, Degraded)
+
+    Note over Operand,MCPServer: Operand Lifecycle Management
+
+    Operand->>K8sAPI: Watch MCPServer CRs<br/>SA: mcp-lifecycle-operator-controller-manager
+    User->>K8sAPI: Create MCPServer CR (namespaced)<br/>RBAC aggregation: admin/editor/viewer
+    K8sAPI-->>Operand: MCPServer watch event
+    Operand->>K8sAPI: Reconcile MCPServer resources<br/>Deployments, Services, NetworkPolicies
+
+    Note over Reconciler,SSA: Managed Resource Drift Detection
+
+    K8sAPI-->>Reconciler: Watch event on managed resource<br/>Label: platform.opendatahub.io/part-of
+    Reconciler->>SSA: Re-reconcile (SSA re-apply)

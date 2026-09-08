@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "component": "odh-cli",
+  "reads": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "1-67",
+      "gap_category": ["integration_points", "internal_dependencies", "authentication", "services"],
+      "question": "What subcommands and integration surfaces does the CLI entrypoint establish?",
+      "expected_signal": "cobra command registration, ConfigFlags setup, imported subcommand packages",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "pkg/util/kube/rbac/check.go",
+      "line_range": "1-72",
+      "gap_category": ["authentication"],
+      "question": "How is RBAC pre-flight authentication enforced and what API does it use?",
+      "expected_signal": "SelfSubjectAccessReview creation, authorization client usage",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Data Flows"]
+    },
+    {
+      "path": "pkg/util/client/client.go",
+      "line_range": "1-198",
+      "gap_category": ["integration_points", "internal_dependencies", "authentication"],
+      "question": "What Kubernetes client types are constructed and what internal platform dependencies are used?",
+      "expected_signal": "OLM client, dynamic client, discovery client, authorization client construction",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "Integration Points", "Architectural Analysis"]
+    },
+    {
+      "path": "pkg/migrate/actions/trustyai/metrics/http.go",
+      "line_range": "1-208",
+      "gap_category": ["integration_points", "fips_compliance", "authentication"],
+      "question": "How does the CLI interact with TrustYAI Service and what TLS/auth configuration is used?",
+      "expected_signal": "HTTP client construction, TLS config, bearer token auth, endpoint discovery",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "FIPS Compliance", "Egress", "Data Flows"]
+    },
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-78",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags, linking mode, and base images are used for the Konflux build?",
+      "expected_signal": "GOEXPERIMENT, CGO_ENABLED, build tags, base image references",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "pkg/diagnose/format.go",
+      "line_range": "1-91",
+      "gap_category": ["internal_dependencies"],
+      "question": "How is the opendatahub-operator clusterhealth package used?",
+      "expected_signal": "import of clusterhealth, usage of ConditionSummary type",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "Data Flows"]
+    },
+    {
+      "path": "pkg/util/client/interfaces.go",
+      "line_range": "1-150",
+      "gap_category": ["internal_dependencies", "integration_points"],
+      "question": "What client interfaces define the integration boundary for OLM and Kubernetes interactions?",
+      "expected_signal": "Reader, Writer, Client interfaces, OLMReader, typed client accessors",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Internal Platform Dependencies"]
+    },
+    {
+      "path": "cmd/mcp/mcp.go",
+      "line_range": "1-70",
+      "gap_category": ["http_endpoints", "services"],
+      "question": "Does the MCP server expose HTTP endpoints and what transport/port configuration exists?",
+      "expected_signal": "SSE transport option, port configuration, HTTP server",
+      "outcome": "resolved",
+      "sections": ["HTTP Endpoints", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "pkg/mcp/server.go",
+      "line_range": "1-108",
+      "gap_category": ["http_endpoints", "services"],
+      "question": "What is the actual SSE server bind address and lifecycle?",
+      "expected_signal": "SSE server construction, bind address, shutdown handling",
+      "outcome": "resolved",
+      "sections": ["HTTP Endpoints", "Architectural Analysis"]
+    }
+  ]
+}

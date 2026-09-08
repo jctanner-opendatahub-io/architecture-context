@@ -1,0 +1,57 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        User["External User /<br/>Data Scientist"]
+    end
+
+    subgraph Ingress["INGRESS (DMZ)"]
+        Gateway["Kubeflow Gateway<br/>HTTPRoute / VirtualService<br/>TLS Termination"]
+    end
+
+    subgraph AppTier["APPLICATION TIER (Internal)"]
+        direction TB
+
+        Frontend["workspaces-frontend<br/>ClusterIP :8080/TCP<br/>HTTP | No Encryption<br/>nginx (React SPA)"]
+
+        Backend["workspaces-backend<br/>ClusterIP :4000/TCP<br/>HTTP | Optional TLS 1.3<br/>Header AuthN + SAR AuthZ"]
+    end
+
+    subgraph ControllerTier["CONTROLLER TIER (Operator)"]
+        Controller["Workspace Controller<br/>(/manager)<br/>Reconciles: Workspace, WorkspaceKind<br/>Creates: StatefulSet, Service, SA, RB, HTTPRoute"]
+    end
+
+    subgraph WebhookTier["WEBHOOK TIER (Admission)"]
+        WebhookSvc["workspaces-webhook-service<br/>ClusterIP :443/TCP<br/>HTTPS | TLS<br/>K8s Admission Auth"]
+    end
+
+    subgraph Metrics["METRICS"]
+        MetricsSvc["controller-metrics-service<br/>ClusterIP :8080/TCP<br/>HTTP | No Encryption"]
+    end
+
+    subgraph K8s["KUBERNETES CONTROL PLANE"]
+        APIServer["Kubernetes API Server<br/>:6443/TCP<br/>HTTPS/WSS | TLS 1.2+"]
+    end
+
+    %% Flows
+    User -->|"HTTPS<br/>TLS<br/>Platform Auth (OAuth2)"| Gateway
+    Gateway -->|"HTTP/8080<br/>Internal"| Frontend
+    Frontend -->|"HTTP/4000<br/>Optional TLS 1.3<br/>Proxy Headers"| Backend
+    Backend -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount Token"| APIServer
+    Controller -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount Token"| APIServer
+    APIServer -->|"HTTPS/443<br/>TLS<br/>API Server Client Cert"| WebhookSvc
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef app fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef controller fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef webhook fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef k8s fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef metrics fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class User external
+    class Gateway ingress
+    class Frontend,Backend app
+    class Controller controller
+    class WebhookSvc webhook
+    class APIServer k8s
+    class MetricsSvc metrics

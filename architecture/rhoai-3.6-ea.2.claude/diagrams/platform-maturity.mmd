@@ -1,0 +1,128 @@
+%%{init: {'theme':'base'}}%%
+graph LR
+    subgraph Metrics["Platform Metrics — RHOAI 3.6-ea.2"]
+        direction TB
+
+        subgraph ComponentStats["Component Statistics"]
+            A["Total Components: 76"]
+            B["Module Operators: 15+<br/>(components.platform.opendatahub.io)"]
+            C["Go Executables: 78"]
+            D["Python Packages: 54"]
+            E["Rust Services: 15"]
+            F["Go BFF Sidecars: 10"]
+            G["Controllers: 77"]
+            H["Container Entrypoints: ~420"]
+        end
+
+        subgraph InfraMetrics["Infrastructure Metrics"]
+            I["CRDs: 146 across 31 components"]
+            J["Webhooks: 213 across 18 components<br/>(all failurePolicy: Fail)"]
+            K["Kubernetes Services: 138"]
+            L["gRPC Service Definitions: 142"]
+            M["Deployments: 62"]
+        end
+
+        subgraph GatewayMetrics["Gateway Architecture"]
+            N["Production Gateways: 3<br/>data-science-gateway (shared)<br/>maas-default-gateway (MaaS)<br/>kubeflow-gateway (workspaces)"]
+            O["HTTPRoutes: notebooks, models,<br/>MaaS, registries, workspaces"]
+            P["GRPCRoutes: OpenShell"]
+            Q["Legacy OpenShift Routes: 8+<br/>(monitoring, MinIO, registries)"]
+        end
+
+        subgraph SecurityPosture["Security Posture"]
+            R["mTLS Enforcement: MIXED<br/>(optional, not platform-wide)"]
+            S["FIPS Go: strictfipsruntime<br/>(13+ components)"]
+            T["FIPS Gap: Rust ring crate<br/>(2 components)"]
+            U["Container Non-Root: All operators"]
+            V["UBI9 PQC Base Images: Most"]
+            W["Webhook failurePolicy: ALL Fail<br/>(deny-by-default)"]
+        end
+
+        subgraph APIMaturity["API Maturity"]
+            X["v1alpha1: majority of CRDs"]
+            Y["v1alpha2: llm-d-router"]
+            Z["v1beta1: kserve InferenceService,<br/>kubeflow Notebook, kueue"]
+            AA["v1: feast FeatureStore,<br/>training-operator, trustyai"]
+        end
+
+        subgraph DeploymentReadiness["Deployment Readiness"]
+            AB["High Availability: Leader election<br/>(14+ components, Lease-based)"]
+            AC["Disconnected Support: UNRESOLVED<br/>(69 entries, inventory limitation)"]
+            AD["Multi-Arch: amd64 primary<br/>arm64, ppc64le, s390x partial"]
+            AE["Namespaces: 6 tier model<br/>(operator, ingress, kserve,<br/>registry, monitoring, user)"]
+        end
+
+        subgraph ServingPaths["Model Serving Paths (6)"]
+            AF["1. KServe InferenceService (traditional)"]
+            AG["2. KServe LLMInferenceService"]
+            AH["3. LLM-D disaggregated inference"]
+            AI["4. MaaS external provider"]
+            AJ["5. Guardrails orchestrated inference"]
+            AK["6. Batch inference"]
+        end
+
+        subgraph NewIn36["New in 3.6-ea.2"]
+            AL["ai-gateway-operator + controller"]
+            AM["LLM-D framework (disaggregated)"]
+            AN["OpenShell (sandboxed AI agent)"]
+            AO["workbenches (3-tier Workspace)"]
+            AP["trainer (Kubeflow Trainer v2)"]
+            AQ["ogx-k8s-operator (LlamaStack)"]
+            AR["mcp-lifecycle-operator"]
+            AS["data-connect-hub, eval-hub"]
+        end
+    end
+
+    %% Styling — color by health/status
+    style A fill:#4a90e2,color:#fff
+    style B fill:#4a90e2,color:#fff
+    style C fill:#4a90e2,color:#fff
+    style D fill:#4a90e2,color:#fff
+    style E fill:#4a90e2,color:#fff
+    style F fill:#4a90e2,color:#fff
+    style G fill:#4a90e2,color:#fff
+    style H fill:#4a90e2,color:#fff
+
+    style I fill:#7ed321,color:#fff
+    style J fill:#f5a623,color:#fff
+    style K fill:#7ed321,color:#fff
+    style L fill:#7ed321,color:#fff
+    style M fill:#7ed321,color:#fff
+
+    style N fill:#7ed321,color:#fff
+    style O fill:#7ed321,color:#fff
+    style P fill:#7ed321,color:#fff
+    style Q fill:#f5a623,color:#fff
+
+    style R fill:#f5a623,color:#fff
+    style S fill:#7ed321,color:#fff
+    style T fill:#ff6b6b,color:#fff
+    style U fill:#7ed321,color:#fff
+    style V fill:#7ed321,color:#fff
+    style W fill:#7ed321,color:#fff
+
+    style X fill:#f5a623,color:#fff
+    style Y fill:#f5a623,color:#fff
+    style Z fill:#7ed321,color:#fff
+    style AA fill:#7ed321,color:#fff
+
+    style AB fill:#7ed321,color:#fff
+    style AC fill:#ff6b6b,color:#fff
+    style AD fill:#f5a623,color:#fff
+    style AE fill:#7ed321,color:#fff
+
+    style AF fill:#7ed321,color:#fff
+    style AG fill:#7ed321,color:#fff
+    style AH fill:#4a90e2,color:#fff
+    style AI fill:#4a90e2,color:#fff
+    style AJ fill:#4a90e2,color:#fff
+    style AK fill:#4a90e2,color:#fff
+
+    style AL fill:#9b59b6,color:#fff
+    style AM fill:#9b59b6,color:#fff
+    style AN fill:#9b59b6,color:#fff
+    style AO fill:#9b59b6,color:#fff
+    style AP fill:#9b59b6,color:#fff
+    style AQ fill:#9b59b6,color:#fff
+    style AR fill:#9b59b6,color:#fff
+    style AS fill:#9b59b6,color:#fff

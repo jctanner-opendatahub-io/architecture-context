@@ -1,0 +1,318 @@
+================================================================================
+PLATFORM NETWORK TOPOLOGY — RHOAI 3.6-ea.2
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                       │
+│                                                                             │
+│  Users, API Clients, External Model Providers                               │
+│         │                                                                   │
+├─────────┼───────────────────────────────────────────────────────────────────┤
+│  INGRESS│(openshift-ingress namespace)                                      │
+│         │                                                                   │
+│  ┌──────┴──────────────────────────────────────────────────────────────┐    │
+│  │  GATEWAY 1: data-science-gateway                                    │    │
+│  │  GatewayClass: data-science-gateway-class                           │    │
+│  │  Owner: rhods-operator (gateway_controller_actions.go)              │    │
+│  │  Data Plane: Istio/Envoy                                            │    │
+│  │                                                                     │    │
+│  │  Auth Chain:                                                        │    │
+│  │    EnvoyFilter ext_authz                                            │    │
+│  │      → kube-auth-proxy /oauth2/auth (OAuth2/OIDC validation)       │    │
+│  │      → Lua filter (token forwarding, cookie stripping)              │    │
+│  │      → per-pod kube-rbac-proxy (notebooks) or app auth             │    │
+│  │                                                                     │    │
+│  │  Route Consumers:                                                   │    │
+│  │    ├─→ kubeflow (HTTPRoute): Notebook servers                      │    │
+│  │    │   Port: 443/TCP (ext) → 8080/TCP (int)                        │    │
+│  │    │   Auth: ext_authz + kube-rbac-proxy sidecar                   │    │
+│  │    │                                                                │    │
+│  │    ├─→ odh-model-controller (HTTPRoute): KServe InferenceServices  │    │
+│  │    │   Port: 443/TCP (ext) → model server port (int)               │    │
+│  │    │   Auth: ext_authz + optional Kuadrant AuthPolicy              │    │
+│  │    │                                                                │    │
+│  │    └─→ workbenches (HTTPRoute): Workspace endpoints                │    │
+│  │        Port: 443/TCP (ext) → workbench port (int)                  │    │
+│  │        Auth: ext_authz + request-header auth                       │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  GATEWAY 2: maas-default-gateway                                    │    │
+│  │  GatewayClass: openshift-default                                    │    │
+│  │  Owner: models-as-a-service + ai-gateway-operator                   │    │
+│  │  Data Plane: Istio/Envoy                                            │    │
+│  │                                                                     │    │
+│  │  Auth Chain:                                                        │    │
+│  │    praxis-extproc ipp-pre (fail-open, model extraction)             │    │
+│  │      → Kuadrant WasmPlugin (Authorino: API key sk-oai-*            │    │
+│  │        or OpenShift bearer token)                                   │    │
+│  │      → praxis-extproc ipp (fail-closed, full pipeline)             │    │
+│  │                                                                     │    │
+│  │  HTTPRoute: maas-api-route (4 rules)                                │    │
+│  │    ├─→ /v1/models                                                  │    │
+│  │    ├─→ /v1/subscriptions                                           │    │
+│  │    ├─→ /v1/api-keys                                                │    │
+│  │    └─→ /maas-api/* (catchall)                                      │    │
+│  │                                                                     │    │
+│  │  Backend: maas-api (port 8443)                                      │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  GATEWAY 3: kubeflow-gateway (workbenches namespace)                │    │
+│  │  Owner: workbenches                                                 │    │
+│  │  Route Consumers: Workspace HTTPRoutes/VirtualServices              │    │
+│  │  Auth: request-header auth + per-request SubjectAccessReview        │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  LEGACY ROUTES (OpenShift Router)                                   │    │
+│  │                                                                     │    │
+│  │  ├─→ odh-observability                                             │    │
+│  │  │   Route: data-science-prometheus-cluster-proxy (TLS passthrough)│    │
+│  │  │   Route: data-science-prometheus-route (TLS passthrough)        │    │
+│  │  │   Route: thanos-querier (TLS passthrough)                       │    │
+│  │  │   Backend auth: kube-rbac-proxy SubjectAccessReview             │    │
+│  │  │                                                                 │    │
+│  │  ├─→ model-registry-operator                                       │    │
+│  │  │   Route: {name}-https, Route: {name}-http per registry          │    │
+│  │  │   Also: HTTPRoute per registry (dual ingress)                   │    │
+│  │  │                                                                 │    │
+│  │  ├─→ distributed-workloads                                         │    │
+│  │  │   4 Routes: MinIO API, console, UI (TLS)                        │    │
+│  │  │                                                                 │    │
+│  │  └─→ trustyai-service-operator                                     │    │
+│  │      Route per TrustyAI instance (TLS)                              │    │
+│  │      VirtualService for registry (plaintext)                        │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  gRPC INGRESS                                                       │    │
+│  │                                                                     │    │
+│  │  └─→ OpenShell (GRPCRoute, configurable parentRef)                 │    │
+│  │      Auth: OIDC/Bearer (users) + Ed25519 JWT (supervisor→gateway)  │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  INTERNAL SERVICE MESH                                                      │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Namespace: opendatahub (platform operators and core controllers)   │    │
+│  │                                                                     │    │
+│  │  ├─→ rhods-operator                                                │    │
+│  │  │   SA: rhods-operator-controller-manager                         │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │   → data-science-gateway lifecycle (create/update Gateway)      │    │
+│  │  │   → All component deployments (DataScienceCluster reconcile)    │    │
+│  │  │                                                                 │    │
+│  │  ├─→ odh-dashboard                                                 │    │
+│  │  │   SA: odh-dashboard                                             │    │
+│  │  │   11 Go BFF sidecars proxying to Kubernetes API                 │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │                                                                 │    │
+│  │  ├─→ odh-model-controller                                         │    │
+│  │  │   SA: odh-model-controller                                     │    │
+│  │  │   → kserve (HTTP, CRD reconciliation)                          │    │
+│  │  │   → data-science-gateway (HTTPRoute creation)                   │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │                                                                 │    │
+│  │  ├─→ kubeflow (notebook-controller + odh-notebook-controller)     │    │
+│  │  │   SA: notebook-controller                                       │    │
+│  │  │   → data-science-gateway (HTTPRoute + ReferenceGrant)           │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │   Mutating webhook injects kube-rbac-proxy sidecar              │    │
+│  │  │                                                                 │    │
+│  │  ├─→ models-as-a-service (maas-controller)                        │    │
+│  │  │   SA: maas-controller                                          │    │
+│  │  │   → maas-default-gateway (HTTPRoute creation)                   │    │
+│  │  │   → Kuadrant (AuthPolicy attachment)                            │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │                                                                 │    │
+│  │  ├─→ Module Operators (9 operators)                                │    │
+│  │  │   feast-module-operator, mlflow-operator, trainer-operator,     │    │
+│  │  │   workbenches-operator, spark-operator, ai-gateway-operator,    │    │
+│  │  │   trustyai-service-operator, ogx-k8s-operator,                 │    │
+│  │  │   mcp-lifecycle-module-operator                                 │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │                                                                 │    │
+│  │  └─→ odh-observability                                            │    │
+│  │      SA: odh-observability                                         │    │
+│  │      → Prometheus/OTel (monitoring deployment)                     │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Namespace: kserve (model serving controllers)                      │    │
+│  │                                                                     │    │
+│  │  ├─→ kserve (manager controller)                                  │    │
+│  │  │   SA: kserve-controller-manager                                 │    │
+│  │  │   → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │  │   → InferenceService reconciliation (13 CRDs)                   │    │
+│  │  │                                                                 │    │
+│  │  ├─→ kserve (llmisvc controller)                                  │    │
+│  │  │   SA: kserve-controller-manager                                 │    │
+│  │  │   → LLMInferenceService reconciliation                          │    │
+│  │  │                                                                 │    │
+│  │  ├─→ kserve (localmodel controller)                               │    │
+│  │  │   SA: kserve-controller-manager                                 │    │
+│  │  │   → LocalModelCache/LocalModelNamespaceCache reconciliation     │    │
+│  │  │                                                                 │    │
+│  │  └─→ kserve (kserve-module controller)                            │    │
+│  │      SA: kserve-controller-manager                                 │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Namespace: openshift-ingress (gateway auth services)               │    │
+│  │                                                                     │    │
+│  │  ├─→ kube-auth-proxy                                               │    │
+│  │  │   Port: 8443/TCP                                                │    │
+│  │  │   /oauth2/auth endpoint                                         │    │
+│  │  │   Returns: x-auth-request-user, x-auth-request-email,          │    │
+│  │  │            x-auth-request-access-token headers                  │    │
+│  │  │   202 Accepted (success) / 401-403 (failure)                    │    │
+│  │  │                                                                 │    │
+│  │  └─→ praxis-extproc                                                │    │
+│  │      Dual-stage ExtProc pipeline                                    │    │
+│  │      ipp-pre: pre-auth, fail-open (model extraction)               │    │
+│  │      ipp: post-auth, fail-closed (full pipeline)                   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Namespace: model-registry-operator-system                          │    │
+│  │                                                                     │    │
+│  │  └─→ model-registry-operator                                       │    │
+│  │      SA: model-registry-operator                                    │    │
+│  │      → Kubernetes API (HTTPS/443, SA token)                        │    │
+│  │      → Creates HTTPRoute + OpenShift Route per registry instance   │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  Namespace: redhat-ods-monitoring (observability)                   │    │
+│  │                                                                     │    │
+│  │  ├─→ Prometheus                                                    │    │
+│  │  │   ServiceMonitor-based service discovery                        │    │
+│  │  │   Cluster proxy: metrics.k8s.io/nodes:get SAR                  │    │
+│  │  │   Namespace proxy: query-parameter namespace-scoped SAR         │    │
+│  │  │                                                                 │    │
+│  │  ├─→ Thanos Querier                                                │    │
+│  │  │   Federated query across Prometheus instances                   │    │
+│  │  │                                                                 │    │
+│  │  ├─→ OpenTelemetry Collector                                       │    │
+│  │  │   OTLP traces from maas-api, odh-model-controller,             │    │
+│  │  │   odh-dashboard, trustyai-service-operator                      │    │
+│  │  │                                                                 │    │
+│  │  └─→ kube-rbac-proxy instances (metrics proxies)                   │    │
+│  │      Enforce SubjectAccessReview for metrics endpoints             │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐    │
+│  │  User Namespaces (per-user / per-project)                           │    │
+│  │                                                                     │    │
+│  │  ├─→ Notebook Servers (JupyterLab)                                 │    │
+│  │  │   kube-rbac-proxy sidecar (injected by kubeflow webhook)        │    │
+│  │  │   NetworkPolicy for notebook isolation                          │    │
+│  │  │                                                                 │    │
+│  │  ├─→ InferenceServices (vLLM, MLServer, OpenVINO)                 │    │
+│  │  │   Model servers with optional kube-rbac-proxy for metrics       │    │
+│  │  │                                                                 │    │
+│  │  ├─→ Pipeline Runs (Argo Workflows)                                │    │
+│  │  │   DSP API server (8888/8887), MariaDB, MinIO per DSPA           │    │
+│  │  │                                                                 │    │
+│  │  ├─→ Training Jobs (TrainJob → JobSet)                             │    │
+│  │  │   Kubeflow Trainer v2 with plugin-based runtimes                │    │
+│  │  │                                                                 │    │
+│  │  ├─→ Feature Stores (Feast)                                        │    │
+│  │  │                                                                 │    │
+│  │  └─→ TrustyAI Services                                             │    │
+│  │      Route per instance, VirtualService for registry               │    │
+│  └─────────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│  ISTIO / SERVICE MESH CONFIGURATION:                                        │
+│  ├─ Sidecar injection: Per-namespace or per-pod annotation                  │
+│  │  (kserve InferenceService pods, data-science-pipelines components)       │
+│  ├─ Strict mTLS: OPTIONAL — llm-d (port 8001), OpenShell                   │
+│  │  (NOT enforced platform-wide)                                            │
+│  ├─ EnvoyFilter: ext_authz (data-science-gateway → kube-auth-proxy)         │
+│  ├─ EnvoyFilter: ext_proc (maas-default-gateway → praxis-extproc)           │
+│  ├─ VirtualService: data-science-pipelines (metadata-grpc),                 │
+│  │  model-registry, trustyai-service-operator                               │
+│  ├─ DestinationRule: rhods-operator (gateway), odh-model-controller         │
+│  ├─ Gateway API HTTPRoute: primary routing for notebooks, models, MaaS      │
+│  └─ Gateway API GRPCRoute: OpenShell                                        │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  INTERNAL DATA PATH: LLM-D Disaggregated Inference                          │
+│                                                                             │
+│  Client → Envoy proxy (port 8081)                                           │
+│    → llm-d-router EPP (ExtProc gRPC, port 9002)                            │
+│      → Plugin-based scheduling pipeline                                     │
+│      → Sets x-gateway-destination-endpoint header                           │
+│    → Envoy routes to selected vLLM backend                                  │
+│    → Prefill node → RDMA KV-cache transfer (port 5600) → Decode node       │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  EGRESS (External Services)                                                 │
+│                                                                             │
+│  External Model Providers                                                   │
+│  - Purpose: MaaS external model inference (OpenAI-compatible APIs)          │
+│  - Auth: API key (proxied via maas-api)                                     │
+│  - Encryption: TLS                                                          │
+│  - Components: maas-api                                                     │
+│                                                                             │
+│  Container Registry (registry.redhat.io, quay.io)                           │
+│  - Purpose: Pull runtime and model server images                            │
+│  - Auth: Pull secrets                                                       │
+│  - Encryption: TLS 1.2+                                                     │
+│  - Components: kserve, workbenches, llm-d                                   │
+│                                                                             │
+│  Object Storage (S3-compatible)                                             │
+│  - Purpose: Model artifacts, pipeline artifacts, training data              │
+│  - Auth: AWS IAM / S3 credentials (storage-config Secret)                   │
+│  - Encryption: TLS                                                          │
+│  - Components: kserve, data-science-pipelines, model-registry               │
+│                                                                             │
+│  Kubernetes API Server                                                      │
+│  - Purpose: All operator reconciliation, RBAC enforcement                   │
+│  - Port: HTTPS/443                                                          │
+│  - Auth: ServiceAccount tokens (TokenReview)                                │
+│  - Components: All operators and controllers (76 components)                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+NAMESPACE SUMMARY:
+┌────────────────────────────────────┬──────────────────────────────────────────┐
+│ Namespace                          │ Purpose                                  │
+├────────────────────────────────────┼──────────────────────────────────────────┤
+│ opendatahub                        │ Platform operator + core controllers     │
+│ openshift-ingress                  │ Gateway infrastructure + auth proxies    │
+│ kserve                             │ Model serving controllers                │
+│ model-registry-operator-system     │ Model registry lifecycle                 │
+│ redhat-ods-monitoring              │ Prometheus, OTel, Thanos Querier         │
+│ User namespaces (per-project)      │ Notebooks, InferenceServices, Pipelines  │
+└────────────────────────────────────┴──────────────────────────────────────────┘
+
+RBAC SUMMARY (Most Privileged Roles):
+┌────────────────────────────────────────────────┬─────────────────────────────┐
+│ Role / ServiceAccount                          │ Key Permissions              │
+├────────────────────────────────────────────────┼─────────────────────────────┤
+│ rhods-operator-controller-manager              │ DataScienceCluster/*, 14+   │
+│                                                │ CRD types, Gateway API      │
+├────────────────────────────────────────────────┼─────────────────────────────┤
+│ kserve-controller-manager                      │ serving.kserve.io/* (13     │
+│                                                │ CRDs), 30 webhooks          │
+├────────────────────────────────────────────────┼─────────────────────────────┤
+│ odh-model-controller                           │ serving.kserve.io, Gateway  │
+│                                                │ API HTTPRoute, AuthPolicy   │
+├────────────────────────────────────────────────┼─────────────────────────────┤
+│ kueue-operator                                 │ 70 webhooks, broad workload │
+│                                                │ admission (Jobs, Pods, etc.)│
+├────────────────────────────────────────────────┼─────────────────────────────┤
+│ kubeflow notebook-controller                   │ Notebook CRD, Pod mutation, │
+│                                                │ HTTPRoute, NetworkPolicy    │
+└────────────────────────────────────────────────┴─────────────────────────────┘
+
+TLS SUMMARY:
+- Gateway TLS: TLS 1.2+ with cipher suites from OpenShift APIServer TLS profile
+- Internal: Optional Istio mTLS (not enforced platform-wide)
+- Webhook TLS: port 9443, cert-manager or self-signed
+- Metrics TLS: port 8443, kube-rbac-proxy proxy
+- FIPS: Go binaries built with GOEXPERIMENT=strictfipsruntime on UBI9 PQC
+- FIPS Gap: Rust components (ring crate) in fms-guardrails-orchestrator, OpenShell

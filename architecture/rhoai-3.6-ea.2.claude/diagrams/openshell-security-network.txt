@@ -1,0 +1,155 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                        │
+│                                                                              │
+│  [User / CLI / SDK]                                                          │
+│         │                                                                    │
+│         │ Port: 443/TCP                                                      │
+│         │ Protocol: HTTPS (gRPC over HTTP/2)                                 │
+│         │ Encryption: TLS 1.2+ (passthrough to gateway)                      │
+│         │ Auth: Bearer Token (OIDC JWT from Keycloak)                        │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  INGRESS (DMZ)                                                               │
+│                                                                              │
+│  [OpenShift Route]                                                           │
+│  - Port: 443/TCP (external) → 8080/TCP (internal)                           │
+│  - TLS Mode: Passthrough (no termination at router)                          │
+│  - End-to-end encryption preserved                                           │
+│         │                                                                    │
+│         │ Port: 8080/TCP                                                     │
+│         │ Protocol: gRPC (HTTP/2)                                            │
+│         │ Encryption: TLS (rustls, ring crypto provider)                     │
+│         │ Auth: Forwarded Bearer Token                                       │
+│         ▼                                                                    │
+│  [Envoy Gateway / GRPCRoute] (alternative ingress)                           │
+│  - Port: 8080/TCP                                                            │
+│  - Protocol: gRPC                                                            │
+│  - Encryption: TLS (depends on Gateway config)                               │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  GATEWAY NAMESPACE (openshell)                                               │
+│                                                                              │
+│  [OpenShell Gateway]                                                         │
+│  - Namespace: {release-namespace}                                            │
+│  - ServiceAccount: {release}                                                 │
+│  - Ports:                                                                    │
+│      8080/TCP - gRPC API (TLS, rustls)                                       │
+│      8081/TCP - Health check (HTTP, plaintext, unauthenticated)              │
+│      9090/TCP - Prometheus metrics (HTTP, plaintext, unauthenticated)        │
+│  - TLS: rustls 0.23 + ring 0.17 (NOT OpenSSL FIPS)                          │
+│  - Auth Chain (first-match-wins):                                            │
+│      1. OIDC Bearer Token → Keycloak JWKS validation                        │
+│      2. Sandbox JWT (Ed25519) → SPIFFE subject identity                     │
+│      3. Compute Driver Bootstrap → path-scoped to IssueSandboxToken         │
+│  - Authorization: Workspace roles (user/admin) + global platform_admin       │
+│         │                                                                    │
+│         │ Port: 443/TCP                   Port: 5432/TCP                     │
+│         │ Protocol: HTTPS                 Protocol: TCP                      │
+│         │ Encryption: TLS 1.2+            Encryption: TLS optional           │
+│         │ Auth: None (JWKS fetch)         Auth: Connection URI               │
+│         │         │                               │                          │
+│         ▼         │                               ▼                          │
+│  [OIDC Provider   │                      [PostgreSQL]                        │
+│   (Keycloak)]     │                      (optional, for                      │
+│                   │                       multi-replica)                      │
+│                   │                                                          │
+│         │ Port: 8200/TCP                                                     │
+│         │ Protocol: HTTP/HTTPS                                               │
+│         │ Encryption: TLS optional                                           │
+│         │ Auth: Kubernetes auth method                                        │
+│         ▼                                                                    │
+│  [Vault / OpenBao]                                                           │
+│  (optional credential backend)                                               │
+│                                                                              │
+│  [SPIFFE / SPIRE]                                                            │
+│  - Port: Unix socket                                                         │
+│  - Protocol: gRPC                                                            │
+│  - Purpose: Workload identity token exchange                                 │
+│                                                                              │
+│         │ Port: 443/TCP                                                      │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS                                                    │
+│         │ Auth: ServiceAccount token                                         │
+│         ▼                                                                    │
+│  [Kubernetes API Server]                                                     │
+│  - Purpose: Pod lifecycle, namespace mgmt, RBAC, Sandbox CRs                │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  SANDBOX NAMESPACE(S)                                                        │
+│  Modes: shared | managed (gateway creates/deletes) | operator (external)     │
+│                                                                              │
+│  [Sandbox Pod]                                                               │
+│  ┌────────────────────────────────────────────┐                              │
+│  │  [Supervisor Binary]                       │                              │
+│  │  - Statically linked (glibc, crt-static)   │                              │
+│  │  - Sideloaded via init container or         │                              │
+│  │    ImageVolume                              │                              │
+│  │  - Port: 2222/TCP (SSH, sandbox-internal)  │                              │
+│  │         │                                  │                              │
+│  │         │ mTLS + Sandbox JWT (Ed25519)      │                              │
+│  │         │ SPIFFE: spiffe://openshell/       │                              │
+│  │         │         sandbox/{uuid}            │                              │
+│  │         │                                  │                              │
+│  │  ┌──────┴──────────────────────┐           │                              │
+│  │  │ Enforcement Layers:         │           │                              │
+│  │  │  1. Filesystem policy       │           │                              │
+│  │  │  2. Network (nftables +     │           │                              │
+│  │  │     L7 proxy)               │           │                              │
+│  │  │  3. Process isolation       │           │                              │
+│  │  │  4. Inference routing       │           │                              │
+│  │  └──────┬──────────────────────┘           │                              │
+│  │         │                                  │                              │
+│  │  [AI Agent Process]                        │                              │
+│  │  - All egress intercepted by supervisor    │                              │
+│  │  - Credentials injected as env vars        │                              │
+│  └────────────────────────────────────────────┘                              │
+│         │                                                                    │
+│         │ Egress (policy-controlled per sandbox):                            │
+│         │ Protocol: HTTP/HTTPS/WebSocket/GraphQL/SQL/JSON-RPC/MCP            │
+│         │ Encryption: TLS (re-signed if SigV4)                               │
+│         │ Auth: Per-policy (SigV4/Bearer/None)                               │
+│         │ Default: fail-closed                                               │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  EXTERNAL SERVICES (Policy-Controlled Egress)                                │
+│                                                                              │
+│  [Allowed External Endpoints]                                                │
+│  - Defined per-sandbox in YAML policy                                        │
+│  - L7 protocol-aware evaluation                                              │
+│  - AWS SigV4 re-signing for transparent credential injection                 │
+│  - Fail-closed: policy parse failure blocks all egress                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+NetworkPolicy:
+- Sandbox SSH (port 2222/TCP) restricted to gateway pod only
+- Per-workspace NetworkPolicy created by openshell-workspace Helm chart
+
+RBAC Summary:
+- ClusterRole: {release}-node-reader
+  - authentication.k8s.io / tokenreviews: create
+  - "" / nodes: get, list, watch
+  - "" / namespaces: get (+ list, watch, create, delete in managed mode)
+  - agents.x-k8s.io / sandboxes: create, delete, get, list, patch, update, watch
+  - "" / secrets: get, patch, create (resourceName restrictions)
+- ClusterRoleBinding: {release}-node-reader → {release} gateway SA
+- Role: {release}-sandbox (per sandbox namespace)
+- Role: {release}-credential-secrets (per credential namespace)
+
+Secrets:
+- openshell-server-tls (kubernetes.io/tls) - Gateway TLS cert, cert-manager or PKI Job, auto-rotate w/ cert-manager
+- openshell-server-client-ca (Opaque) - Client CA for mTLS, cert-manager or PKI Job, auto-rotate w/ cert-manager
+- openshell-client-tls (kubernetes.io/tls) - Client cert for sandbox pods, cert-manager or PKI Job, auto-rotate w/ cert-manager
+- {release}-jwt-keys (Opaque) - Ed25519 signing keypair for sandbox JWTs, PKI Job, no auto-rotation
+- {release}-credential-kek (Opaque) - AES-256-GCM KEK for credential encryption, Helm hook, no auto-rotation
+
+FIPS Notes:
+- TLS: rustls 0.23 + ring 0.17 (NOT routed through OpenSSL FIPS module)
+- JWT: jsonwebtoken with aws_lc_rs (FIPS-validated variant available but not explicitly enabled)
+- Build images include openssl-fips-provider but Rust runtime does not use it
+- Application-level FIPS compliance NOT verified
+
+Authentication Chain:
+- OIDC (Keycloak): Bearer token → JWKS validation → workspace roles (user/admin)
+- Sandbox JWT: Ed25519 signed by gateway → SPIFFE subject (spiffe://openshell/sandbox/{uuid})
+- Compute Driver Bootstrap: one-time token → scoped to IssueSandboxToken RPC only
+- Authorization: protobuf method annotations declare auth mode, scope, role per RPC

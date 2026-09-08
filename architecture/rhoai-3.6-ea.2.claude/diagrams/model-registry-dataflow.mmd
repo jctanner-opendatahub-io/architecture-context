@@ -1,0 +1,56 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Istio as Istio Gateway<br/>VirtualService
+    participant AuthZ as Istio AuthorizationPolicy
+    participant Registry as model-registry<br/>8080/TCP REST
+    participant BFF as BFF Server<br/>4000/TCP
+    participant DB as PostgreSQL/MySQL<br/>GORM
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant Controller as controller-controller-manager
+    participant KServe as KServe InferenceService
+    participant AsyncJob as async-upload Job<br/>Python
+    participant S3 as S3 Storage<br/>443/TCP HTTPS
+
+    Note over Client,S3: User Request Path (Registry API)
+    Client->>Istio: HTTPS Request<br/>/api/model_registry/*
+    Istio->>AuthZ: Check policy
+    AuthZ-->>Istio: Validate JWT + principal<br/>(ns: kubeflow, sa: istio-ingressgateway)
+    Istio->>Registry: HTTP Forward
+    Registry->>DB: GORM Query<br/>(model metadata CRUD)
+    DB-->>Registry: Result
+    Registry-->>Istio: JSON Response
+    Istio-->>Client: HTTPS Response
+
+    Note over Client,S3: BFF Proxy Path (UI)
+    Client->>Istio: HTTPS Request<br/>/model-registry/*
+    Istio->>AuthZ: Check principal identity
+    Istio->>BFF: HTTP Forward
+    BFF->>BFF: Validate Bearer/SA Token<br/>(auth-method flag)
+    BFF->>K8sAPI: SubjectAccessReview<br/>HTTPS/6443, SA Token, TLS 1.2+
+    K8sAPI-->>BFF: Authorization Result
+    BFF->>Registry: REST API Proxy
+    Registry->>DB: Query
+    DB-->>Registry: Result
+    Registry-->>BFF: Response
+    BFF-->>Istio: Response
+    Istio-->>Client: HTTPS Response
+
+    Note over Client,S3: Controller Reconciliation
+    KServe-->>Controller: InferenceService Watch Event
+    Controller->>K8sAPI: List Services<br/>(label: component=model-registry)
+    K8sAPI-->>Controller: Registry Service Endpoints
+    Controller->>Registry: Sync Serving URLs<br/>(OpenAPI client)
+    Registry->>DB: Update serving state
+    DB-->>Registry: OK
+
+    Note over Client,S3: Async Model Upload
+    BFF->>K8sAPI: Create Job<br/>(batch/v1/Job)
+    K8sAPI-->>BFF: Job Created
+    K8sAPI->>AsyncJob: Start Pod
+    AsyncJob->>S3: Copy Model<br/>boto3, AWS IAM Auth
+    S3-->>AsyncJob: Model Artifacts
+    AsyncJob->>AsyncJob: Sigstore Model Signing
+    AsyncJob->>Registry: Register Model<br/>REST API
+    Registry->>DB: Store Metadata
+    DB-->>Registry: OK
+    Registry-->>AsyncJob: Registered

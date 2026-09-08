@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "component": "rhoai-mcp",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "rhoai-mcp-broad-rbac-001",
+      "claim": "The rhoai-mcp service account has a ClusterRole with 13 RBAC rules granting broad cluster-wide access to create, delete, and manage namespaces, secrets, PVs, and multiple CRD types, acting as a privileged platform proxy.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/rbac_roles"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "deploy/kustomize/base/clusterrole.yaml:1"
+        }
+      ],
+      "reasoning": "The ClusterRoleBinding binds a ClusterRole with namespace create/delete, secret create/delete, and PV create permissions. When OIDC is disabled (the default), all MCP tool users share this service account's full privileges without per-user RBAC enforcement. This is a significant privilege surface for a user-facing AI agent proxy.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "rhoai-mcp-dual-auth-002",
+      "claim": "rhoai-mcp implements a two-layer authentication architecture (transport-level OIDC middleware plus tool-level RBAC filtering) that is entirely opt-in via RHOAI_MCP_OIDC_ENABLED, defaulting to unauthenticated access.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/rhoai_mcp/config.py:241-243"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "src/rhoai_mcp/server.py:324-327"
+        }
+      ],
+      "reasoning": "The default deployment has oidc_enabled=False, meaning the MCP API endpoints accept unauthenticated connections and all tools are available to any client. The dual-layer auth (OIDC + RBAC tool filtering) only activates when explicitly configured. This trade-off favors developer experience (easy local setup with stdio) but requires explicit platform configuration for secure multi-user deployment.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "rhoai-mcp-fips-inheritance-003",
+      "claim": "rhoai-mcp has no explicit FIPS opt-in; its FIPS compliance is entirely inherited from the AIPCC base image's OpenSSL FIPS provider configuration.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:4"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "pyproject.toml:33"
+        }
+      ],
+      "reasoning": "The Python cryptography library and PyJWT[crypto] use OpenSSL as their backend. The AIPCC base image includes OpenSSL from UBI, but neither the application code nor the Dockerfile explicitly enables FIPS mode or verifies FIPS provider availability. The stdlib hmac module (used for workflow tokens) also delegates to OpenSSL when available. FIPS compliance depends entirely on the base image's runtime OpenSSL configuration.",
+      "applicability": "component",
+      "confidence": "medium"
+    }
+  ]
+}

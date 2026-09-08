@@ -1,0 +1,133 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_Ctrl["spark-operator-controller"]
+        SA_WH["spark-operator-webhook"]
+        SA_Module["spark-operator-module-<br/>controller-manager"]
+    end
+
+    subgraph ClusterRoleBindings["ClusterRole Bindings"]
+        CRB_Ctrl["spark-operator-controller<br/>(ClusterRoleBinding)"]
+        CRB_TLS["spark-operator-tls-profile<br/>(ClusterRoleBinding)"]
+        CRB_WH["spark-operator-webhook<br/>(ClusterRoleBinding)"]
+        CRB_Module["spark-operator-module-<br/>manager-rolebinding<br/>(ClusterRoleBinding)"]
+    end
+
+    subgraph ClusterRoles["ClusterRoles"]
+        CR_Ctrl["spark-operator-controller"]
+        CR_TLS["spark-operator-tls-profile"]
+        CR_WH["spark-operator-webhook"]
+        CR_Module["spark-operator-module-<br/>manager-role"]
+    end
+
+    subgraph AggregatedRoles["User-Facing Roles (Aggregated)"]
+        CR_Viewer["spark-operator-<br/>sparkapplication-viewer-role"]
+        CR_Editor["spark-operator-<br/>sparkapplication-editor-role"]
+        CR_SchedViewer["spark-operator-<br/>scheduledsparkapplication-<br/>viewer-role"]
+        CR_SchedEditor["spark-operator-<br/>scheduledsparkapplication-<br/>editor-role"]
+    end
+
+    subgraph ControllerResources["Controller Resources"]
+        Pods["core/pods<br/>create, delete, get,<br/>list, update, watch"]
+        Services["core/services<br/>create, delete, get,<br/>list, patch, update, watch"]
+        ConfigMaps["core/configmaps<br/>create, get, list,<br/>patch, update, watch"]
+        Events_C["core/events<br/>create, patch, update"]
+        SparkApps["sparkoperator.k8s.io<br/>sparkapplications<br/>create, delete, get, list, watch"]
+        SchedApps["sparkoperator.k8s.io<br/>scheduledsparkapplications<br/>get, list, watch"]
+        SparkConnects["sparkoperator.k8s.io<br/>sparkconnects<br/>get, list, watch"]
+        StatusFin["sparkoperator.k8s.io<br/>*/status, */finalizers<br/>update"]
+        PDBs["policy/poddisruptionbudgets<br/>create, delete, get, list, watch"]
+        Ingresses["networking.k8s.io/ingresses<br/>create, delete, get, update"]
+        CRDs_C["apiextensions.k8s.io<br/>customresourcedefinitions<br/>get"]
+        Leases_C["coordination.k8s.io/leases<br/>create, get, update"]
+    end
+
+    subgraph TLSResources["TLS Profile Resources"]
+        APIServers["config.openshift.io<br/>apiservers<br/>get, list, watch"]
+    end
+
+    subgraph WebhookResources["Webhook Resources"]
+        RQ["core/resourcequotas<br/>list"]
+        Pods_WH["core/pods<br/>list, watch"]
+        Secrets["core/secrets<br/>create (general)<br/>get, update (named:<br/>spark-operator-webhook-certs)"]
+        Events_WH["core/events<br/>create, patch, update"]
+        WHConfigs["admissionregistration.k8s.io<br/>webhook configurations<br/>get, list, watch, update"]
+        SparkApps_WH["sparkoperator.k8s.io<br/>sparkapplications,<br/>scheduledsparkapplications<br/>get, list, watch"]
+        Leases_WH["coordination.k8s.io/leases<br/>create, get, update"]
+    end
+
+    subgraph ModuleResources["Module Manager Resources"]
+        Deployments["apps/deployments<br/>full CRUD"]
+        CRDs_M["apiextensions.k8s.io<br/>customresourcedefinitions<br/>full CRUD"]
+        RBAC_M["rbac.authorization.k8s.io<br/>clusterroles, clusterrolebindings,<br/>roles, rolebindings<br/>full CRUD + bind, escalate"]
+        CertMgr["cert-manager.io<br/>certificates, issuers<br/>full CRUD"]
+        NetPol["networking.k8s.io<br/>networkpolicies<br/>create, delete, get,<br/>list, patch, watch"]
+        PodMon["monitoring.coreos.com<br/>podmonitors<br/>full CRUD"]
+        SparkOpCR["components.platform.opendatahub.io<br/>sparkoperators<br/>get, list, watch, patch, update"]
+        WHConfigs_M["admissionregistration.k8s.io<br/>webhook configurations<br/>full CRUD"]
+        SvcAccts["core/serviceaccounts,<br/>services, configmaps<br/>full CRUD"]
+        NS_M["core/namespaces<br/>get, list, watch"]
+    end
+
+    %% Bindings
+    SA_Ctrl -->|bound via| CRB_Ctrl
+    SA_Ctrl -->|bound via| CRB_TLS
+    SA_WH -->|bound via| CRB_WH
+    SA_WH -->|bound via| CRB_TLS
+    SA_Module -->|bound via| CRB_Module
+
+    CRB_Ctrl -->|grants| CR_Ctrl
+    CRB_TLS -->|grants| CR_TLS
+    CRB_WH -->|grants| CR_WH
+    CRB_Module -->|grants| CR_Module
+
+    %% Controller permissions
+    CR_Ctrl -->|accesses| Pods
+    CR_Ctrl -->|accesses| Services
+    CR_Ctrl -->|accesses| ConfigMaps
+    CR_Ctrl -->|accesses| Events_C
+    CR_Ctrl -->|accesses| SparkApps
+    CR_Ctrl -->|accesses| SchedApps
+    CR_Ctrl -->|accesses| SparkConnects
+    CR_Ctrl -->|accesses| StatusFin
+    CR_Ctrl -->|accesses| PDBs
+    CR_Ctrl -->|accesses| Ingresses
+    CR_Ctrl -->|accesses| CRDs_C
+    CR_Ctrl -->|accesses| Leases_C
+
+    %% TLS permissions
+    CR_TLS -->|accesses| APIServers
+
+    %% Webhook permissions
+    CR_WH -->|accesses| RQ
+    CR_WH -->|accesses| Pods_WH
+    CR_WH -->|accesses| Secrets
+    CR_WH -->|accesses| Events_WH
+    CR_WH -->|accesses| WHConfigs
+    CR_WH -->|accesses| SparkApps_WH
+    CR_WH -->|accesses| Leases_WH
+
+    %% Module permissions
+    CR_Module -->|accesses| Deployments
+    CR_Module -->|accesses| CRDs_M
+    CR_Module -->|accesses| RBAC_M
+    CR_Module -->|accesses| CertMgr
+    CR_Module -->|accesses| NetPol
+    CR_Module -->|accesses| PodMon
+    CR_Module -->|accesses| SparkOpCR
+    CR_Module -->|accesses| WHConfigs_M
+    CR_Module -->|accesses| SvcAccts
+    CR_Module -->|accesses| NS_M
+
+    %% Styles
+    style SA_Ctrl fill:#4a90e2,color:#fff
+    style SA_WH fill:#4a90e2,color:#fff
+    style SA_Module fill:#4a90e2,color:#fff
+    style CR_Ctrl fill:#f5a623
+    style CR_TLS fill:#f5a623
+    style CR_WH fill:#f5a623
+    style CR_Module fill:#f5a623
+    style CR_Viewer fill:#d4a623
+    style CR_Editor fill:#d4a623
+    style CR_SchedViewer fill:#d4a623
+    style CR_SchedEditor fill:#d4a623
+    style Secrets fill:#ff6b6b,color:#fff

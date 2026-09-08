@@ -1,0 +1,299 @@
+{
+  "component": "praxis-extproc",
+  "reads": [
+    {
+      "expected_signal": "gRPC server setup, health/metrics listeners, TLS configuration, external service connections",
+      "gap_category": [
+        "grpc_services",
+        "http_endpoints",
+        "integration_points",
+        "authentication"
+      ],
+      "line_range": "1-253",
+      "outcome": "resolved",
+      "path": "src/bin/praxis_extproc.rs",
+      "question": "What gRPC services, HTTP endpoints, and integration points does the main entrypoint start? What auth is configured?",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis",
+        "gRPC Services",
+        "HTTP Endpoints",
+        "Integration Points",
+        "Authentication & Authorization",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "ExternalProcessor trait implementation, gRPC stream processing, message types",
+      "gap_category": [
+        "grpc_services"
+      ],
+      "line_range": "1-120",
+      "outcome": "resolved",
+      "path": "src/server.rs",
+      "question": "What is the ExternalProcessor gRPC service implementation and what protocol does it use?",
+      "sections": [
+        "gRPC Services",
+        "Architectural Analysis",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "Health check server type (gRPC or HTTP), port, service registration",
+      "gap_category": [
+        "grpc_services",
+        "http_endpoints"
+      ],
+      "line_range": "1-43",
+      "outcome": "resolved",
+      "path": "src/health.rs",
+      "question": "What health check service is exposed and on which port/protocol?",
+      "sections": [
+        "gRPC Services",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "HTTP endpoint path, port, protocol, metric names and types",
+      "gap_category": [
+        "http_endpoints"
+      ],
+      "line_range": "1-134",
+      "outcome": "resolved",
+      "path": "src/metrics.rs",
+      "question": "What HTTP metrics endpoint is exposed and what metrics are registered?",
+      "sections": [
+        "HTTP Endpoints",
+        "Architectural Analysis",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "Default socket addresses, server configuration struct, filter chain configuration",
+      "gap_category": [
+        "grpc_services",
+        "http_endpoints",
+        "integration_points"
+      ],
+      "line_range": "1-148",
+      "outcome": "resolved",
+      "path": "src/config.rs",
+      "question": "What are the default listen addresses for gRPC, health, and metrics services?",
+      "sections": [
+        "gRPC Services",
+        "HTTP Endpoints",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "TLS mode enum, OpenSSL usage, certificate handling, FIPS-relevant configuration, mTLS client verification",
+      "gap_category": [
+        "fips_compliance",
+        "authentication"
+      ],
+      "line_range": "1-338",
+      "outcome": "resolved",
+      "path": "src/tls.rs",
+      "question": "What TLS modes are supported and which crypto provider is used? Is there mTLS support?",
+      "sections": [
+        "Security",
+        "FIPS Compliance",
+        "Authentication & Authorization",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "Dependency declarations for openssl, ring, aws-lc-rs, praxis-core, praxis-filter, praxis-ai-*",
+      "gap_category": [
+        "fips_compliance",
+        "internal_dependencies"
+      ],
+      "line_range": "1-290",
+      "outcome": "resolved",
+      "path": "Cargo.toml",
+      "question": "What crypto-related dependencies are declared? What are the praxis-* internal dependencies?",
+      "sections": [
+        "Dependencies",
+        "FIPS Compliance",
+        "Internal Platform Dependencies"
+      ]
+    },
+    {
+      "expected_signal": "OPENSSL_NO_VENDOR env var, openssl-devel install, runtime openssl-libs, cargo build flags",
+      "gap_category": [
+        "fips_compliance"
+      ],
+      "line_range": "1-59",
+      "outcome": "resolved",
+      "path": "Dockerfile.konflux",
+      "question": "What build flags and OpenSSL configuration are used for the Rust binary? Is OPENSSL_NO_VENDOR set?",
+      "sections": [
+        "FIPS Compliance",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "containerPort definitions, probe configuration, security context, volume mounts",
+      "gap_category": [
+        "grpc_services",
+        "http_endpoints",
+        "authentication"
+      ],
+      "line_range": "1-68",
+      "outcome": "resolved",
+      "path": "deploy/base/instance/deployment.yaml",
+      "question": "What container ports are exposed and what probes are configured?",
+      "sections": [
+        "gRPC Services",
+        "HTTP Endpoints",
+        "Authentication & Authorization",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "Service type, port, targetPort, appProtocol",
+      "gap_category": [
+        "grpc_services"
+      ],
+      "line_range": "1-14",
+      "outcome": "resolved",
+      "path": "deploy/base/instance/service.yaml",
+      "question": "What Kubernetes Service is defined and what port/protocol does it expose?",
+      "sections": [
+        "Network Architecture"
+      ]
+    },
+    {
+      "expected_signal": "EnvoyFilter patches, ext_proc filter configuration, Kuadrant WasmPlugin ordering, processing modes",
+      "gap_category": [
+        "integration_points",
+        "authentication"
+      ],
+      "line_range": "1-80",
+      "outcome": "resolved",
+      "path": "deploy/overlays/odh/envoy-filter.yaml",
+      "question": "How is the ExtProc integrated with the Envoy gateway and Kuadrant auth?",
+      "sections": [
+        "Integration Points",
+        "Data Flows",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "ClusterRole rules, API groups, resources, verbs",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies"
+      ],
+      "line_range": "1-15",
+      "outcome": "resolved",
+      "path": "deploy/overlays/odh/rbac/clusterrole.yaml",
+      "question": "What RBAC permissions does the service account have? What Kubernetes resources does it access?",
+      "sections": [
+        "Authentication & Authorization",
+        "Integration Points",
+        "Internal Platform Dependencies"
+      ]
+    },
+    {
+      "expected_signal": "ServiceAccount name, namespace, role reference",
+      "gap_category": [
+        "authentication"
+      ],
+      "line_range": "1-12",
+      "outcome": "resolved",
+      "path": "deploy/overlays/odh/rbac/clusterrolebinding.yaml",
+      "question": "What service account is bound to the ClusterRole and in which namespace?",
+      "sections": [
+        "Authentication & Authorization"
+      ]
+    },
+    {
+      "expected_signal": "DestinationRule TLS mode, SNI configuration",
+      "gap_category": [
+        "integration_points",
+        "authentication"
+      ],
+      "line_range": "1-13",
+      "outcome": "resolved",
+      "path": "deploy/overlays/odh/after/destination-rule.yaml",
+      "question": "What TLS mode is configured for Envoy-to-ExtProc traffic?",
+      "sections": [
+        "Integration Points",
+        "Authentication & Authorization",
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "NetworkPolicy ingress/egress rules, pod selectors, port restrictions",
+      "gap_category": [
+        "authentication",
+        "integration_points"
+      ],
+      "line_range": "1-65",
+      "outcome": "resolved",
+      "path": "deploy/overlays/odh/networking/networkpolicy.yaml",
+      "question": "What network-level access controls are enforced for the ExtProc pods?",
+      "sections": [
+        "Authentication & Authorization",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "http_endpoints",
+        "grpc_services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/base/instance/kustomization.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "http_endpoints",
+        "grpc_services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/overlays/odh/kustomization.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance",
+        "http_endpoints",
+        "grpc_services"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "deploy/overlays/odh/rbac/kustomization.yaml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    }
+  ],
+  "schema_version": 1
+}

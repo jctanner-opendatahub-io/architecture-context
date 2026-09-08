@@ -1,0 +1,125 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_Main["mlflow-operator-controller-manager"]
+    end
+
+    subgraph ClusterRoleBindings["ClusterRole Bindings"]
+        CRB_Manager["mlflow-operator-manager-rolebinding"]
+        CRB_Metrics["mlflow-operator-metrics-auth-rolebinding"]
+    end
+
+    subgraph RoleBindings["Role Bindings"]
+        RB_Leader["mlflow-operator-leader-election-rolebinding<br/>(ns: opendatahub)"]
+    end
+
+    subgraph ClusterRoles["ClusterRoles"]
+        CR_Manager["mlflow-operator-manager-role"]
+        CR_Metrics["mlflow-operator-metrics-auth-role"]
+        CR_Leader["mlflow-operator-leader-election-role"]
+    end
+
+    subgraph PropagatedRoles["Propagated ClusterRoles (to workspace namespaces)"]
+        CR_View["mlflow-operator-mlflow-view"]
+        CR_Edit["mlflow-operator-mlflow-edit"]
+        CR_Integration["mlflow-operator-mlflow-integration"]
+    end
+
+    subgraph CoreResources["Core API Resources"]
+        Namespaces["core<br/>namespaces"]
+        Pods["core<br/>pods"]
+        Secrets["core<br/>secrets"]
+        ConfigMaps["core<br/>configmaps"]
+        PVCs["core<br/>persistentvolumeclaims"]
+        ServiceAccts["core<br/>serviceaccounts"]
+        Services["core<br/>services"]
+        Events["core<br/>events"]
+    end
+
+    subgraph AppResources["Apps / Batch / Networking"]
+        Deployments["apps<br/>deployments"]
+        CronJobs["batch<br/>cronjobs, jobs"]
+        NetPolicies["networking.k8s.io<br/>networkpolicies"]
+    end
+
+    subgraph CRDResources["CRD API Resources"]
+        MLflows["mlflow.opendatahub.io<br/>mlflows, mlflows/finalizers,<br/>mlflows/status"]
+        MLflowOps["components.platform.opendatahub.io<br/>mlflowoperators,<br/>mlflowoperators/finalizers,<br/>mlflowoperators/status"]
+        MLflowConfigs["mlflow.kubeflow.org<br/>mlflowconfigs"]
+        Auths["services.platform.opendatahub.io<br/>auths"]
+    end
+
+    subgraph ConditionalResources["Conditional API Resources"]
+        HTTPRoutes["gateway.networking.k8s.io<br/>httproutes"]
+        ConsoleLinks["console.openshift.io<br/>consolelinks"]
+        ServiceMonitors["monitoring.coreos.com<br/>servicemonitors"]
+    end
+
+    subgraph RBACResources["RBAC Resources"]
+        ClusterRolesRes["rbac.authorization.k8s.io<br/>clusterroles"]
+        ClusterRoleBindingsRes["rbac.authorization.k8s.io<br/>clusterrolebindings"]
+        RoleBindingsRes["rbac.authorization.k8s.io<br/>rolebindings"]
+    end
+
+    subgraph AuthResources["Auth API Resources"]
+        TokenReviews["authentication.k8s.io<br/>tokenreviews"]
+        SAR["authorization.k8s.io<br/>subjectaccessreviews"]
+    end
+
+    %% SA → Bindings
+    SA_Main -->|bound via| CRB_Manager
+    SA_Main -->|bound via| CRB_Metrics
+    SA_Main -->|bound via| RB_Leader
+
+    %% Bindings → Roles
+    CRB_Manager -->|grants| CR_Manager
+    CRB_Metrics -->|grants| CR_Metrics
+    RB_Leader -->|grants| CR_Leader
+
+    %% Manager role → resources
+    CR_Manager -->|"get, list, watch"| Namespaces
+    CR_Manager -->|"get, list, watch"| Pods
+    CR_Manager -->|"get, list, watch"| Secrets
+    CR_Manager -->|"full CRUD"| ConfigMaps
+    CR_Manager -->|"full CRUD"| PVCs
+    CR_Manager -->|"full CRUD"| ServiceAccts
+    CR_Manager -->|"full CRUD"| Services
+    CR_Manager -->|"full CRUD"| Deployments
+    CR_Manager -->|"full CRUD"| CronJobs
+    CR_Manager -->|"full CRUD"| NetPolicies
+    CR_Manager -->|"full CRUD"| MLflows
+    CR_Manager -->|"get, list, patch,<br/>update, watch"| MLflowOps
+    CR_Manager -->|"get, list, watch"| MLflowConfigs
+    CR_Manager -->|"get, list, watch"| Auths
+    CR_Manager -->|"full CRUD"| HTTPRoutes
+    CR_Manager -->|"full CRUD"| ConsoleLinks
+    CR_Manager -->|"full CRUD"| ServiceMonitors
+    CR_Manager -->|"full CRUD + bind"| ClusterRolesRes
+    CR_Manager -->|"full CRUD"| ClusterRoleBindingsRes
+    CR_Manager -->|"full CRUD"| RoleBindingsRes
+
+    %% Metrics auth role → resources
+    CR_Metrics -->|"create"| TokenReviews
+    CR_Metrics -->|"create"| SAR
+
+    %% Leader election role → resources
+    CR_Leader -->|"full CRUD"| ConfigMaps
+    CR_Leader -->|"create, patch"| Events
+
+    %% Propagated roles (workspace RBAC)
+    CR_View -->|"get, list, watch"| MLflows
+    CR_View -->|"get, list, watch"| MLflowConfigs
+    CR_Edit -->|"full CRUD +<br/>deletecollection"| MLflows
+    CR_Edit -->|"create, delete,<br/>deletecollection,<br/>patch, update"| MLflowConfigs
+    CR_Integration -->|"create, get,<br/>list, update"| MLflowConfigs
+
+    %% Styling
+    style SA_Main fill:#4a90e2,stroke:#333,color:#fff
+    style CR_Manager fill:#f5a623,stroke:#333,color:#fff
+    style CR_Metrics fill:#f5a623,stroke:#333,color:#fff
+    style CR_Leader fill:#f5a623,stroke:#333,color:#fff
+    style CR_View fill:#7ed321,stroke:#333,color:#fff
+    style CR_Edit fill:#7ed321,stroke:#333,color:#fff
+    style CR_Integration fill:#7ed321,stroke:#333,color:#fff
+    style CRB_Manager fill:#ddd,stroke:#333
+    style CRB_Metrics fill:#ddd,stroke:#333
+    style RB_Leader fill:#ddd,stroke:#333

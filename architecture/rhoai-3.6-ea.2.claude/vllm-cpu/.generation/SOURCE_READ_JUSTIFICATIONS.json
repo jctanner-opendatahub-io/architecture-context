@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "component": "vllm-cpu",
+  "reads": [
+    {
+      "path": "vllm/entrypoints/openai/api_server.py",
+      "line_range": "245-294",
+      "gap_category": ["authentication"],
+      "question": "How is authentication enforced, is it conditional, and which endpoints are guarded?",
+      "expected_signal": "middleware registration, conditional logic, api-key check",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "Purpose"]
+    },
+    {
+      "path": "vllm/entrypoints/serve/utils/server_utils.py",
+      "line_range": "1-106",
+      "gap_category": ["authentication", "fips_compliance"],
+      "question": "What is the AuthenticationMiddleware implementation? What crypto functions are used for token validation?",
+      "expected_signal": "ASGI middleware class, guarded prefix list, token verification logic, crypto imports",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "FIPS Compliance", "Data Flows"]
+    },
+    {
+      "path": "vllm/entrypoints/grpc_server.py",
+      "line_range": "1-201",
+      "gap_category": ["grpc_services", "integration_points"],
+      "question": "Does the component expose gRPC services? What services, port, and transport are used?",
+      "expected_signal": "gRPC server setup, service registration, port binding, TLS configuration",
+      "outcome": "resolved",
+      "sections": ["gRPC Services", "Integration Points", "Architectural Analysis", "Purpose"],
+      "scope_reason": "Full file read required because gRPC server is a self-contained module (201 lines) with service registration, health check setup, port binding, reflection, and CLI argument parsing distributed across the entire file"
+    },
+    {
+      "path": "Dockerfile.konflux.cpu",
+      "line_range": "1-40",
+      "gap_category": ["fips_compliance"],
+      "question": "What base image is used? Are there FIPS-relevant build flags or crypto configuration?",
+      "expected_signal": "FROM directive, GRPC_PYTHON_BUILD_SYSTEM_OPENSSL, FIPS build flags",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile.konflux.cpu",
+      "line_range": "155-179",
+      "gap_category": ["fips_compliance"],
+      "question": "What is the entrypoint and are there any FIPS-relevant runtime environment variables?",
+      "expected_signal": "ENTRYPOINT directive, env vars, labels",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Purpose"]
+    },
+    {
+      "path": "pyproject.toml",
+      "line_range": "1-80",
+      "gap_category": ["internal_dependencies", "integration_points"],
+      "question": "What are the project dependencies and entry points? Are there platform-internal dependencies?",
+      "expected_signal": "dependencies list, entry points, project metadata",
+      "outcome": "partially-resolved",
+      "sections": ["Integration Points", "Purpose"]
+    }
+  ]
+}

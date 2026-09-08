@@ -1,0 +1,74 @@
+graph TB
+    subgraph "Distributed Workloads - Image Factory"
+        direction TB
+
+        subgraph RuntimeImages["Runtime Training Images"]
+            CUDA_RT["CUDA Runtime<br/>py312-cuda130-torch210-openmpi41<br/>ENTRYPOINT: uid_entrypoint.sh"]
+            ROCm_RT["ROCm Runtime<br/>py312-rocm64-torch29-openmpi41<br/>ENTRYPOINT: uid_entrypoint.sh"]
+        end
+
+        subgraph UniversalImages["Universal Training Images"]
+            CUDA_UNI["CUDA Universal<br/>th-torch-cuda-py312<br/>CMD: start-notebook.sh"]
+            CPU_UNI["CPU Universal<br/>th-torch-cpu-py312<br/>CMD: start-notebook.sh"]
+            ROCm_UNI["ROCm Universal<br/>th-torch-rocm-py312<br/>CMD: start-notebook.sh"]
+        end
+
+        subgraph ExampleManifests["Example Manifests"]
+            MinIO["MinIO<br/>S3-compatible Storage"]
+            NFS["NFS Server<br/>Shared Filesystem"]
+            ServingRT["KServe ServingRuntime<br/>stable-diffusion"]
+        end
+    end
+
+    subgraph BaseImages["Base Images"]
+        AIPCC["AIPCC Base Image<br/>quay.io/aipcc/base-images<br/>cuda-13.0-el9.6"]
+        Workbench["Workbench Base Image<br/>quay.io/rhoai/<br/>odh-workbench-jupyter-minimal-*"]
+    end
+
+    subgraph PlatformOperators["Platform Operators (Consumers)"]
+        KFTrainer["Kubeflow Trainer v2"]
+        Kueue["Kueue"]
+        KubeRay["KubeRay"]
+    end
+
+    subgraph BuildSystem["Build System"]
+        Konflux["Konflux Builds<br/>Hermeto prefetch (cachi2.env)"]
+    end
+
+    %% Base image relationships
+    AIPCC -->|base for| CUDA_RT
+    AIPCC -->|base for| ROCm_RT
+    Workbench -->|base for| CUDA_UNI
+    Workbench -->|base for| CPU_UNI
+    Workbench -->|base for| ROCm_UNI
+
+    %% Build system
+    Konflux -->|builds| RuntimeImages
+    Konflux -->|builds| UniversalImages
+
+    %% Consumer relationships
+    KFTrainer -->|schedules pods using| RuntimeImages
+    KFTrainer -->|schedules pods using| UniversalImages
+    Kueue -->|queues workloads for| RuntimeImages
+    KubeRay -->|orchestrates| RuntimeImages
+
+    %% Example relationships
+    MinIO -.->|example storage for| RuntimeImages
+    NFS -.->|example shared fs for| RuntimeImages
+    ServingRT -.->|example serving for| UniversalImages
+
+    %% Styling
+    style CUDA_RT fill:#4a90e2,stroke:#333,color:#fff
+    style ROCm_RT fill:#4a90e2,stroke:#333,color:#fff
+    style CUDA_UNI fill:#7ed321,stroke:#333,color:#fff
+    style CPU_UNI fill:#7ed321,stroke:#333,color:#fff
+    style ROCm_UNI fill:#7ed321,stroke:#333,color:#fff
+    style AIPCC fill:#f5a623,stroke:#333,color:#fff
+    style Workbench fill:#f5a623,stroke:#333,color:#fff
+    style KFTrainer fill:#9b59b6,stroke:#333,color:#fff
+    style Kueue fill:#9b59b6,stroke:#333,color:#fff
+    style KubeRay fill:#9b59b6,stroke:#333,color:#fff
+    style Konflux fill:#e74c3c,stroke:#333,color:#fff
+    style MinIO fill:#e8e8e8,stroke:#999
+    style NFS fill:#e8e8e8,stroke:#999
+    style ServingRT fill:#e8e8e8,stroke:#999

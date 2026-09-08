@@ -1,0 +1,84 @@
+graph TB
+    subgraph ClusterInternal["CLUSTER INTERNAL (Trusted)"]
+        direction TB
+
+        subgraph OperatorNS["Namespace: opendatahub-feast-system"]
+            Operator["Feast Module Operator<br/>/manager<br/>SA: opendatahub-feast-operator<br/>Image: ubi9/ubi-minimal-pqc<br/>FIPS: strictfipsruntime"]
+            MetricsPort["Metrics :8443/TCP<br/>HTTPS (TLS/FIPS)<br/>Auth: TokenReview + SAR"]
+            HealthPort["Health :8081/TCP<br/>HTTP (plaintext)<br/>Auth: None"]
+        end
+
+        subgraph AppNS["Applications Namespace (Owned Resources)"]
+            OwnedDeploy["Deployments"]
+            OwnedSvc["Services"]
+            OwnedCM["ConfigMaps"]
+            OwnedSA["ServiceAccounts"]
+            OwnedRBAC["Roles / RoleBindings"]
+            OwnedJobs["Jobs / CronJobs"]
+            OwnedSM["ServiceMonitors"]
+            OwnedPDB["PodDisruptionBudgets"]
+            OwnedHPA["HorizontalPodAutoscalers"]
+            OwnedPVC["PersistentVolumeClaims"]
+        end
+    end
+
+    subgraph K8sAPI["KUBERNETES API SERVER"]
+        APIServer["kube-apiserver<br/>6443/TCP<br/>HTTPS TLS 1.2+<br/>Auth: SA Token (JWT)"]
+    end
+
+    subgraph CrossComponent["CROSS-COMPONENT INTEGRATIONS"]
+        FeastCR["Feast FeatureStore<br/>feast.dev<br/>Watch (read-only)"]
+        NotebooksCR["Kubeflow Notebooks<br/>kubeflow.org<br/>CRUD"]
+        MLflowCR["MLflow<br/>mlflow.opendatahub.io<br/>Watch (read-only)"]
+        PromOp["prometheus-operator<br/>monitoring.coreos.com<br/>ServiceMonitor CRUD"]
+        OSRoutes["OpenShift Routes<br/>route.openshift.io<br/>CRUD"]
+        SparkApps["SparkApplications<br/>sparkoperator.k8s.io<br/>create, delete, get"]
+    end
+
+    subgraph Monitoring["MONITORING"]
+        Prometheus["Prometheus<br/>Scrapes via ServiceMonitor"]
+    end
+
+    subgraph Probing["HEALTH CHECKING"]
+        Kubelet["kubelet"]
+    end
+
+    %% Flows
+    Operator -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token"| APIServer
+    APIServer -->|"Watch events"| Operator
+
+    Operator -->|"creates/manages"| OwnedDeploy
+    Operator -->|"creates/manages"| OwnedSvc
+    Operator -->|"creates/manages"| OwnedCM
+    Operator -->|"creates/manages"| OwnedSA
+    Operator -->|"creates/manages"| OwnedRBAC
+    Operator -->|"creates/manages"| OwnedJobs
+    Operator -->|"creates/manages"| OwnedSM
+    Operator -->|"creates/manages"| OwnedPDB
+    Operator -->|"creates/manages"| OwnedHPA
+    Operator -->|"creates/manages"| OwnedPVC
+
+    APIServer -.->|"Watch"| FeastCR
+    APIServer -.->|"CRUD"| NotebooksCR
+    APIServer -.->|"Watch"| MLflowCR
+    APIServer -.->|"CRUD"| PromOp
+    APIServer -.->|"CRUD"| OSRoutes
+    APIServer -.->|"CRUD"| SparkApps
+
+    Prometheus -->|"HTTPS/8443<br/>TLS (FIPS)<br/>TokenReview+SAR"| MetricsPort
+    Kubelet -->|"HTTP/8081<br/>No Auth"| HealthPort
+
+    %% Styling
+    classDef operator fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    classDef api fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef owned fill:#d5e8d4,stroke:#82b366,stroke-width:1px
+    classDef crosscomp fill:#fff2cc,stroke:#d6b656,stroke-width:1px
+    classDef monitoring fill:#e1d5e7,stroke:#9673a6,stroke-width:1px
+    classDef ports fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px
+
+    class Operator operator
+    class APIServer api
+    class OwnedDeploy,OwnedSvc,OwnedCM,OwnedSA,OwnedRBAC,OwnedJobs,OwnedSM,OwnedPDB,OwnedHPA,OwnedPVC owned
+    class FeastCR,NotebooksCR,MLflowCR,PromOp,OSRoutes,SparkApps crosscomp
+    class Prometheus,Kubelet monitoring
+    class MetricsPort,HealthPort ports

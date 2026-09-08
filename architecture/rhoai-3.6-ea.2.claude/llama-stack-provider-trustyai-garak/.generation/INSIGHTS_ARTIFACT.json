@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "component": "llama-stack-provider-trustyai-garak",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "llama-stack-provider-trustyai-garak-pattern-001",
+      "claim": "The adapter runs as a Kubernetes Job with no inbound endpoints, meaning HTTP endpoint, service, and authentication tables are architecturally empty rather than coverage gaps.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/llama_stack_provider_trustyai_garak/evalhub/garak_adapter.py:1844-1848"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/coverage_findings/http_endpoints"
+        }
+      ],
+      "reasoning": "The analyzer classified http_endpoints and services as not-verified (absence not proven). Source inspection of the main() entry point and the full codebase (no route decorators, no FastAPI/Starlette app instances, no uvicorn.run calls) confirms this is a batch Job adapter. The empty tables are correct architectural facts, not coverage gaps.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "llama-stack-provider-trustyai-garak-pattern-002",
+      "claim": "The dual execution mode (simple subprocess vs. KFP pipeline) introduces divergent security boundaries — simple mode trusts the Job pod's sidecar proxy while KFP mode must resolve non-localhost model URLs and inject S3 credentials into separate pipeline pods.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/llama_stack_provider_trustyai_garak/evalhub/garak_adapter.py:1630-1684"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "src/llama_stack_provider_trustyai_garak/evalhub/kfp_pipeline.py:48-54"
+        }
+      ],
+      "reasoning": "In simple mode, evalhub >= 0.4.4 rewrites model.url to localhost:8080 (sidecar proxy). In KFP mode, pipeline pods have no sidecar, so the adapter must resolve the real upstream URL from kfp_config.model_url, a model auth secret, or intents_models configuration. This creates a divergent credential distribution surface.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

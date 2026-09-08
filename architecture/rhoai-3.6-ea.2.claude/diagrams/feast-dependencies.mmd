@@ -1,0 +1,54 @@
+graph LR
+    Feast["Feast Operator +<br/>Feature Serving"]
+
+    %% Platform Dependencies
+    Feast -->|"CRD watch<br/>resource mgmt"| K8sAPI["Kubernetes API<br/>v1.35+"]
+    Feast -->|"TLS profile<br/>bootstrap"| OpenShiftAPI["OpenShift APIServer<br/>config.openshift.io"]
+    Feast -->|"leader election<br/>operator framework"| ControllerRuntime["controller-runtime<br/>v0.23.3"]
+
+    %% Internal RHOAI Dependencies
+    Feast -->|"notebook ConfigMap<br/>injection"| KubeflowNotebooks["Kubeflow Notebooks<br/>kubeflow.org"]
+    Feast -->|"experiment tracking<br/>integration"| MLflow["MLflow<br/>mlflow.opendatahub.io"]
+    Feast -->|"batch materialization<br/>jobs"| SparkOperator["Spark Operator<br/>sparkoperator.k8s.io"]
+    Feast -->|"ServiceMonitor<br/>management"| PrometheusOperator["prometheus-operator<br/>monitoring.coreos.com"]
+    Feast -->|"dashboard<br/>exposure"| OpenShiftRoutes["OpenShift Routes<br/>route.openshift.io"]
+
+    %% Online Store Backends
+    Feast -->|"feature vectors<br/>TCP/5432"| PostgreSQL["PostgreSQL<br/>(pgx / psycopg)"]
+    Feast -->|"feature vectors<br/>TCP/6379"| Redis["Redis / Valkey<br/>(go-redis / redis-py)"]
+
+    %% Registry Backends
+    Feast -->|"registry persistence<br/>HTTPS/443"| S3["S3-compatible Storage<br/>(boto3 / aws-sdk-go)"]
+    Feast -->|"registry persistence<br/>HTTPS/443"| GCS["Google Cloud Storage<br/>(cloud.google.com/go)"]
+
+    %% Runtime Libraries
+    Feast -.->|"REST framework"| FastAPI["FastAPI +<br/>Starlette + Uvicorn"]
+    Feast -.->|"gRPC transport"| gRPC["gRPC<br/>(grpcio / google.golang.org/grpc)"]
+    Feast -.->|"auth tokens"| PyJWT["PyJWT<br/>OIDC validation"]
+    Feast -.->|"observability"| OTel["OpenTelemetry<br/>tracing"]
+    Feast -.->|"metrics"| PromClient["Prometheus Client<br/>(Go + Python)"]
+
+    %% Integration Consumers
+    Dashboard["ODH Dashboard"] -.->|"manages via UI"| Feast
+    Pipelines["Data Science Pipelines"] -.->|"feature retrieval"| Feast
+
+    style Feast fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style K8sAPI fill:#6c8ebf,stroke:#333,color:#fff
+    style OpenShiftAPI fill:#6c8ebf,stroke:#333,color:#fff
+    style ControllerRuntime fill:#6c8ebf,stroke:#333,color:#fff
+    style KubeflowNotebooks fill:#7ed321,stroke:#333,color:#fff
+    style MLflow fill:#7ed321,stroke:#333,color:#fff
+    style SparkOperator fill:#7ed321,stroke:#333,color:#fff
+    style PrometheusOperator fill:#7ed321,stroke:#333,color:#fff
+    style OpenShiftRoutes fill:#7ed321,stroke:#333,color:#fff
+    style PostgreSQL fill:#f5a623,stroke:#333,color:#fff
+    style Redis fill:#f5a623,stroke:#333,color:#fff
+    style S3 fill:#f5a623,stroke:#333,color:#fff
+    style GCS fill:#f5a623,stroke:#333,color:#fff
+    style FastAPI fill:#e8e8e8,stroke:#333
+    style gRPC fill:#e8e8e8,stroke:#333
+    style PyJWT fill:#e8e8e8,stroke:#333
+    style OTel fill:#e8e8e8,stroke:#333
+    style PromClient fill:#e8e8e8,stroke:#333
+    style Dashboard fill:#d5e8d4,stroke:#333
+    style Pipelines fill:#d5e8d4,stroke:#333

@@ -1,0 +1,53 @@
+sequenceDiagram
+    participant Admin as Cluster Admin
+    participant K8sAPI as Kubernetes API Server<br/>6443/TCP HTTPS TLS 1.2+
+    participant Webhook as Webhook Server<br/>9443/TCP TLS
+    participant Manager as /manager<br/>Controller-Runtime
+    participant AuthCtrl as Auth Service Controller
+    participant GwCtrl as Gateway Service Controller
+    participant Istio as Istio Service Mesh
+    participant OSRoute as OpenShift Router
+
+    Note over Admin,OSRoute: Admission & Webhook Flow
+    Admin->>K8sAPI: kubectl apply DataScienceCluster CR
+    K8sAPI->>Webhook: POST /mutate-datasciencecluster-v2<br/>TLS (service-ca cert)
+    Webhook-->>K8sAPI: Mutated CR (defaults applied)
+    K8sAPI->>Webhook: POST /validate-datasciencecluster-v2<br/>TLS (service-ca cert)
+    Webhook-->>K8sAPI: Admission Response (allow/deny)
+    K8sAPI-->>Admin: CR Created/Rejected
+
+    Note over Admin,OSRoute: Controller Reconciliation Loop
+    K8sAPI->>Manager: Watch event: DataScienceCluster changed
+    Manager->>Manager: DAG-based controller dispatch
+    Manager->>K8sAPI: List/Get component CRDs<br/>(DataSciencePipelines, Kueue, Ray, TrustyAI)
+    Manager->>K8sAPI: Apply manifests (Deployments,<br/>Services, ConfigMaps, RBAC)
+    K8sAPI-->>Manager: Resource status updates
+
+    Note over Admin,OSRoute: Auth & RBAC Propagation
+    K8sAPI->>AuthCtrl: Watch event: Namespace created<br/>(models-as-a-service or kuadrant-system)
+    AuthCtrl->>K8sAPI: Create/Update ClusterRoles<br/>(data-science-admingroup-role)
+    AuthCtrl->>K8sAPI: Create/Update RoleBindings<br/>(admin & allowed groups)
+    K8sAPI-->>AuthCtrl: RBAC resources applied
+
+    Note over Admin,OSRoute: Gateway Ingress Chain
+    K8sAPI->>GwCtrl: Watch event: GatewayConfig CR changed
+    GwCtrl->>K8sAPI: Create Gateway API Resources
+    GwCtrl->>K8sAPI: Create kube-auth-proxy Deployment<br/>(with OIDC support)
+    GwCtrl->>K8sAPI: Create HTTPRoutes
+    GwCtrl->>K8sAPI: Create OpenShift Routes
+    GwCtrl->>Istio: Create EnvoyFilters
+    GwCtrl->>Istio: Create DestinationRules
+    GwCtrl->>K8sAPI: Create NetworkPolicies
+
+    Note over Admin,OSRoute: Metrics & Health
+    K8sAPI->>Manager: GET :8081/healthz (liveness)<br/>Unauthenticated
+    Manager-->>K8sAPI: 200 OK
+    K8sAPI->>Manager: GET :8081/readyz (readiness)<br/>Unauthenticated
+    Manager-->>K8sAPI: 200 OK
+    K8sAPI->>Manager: GET :8443/metrics<br/>TLS + RBAC auth
+    Manager-->>K8sAPI: Prometheus metrics
+
+    Note over Admin,OSRoute: TLS Profile Change
+    K8sAPI->>Manager: Watch: APIServer TLS profile changed
+    Manager->>Manager: SecurityProfileWatcher cancels context
+    Manager->>Manager: Pod restart with new cipher suites

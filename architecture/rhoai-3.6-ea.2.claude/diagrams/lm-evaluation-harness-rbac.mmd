@@ -1,0 +1,46 @@
+graph TD
+    subgraph "Job Pod Identity"
+        SA["ServiceAccount<br/>(provisioned by LMES Operator)"]
+    end
+
+    subgraph "Secret Injection (Environment Variables)"
+        direction TB
+        HFToken["HF_TOKEN<br/>HuggingFace Hub auth"]
+        OpenAIKey["OPENAI_API_KEY<br/>OpenAI / vLLM auth"]
+        AnthropicKey["ANTHROPIC_API_KEY<br/>Anthropic auth"]
+        WatsonXKey["WATSONX_API_KEY<br/>IBM WatsonX auth"]
+        AWSKey["AWS_SECRET_ACCESS_KEY<br/>S3 / IBM COS auth"]
+    end
+
+    subgraph "Container Security"
+        NonRoot["Non-root execution<br/>UID 65532"]
+        BaseImage["Base Image Security<br/>UBI9 / CUDA parameterized"]
+        WritableDirs["Writable Directories<br/>/opt/app-root (HF cache, output, tasks)"]
+    end
+
+    subgraph "Network Posture"
+        NoInbound["No inbound ports<br/>No Services<br/>No Ingress"]
+        OutboundOnly["Outbound HTTPS only<br/>Model APIs + HF Hub + S3"]
+    end
+
+    SA -->|"runs as"| NonRoot
+    SA -->|"env vars injected by operator"| HFToken
+    SA -->|"env vars injected by operator"| OpenAIKey
+    SA -->|"env vars injected by operator"| AnthropicKey
+    SA -->|"env vars injected by operator"| WatsonXKey
+    SA -->|"env vars injected by operator"| AWSKey
+
+    Note["Note: This component defines NO ClusterRoles,<br/>RoleBindings, or RBAC resources.<br/>All RBAC is managed by the LMES Operator<br/>(trustyai-service-operator)."]
+
+    style SA fill:#4a90e2,stroke:#333,color:#fff
+    style HFToken fill:#f5a623,stroke:#333
+    style OpenAIKey fill:#f5a623,stroke:#333
+    style AnthropicKey fill:#f5a623,stroke:#333
+    style WatsonXKey fill:#f5a623,stroke:#333
+    style AWSKey fill:#f5a623,stroke:#333
+    style NonRoot fill:#7ed321,stroke:#333
+    style BaseImage fill:#7ed321,stroke:#333
+    style WritableDirs fill:#7ed321,stroke:#333
+    style NoInbound fill:#d5e8d4,stroke:#82b366
+    style OutboundOnly fill:#d5e8d4,stroke:#82b366
+    style Note fill:#fff2cc,stroke:#d6b656

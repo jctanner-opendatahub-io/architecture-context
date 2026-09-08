@@ -1,0 +1,34 @@
+graph TD
+    subgraph InstallTime["Install-Time RBAC Requirements"]
+        Admin["Cluster Administrator<br/><i>Human operator</i>"]
+        AdminRole["ClusterRole: cluster-admin<br/><i>Required for install</i>"]
+    end
+
+    subgraph ConfiguredAuth["Configured Authorization (Authorino)"]
+        direction TB
+        AuthorinoInstance["Authorino Instance<br/><i>Cluster-wide scope</i><br/>Namespace: kuadrant-system"]
+        AuthorinoTLS["TLS Listener<br/><i>authorino-server-cert</i><br/>Provisioned by cert-manager"]
+    end
+
+    subgraph ProvisionedOperators["Provisioned Operator RBAC (Delegated)"]
+        direction TB
+        Note["odh-gitops does not define explicit<br/>RBAC roles or bindings.<br/><br/>Each provisioned operator manages<br/>its own RBAC via its own manifests:<br/>• Kueue → kueue-manager-role<br/>• cert-manager → cert-manager-controller-*<br/>• RHCL/Kuadrant → kuadrant-manager-role<br/>• JobSet → jobset-controller-manager<br/>• LeaderWorkerSet → lws-manager-role<br/>• OpenTelemetry → otel-collector-role<br/>• Tempo → tempo-operator-manager<br/>• NVIDIA → nvidia-gpu-operator"]
+    end
+
+    subgraph PlatformServices["Platform Service Authorization"]
+        AllServices["All RHOAI Platform Services"]
+    end
+
+    %% Flows
+    Admin -->|"kubeconfig binding"| AdminRole
+    AdminRole -->|"helm install / kustomize apply"| AuthorinoInstance
+    AuthorinoInstance -->|"TLS-enabled listener"| AuthorinoTLS
+    AuthorinoInstance -->|"cluster-wide<br/>authorization enforcement"| AllServices
+
+    %% Styling
+    style Admin fill:#4a90e2,stroke:#333,color:#fff
+    style AdminRole fill:#f5a623,stroke:#333,color:#fff
+    style AuthorinoInstance fill:#dae8fc,stroke:#6c8ebf
+    style AuthorinoTLS fill:#dae8fc,stroke:#6c8ebf
+    style Note fill:#f5f5f5,stroke:#ccc
+    style AllServices fill:#d5e8d4,stroke:#82b366

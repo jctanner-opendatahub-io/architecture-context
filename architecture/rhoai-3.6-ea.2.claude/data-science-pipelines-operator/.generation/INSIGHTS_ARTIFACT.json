@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "data-science-pipelines-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "dspo-fips-native-go-001",
+      "claim": "The operator uses Go's native FIPS 140 module (GOFIPS140=v1.0.0) with static linking and no_openssl, diverging from the conventional Konflux CGO+OpenSSL FIPS pattern.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:28"
+        }
+      ],
+      "reasoning": "The Dockerfile.konflux build line uses CGO_ENABLED=0 GOFIPS140=v1.0.0 -tags no_openssl, which is a statically-linked Go native FIPS approach. This differs from the typical RHOAI operator pattern where CGO_ENABLED=1 and dynamic linking to OpenSSL is used for check-payload validation. The PQC (Post-Quantum Cryptography) base image further signals alignment with next-generation cryptographic requirements. Platform operators should verify that check-payload validation accepts this FIPS approach.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "dspo-tls-profile-watcher-002",
+      "claim": "The operator dynamically watches the OpenShift TLS security profile and performs a graceful restart when the profile changes, ensuring webhook and metrics TLS always matches the cluster-wide policy.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "main.go:385-408"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "tls_profile.go:22-64"
+        }
+      ],
+      "reasoning": "The SecurityProfileWatcher registers a callback that cancels the manager context when the TLS profile or TLS adherence policy changes, triggering a graceful shutdown. This ensures the operator never serves webhook or metrics traffic with a stale TLS configuration. The pattern is implemented via github.com/openshift/controller-runtime-common/pkg/tls, making it reusable across RHOAI operators.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "dspo-mlflow-cache-bypass-003",
+      "claim": "MLflow CRD reads bypass the controller-runtime client cache to gracefully handle clusters where the MLflow CRD may not be installed at operator startup time.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "main.go:329-330"
+        }
+      ],
+      "reasoning": "By adding MLflow to the DisableFor list in the client cache options, the operator avoids a hard dependency on the MLflow CRD being registered at startup. If the CRD is added later, direct API reads will work without requiring an operator restart. This is an important pattern for optional integrations in a multi-component platform.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+graph TD
+    subgraph AuthModes["Authentication Modes (Gatekeeper)"]
+        direction TB
+        ClientMode["Client Mode<br/>Bearer / Basic Token"]
+        ServerMode["Server Mode<br/>argo-server ServiceAccount"]
+        SSOMode["SSO Mode<br/>OIDC Token"]
+    end
+
+    subgraph GatekeeperAuth["Gatekeeper Interceptor"]
+        GK["Gatekeeper<br/>(server/auth/gatekeeper.go)"]
+    end
+
+    subgraph K8sAuthZ["Kubernetes Authorization"]
+        SSAR["SelfSubjectAccessReview<br/>authorization/v1"]
+        Impersonation["User Impersonation<br/>(Client Mode)"]
+    end
+
+    subgraph ServiceAccounts["Service Accounts"]
+        ArgoServerSA["argo-server SA<br/>(Server mode identity)"]
+        ControllerSA["workflow-controller SA<br/>(Controller identity)"]
+        StepPodSA["Step Pod SA<br/>(Workflow execution identity)"]
+    end
+
+    subgraph K8sResources["Kubernetes Resources Managed"]
+        Workflows["argoproj.io<br/>Workflows"]
+        CronWorkflows["argoproj.io<br/>CronWorkflows"]
+        WorkflowTemplates["argoproj.io<br/>WorkflowTemplates"]
+        ClusterWFT["argoproj.io<br/>ClusterWorkflowTemplates"]
+        Pods["core/v1<br/>Pods"]
+        ConfigMaps["core/v1<br/>ConfigMaps"]
+        Secrets["core/v1<br/>Secrets"]
+        PDBs["policy/v1<br/>PodDisruptionBudgets"]
+        TaskResults["argoproj.io<br/>WorkflowTaskResults"]
+        TaskSets["argoproj.io<br/>WorkflowTaskSets"]
+    end
+
+    subgraph SSODelegation["SSO RBAC Delegation"]
+        NamespaceSA["Namespace-scoped SA<br/>with rule annotations"]
+        RuleExpr["Rule Expressions<br/>(govaluate)"]
+        NamespaceSA --> RuleExpr
+    end
+
+    %% Auth flows
+    ClientMode -->|"forwards token"| GK
+    ServerMode -->|"uses SA token"| GK
+    SSOMode -->|"validates OIDC"| GK
+
+    GK -->|"Client mode"| Impersonation
+    GK -->|"Server mode"| ArgoServerSA
+    GK -->|"SSO mode"| SSODelegation
+    Impersonation --> SSAR
+
+    %% Resource access
+    ArgoServerSA -->|"CRUD"| Workflows
+    ArgoServerSA -->|"CRUD"| CronWorkflows
+    ArgoServerSA -->|"CRUD"| WorkflowTemplates
+    ArgoServerSA -->|"CRUD"| ClusterWFT
+
+    ControllerSA -->|"watch, update"| Workflows
+    ControllerSA -->|"watch, update"| CronWorkflows
+    ControllerSA -->|"create, delete"| Pods
+    ControllerSA -->|"create, update"| ConfigMaps
+    ControllerSA -->|"create"| Secrets
+    ControllerSA -->|"create"| PDBs
+    ControllerSA -->|"watch"| TaskResults
+    ControllerSA -->|"manage"| TaskSets
+
+    StepPodSA -->|"create"| TaskResults
+
+    %% Styling
+    style GK fill:#e74c3c,stroke:#333,color:#fff
+    style ClientMode fill:#4a90e2,stroke:#333,color:#fff
+    style ServerMode fill:#4a90e2,stroke:#333,color:#fff
+    style SSOMode fill:#4a90e2,stroke:#333,color:#fff
+    style ArgoServerSA fill:#f5a623,stroke:#333
+    style ControllerSA fill:#f5a623,stroke:#333
+    style StepPodSA fill:#f5a623,stroke:#333
+    style SSAR fill:#9b59b6,stroke:#333,color:#fff
+    style Impersonation fill:#9b59b6,stroke:#333,color:#fff
+
+    style Workflows fill:#7ed321,stroke:#333
+    style CronWorkflows fill:#7ed321,stroke:#333
+    style WorkflowTemplates fill:#7ed321,stroke:#333
+    style ClusterWFT fill:#7ed321,stroke:#333
+    style Pods fill:#7ed321,stroke:#333
+    style ConfigMaps fill:#7ed321,stroke:#333
+    style Secrets fill:#7ed321,stroke:#333
+    style PDBs fill:#7ed321,stroke:#333
+    style TaskResults fill:#7ed321,stroke:#333
+    style TaskSets fill:#7ed321,stroke:#333

@@ -1,0 +1,73 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client / Dashboard"]
+    end
+
+    subgraph Ingress["INGRESS (OpenShift Routes — TLS Terminated)"]
+        ClusterRoute["data-science-prometheus-<br/>cluster-proxy Route<br/>HTTPS"]
+        NSRoute["data-science-prometheus-route<br/>HTTPS"]
+        ThanosRoute["data-science-thanos-<br/>querier-route<br/>HTTPS"]
+    end
+
+    subgraph AuthLayer["AUTHORIZATION LAYER (kube-rbac-proxy)"]
+        direction TB
+
+        ClusterKRBP["data-science-prometheus-<br/>cluster-proxy<br/>Port: 8443/TCP<br/>SA: data-science-prometheus-cluster-proxy<br/>Auth: SAR metrics.k8s.io/nodes:get<br/>TLS: APIServer Profile (TLS 1.2+)"]
+
+        NSProxyKRBP["data-science-prometheus-<br/>namespace-proxy<br/>Port: 8443/TCP<br/>SA: data-science-prometheus-namespace-proxy<br/>Auth: SAR metrics.k8s.io/pods (ns-scoped)<br/>TLS: APIServer Profile (TLS 1.2+)"]
+    end
+
+    subgraph Internal["INTERNAL SERVICES (ClusterIP)"]
+        direction TB
+
+        Prometheus["prometheus-operated<br/>Port: 9090/TCP"]
+        CollectorProm["data-science-collector-prometheus<br/>Port: 8889/TCP"]
+        CollectorMon["data-science-collector-monitoring<br/>Port: 8890/TCP"]
+    end
+
+    subgraph OperatorZone["OPERATOR"]
+        Operator["odh-observability Manager<br/>Health: :8081 (unauth)<br/>Webhook: :9443/TCP TLS<br/>Watches: Monitoring CR + 15 types"]
+    end
+
+    subgraph ExternalServices["EXTERNAL SERVICES"]
+        K8sAPI["Kubernetes API<br/>Port: 6443/TCP<br/>HTTPS/WSS, TLS 1.2+<br/>Auth: ServiceAccount"]
+        OSAPI["OpenShift APIServer<br/>TLSSecurityProfile source"]
+        PromOperator["prometheus-operator<br/>CRD CRUD<br/>HTTPS, TLS 1.2+"]
+    end
+
+    %% External to Ingress
+    Client -->|"HTTPS/443<br/>TLS<br/>Bearer Token"| ClusterRoute
+    Client -->|"HTTPS/443<br/>TLS<br/>Bearer Token"| NSRoute
+    Client -->|"HTTPS/443<br/>TLS<br/>Bearer Token"| ThanosRoute
+
+    %% Ingress to Auth Layer
+    ClusterRoute -->|"HTTPS/8443<br/>TLS re-encrypt<br/>service-serving cert"| ClusterKRBP
+    NSRoute -->|"HTTPS/8443<br/>TLS re-encrypt<br/>service-serving cert"| NSProxyKRBP
+
+    %% Auth Layer to kube API (TokenReview + SAR)
+    ClusterKRBP -->|"HTTPS/6443<br/>TokenReview + SAR<br/>system:auth-delegator"| K8sAPI
+    NSProxyKRBP -->|"HTTPS/6443<br/>TokenReview + SAR<br/>system:auth-delegator"| K8sAPI
+
+    %% Auth Layer to Prometheus
+    ClusterKRBP -->|"HTTP/9090<br/>mTLS<br/>client cert + CA"| Prometheus
+    NSProxyKRBP -->|"HTTP/9090<br/>mTLS via prom-label-proxy"| Prometheus
+
+    %% Operator flows
+    Operator -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount"| K8sAPI
+    Operator -->|"Read TLSSecurityProfile"| OSAPI
+    Operator -->|"CRD CRUD<br/>HTTPS, TLS 1.2+"| PromOperator
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef authlayer fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef internal fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef operator fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef externalservice fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Client external
+    class ClusterRoute,NSRoute,ThanosRoute ingress
+    class ClusterKRBP,NSProxyKRBP authlayer
+    class Prometheus,CollectorProm,CollectorMon internal
+    class Operator operator
+    class K8sAPI,OSAPI,PromOperator externalservice

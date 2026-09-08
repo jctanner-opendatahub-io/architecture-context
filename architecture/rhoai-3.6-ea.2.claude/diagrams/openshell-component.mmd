@@ -1,0 +1,99 @@
+graph TB
+    subgraph External["External Clients"]
+        User["User (CLI/SDK)"]
+        Agent["AI Agent Process"]
+    end
+
+    subgraph GatewayComponent["OpenShell Gateway (Rust gRPC/HTTP)"]
+        direction TB
+        Server["openshell-server<br/>Auth Chain + gRPC Handlers"]
+        AuthOIDC["OIDC Authenticator<br/>Bearer Token Validation"]
+        AuthSandboxJWT["Sandbox JWT Authenticator<br/>Ed25519 Verification"]
+        AuthBootstrap["Compute Driver Authenticator<br/>Bootstrap Credentials"]
+        PolicyLib["openshell-policy<br/>YAML Policy Parsing"]
+        Prover["openshell-prover<br/>Z3 Formal Verification"]
+        Router["openshell-router<br/>Inference Routing"]
+        SDK["openshell-sdk<br/>Async Rust Client"]
+        OCSF["openshell-ocsf<br/>Security Event Logging"]
+        OTel["openshell-otel<br/>OpenTelemetry Tracing"]
+
+        Server --> AuthOIDC
+        Server --> AuthSandboxJWT
+        Server --> AuthBootstrap
+        Server --> PolicyLib
+        PolicyLib --> Prover
+        Server --> Router
+        Server --> OCSF
+        Server --> OTel
+    end
+
+    subgraph ComputeDrivers["Compute Drivers"]
+        DriverK8s["openshell-driver-kubernetes<br/>Pod Provisioning"]
+        DriverDocker["openshell-driver-docker<br/>Container Creation"]
+        DriverPodman["openshell-driver-podman<br/>Container Creation"]
+        DriverVM["openshell-driver-vm<br/>MicroVM Isolation"]
+        DriverMXC["openshell-driver-mxc<br/>Windows MXC"]
+    end
+
+    subgraph SupervisorComponent["OpenShell Supervisor (Static Binary)"]
+        direction TB
+        Supervisor["openshell-sandbox<br/>Supervisor Process"]
+        NetEnforce["openshell-supervisor-network<br/>L7-Aware Proxy + nftables"]
+        ProcEnforce["openshell-supervisor-process<br/>Process Isolation + SSH"]
+
+        Supervisor --> NetEnforce
+        Supervisor --> ProcEnforce
+    end
+
+    subgraph ExternalDeps["External Services"]
+        K8sAPI["Kubernetes API<br/>443/TCP"]
+        OIDC["OIDC Provider<br/>(Keycloak)<br/>443/TCP"]
+        DB["Database<br/>(SQLite/PostgreSQL)"]
+        Vault["Vault / OpenBao<br/>8200/TCP"]
+        SPIFFE["SPIFFE / SPIRE<br/>Unix Socket"]
+    end
+
+    %% User interactions
+    User -->|"gRPC/8080<br/>TLS + Bearer Token"| Server
+    Agent -->|"Network Egress<br/>Policy-Controlled"| NetEnforce
+
+    %% Gateway to compute drivers
+    Server --> DriverK8s
+    Server --> DriverDocker
+    Server --> DriverPodman
+    Server --> DriverVM
+    Server --> DriverMXC
+
+    %% Compute driver creates supervisor
+    DriverK8s -->|"creates pod with<br/>supervisor sideload"| Supervisor
+
+    %% Supervisor connects back to gateway
+    Supervisor -->|"gRPC/8080<br/>mTLS + Sandbox JWT"| Server
+
+    %% CRD interaction
+    SandboxCR["agents.x-k8s.io<br/>Sandbox CR"]
+    DriverK8s -->|"creates/watches"| SandboxCR
+
+    %% External dependencies
+    Server -->|"HTTPS/443"| OIDC
+    Server -->|"TCP/5432"| DB
+    Server -->|"HTTPS/8200"| Vault
+    Server -->|"gRPC (Unix)"| SPIFFE
+    DriverK8s -->|"HTTPS/443"| K8sAPI
+
+    %% Styles
+    style Server fill:#4a90e2,color:#fff
+    style Supervisor fill:#4a90e2,color:#fff
+    style AuthOIDC fill:#7ed321,color:#fff
+    style AuthSandboxJWT fill:#7ed321,color:#fff
+    style AuthBootstrap fill:#7ed321,color:#fff
+    style NetEnforce fill:#e74c3c,color:#fff
+    style ProcEnforce fill:#e74c3c,color:#fff
+    style Prover fill:#9b59b6,color:#fff
+    style PolicyLib fill:#f5a623,color:#fff
+    style SandboxCR fill:#f5a623
+    style DriverK8s fill:#3498db,color:#fff
+    style DriverDocker fill:#3498db,color:#fff
+    style DriverPodman fill:#3498db,color:#fff
+    style DriverVM fill:#3498db,color:#fff
+    style DriverMXC fill:#3498db,color:#fff

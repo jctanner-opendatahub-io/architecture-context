@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "component": "pipelines-components",
+  "reads": [
+    {
+      "path": "Dockerfile.konflux.pipelines-components",
+      "line_range": "1-25",
+      "gap_category": ["fips_compliance", "services"],
+      "question": "What base image is used, is there FIPS configuration, and does the container expose any ports or services?",
+      "expected_signal": "Base image reference, FIPS build flags, EXPOSE directives, or service configuration",
+      "outcome": "resolved",
+      "sections": ["Security", "FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile",
+      "line_range": "1-22",
+      "gap_category": ["fips_compliance", "services"],
+      "question": "Does the development Dockerfile differ in base image or expose services?",
+      "expected_signal": "Base image reference, EXPOSE directives, or service ports",
+      "outcome": "resolved",
+      "sections": ["Security", "FIPS Compliance"]
+    },
+    {
+      "path": "scripts/init_managed_pipelines/init_managed_pipelines.py",
+      "line_range": "1-53",
+      "gap_category": ["http_endpoints", "services"],
+      "question": "Does the main entrypoint start an HTTP server, expose ports, or define Kubernetes services?",
+      "expected_signal": "HTTP server startup, port binding, Flask/FastAPI app, or service definition",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Data Flows", "Architectural Analysis"]
+    },
+    {
+      "path": "components/data_processing/automl/tabular_data_loader/component.py",
+      "line_range": "1-30, 80-164",
+      "gap_category": ["authentication", "internal_dependencies"],
+      "question": "How does the tabular data loader authenticate to S3 and what internal platform dependencies does it use?",
+      "expected_signal": "boto3 client construction, credential retrieval, KFP SDK imports",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Internal Platform Dependencies", "Data Flows"]
+    },
+    {
+      "path": "components/data_processing/parse_and_chunk/component.py",
+      "line_range": "560-590",
+      "gap_category": ["authentication", "internal_dependencies"],
+      "question": "How does parse_and_chunk authenticate to Kubernetes and what platform SDKs does it use?",
+      "expected_signal": "kubernetes config loading, service account token, CodeFlare SDK import",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Internal Platform Dependencies", "Data Flows"]
+    },
+    {
+      "path": "components/data_processing/sdg/component.py",
+      "line_range": "1-40",
+      "gap_category": ["internal_dependencies"],
+      "question": "How is the SDG Hub SDK used as an internal platform dependency?",
+      "expected_signal": "sdg-hub package import or install, SDK API usage",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies"]
+    },
+    {
+      "path": "components/training/autorag/rag_templates_optimization/component.py",
+      "line_range": "1-40",
+      "gap_category": ["internal_dependencies"],
+      "question": "How is ai4rag used as an internal platform dependency?",
+      "expected_signal": "ai4rag import, API usage for RAG optimization",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies"]
+    },
+    {
+      "path": "requirements.txt",
+      "line_range": "1-60",
+      "gap_category": ["fips_compliance"],
+      "question": "What Python package index is used and what cryptography dependencies are pinned?",
+      "expected_signal": "index-url, cryptography version, hash pins",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis"]
+    }
+  ]
+}

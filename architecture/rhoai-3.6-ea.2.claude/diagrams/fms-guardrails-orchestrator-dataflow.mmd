@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Client as External Client
+    participant TLS as TLS Acceptor<br/>8033/TCP (optional mTLS)
+    participant Router as Axum Router<br/>Header Passthrough
+    participant Chunker as Chunker Services<br/>8085/TCP gRPC
+    participant Detector as Detector Services<br/>8080/TCP REST
+    participant TGIS as TGIS Generation<br/>8033/TCP gRPC
+    participant OpenAI as OpenAI-compat Server<br/>(optional) REST
+    participant Health as Health Server<br/>8034/TCP HTTP
+
+    Note over Client,Health: Classification-with-Generation Flow (v1)
+    Client->>TLS: POST /api/v1/task/classification-with-text-generation<br/>TLS 1.2+ (optional)
+    TLS->>Router: Decrypt + verify client cert (if mTLS)
+    Router->>Router: Filter passthrough headers<br/>Rewrite X-Forwarded-Access-Token → Bearer
+    Router->>Chunker: gRPC: Segment text<br/>TLS optional (named profile)
+    Chunker-->>Router: Chunked text segments
+    Router->>Detector: POST: Evaluate content safety<br/>TLS optional, Bearer token optional
+    Detector-->>Router: Detection results
+    Router->>TGIS: gRPC: Generate text<br/>No TLS
+    TGIS-->>Router: Generated text
+    Router->>Router: Aggregate results
+    Router-->>TLS: JSON Response
+    TLS-->>Client: Classification + Generation result
+
+    Note over Client,Health: Chat Completions Detection Flow (v2)
+    Client->>TLS: POST /api/v2/chat/completions-detection<br/>TLS 1.2+ (optional)
+    TLS->>Router: Decrypt
+    Router->>Detector: POST: Detect chat content<br/>TLS optional
+    Detector-->>Router: Detection results
+    Router->>OpenAI: POST: Chat completion<br/>HTTP/HTTPS
+    OpenAI-->>Router: Completion result
+    Router-->>TLS: JSON Response
+    TLS-->>Client: Detection + Completion result
+
+    Note over Client,Health: Health Check Flow
+    Client->>Health: GET /health<br/>HTTP (no TLS, no auth)
+    Health-->>Client: 200 OK
+    Client->>Health: GET /info<br/>HTTP (no TLS, no auth)
+    Health-->>Client: Service info
+
+    Note over Router,Detector: Detector Health Probing
+    Router->>Detector: GET :8081/health<br/>HTTP/HTTPS, no auth
+    Detector-->>Router: Health status

@@ -1,0 +1,56 @@
+graph TB
+    subgraph "TrustyAI Service Pod"
+        direction TB
+        subgraph "kube-rbac-proxy Sidecar"
+            KRBP["kube-rbac-proxy<br/>Port: 8443/TCP (external)"]
+        end
+
+        subgraph "TrustyAI Service Container"
+            direction TB
+            MainApp["Main FastAPI App<br/>Port: 8081/TCP (loopback)<br/>Fairness · Drift · Explainability"]
+            HealthApp["Health/Consumer FastAPI App<br/>Port: 8080/TCP (all interfaces)<br/>Probes · Inference Data · Metrics"]
+            TLSApp["Optional HTTPS Listener<br/>Port: 4443/TCP<br/>PolicyAwareConfig (system crypto)"]
+            Hypercorn["Hypercorn ASGI Server"]
+            Scheduler["Background Metrics Scheduler<br/>Interval: 30s default"]
+            Storage["GlobalStorageInterface<br/>(Singleton)"]
+
+            Hypercorn -->|serves| MainApp
+            Hypercorn -->|serves| HealthApp
+            Hypercorn -->|serves| TLSApp
+            Scheduler -->|computes metrics| MainApp
+            MainApp -->|reads/writes| Storage
+            HealthApp -->|writes| Storage
+        end
+
+        KRBP -->|forwards authenticated<br/>requests to loopback| MainApp
+    end
+
+    %% External Consumers
+    Client[External Client] -->|authenticated requests| KRBP
+    Kubelet[Kubelet] -->|health probes<br/>GET /health| HealthApp
+    KServe["KServe Inference Logger"] -->|CloudEvents<br/>POST /| HealthApp
+    ModelMesh["ModelMesh Agent"] -->|KServe v2 payloads<br/>POST /consumer/kserve/v2| HealthApp
+    Prometheus["Prometheus"] -->|scrapes<br/>GET /q/metrics| HealthApp
+
+    %% Storage Backends
+    Storage -->|default| PVC["PVC (HDF5 Files)"]
+    Storage -->|optional| MariaDB["MariaDB<br/>Port: 3306/TCP<br/>TLS optional"]
+
+    %% TLS Certificates
+    TLSCerts["/etc/tls/internal/<br/>tls.crt + tls.key"] -.->|mounted| TLSApp
+    DBCert["/etc/tls/db/ca.crt"] -.->|mounted| MariaDB
+
+    %% Styling
+    style KRBP fill:#f5a623,stroke:#333
+    style MainApp fill:#4a90e2,stroke:#333,color:#fff
+    style HealthApp fill:#4a90e2,stroke:#333,color:#fff
+    style TLSApp fill:#4a90e2,stroke:#333,color:#fff
+    style Hypercorn fill:#7ed321,stroke:#333
+    style Scheduler fill:#9b59b6,stroke:#333,color:#fff
+    style Storage fill:#e67e22,stroke:#333,color:#fff
+    style Client fill:#f9f9f9,stroke:#999
+    style KServe fill:#e8e8e8,stroke:#333
+    style ModelMesh fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333
+    style PVC fill:#ddd,stroke:#333
+    style MariaDB fill:#ddd,stroke:#333

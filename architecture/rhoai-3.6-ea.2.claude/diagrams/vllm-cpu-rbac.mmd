@@ -1,0 +1,68 @@
+graph TD
+    subgraph "vllm-cpu Authentication Model"
+        direction TB
+
+        subgraph "Application-Level Auth (HTTP)"
+            AuthMW["AuthenticationMiddleware<br/>(ASGI Middleware)"]
+            APIKey["VLLM_API_KEY / --api-key<br/>Bearer Token Configuration"]
+        end
+
+        subgraph "Auth Decision"
+            AuthCheck{"API Key<br/>Configured?"}
+        end
+
+        subgraph "Guarded Endpoints (Require Bearer Token)"
+            V1Paths["/v1/* Endpoints<br/>chat/completions, completions,<br/>embeddings, rerank, messages,<br/>audio, responses, models, etc."]
+            V2Paths["/v2/* Endpoints<br/>embed, rerank"]
+            InferencePaths["/inference/* Endpoints<br/>generate"]
+        end
+
+        subgraph "Unguarded Endpoints (Always Open)"
+            HealthPaths["/health, /ready, /readyz<br/>Health & Readiness Probes"]
+            OpsPaths["/load, /docs, /ping<br/>Operational Endpoints"]
+            VersionPath["/version<br/>Version Info"]
+        end
+
+        subgraph "gRPC Endpoints (No Auth)"
+            GRPCEngine["VllmEngine<br/>Port 50051<br/>⚠️ No Authentication"]
+            GRPCHealth["grpc.health.v1.Health<br/>Port 50051<br/>⚠️ No Authentication"]
+        end
+
+        subgraph "Token Validation"
+            SHA256["SHA-256 Hash<br/>Token → Hash"]
+            CompareDigest["secrets.compare_digest()<br/>Constant-time comparison<br/>(Timing-attack resistant)"]
+        end
+    end
+
+    subgraph "Kubernetes RBAC"
+        NoRBAC["No ClusterRoles defined<br/>No RoleBindings defined<br/>No ServiceAccount permissions<br/>(Pure application service)"]
+    end
+
+    APIKey -->|"configures"| AuthMW
+    AuthMW --> AuthCheck
+
+    AuthCheck -->|"Yes"| SHA256
+    SHA256 --> CompareDigest
+    CompareDigest -->|"Match"| V1Paths
+    CompareDigest -->|"Match"| V2Paths
+    CompareDigest -->|"Match"| InferencePaths
+    CompareDigest -->|"No Match"| Rejected["401 Unauthorized"]
+
+    AuthCheck -->|"No"| V1Paths
+    AuthCheck -->|"No"| V2Paths
+    AuthCheck -->|"No"| InferencePaths
+
+    style AuthMW fill:#e74c3c,stroke:#333,color:#fff
+    style APIKey fill:#f39c12,stroke:#333
+    style SHA256 fill:#3498db,stroke:#333,color:#fff
+    style CompareDigest fill:#3498db,stroke:#333,color:#fff
+    style Rejected fill:#c0392b,stroke:#333,color:#fff
+    style V1Paths fill:#27ae60,stroke:#333,color:#fff
+    style V2Paths fill:#27ae60,stroke:#333,color:#fff
+    style InferencePaths fill:#27ae60,stroke:#333,color:#fff
+    style HealthPaths fill:#2ecc71,stroke:#333
+    style OpsPaths fill:#2ecc71,stroke:#333
+    style VersionPath fill:#2ecc71,stroke:#333
+    style GRPCEngine fill:#f1c40f,stroke:#333
+    style GRPCHealth fill:#f1c40f,stroke:#333
+    style NoRBAC fill:#bdc3c7,stroke:#333

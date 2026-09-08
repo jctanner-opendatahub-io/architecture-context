@@ -1,0 +1,84 @@
+graph TD
+    subgraph "Service Identity"
+        SA["ServiceAccount<br/>(provisioned by operator)"]
+    end
+
+    subgraph "Authentication Mechanisms"
+        InCluster["In-Cluster Config<br/>ServiceAccount token"]
+        KubeConfig["Kubeconfig Fallback<br/>User-provided credentials"]
+        SA --> InCluster
+        SA --> KubeConfig
+    end
+
+    subgraph "Kubernetes API Access"
+        direction TB
+        K8sAPI["Kubernetes API Server<br/>:6443 HTTPS"]
+    end
+
+    subgraph "Managed Resources"
+        direction TB
+        Jobs["batch/v1<br/>Jobs<br/>create"]
+        ConfigMaps["core/v1<br/>ConfigMaps<br/>create"]
+        Secrets["core/v1<br/>Secrets<br/>create"]
+        Events["core/v1<br/>Events<br/>create"]
+        HWProfiles["infrastructure.opendatahub.io/v1<br/>HardwareProfiles<br/>get, delete"]
+    end
+
+    subgraph "API Identity Enforcement"
+        direction TB
+        IdentityGate{"RequiresIdentityHeaders()"}
+        XUser["X-User Header"]
+        XTenant["X-Tenant Header"]
+        IdentityGate -->|"true (cluster)"| XUser
+        IdentityGate -->|"true (cluster)"| XTenant
+        IdentityGate -->|"false (local/dev)"| Bypass["Identity Bypassed<br/>+ CORS enabled"]
+    end
+
+    subgraph "Protected API Endpoints"
+        EvalJobs["/api/v1/evaluations/jobs<br/>ALL methods"]
+        EvalCollections["/api/v1/evaluations/collections<br/>ALL methods"]
+        EvalProviders["/api/v1/evaluations/providers<br/>ALL methods"]
+    end
+
+    subgraph "Unauthenticated Endpoints"
+        Health["/api/v1/health<br/>GET"]
+        Docs["/docs<br/>GET"]
+        OpenAPI["/openapi.yaml<br/>GET"]
+        Metrics["/metrics<br/>GET"]
+    end
+
+    InCluster -->|"auth"| K8sAPI
+    KubeConfig -->|"auth"| K8sAPI
+    K8sAPI --> Jobs
+    K8sAPI --> ConfigMaps
+    K8sAPI --> Secrets
+    K8sAPI --> Events
+    K8sAPI --> HWProfiles
+
+    XUser --> EvalJobs
+    XTenant --> EvalJobs
+    XUser --> EvalCollections
+    XTenant --> EvalCollections
+    XUser --> EvalProviders
+    XTenant --> EvalProviders
+
+    style SA fill:#4a90e2,color:#fff
+    style InCluster fill:#4a90e2,color:#fff
+    style KubeConfig fill:#4a90e2,color:#fff
+    style K8sAPI fill:#326ce5,color:#fff
+    style Jobs fill:#7ed321,color:#fff
+    style ConfigMaps fill:#7ed321,color:#fff
+    style Secrets fill:#7ed321,color:#fff
+    style Events fill:#7ed321,color:#fff
+    style HWProfiles fill:#f5a623
+    style IdentityGate fill:#e8e8e8
+    style XUser fill:#f5a623
+    style XTenant fill:#f5a623
+    style Bypass fill:#ff6b6b,color:#fff
+    style EvalJobs fill:#dae8fc,stroke:#6c8ebf
+    style EvalCollections fill:#dae8fc,stroke:#6c8ebf
+    style EvalProviders fill:#dae8fc,stroke:#6c8ebf
+    style Health fill:#d5e8d4,stroke:#82b366
+    style Docs fill:#d5e8d4,stroke:#82b366
+    style OpenAPI fill:#d5e8d4,stroke:#82b366
+    style Metrics fill:#d5e8d4,stroke:#82b366

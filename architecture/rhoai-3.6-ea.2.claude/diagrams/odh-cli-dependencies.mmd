@@ -1,0 +1,51 @@
+graph LR
+    OdhCli["odh-cli<br/>(rhai-cli)"]
+
+    %% Core Runtime Dependencies
+    OdhCli -->|"REST + WebSocket<br/>6443/TCP HTTPS"| K8sAPI["Kubernetes API<br/>k8s.io/client-go v0.35.2"]
+    OdhCli -->|"kubeconfig resolution"| CliRuntime["cli-runtime<br/>k8s.io/cli-runtime v0.35.2"]
+    OdhCli -->|"operator framework"| ControllerRuntime["controller-runtime<br/>v0.23.3"]
+
+    %% Internal ODH Dependencies
+    OdhCli -->|"cluster health<br/>assessment"| ClusterHealth["opendatahub-operator<br/>clusterhealth"]
+    OdhCli -->|"error<br/>categorization"| FailureClassifier["opendatahub-operator<br/>failureclassifier"]
+    OdhCli -->|"MCP tool<br/>definitions"| MCPTools["opendatahub-operator<br/>mcptools"]
+
+    %% OLM Integration
+    OdhCli -->|"CSV & subscription<br/>inspection"| OLM["OLM<br/>operator-lifecycle-manager v0.40.0"]
+    OdhCli -->|"OLM API types"| OLMAPI["operator-framework/api<br/>v0.39.0"]
+
+    %% MCP Dependencies
+    OdhCli -->|"MCP protocol<br/>implementation"| MCPGo["mcp-go<br/>v0.55.1"]
+
+    %% CLI Framework
+    OdhCli -->|"CLI framework"| Cobra["cobra<br/>v1.10.2"]
+
+    %% External Services
+    OdhCli -->|"metrics backup/restore<br/>443/TCP HTTPS"| TrustYAI["TrustYAI Service"]
+    OdhCli -->|"service discovery"| Routes["OpenShift Routes"]
+
+    %% Go Runtime
+    OdhCli -->|"build toolchain"| GoRuntime["Go 1.26<br/>FIPS: strictfipsruntime"]
+
+    %% Styling
+    style OdhCli fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    %% Internal ODH (green)
+    style ClusterHealth fill:#7ed321,stroke:#333
+    style FailureClassifier fill:#7ed321,stroke:#333
+    style MCPTools fill:#7ed321,stroke:#333
+    style TrustYAI fill:#7ed321,stroke:#333
+
+    %% Kubernetes/Platform (blue-grey)
+    style K8sAPI fill:#4a90e2,stroke:#333,color:#fff
+    style CliRuntime fill:#4a90e2,stroke:#333,color:#fff
+    style ControllerRuntime fill:#4a90e2,stroke:#333,color:#fff
+    style OLM fill:#4a90e2,stroke:#333,color:#fff
+    style OLMAPI fill:#4a90e2,stroke:#333,color:#fff
+
+    %% External dependencies (grey)
+    style MCPGo fill:#999,stroke:#333,color:#fff
+    style Cobra fill:#999,stroke:#333,color:#fff
+    style GoRuntime fill:#999,stroke:#333,color:#fff
+    style Routes fill:#f5a623,stroke:#333

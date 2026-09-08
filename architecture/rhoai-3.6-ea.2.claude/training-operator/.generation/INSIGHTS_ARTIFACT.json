@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "training-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "training-operator-tls-profile-coupling-001",
+      "claim": "The operator reads the OpenShift APIServer TLS profile at startup and applies it to the webhook server, creating a runtime dependency on config.openshift.io/v1/APIServer that fails open to a hardened intermediate profile on non-OpenShift clusters.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/training-operator.v1/main.go:100-137"
+        }
+      ],
+      "reasoning": "The operator fetches the cluster APIServer resource to derive TLS cipher suites and minimum version. On NotFound or NoMatch errors (non-OpenShift), it falls back to TLS 1.2 with six AEAD ciphers. On transient errors, it also falls back. If a custom profile specifies ciphers but none are supported by Go, the operator exits. This couples the operator to OpenShift cluster configuration but ensures consistent TLS policy enforcement.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "training-operator-readiness-gate-002",
+      "claim": "The readiness probe is gated on webhook certificate availability, preventing the operator pod from receiving traffic before the webhook server can process admission requests.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/training-operator.v1/main.go:448-458"
+        }
+      ],
+      "reasoning": "The readyz check waits for a certsReady channel signal before delegating to the webhook server's started checker. This prevents the Kubernetes endpoint controller from adding the pod to the Service endpoints before the webhook server is ready, avoiding rejected admission requests during startup.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "training-operator-mislabeled-notebooks-003",
+      "claim": "The analyzer labeled kubeflow.org RBAC grants as 'Kubeflow Notebooks' integration, but these grants cover only the operator's own training job CRDs (jaxjobs, mpijobs, paddlejobs, pytorchjobs, tfjobs, xgboostjobs), not notebook resources.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "manifests/base/rbac/role.yaml:87-241"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/integration_points"
+        }
+      ],
+      "reasoning": "The RBAC ClusterRole explicitly lists jaxjobs, mpijobs, paddlejobs, pytorchjobs, tfjobs, and xgboostjobs under the kubeflow.org API group. No 'notebooks' resource appears anywhere in the role. The analyzer appears to have inferred a Notebooks integration from the kubeflow.org API group name alone. This mislabeling creates a false dependency in platform architecture views.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

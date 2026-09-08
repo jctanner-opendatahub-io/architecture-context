@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Gateway as Istio/Envoy Gateway<br/>(maas-default-gateway)<br/>openshift-ingress
+    participant PreProc as payload-pre-processing<br/>(ipp-pre ExtProc)<br/>9004/TCP gRPC
+    participant Kuadrant as Kuadrant WasmPlugin<br/>(Authorization)
+    participant PostProc as payload-processing<br/>(ipp ExtProc)<br/>9004/TCP gRPC
+    participant K8sAPI as Kubernetes API<br/>443/TCP HTTPS
+    participant Prometheus as Prometheus<br/>Monitoring
+
+    Note over Gateway,PostProc: EnvoyFilter Priority 10 - Filter Chain Order
+
+    rect rgb(240, 248, 255)
+        Note right of Client: Inference Request Flow
+        Client->>Gateway: HTTP Request<br/>(inference endpoint)
+
+        rect rgb(255, 243, 224)
+            Note over Gateway,PreProc: Pre-Auth Processing (failure_mode_allow: true)
+            Gateway->>PreProc: ext_proc gRPC stream<br/>Request Headers + Buffered Body<br/>TLS SIMPLE (DestinationRule)
+            PreProc->>PreProc: Run Praxis filter pipeline<br/>(pre-auth filters)
+            PreProc-->>Gateway: Header/Body mutations<br/>or immediate response
+        end
+
+        Gateway->>Kuadrant: Authorization check<br/>(WasmPlugin)
+        Kuadrant-->>Gateway: Auth decision
+
+        rect rgb(232, 245, 233)
+            Note over Gateway,PostProc: Post-Auth Processing (failure_mode_allow: false)
+            Gateway->>PostProc: ext_proc gRPC stream<br/>Request Headers + Response Headers<br/>Buffered Bodies<br/>TLS SIMPLE (DestinationRule)
+            PostProc->>PostProc: Run Praxis filter pipeline<br/>(post-auth filters, e.g. model_to_header)
+            PostProc-->>Gateway: Header/Body mutations<br/>or immediate rejection
+        end
+
+        Gateway-->>Client: HTTP Response<br/>(mutated or rejected)
+    end
+
+    rect rgb(245, 245, 245)
+        Note right of PostProc: Kubernetes API Reads
+        PostProc->>K8sAPI: GET/LIST/WATCH ConfigMaps<br/>ServiceAccount Token Auth
+        K8sAPI-->>PostProc: ConfigMap data
+        PostProc->>K8sAPI: GET Secrets<br/>ServiceAccount Token Auth
+        K8sAPI-->>PostProc: Secret data
+        PostProc->>K8sAPI: GET/LIST/WATCH ExternalProviders<br/>(inference.opendatahub.io)
+        K8sAPI-->>PostProc: ExternalProvider CRs
+        PostProc->>K8sAPI: GET/LIST/WATCH ExternalModels<br/>(inference.opendatahub.io)
+        K8sAPI-->>PostProc: ExternalModel CRs
+    end
+
+    rect rgb(252, 243, 255)
+        Note right of Prometheus: Metrics Scraping
+        Prometheus->>PostProc: GET /metrics<br/>HTTP/1.1 Port 9090/TCP<br/>No Auth
+        PostProc-->>Prometheus: Prometheus metrics<br/>(request counts, durations,<br/>immediate response counts)
+    end

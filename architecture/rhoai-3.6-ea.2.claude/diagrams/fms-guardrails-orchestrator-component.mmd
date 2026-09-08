@@ -1,0 +1,61 @@
+graph TB
+    subgraph "fms-guardrails-orchestrator"
+        direction TB
+
+        subgraph "Guardrails Server (8033/TCP)"
+            Router[Axum Router]
+            TLSAcceptor["TLS Acceptor<br/>(optional mTLS)"]
+            HeaderFilter["Header Passthrough<br/>+ Token Rewrite"]
+
+            subgraph "v1 Endpoints"
+                V1Class["/api/v1/task/classification-with-text-generation"]
+                V1Stream["/api/v1/task/server-streaming-classification-with-text-generation"]
+            end
+
+            subgraph "v2 Endpoints"
+                V2Chat["/api/v2/chat/completions-detection"]
+                V2Completions["/api/v2/text/completions-detection"]
+                V2DetectChat["/api/v2/text/detection/chat"]
+                V2Content["/api/v2/text/detection/content"]
+                V2Context["/api/v2/text/detection/context"]
+                V2Generated["/api/v2/text/detection/generated"]
+                V2StreamContent["/api/v2/text/detection/stream-content"]
+                V2GenDetect["/api/v2/text/generation-detection"]
+            end
+        end
+
+        subgraph "Health Server (8034/TCP)"
+            HealthEndpoint["/health"]
+            InfoEndpoint["/info"]
+        end
+    end
+
+    Client[Client] -->|"POST 8033/TCP<br/>HTTP/HTTPS"| TLSAcceptor
+    TLSAcceptor --> Router
+    Router --> HeaderFilter
+    HeaderFilter --> V1Class
+    HeaderFilter --> V1Stream
+    HeaderFilter --> V2Chat
+    HeaderFilter --> V2Content
+    HeaderFilter --> V2GenDetect
+
+    Monitor[Health Probe] -->|"GET 8034/TCP<br/>HTTP (no TLS)"| HealthEndpoint
+
+    Router -->|"gRPC 8085<br/>TLS optional"| Chunker[Chunker Services]
+    Router -->|"REST 8080<br/>TLS optional"| Detector[Detector Services]
+    Router -->|"gRPC 8033<br/>No TLS"| TGIS[TGIS Generation]
+    Router -->|"REST configurable<br/>HTTP/HTTPS"| OpenAI["OpenAI-compatible<br/>Generation (optional)"]
+    Router -->|"REST 8081<br/>No TLS"| DetectorHealth[Detector Health]
+
+    style Router fill:#4a90e2,stroke:#333
+    style TLSAcceptor fill:#e74c3c,stroke:#333,color:#fff
+    style HeaderFilter fill:#f39c12,stroke:#333
+    style HealthEndpoint fill:#2ecc71,stroke:#333
+    style InfoEndpoint fill:#2ecc71,stroke:#333
+    style Client fill:#f9f9f9,stroke:#999
+    style Monitor fill:#f9f9f9,stroke:#999
+    style Chunker fill:#e8e8e8,stroke:#333
+    style Detector fill:#e8e8e8,stroke:#333
+    style TGIS fill:#e8e8e8,stroke:#333
+    style OpenAI fill:#e8e8e8,stroke:#333
+    style DetectorHealth fill:#e8e8e8,stroke:#333

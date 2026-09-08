@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "component": "odh-observability",
+  "reads": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "1-157",
+      "gap_category": ["authentication", "integration_points", "internal_dependencies"],
+      "question": "How is the controller manager configured, what authentication exists for health endpoints, and how are odh-platform-utilities and Kubernetes clients integrated?",
+      "expected_signal": "health check registration, deployer construction, client initialization, webhook setup",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Data Flows"],
+      "scope_reason": "File is 157 lines total; main entrypoint with controller setup, deployer initialization, webhook registration, and health probes all in a single file"
+    },
+    {
+      "path": "internal/controller/resources/data-science-prometheus-cluster-proxy.tmpl.yaml",
+      "line_range": "40-199",
+      "gap_category": ["authentication"],
+      "question": "What authentication and authorization mechanism protects the cluster-wide Prometheus proxy endpoint?",
+      "expected_signal": "kube-rbac-proxy configuration, SubjectAccessReview policy, TLS settings, upstream mTLS",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "pkg/tls/profile.go",
+      "line_range": "1-163",
+      "gap_category": ["fips_compliance", "internal_dependencies"],
+      "question": "How does the operator determine TLS configuration, and what is the relationship with OpenShift cluster APIServer and library-go crypto utilities?",
+      "expected_signal": "APIServer TLS profile read, cipher suite mapping, min TLS version resolution, library-go usage",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis", "Internal Platform Dependencies"]
+    },
+    {
+      "path": "Dockerfiles/Dockerfile.konflux",
+      "line_range": "1-39",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags, linking mode, and base image are used for the Konflux build?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT, build tags, base image with OpenSSL or FIPS support",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    },
+    {
+      "path": "internal/controller/resources/data-science-prometheus-namespace-proxy.tmpl.yaml",
+      "line_range": "1-120",
+      "gap_category": ["authentication"],
+      "question": "What authentication and authorization mechanism protects the namespace-scoped Prometheus proxy, and how does namespace restriction work?",
+      "expected_signal": "kube-rbac-proxy config with namespace rewrite, SubjectAccessReview policy, auth-delegator binding",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "api/v1alpha1/monitoring_types.go",
+      "line_range": "1-263",
+      "gap_category": ["internal_dependencies"],
+      "question": "How does the Monitoring CRD use odh-platform-utilities types, and what is the API contract boundary?",
+      "expected_signal": "import of platformcommon, PlatformObject interface implementation, ManagementSpec/Status embedding",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Internal Platform Dependencies"],
+      "scope_reason": "Full CRD type definitions needed to understand the PlatformObject interface implementation and all embedded platform-utilities types across Spec and Status"
+    }
+  ]
+}

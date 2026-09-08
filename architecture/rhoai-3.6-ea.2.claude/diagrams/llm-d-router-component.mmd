@@ -1,0 +1,84 @@
+graph TB
+    subgraph EPP["Endpoint Picker (EPP)"]
+        direction TB
+        ExtProc["ExternalProcessor gRPC Service<br/>Port 9002 / HTTP/2<br/>Optional TLS"]
+        HealthGRPC["Health gRPC Service<br/>HTTP/2 / Optional TLS"]
+        MetricsEPP["Metrics Server<br/>HTTP /metrics<br/>Optional mTLS"]
+
+        subgraph Plugins["Scheduling Plugin Framework"]
+            ReqControl["Request Control Plugins<br/>Scheduling, Flow Control"]
+            DataProd["Data Producer Plugins<br/>Metrics Scraping, Tokenization,<br/>Latency Prediction"]
+            DataLayer["Data Layer Plugins<br/>Redis, In-Memory, HTTP Cache"]
+            Parsing["Parsing Plugins<br/>OpenAI-compatible<br/>Request/Response"]
+        end
+
+        subgraph Controllers["Controllers"]
+            PodCtrl["Pod Reconciler"]
+            PoolCtrl["InferencePool Reconciler"]
+            ObjCtrl["InferenceObjective Reconciler"]
+            RewriteCtrl["InferenceModelRewrite Reconciler"]
+        end
+
+        Datastore["In-Memory Datastore<br/>Endpoints & Metrics"]
+
+        ExtProc --> Plugins
+        Controllers --> Datastore
+        Plugins --> Datastore
+    end
+
+    subgraph Coordinator["Coordinator"]
+        CoordHealth["/healthz, /readyz<br/>HTTP GET"]
+        CoordMetrics["Metrics<br/>HTTP /metrics"]
+    end
+
+    subgraph Sidecar["pd-sidecar"]
+        SidecarProxy["HTTP Proxy<br/>DNS Interception"]
+        SidecarMetrics["/metrics<br/>HTTP"]
+    end
+
+    %% CRDs
+    EPC["EndpointPickerConfig CR<br/>llm-d.ai/v1alpha1"]
+    IMR["InferenceModelRewrite CR<br/>llm-d.ai/v1alpha2"]
+    IO["InferenceObjective CR<br/>llm-d.ai/v1alpha2"]
+    IP["InferencePool CR<br/>inference.networking.k8s.io/v1"]
+
+    %% External Components
+    Envoy["Envoy Proxy"]
+    K8sAPI["Kubernetes API<br/>Port 6443"]
+    ModelPods["Model Server Pods"]
+    OTelCollector["OpenTelemetry Collector<br/>OTLP/gRPC or OTLP/HTTP"]
+
+    %% Flows
+    Envoy -->|"gRPC ExtProc callout"| ExtProc
+    ExtProc -->|"routing metadata"| Envoy
+    Envoy -->|"forward request"| ModelPods
+
+    EPC -->|"watched by"| ReqControl
+    IMR -->|"watched by"| RewriteCtrl
+    IO -->|"watched by"| ObjCtrl
+    IP -->|"watched by"| PoolCtrl
+
+    PodCtrl -->|"watches"| ModelPods
+    Controllers -->|"REST/WSS TLS"| K8sAPI
+
+    SidecarProxy -->|"NIXL KV-cache transfer"| ModelPods
+
+    MetricsEPP -.->|"OTLP traces"| OTelCollector
+
+    %% Styles
+    style ExtProc fill:#4a90e2,color:#fff
+    style HealthGRPC fill:#4a90e2,color:#fff
+    style MetricsEPP fill:#4a90e2,color:#fff
+    style CoordHealth fill:#50a0c0,color:#fff
+    style CoordMetrics fill:#50a0c0,color:#fff
+    style SidecarProxy fill:#6ab0d0,color:#fff
+    style SidecarMetrics fill:#6ab0d0,color:#fff
+    style Datastore fill:#7ed321,color:#fff
+    style EPC fill:#f5a623,color:#fff
+    style IMR fill:#f5a623,color:#fff
+    style IO fill:#f5a623,color:#fff
+    style IP fill:#f5a623,color:#fff
+    style Envoy fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style ModelPods fill:#e8e8e8,stroke:#333
+    style OTelCollector fill:#e8e8e8,stroke:#333

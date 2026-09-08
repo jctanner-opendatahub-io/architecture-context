@@ -1,0 +1,76 @@
+graph TB
+    subgraph "Workbenches Operator"
+        direction TB
+        Manager["Manager Binary<br/>/manager"]
+
+        subgraph "Controllers"
+            Reconciler["WorkbenchesReconciler<br/>Reconciles Workbenches CR"]
+        end
+
+        subgraph "Webhooks (port 9443)"
+            ConnectionWH["connection-notebook<br/>Mutating Webhook<br/>/workbenches-connection-notebook"]
+            HardwareWH["hardwareprofile-notebook-injector<br/>Mutating Webhook<br/>/workbenches-hardware-profile"]
+            ConversionWH["Conversion Webhook<br/>/convert"]
+        end
+
+        subgraph "TLS & Security"
+            TLSConfig["SecurityProfileWatcher<br/>OpenShift TLS Profile / Mozilla Intermediate"]
+            CertEnsurer["Certificate Ensurer<br/>service-ca / cert-manager"]
+        end
+
+        subgraph "Platform Integration"
+            PlatformConfig["PlatformConfig Reader<br/>odh-workbenches-config ConfigMap"]
+        end
+
+        Manager --> Reconciler
+        Manager --> ConnectionWH
+        Manager --> HardwareWH
+        Manager --> ConversionWH
+        Manager --> TLSConfig
+        Manager --> CertEnsurer
+        Manager --> PlatformConfig
+    end
+
+    %% External inputs
+    User["Platform Orchestrator"] -->|"creates/updates"| WorkbenchesCR["Workbenches CR<br/>components.platform.opendatahub.io/v1alpha1"]
+    WorkbenchesCR -->|"watched by"| Reconciler
+
+    ConfigMap["odh-workbenches-config<br/>ConfigMap"] -->|"watched by"| PlatformConfig
+
+    %% Reconciler outputs (server-side apply)
+    Reconciler -->|"server-side apply"| Manifests["/opt/manifests<br/>Upstream Kubeflow Notebook manifests"]
+    Manifests -->|"creates/manages"| NotebookDeploy["Notebook Controller<br/>Deployment"]
+    Manifests -->|"creates/manages"| RBAC_Resources["RBAC Resources<br/>Roles, RoleBindings,<br/>ClusterRoles, ClusterRoleBindings"]
+    Manifests -->|"creates/manages"| NetworkPolicies["NetworkPolicies"]
+    Manifests -->|"creates/manages"| WebhookConfigs["Webhook Configurations"]
+
+    %% Webhook flows
+    K8sAPI["Kubernetes API Server"] -->|"admission requests<br/>notebook CREATE/UPDATE"| ConnectionWH
+    K8sAPI -->|"admission requests<br/>notebook CREATE/UPDATE"| HardwareWH
+
+    ConnectionWH -->|"reads"| DataSecrets["Data Connection Secrets"]
+    HardwareWH -->|"reads"| HardwareProfile["HardwareProfile CR<br/>infrastructure.opendatahub.io"]
+
+    %% TLS
+    CertEnsurer -->|"provisions cert"| ServiceCA["OpenShift service-ca"]
+    CertEnsurer -.->|"fallback"| CertManager["cert-manager"]
+
+    %% Styling
+    style Manager fill:#4a90e2,stroke:#333,color:#fff
+    style Reconciler fill:#4a90e2,stroke:#333,color:#fff
+    style ConnectionWH fill:#9b59b6,stroke:#333,color:#fff
+    style HardwareWH fill:#9b59b6,stroke:#333,color:#fff
+    style ConversionWH fill:#9b59b6,stroke:#333,color:#fff
+    style TLSConfig fill:#e67e22,stroke:#333,color:#fff
+    style CertEnsurer fill:#e67e22,stroke:#333,color:#fff
+    style PlatformConfig fill:#27ae60,stroke:#333,color:#fff
+    style WorkbenchesCR fill:#f5a623,stroke:#333
+    style ConfigMap fill:#f5a623,stroke:#333
+    style HardwareProfile fill:#f5a623,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style ServiceCA fill:#e8e8e8,stroke:#333
+    style CertManager fill:#e8e8e8,stroke:#333
+    style NotebookDeploy fill:#7ed321,stroke:#333
+    style RBAC_Resources fill:#7ed321,stroke:#333
+    style NetworkPolicies fill:#7ed321,stroke:#333
+    style WebhookConfigs fill:#7ed321,stroke:#333

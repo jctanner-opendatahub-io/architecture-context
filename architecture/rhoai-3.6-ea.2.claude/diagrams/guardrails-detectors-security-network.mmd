@@ -1,0 +1,49 @@
+graph TB
+    subgraph External["ORCHESTRATION LAYER"]
+        Orchestrator["FMS Guardrails Orchestrator"]
+    end
+
+    subgraph DetectorServices["DETECTOR SERVICES (KServe ServingRuntime Pods)"]
+        direction TB
+
+        subgraph BuiltInZone["Built-in Detector Pod"]
+            BuiltIn["Built-in Detector<br/>8080/TCP HTTP<br/>Encryption: Configurable<br/>Auth: None<br/>/app/bin/regex-detector"]
+        end
+
+        subgraph HFZone["HuggingFace Detector Pod"]
+            HF["HuggingFace Detector<br/>8000/TCP HTTP<br/>Encryption: Configurable<br/>Auth: None<br/>ServingRuntime: guardrails-detector-runtime-guardian"]
+            MinIO["MinIO Sidecar<br/>9000/TCP ClusterIP<br/>quay.io/trustyai/modelmesh-minio-examples<br/>Secret: aws-connection-minio-*"]
+        end
+
+        subgraph JudgeZone["LLM Judge Detector Pod"]
+            Judge["LLM Judge Detector<br/>8000/TCP HTTP<br/>Encryption: Configurable<br/>Auth: None<br/>ServingRuntime: guardrails-detector-runtime-judge"]
+        end
+    end
+
+    subgraph PlatformServices["INTERNAL PLATFORM SERVICES"]
+        vLLM["vLLM Inference Server<br/>(qwen2-predictor)<br/>8080/TCP HTTP<br/>Auth: None"]
+        KServe["KServe Controller<br/>serving.kserve.io/v1alpha1"]
+    end
+
+    %% Flows
+    Orchestrator -->|"HTTP/8080<br/>Configurable TLS<br/>No Auth"| BuiltIn
+    Orchestrator -->|"HTTP/8000<br/>Configurable TLS<br/>No Auth"| HF
+    Orchestrator -->|"HTTP/8000<br/>Configurable TLS<br/>No Auth"| Judge
+
+    HF -->|"TCP/9000<br/>Encryption: Unknown<br/>Opaque Secret"| MinIO
+    Judge -->|"HTTP/8080<br/>Plaintext (default)<br/>No Auth"| vLLM
+
+    KServe -.->|"manages lifecycle"| HF
+    KServe -.->|"manages lifecycle"| Judge
+
+    %% Styling
+    classDef orchestrator fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef detector fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef storage fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef platform fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef warning fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Orchestrator orchestrator
+    class BuiltIn,HF,Judge detector
+    class MinIO storage
+    class vLLM,KServe platform

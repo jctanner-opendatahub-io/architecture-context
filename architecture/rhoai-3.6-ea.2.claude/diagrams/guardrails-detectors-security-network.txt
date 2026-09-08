@@ -1,0 +1,114 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL / ORCHESTRATION LAYER                                              │
+│                                                                              │
+│  [FMS Guardrails Orchestrator]                                               │
+│         │                                                                    │
+│         │ Port: 8080/TCP (built-in) or 8000/TCP (HF, Judge)                 │
+│         │ Protocol: HTTP/HTTPS                                               │
+│         │ Encryption: Configurable (TLS via ssl_ca_certs; NOT enforced)      │
+│         │ Auth: None (no auth middleware at application level)               │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  DETECTOR SERVICES (KServe ServingRuntime Pods)                              │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐     │
+│  │  [Built-in Detector]                                                │     │
+│  │  - Entrypoint: /app/bin/regex-detector                              │     │
+│  │  - Port: 8080/TCP                                                   │     │
+│  │  - Protocol: HTTP                                                   │     │
+│  │  - Encryption: Configurable (not enforced by default)               │     │
+│  │  - Auth: None                                                       │     │
+│  │  - Endpoints: /api/v1/text/contents (POST), /metrics (GET),         │     │
+│  │               /registry (GET)                                       │     │
+│  │  - No external dependencies (self-contained regex engine)           │     │
+│  └─────────────────────────────────────────────────────────────────────┘     │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐     │
+│  │  [HuggingFace Detector]                                             │     │
+│  │  - Entrypoint: uvicorn app:app (workers=1)                          │     │
+│  │  - Port: 8000/TCP                                                   │     │
+│  │  - Protocol: HTTP                                                   │     │
+│  │  - Encryption: Configurable (not enforced by default)               │     │
+│  │  - Auth: None                                                       │     │
+│  │  - Endpoints: /api/v1/text/contents (POST), /metrics (GET)          │     │
+│  │  - KServe ServingRuntime: guardrails-detector-runtime-guardian       │     │
+│  │         │                                                           │     │
+│  │         │ Port: 9000/TCP                                            │     │
+│  │         │ Protocol: TCP                                             │     │
+│  │         │ Encryption: Unknown                                       │     │
+│  │         │ Auth: Opaque secret (aws-connection-minio-data-           │     │
+│  │         │       connection-guardrails-guardian)                      │     │
+│  │         ▼                                                           │     │
+│  │  [MinIO Sidecar - minio-guardrails-guardian]                        │     │
+│  │  - Image: quay.io/trustyai/modelmesh-minio-examples:latest          │     │
+│  │  - Port: 9000/TCP (ClusterIP)                                       │     │
+│  │  - Purpose: Model artifact storage (PVC-backed)                     │     │
+│  └─────────────────────────────────────────────────────────────────────┘     │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐     │
+│  │  [LLM Judge Detector]                                               │     │
+│  │  - Entrypoint: uvicorn detectors.llm_judge.app:app (workers=4)      │     │
+│  │  - Port: 8000/TCP                                                   │     │
+│  │  - Protocol: HTTP                                                   │     │
+│  │  - Encryption: Configurable (not enforced by default)               │     │
+│  │  - Auth: None                                                       │     │
+│  │  - Endpoints: /api/v1/text/contents (POST), /metrics (GET)          │     │
+│  │  - KServe ServingRuntime: guardrails-detector-runtime-judge          │     │
+│  │         │                                                           │     │
+│  │         │ Port: 8080/TCP                                            │     │
+│  │         │ Protocol: HTTP                                            │     │
+│  │         │ Encryption: Unknown (plaintext by default)                │     │
+│  │         │ Auth: None (no auth configured on vLLM client)            │     │
+│  │         ▼                                                           │     │
+│  └─────────────────────────────────────────────────────────────────────┘     │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  INTERNAL PLATFORM SERVICES                                                  │
+│                                                                              │
+│  [vLLM Inference Server - qwen2-predictor]                                   │
+│  - Port: 8080/TCP                                                            │
+│  - Protocol: HTTP                                                            │
+│  - Purpose: LLM evaluation endpoint for Judge detector                       │
+│  - Auth: None configured                                                     │
+│  - Encryption: Unknown                                                       │
+│                                                                              │
+│  [KServe Controller]                                                         │
+│  - Purpose: Manages ServingRuntime lifecycle for HF and Judge detectors      │
+│  - API Group: serving.kserve.io/v1alpha1                                     │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- RoleBinding: user-one-view
+  - Role: view (ClusterRole)
+  - ServiceAccount: user-one
+  - Note: Minimal RBAC — no custom ClusterRoles defined
+
+Secrets:
+- aws-connection-minio-data-connection-guardrails-guardian (Opaque)
+  - Purpose: MinIO credentials for HuggingFace detector model storage
+  - Provisioned By: manifest
+  - Auto-Rotate: Unknown
+
+Authentication & Authorization:
+- WARNING: No authentication middleware detected at application level
+- TLS is configurable via ssl_ca_certs in server config but NOT enforced by default
+- Security is expected to be delegated to platform service mesh or KServe infrastructure
+- FastAPI instances are created with empty dependency lists (no auth filters)
+
+FIPS Compliance:
+- Built-in detector: AIPCC base image (UBI-based, FIPS-validated OpenSSL)
+- HuggingFace detector: Parameterized CUDA/CPU base images
+- TLS: stdlib ssl module delegates to system OpenSSL
+- FIPS enforcement: Not explicitly configured; inherited from base image/host
+- No non-FIPS cryptographic libraries detected in runtime dependencies
+
+Serving Runtime Definitions:
+- guardrails-detector-runtime-guardian (HuggingFace)
+  - API: serving.kserve.io/v1alpha1
+  - Model Format: guardrails-detector-huggingface (autoSelect)
+  - Image: quay.io/rh-ee-mmisiura/guardrails-detector-huggingface:3d51741
+- guardrails-detector-runtime-judge (LLM Judge)
+  - API: serving.kserve.io/v1alpha1
+  - Model Format: guardrails-detector-llm-judge (autoSelect)
+  - Image: quay.io/trustyai/guardrails-detector-llm-judge:latest

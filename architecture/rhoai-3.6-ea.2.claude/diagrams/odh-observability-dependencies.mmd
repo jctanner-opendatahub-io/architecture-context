@@ -1,0 +1,45 @@
+graph LR
+    ODHObs["odh-observability<br/>Operator"]
+
+    %% External Dependencies (Runtime/Build)
+    ODHObs -->|"runtime framework"| ControllerRuntime["controller-runtime<br/>v0.23.3"]
+    ODHObs -->|"K8s client"| K8sClientGo["k8s.io/client-go<br/>v0.35.3"]
+    ODHObs -->|"K8s API types"| K8sAPI["k8s.io/api<br/>v0.35.3"]
+    ODHObs -->|"OpenShift API types"| OpenshiftAPI["openshift/api"]
+    ODHObs -->|"TLS cipher mapping"| LibraryGo["openshift/library-go"]
+    ODHObs -->|"Go runtime"| Go["Go 1.25.7<br/>(FIPS)"]
+
+    %% Internal ODH Dependencies
+    ODHObs -->|"deployer + platform<br/>detection"| ODHPlatformUtils["odh-platform-utilities<br/>v0.3.0"]
+
+    %% Platform Dependencies (CRD interactions)
+    ODHObs -->|"CRD CRUD"| PromOperator["prometheus-operator"]
+    ODHObs -->|"TLS profile read"| OSAPIServer["OpenShift APIServer<br/>config.openshift.io"]
+
+    %% Optional Integrations
+    ODHObs -.->|"trace export"| TempoOperator["Tempo Operator"]
+    ODHObs -.->|"log forwarding"| LokiStack["LokiStack /<br/>ClusterLogForwarder"]
+
+    %% Components that depend on odh-observability
+    Dashboard["ODH Dashboard"] -.->|"metrics queries"| ODHObs
+    ModelServing["Model Serving<br/>Components"] -.->|"metrics collected"| ODHObs
+
+    %% Infrastructure
+    ODHObs -->|"resource CRUD<br/>watches, SAR"| K8sAPIServer["Kubernetes API<br/>6443/TCP"]
+
+    %% Styling
+    style ODHObs fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style ControllerRuntime fill:#999,stroke:#333,color:#fff
+    style K8sClientGo fill:#999,stroke:#333,color:#fff
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style OpenshiftAPI fill:#999,stroke:#333,color:#fff
+    style LibraryGo fill:#999,stroke:#333,color:#fff
+    style Go fill:#999,stroke:#333,color:#fff
+    style ODHPlatformUtils fill:#7ed321,stroke:#333,color:#000
+    style PromOperator fill:#7ed321,stroke:#333,color:#000
+    style OSAPIServer fill:#7ed321,stroke:#333,color:#000
+    style TempoOperator fill:#f5a623,stroke:#333,color:#000
+    style LokiStack fill:#f5a623,stroke:#333,color:#000
+    style Dashboard fill:#b8d4f0,stroke:#333,color:#000
+    style ModelServing fill:#b8d4f0,stroke:#333,color:#000
+    style K8sAPIServer fill:#f5a623,stroke:#333,color:#000

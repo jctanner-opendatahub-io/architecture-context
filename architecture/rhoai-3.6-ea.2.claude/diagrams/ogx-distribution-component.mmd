@@ -1,0 +1,71 @@
+graph TB
+    subgraph OGX["OGX Distribution Server (port 8321)"]
+        direction TB
+        Entrypoint["entrypoint.sh<br/>Secret _FILE resolution<br/>Env var setup"]
+        Entrypoint -->|starts| Server["OGX Server Runtime<br/>(--insecure, TLS at ingress)"]
+
+        subgraph APIs["API Surfaces"]
+            direction LR
+            ChatAPI["/v1/chat/completions<br/>OpenAI-compatible"]
+            ResponsesAPI["/v1/responses<br/>Agent orchestration"]
+            MessagesAPI["/v1/messages<br/>Anthropic Messages"]
+            ModelsAPI["/v1/models<br/>Model listing"]
+            HealthAPI["/v1/health<br/>Health check"]
+            MetricsAPI["/metrics<br/>Prometheus"]
+        end
+
+        subgraph Providers["Pluggable Providers"]
+            direction LR
+            InferenceProvider["Inference Provider<br/>(remote::vllm)"]
+            VectorIOProvider["Vector IO Provider<br/>(milvus/pgvector/qdrant)"]
+            FileProvider["File Provider<br/>(localfs/S3)"]
+            KVStore["KV Store<br/>(PostgreSQL)"]
+            SQLStore["SQL Store<br/>(PostgreSQL)"]
+        end
+
+        subgraph Auth["Authentication"]
+            OAuth2["OAuth2 JWT Validator<br/>(when AUTH_ISSUER set)"]
+            AccessPolicy["Access Policy<br/>public-read / auth-create / owner-CRUD"]
+        end
+
+        subgraph ModelArtifacts["Pre-baked Model Artifacts"]
+            Docling["Docling Models"]
+            HFCache["HuggingFace Cache"]
+            Tiktoken["Tiktoken Data"]
+        end
+
+        Server --> APIs
+        Server --> Providers
+        Server --> Auth
+    end
+
+    Client[External Client] -->|HTTP/8321| Server
+    Server -->|inference| vLLM["vLLM Backend"]
+    Server -->|state storage| PostgreSQL["PostgreSQL<br/>5432/TCP"]
+    Server -->|vector search| VectorDB["Vector DB<br/>(Milvus/PGVector/Qdrant)"]
+    OAuth2 -->|JWKS fetch| IdP["OAuth2 Identity Provider<br/>443/TCP HTTPS"]
+    Operator["ogx-operator"] -->|manages lifecycle| OGX
+
+    Prometheus["Prometheus"] -->|scrapes /metrics| MetricsAPI
+
+    style Server fill:#4a90e2,stroke:#333,color:#fff
+    style Entrypoint fill:#4a90e2,stroke:#333,color:#fff
+    style ChatAPI fill:#5ba0d9,stroke:#333
+    style ResponsesAPI fill:#5ba0d9,stroke:#333
+    style MessagesAPI fill:#5ba0d9,stroke:#333
+    style ModelsAPI fill:#5ba0d9,stroke:#333
+    style HealthAPI fill:#5ba0d9,stroke:#333
+    style MetricsAPI fill:#5ba0d9,stroke:#333
+    style InferenceProvider fill:#7ed321,stroke:#333
+    style VectorIOProvider fill:#7ed321,stroke:#333
+    style FileProvider fill:#7ed321,stroke:#333
+    style KVStore fill:#7ed321,stroke:#333
+    style SQLStore fill:#7ed321,stroke:#333
+    style OAuth2 fill:#f5a623,stroke:#333
+    style AccessPolicy fill:#f5a623,stroke:#333
+    style vLLM fill:#e8e8e8,stroke:#333
+    style PostgreSQL fill:#e8e8e8,stroke:#333
+    style VectorDB fill:#e8e8e8,stroke:#333
+    style IdP fill:#e8e8e8,stroke:#333
+    style Operator fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333

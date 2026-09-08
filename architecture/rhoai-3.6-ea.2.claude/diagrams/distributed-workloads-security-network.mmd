@@ -1,0 +1,73 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["Data Scientist /<br/>External Client"]
+    end
+
+    subgraph Ingress["INGRESS (OpenShift Routes)"]
+        MinIORoute["MinIO Routes<br/>minio-api / minio-ui / minio-console<br/>443/TCP HTTPS<br/>TLS Termination: Edge"]
+    end
+
+    subgraph InternalServices["INTERNAL SERVICES (ClusterIP)"]
+        direction TB
+
+        subgraph NS_MinIO["Example: MinIO Namespace"]
+            MinIOSvc["minio-service / minio<br/>9000/TCP (S3 API)<br/>9001/TCP (Console)<br/>9090/TCP (Metrics)<br/>Auth: AWS credentials from Secret"]
+        end
+
+        subgraph NS_NFS["Example: NFS Namespace"]
+            NFSSvc["nfs-server<br/>2049/TCP (NFS)<br/>111/UDP (RPC)<br/>SA: nfs-server-sa<br/>SCC: privileged + anyuid"]
+        end
+    end
+
+    subgraph TrainingWorkloads["TRAINING WORKLOADS (Pod Network)"]
+        direction TB
+
+        subgraph RuntimePods["Runtime Training Pods"]
+            Master["Training Master<br/>AIPCC CUDA/ROCm Image<br/>uid_entrypoint.sh<br/>OpenMPI + sshd"]
+            Workers["Training Workers<br/>MPI rank peers<br/>sshd:2222/TCP"]
+        end
+
+        subgraph UniversalPods["Universal Training Pods"]
+            JupyterPod["Jupyter Training Pod<br/>Workbench Image<br/>entrypoint-universal.sh<br/>start-notebook.sh"]
+        end
+    end
+
+    subgraph PlatformServices["PLATFORM SERVICES"]
+        K8sAPI["Kubernetes API<br/>6443/TCP HTTPS/WSS<br/>TLS 1.2+<br/>ServiceAccount Auth"]
+        KFTrainer["Kubeflow Trainer v2<br/>Schedules training pods"]
+        Kueue["Kueue<br/>Workload admission"]
+        KubeRay["KubeRay<br/>Ray job orchestration"]
+    end
+
+    %% External flows
+    Client -->|"HTTPS/443<br/>TLS Edge"| MinIORoute
+    MinIORoute -->|"HTTP/9000 (API)<br/>HTTP/9001 (Console)"| MinIOSvc
+
+    %% Training pod flows
+    Master -->|"SSH/2222<br/>OpenMPI coordination"| Workers
+    Master -->|"S3 API/9000<br/>AWS creds from Secret"| MinIOSvc
+    Workers -->|"S3 API/9000"| MinIOSvc
+    Master -->|"NFS/2049<br/>Shared checkpoints"| NFSSvc
+    Workers -->|"NFS/2049"| NFSSvc
+    JupyterPod -->|"S3 API/9000"| MinIOSvc
+
+    %% Platform flows
+    Master -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token"| K8sAPI
+    JupyterPod -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token"| K8sAPI
+    KFTrainer -->|"Schedules"| RuntimePods
+    KFTrainer -->|"Schedules"| UniversalPods
+    Kueue -->|"Admits"| RuntimePods
+    KubeRay -->|"Orchestrates"| RuntimePods
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef internal fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef training fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef platform fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+
+    class Client external
+    class MinIORoute ingress
+    class MinIOSvc,NFSSvc internal
+    class Master,Workers,JupyterPod training
+    class K8sAPI,KFTrainer,Kueue,KubeRay platform

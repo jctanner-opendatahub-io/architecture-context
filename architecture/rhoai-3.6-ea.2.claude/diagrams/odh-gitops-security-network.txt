@@ -1,0 +1,122 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  odh-gitops — Security Network Architecture                             │
+│                                                                          │
+│  NOTE: odh-gitops is a configuration-only repository. It contains        │
+│  no runtime services, no HTTP/gRPC endpoints, and no direct network      │
+│  traffic. The security posture below describes what odh-gitops           │
+│  PROVISIONS and CONFIGURES on the target cluster.                        │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  CLUSTER ADMIN (Trusted)                                                │
+│                                                                          │
+│  [Cluster Administrator]                                                 │
+│         │                                                                │
+│         │ Action: helm install / kustomize apply                         │
+│         │ Auth: kubeconfig (RBAC: cluster-admin)                         │
+│         │ Encryption: TLS to API server                                  │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES API SERVER                                                   │
+│                                                                          │
+│  [API Server]                                                            │
+│  - Port: 6443/TCP                                                        │
+│  - Encryption: TLS 1.2+                                                  │
+│  - Auth: x509 client cert / Bearer token / OIDC                         │
+│         │                                                                │
+│         │ Applies declarative resources:                                 │
+│         │ - Subscription CRs (OpenShift/OLM)                             │
+│         │ - Helm releases (XKS)                                          │
+│         │ - Operator configuration CRs                                   │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PROVISIONED SECURITY COMPONENTS                                        │
+│                                                                          │
+│  [cert-manager]                                                          │
+│  - Namespace: cert-manager                                               │
+│  - Purpose: TLS certificate lifecycle management                         │
+│  - Issues: authorino-server-cert (for Authorino TLS listener)            │
+│                                                                          │
+│  [RHCL Operator / Kuadrant]                                              │
+│  - Namespace: kuadrant-system                                            │
+│  - Purpose: API gateway, authorization, rate limiting                    │
+│  - Deploys: Kuadrant CR (control plane)                                  │
+│                                                                          │
+│  [Authorino]                                                             │
+│  - Namespace: kuadrant-system                                            │
+│  - Scope: Cluster-wide authorization enforcement                         │
+│  - Listener TLS: Enabled (authorino-server-cert secret)                  │
+│  - OIDC Server TLS: Disabled                                             │
+│  - Purpose: Central authorization point for RHOAI service mesh           │
+│                                                                          │
+│  [Sail Operator / Istio] (XKS only)                                      │
+│  - Purpose: Service mesh for non-OpenShift deployments                   │
+│  - Provides: mTLS between services                                       │
+│                                                                          │
+│  [Gateway API CRDs] (XKS only)                                           │
+│  - Purpose: Kubernetes Gateway API resource definitions                  │
+│  - Provides: Ingress routing on non-OpenShift clusters                   │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PROVISIONED SCHEDULING COMPONENTS                                      │
+│                                                                          │
+│  [Kueue Operator]                                                        │
+│  - Purpose: Job scheduling and resource quota management                 │
+│                                                                          │
+│  [JobSet Operator]                                                       │
+│  - Purpose: Multi-pod job orchestration                                  │
+│                                                                          │
+│  [LeaderWorkerSet]                                                       │
+│  - Purpose: Leader-worker topology for distributed workloads             │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PROVISIONED OBSERVABILITY COMPONENTS                                   │
+│                                                                          │
+│  [OpenTelemetry Operator]                                                │
+│  - Purpose: Distributed tracing instrumentation                          │
+│                                                                          │
+│  [Tempo Operator]                                                        │
+│  - Purpose: Trace storage backend                                        │
+│                                                                          │
+│  [Cluster Observability Operator]                                        │
+│  - Purpose: Cluster monitoring and metrics                               │
+│                                                                          │
+│  [Custom Metrics Autoscaler]                                             │
+│  - Purpose: HPA-based autoscaling with custom metrics                    │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  PROVISIONED GPU COMPONENTS (Optional)                                  │
+│                                                                          │
+│  [Node Feature Discovery]                                                │
+│  - Purpose: GPU/accelerator node detection                               │
+│                                                                          │
+│  [NVIDIA GPU Operator]                                                   │
+│  - Purpose: GPU device plugin and driver management                      │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+  No explicit RBAC roles defined in odh-gitops itself.
+  RBAC is delegated to each provisioned operator's own manifests.
+  Cluster-admin privileges required at install time for Helm/Kustomize apply.
+
+Authentication & Authorization:
+  - Platform Services: Authorino (Kuadrant) provides cluster-wide authorization
+    enforcement from the kuadrant-system namespace
+  - Authorino listener: TLS-enabled via authorino-server-cert
+  - Authorino OIDC server: TLS disabled (internal cluster use)
+
+Secrets (Provisioned):
+  - authorino-server-cert: TLS certificate for Authorino listener
+    (provisioned by cert-manager)
+
+TLS Configuration:
+  - Authorino listener: TLS enabled (cert from cert-manager)
+  - Authorino OIDC: TLS disabled
+  - Optional tls-enabled overlay: Adds explicit TLS listener config
+  - Sail/Istio (XKS): Provides mTLS between services
+
+Deployment Targets:
+  - OpenShift: Via OLM Subscriptions (operators from CatalogSource)
+  - AWS EKS: Via rhai-on-xks-chart (Helm sub-charts)
+  - Azure AKS: Via rhai-on-xks-chart (Helm sub-charts)
+  - CoreWeave: Via rhai-on-xks-chart (Helm sub-charts)

@@ -1,0 +1,35 @@
+graph LR
+    GD["Guardrails Detectors"]
+
+    %% Internal Platform Dependencies
+    GD -->|"ServingRuntime CRD<br/>Deployment infrastructure"| KServe["KServe<br/>serving.kserve.io/v1alpha1"]
+    GD -->|"HTTP/8080<br/>LLM evaluation"| vLLM["vLLM Inference Server<br/>(qwen2-predictor)"]
+    GD -->|"Python library<br/>Evaluation metrics"| VLLMJudge["vllm-judge"]
+    GD -->|"TCP/9000<br/>Model storage"| MinIO["MinIO<br/>Model Artifacts"]
+
+    %% Runtime Framework
+    GD -->|"ASGI server"| Uvicorn["uvicorn 0.34.0"]
+    GD -->|"Web framework"| FastAPI["FastAPI 0.136.3"]
+    GD -->|"HTTP client"| HTTPX["httpx 0.28.1"]
+
+    %% Observability
+    GD -->|"Metrics"| PromClient["prometheus-client 0.25.0"]
+    GD -->|"Auto-instrumentation"| PromFastAPI["prometheus-fastapi-<br/>instrumentator 8.0.0"]
+
+    %% Upstream Integration
+    Orchestrator["FMS Guardrails<br/>Orchestrator"] -->|"POST /api/v1/text/contents"| GD
+    Prometheus["Prometheus"] -->|"GET /metrics"| GD
+
+    %% Styling
+    style GD fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style KServe fill:#7ed321,stroke:#333
+    style vLLM fill:#7ed321,stroke:#333
+    style VLLMJudge fill:#7ed321,stroke:#333
+    style MinIO fill:#7ed321,stroke:#333
+    style Uvicorn fill:#999,stroke:#333
+    style FastAPI fill:#999,stroke:#333
+    style HTTPX fill:#999,stroke:#333
+    style PromClient fill:#999,stroke:#333
+    style PromFastAPI fill:#999,stroke:#333
+    style Orchestrator fill:#f5a623,stroke:#333
+    style Prometheus fill:#f5a623,stroke:#333

@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant CI as CI/CD Pipeline
+    participant Extractor as model-extractor<br/>Go CLI
+    participant HF as HuggingFace API<br/>443/TCP HTTPS
+    participant GH as GitHub API<br/>443/TCP HTTPS
+    participant OCI as OCI Registries<br/>443/TCP HTTPS
+    participant FS as data/ Directory<br/>YAML Files
+    participant Report as metadata-report<br/>Go CLI
+    participant Build as Container Build<br/>Dockerfile.konflux
+    participant Sidecar as Data Sidecar<br/>sleep infinity
+    participant Platform as RHOAI Components
+
+    Note over CI,Platform: Phase 1: CI/CD Metadata Collection
+
+    CI->>Extractor: Execute model-extractor
+    Note right of Extractor: Optional: HF_TOKEN env var
+
+    Extractor->>HF: GET /api/collections<br/>Bearer Token (optional)
+    HF-->>Extractor: Model collections JSON
+
+    Extractor->>HF: GET /api/models/{id}<br/>Bearer Token (optional)
+    HF-->>Extractor: Model cards, enrichment data
+
+    Note right of Extractor: Optional: GITHUB_TOKEN env var
+
+    Extractor->>GH: GET /repos/{owner}/{repo}<br/>Bearer Token (optional)
+    GH-->>Extractor: Agent metadata, README files
+
+    Extractor->>OCI: GET manifests<br/>Registry credential chain
+    OCI-->>Extractor: Image architecture info
+
+    Extractor->>FS: Write YAML catalogs<br/>(models, agents, MCP servers)
+    Extractor->>FS: Write index files
+
+    CI->>Report: Execute metadata-report
+    Report->>FS: Read generated YAML data
+    FS-->>Report: Catalog data
+    Report->>FS: Write completeness reports
+
+    Note over CI,Platform: Phase 2: Container Image Build
+
+    CI->>Build: docker build -f Dockerfile.konflux
+    Build->>FS: COPY data/ files
+    Build->>Sidecar: Package as /app/data<br/>Base: ubi-minimal-pqc<br/>User: 1001
+
+    Note over CI,Platform: Phase 3: Runtime Data Serving
+
+    Platform->>Sidecar: Mount /app/data volume
+    Sidecar-->>Platform: YAML catalog data<br/>(static, read-only)

@@ -1,0 +1,47 @@
+graph LR
+    ArgoWF["Argo Workflows<br/>Workflow Engine"]
+
+    %% Kubernetes Dependencies
+    ArgoWF -->|"HTTPS+WSS/6443<br/>ServiceAccount"| K8sAPI["Kubernetes API<br/>k8s.io/client-go v0.32.2"]
+    ArgoWF -->|"resource mgmt"| K8sApimachinery["k8s.io/apimachinery<br/>v0.32.2"]
+
+    %% gRPC / Networking
+    ArgoWF -->|"gRPC transport"| gRPC["google.golang.org/grpc<br/>v1.71.1"]
+    ArgoWF -->|"REST-to-gRPC"| gRPCGateway["grpc-ecosystem/<br/>grpc-gateway v1.16.0"]
+
+    %% Authentication
+    ArgoWF -->|"SSO/OIDC auth"| OIDC["coreos/go-oidc/v3<br/>v3.9.0"]
+    ArgoWF -->|"OAuth2 tokens"| OAuth2["golang.org/x/oauth2<br/>v0.28.0"]
+
+    %% Observability
+    ArgoWF -->|"metrics"| Prometheus["prometheus/<br/>client_golang v1.21.1"]
+    ArgoWF -->|"tracing"| OTel["go.opentelemetry.io/otel<br/>v1.34.0"]
+    ArgoWF -->|"gRPC metrics"| gRPCPrometheus["grpc-ecosystem/<br/>go-grpc-prometheus v1.2.0"]
+
+    %% Artifact Storage SDKs
+    ArgoWF -->|"S3 artifacts"| MinIO["minio/minio-go/v7<br/>v7.0.89"]
+    ArgoWF -->|"GCS artifacts"| GCS["cloud.google.com/go/<br/>storage v1.50.0"]
+    ArgoWF -->|"Azure artifacts"| AzBlob["Azure/azure-sdk/<br/>azblob v1.3.2"]
+    ArgoWF -->|"Alibaba artifacts"| AliOSS["aliyun/aliyun-oss-<br/>go-sdk v3.0.2"]
+    ArgoWF -->|"HDFS artifacts"| HDFS["colinmarc/hdfs/v2<br/>v2.4.0"]
+
+    %% Internal RHOAI Integration
+    DSPOperator["Data Science Pipelines<br/>Operator"] -->|"deploys &<br/>configures"| ArgoWF
+
+    %% Styling
+    style ArgoWF fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style K8sApimachinery fill:#999,stroke:#333,color:#fff
+    style gRPC fill:#999,stroke:#333,color:#fff
+    style gRPCGateway fill:#999,stroke:#333,color:#fff
+    style OIDC fill:#999,stroke:#333,color:#fff
+    style OAuth2 fill:#999,stroke:#333,color:#fff
+    style Prometheus fill:#f5a623,stroke:#333
+    style OTel fill:#f5a623,stroke:#333
+    style gRPCPrometheus fill:#f5a623,stroke:#333
+    style MinIO fill:#e8e8e8,stroke:#333
+    style GCS fill:#e8e8e8,stroke:#333
+    style AzBlob fill:#e8e8e8,stroke:#333
+    style AliOSS fill:#e8e8e8,stroke:#333
+    style HDFS fill:#e8e8e8,stroke:#333
+    style DSPOperator fill:#7ed321,stroke:#333,color:#fff

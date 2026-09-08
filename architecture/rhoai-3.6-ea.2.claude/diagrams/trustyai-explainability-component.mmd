@@ -1,0 +1,65 @@
+graph TB
+    subgraph "TrustyAI Explainability Service"
+        direction TB
+        InitContainer["Init Container<br/>(register-consumer)"]
+        Service["trustyai-service<br/>(Quarkus 3.8 Native)"]
+
+        subgraph "Consumer Layer"
+            ConsumerEndpoint["/consumer/kserve/v2<br/>POST 8080"]
+            Reconciler["ModelMeshInferencePayload<br/>Reconciler"]
+            ConsumerEndpoint --> Reconciler
+        end
+
+        subgraph "Metrics Layer"
+            SPD["/metrics/group/fairness/spd<br/>Statistical Parity Difference"]
+            DIR["/metrics/group/fairness/dir<br/>Disparate Impact Ratio"]
+            Meanshift["/metrics/drift/meanshift<br/>Meanshift Detection"]
+            PrometheusScheduler["PrometheusScheduler<br/>(periodic computation)"]
+            PrometheusMetrics["/q/metrics<br/>Prometheus Export"]
+            SPD --> PrometheusScheduler
+            DIR --> PrometheusScheduler
+            Meanshift --> PrometheusScheduler
+            PrometheusScheduler --> PrometheusMetrics
+        end
+
+        subgraph "Storage Layer"
+            PVC["PVC Storage<br/>/inputs (default)"]
+            MariaDB["MariaDB/MySQL<br/>(optional, Hibernate ORM)"]
+        end
+
+        subgraph "API Layer"
+            InfoEndpoint["/info<br/>Service Metadata"]
+            DataUpload["/data<br/>Manual Upload"]
+            HealthLive["/q/health/live"]
+            HealthReady["/q/health/ready"]
+        end
+
+        InitContainer -->|creates| ConfigMap["model-serving-config<br/>ConfigMap"]
+        Reconciler --> PVC
+        Reconciler --> MariaDB
+    end
+
+    %% External Interactions
+    KServeModelMesh["KServe/ModelMesh<br/>Model Servers"] -->|inference payloads| ConsumerEndpoint
+    ConfigMap -->|registers consumer URL| KServeModelMesh
+    Prometheus["Prometheus"] -->|scrapes| PrometheusMetrics
+
+    %% Service exposure
+    ClusterIPSvc["trustyai-service<br/>ClusterIP 80→8080"] --> Service
+    Route["OpenShift Route<br/>(trustyai)"] --> ClusterIPSvc
+
+    %% Styling
+    style Service fill:#4a90e2,stroke:#333,stroke-width:2px
+    style InitContainer fill:#4a90e2,stroke:#333,stroke-width:2px
+    style ConsumerEndpoint fill:#7ed321,stroke:#333
+    style SPD fill:#7ed321,stroke:#333
+    style DIR fill:#7ed321,stroke:#333
+    style Meanshift fill:#7ed321,stroke:#333
+    style PrometheusScheduler fill:#f5a623,stroke:#333
+    style PVC fill:#b8d4e3,stroke:#333
+    style MariaDB fill:#b8d4e3,stroke:#333
+    style ConfigMap fill:#f5a623,stroke:#333
+    style KServeModelMesh fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333
+    style ClusterIPSvc fill:#ddd,stroke:#333
+    style Route fill:#ddd,stroke:#333

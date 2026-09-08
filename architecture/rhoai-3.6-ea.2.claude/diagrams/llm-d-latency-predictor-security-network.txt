@@ -1,0 +1,129 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [llm-d Inference Proxy / Monitoring System]                             │
+│         │                                                                │
+│         │ Port: 8000/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None (plain HTTP)                                  │
+│         │ Auth: None (no auth middleware detected)                       │
+│         ▼                                                                │
+│  [Prediction Client]                                                     │
+│         │                                                                │
+│         │ Port: 80/TCP (via prediction-service ClusterIP)                │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None (plain HTTP)                                  │
+│         │ Auth: None (no auth middleware detected)                       │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES SERVICES (Internal - Cluster Network)                       │
+│                                                                          │
+│  [training-service]                                                      │
+│  - Type: ClusterIP                                                       │
+│  - Port: 8000/TCP → 8000/TCP                                           │
+│  - Exposure: Internal only                                               │
+│         │                                                                │
+│         │ Port: 8000/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None                                               │
+│         ▼                                                                │
+│  [Training Server Pod]                                                   │
+│  - Deployment: training-server-deployment                                │
+│  - Image: placeholder-for-training-server-image                          │
+│  - Base: quay.io/aipcc/base-images/cpu:3.5.0                           │
+│  - Entrypoint: uvicorn training.training_server:app --port 8000         │
+│  - Endpoints:                                                            │
+│    - POST /add_training_data_bulk  (telemetry ingestion)                │
+│    - GET  /models/list             (list trained models)                 │
+│    - GET  /model/{name}/info       (model metadata)                      │
+│    - GET  /model/{name}/download   (model artifact download)             │
+│    - GET  /model/export            (export models)                       │
+│    - GET  /model/tpot/xgb/json     (TPOT XGBoost model)                │
+│    - GET  /model/tpot/lgb/txt      (TPOT LightGBM model)               │
+│    - GET  /model/ttft/xgb/json     (TTFT XGBoost model)                │
+│    - GET  /model/ttft/lgb/txt      (TTFT LightGBM model)               │
+│    - GET  /model/download/info     (download metadata)                   │
+│    - GET  /data/status             (data pipeline status)                │
+│    - GET  /debug/prefix_distribution (debug info)                        │
+│    - POST /flush                   (flush data)                          │
+│    - GET  /metrics                 (Prometheus metrics)                   │
+│    - GET  /healthz                 (liveness probe)                       │
+│    - GET  /readyz                  (readiness probe)                      │
+│         ▲                                                                │
+│         │                                                                │
+│         │ Port: 8000/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None                                               │
+│         │ Auth: None                                                      │
+│         │ Interval: Every MODEL_SYNC_INTERVAL_SEC (default 10s)         │
+│         │ Method: Polling (GET /model/{name}/info, /download)            │
+│         │                                                                │
+│  [prediction-service]                                                    │
+│  - Type: ClusterIP                                                       │
+│  - Port: 80/TCP → 8001/TCP                                             │
+│  - Exposure: Internal only                                               │
+│         │                                                                │
+│         │ Port: 8001/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None                                               │
+│         ▼                                                                │
+│  [Prediction Server Pod]                                                 │
+│  - Deployment: prediction-server-deployment                              │
+│  - Image: placeholder-for-prediction-server-image                        │
+│  - Base: quay.io/aipcc/base-images/cpu:3.5.0                           │
+│  - Entrypoint: uvicorn prediction.prediction_server:app --port 8001     │
+│  - Workers: $UVICORN_WORKERS (configurable)                              │
+│  - Background: ModelSyncer thread (polls training server)                │
+│  - Endpoints:                                                            │
+│    - POST /predict              (single prediction)                      │
+│    - POST /predict/bulk         (bulk prediction)                        │
+│    - POST /predict/bulk/strict  (strict bulk prediction)                 │
+│    - POST /reload               (reload models)                          │
+│    - GET  /status               (server status)                          │
+│    - GET  /healthz              (liveness probe)                         │
+│    - GET  /readyz               (readiness probe)                        │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OBSERVABILITY                                                           │
+│                                                                          │
+│  [Prometheus]                                                            │
+│  - Scrapes: training-service:8000/metrics                                │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: None                                                      │
+│                                                                          │
+│  [Kubernetes kubelet]                                                    │
+│  - Probes: training-server:8000/healthz, /readyz (httpGet)              │
+│  - Probes: prediction-server:8001/healthz, /readyz (httpGet)            │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: None                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- No ClusterRoles defined
+- No RoleBindings defined
+- No ServiceAccounts explicitly configured
+
+Service Mesh Configuration:
+- No PeerAuthentication policies detected
+- No AuthorizationPolicies detected
+- No NetworkPolicies detected
+- TLS termination delegated to platform (not configured at application level)
+
+Authentication & Authorization:
+- WARNING: No authentication middleware on any endpoint (training or prediction)
+- All 24 HTTP endpoints are exposed without token validation
+- No bearer authentication or request-level authorization
+- Expected enforcement: Platform-level network isolation (NetworkPolicy, Service Mesh)
+
+Secrets / Environment Variables:
+- LATENCY_ENABLE_TOKEN_IN_FLIGHT_FEATURES (env var) - Feature toggle
+- LATENCY_TPOT_ZERO_TOKEN_COUNT (env var) - Configuration parameter
+- MODEL_SYNC_INTERVAL_SEC (env var, default 10s) - Model sync polling interval
+- TRAINING_SERVER_URL (env var, default http://training-service:8000) - Training server endpoint
+- UVICORN_WORKERS (env var) - Number of prediction server workers
+
+FIPS Compliance Notes:
+- Base image: quay.io/aipcc/base-images/cpu:3.5.0 (AIPCC CPU, includes system OpenSSL)
+- TLS: Not configured at application level; uvicorn runs plain HTTP
+- Crypto: hashlib.md5() used for model file integrity checksums (non-security-critical)
+- Risk: MD5 is not FIPS-approved, but usage is for file change detection only (not auth/signing)

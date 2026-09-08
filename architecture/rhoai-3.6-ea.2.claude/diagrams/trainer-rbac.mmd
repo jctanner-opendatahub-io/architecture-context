@@ -1,0 +1,113 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_Controller["kubeflow-trainer-controller-manager<br/>(ServiceAccount)"]
+        SA_Authenticated["system:authenticated<br/>(Group - all authenticated users)"]
+    end
+
+    subgraph ClusterRoleBindings["Cluster Role Bindings"]
+        CRB_Controller["kubeflow-trainer-controller-manager<br/>(ClusterRoleBinding)"]
+        CRB_TLS["trainer-tls-profile<br/>(ClusterRoleBinding, ns: opendatahub)"]
+        RB_Public["kubeflow-trainer-public<br/>(RoleBinding, ns: opendatahub)"]
+    end
+
+    subgraph OperatorRoles["Operator ClusterRoles"]
+        CR_Controller["kubeflow-trainer-controller-manager<br/>(ClusterRole)"]
+        CR_TLS["trainer-tls-profile<br/>(ClusterRole)"]
+        R_Public["kubeflow-trainer-public<br/>(Role, ns: opendatahub)"]
+    end
+
+    subgraph UserRoles["User-Facing ClusterRoles"]
+        CR_Admin["training-admin"]
+        CR_Edit["training-edit"]
+        CR_View["training-view"]
+    end
+
+    subgraph ControllerResources["Controller Managed Resources"]
+        TrainJobs["trainer.kubeflow.org<br/>TrainJob, TrainingRuntime,<br/>ClusterTrainingRuntime<br/>+ finalizers, status"]
+        JobSets["jobset.x-k8s.io<br/>JobSet"]
+        PodGroups["scheduling.volcano.sh<br/>scheduling.x-k8s.io<br/>PodGroup"]
+        NetPolicies["networking.k8s.io<br/>NetworkPolicy"]
+        CoreRW["core<br/>ConfigMap, Secret"]
+        Events["events.k8s.io<br/>Event"]
+        Webhooks["admissionregistration.k8s.io<br/>MutatingWebhookConfiguration<br/>ValidatingWebhookConfiguration"]
+        Leases["coordination.k8s.io<br/>Lease"]
+    end
+
+    subgraph ReadOnlyResources["Read-Only Resources"]
+        CoreRO["core<br/>Pod, LimitRange"]
+        RuntimeClasses["node.k8s.io<br/>RuntimeClass"]
+        APIServers["config.openshift.io<br/>APIServer"]
+        PublicCM["core<br/>ConfigMap (ns: opendatahub)"]
+    end
+
+    subgraph UserResources["User-Accessible Resources"]
+        UserTrainJobs["trainer.kubeflow.org<br/>TrainJob"]
+        UserRuntimes["trainer.kubeflow.org<br/>TrainingRuntime<br/>ClusterTrainingRuntime"]
+        UserStatus["trainer.kubeflow.org<br/>*/status"]
+    end
+
+    %% Controller SA bindings
+    SA_Controller -->|bound via| CRB_Controller
+    SA_Controller -->|bound via| CRB_TLS
+    CRB_Controller -->|grants| CR_Controller
+    CRB_TLS -->|grants| CR_TLS
+
+    %% Public binding
+    SA_Authenticated -->|bound via| RB_Public
+    RB_Public -->|grants| R_Public
+
+    %% Controller permissions
+    CR_Controller -->|"get,list,watch,create,<br/>update,patch,delete"| TrainJobs
+    CR_Controller -->|"create,delete,get,list,<br/>patch,update,watch"| JobSets
+    CR_Controller -->|"create,get,list,<br/>patch,update,watch"| PodGroups
+    CR_Controller -->|"create,get,list,<br/>patch,update,watch"| NetPolicies
+    CR_Controller -->|"create,get,list,<br/>patch,update,watch"| CoreRW
+    CR_Controller -->|"create,patch,<br/>update,watch"| Events
+    CR_Controller -->|"get,list,<br/>update,watch"| Webhooks
+    CR_Controller -->|"create,get,<br/>list,update"| Leases
+    CR_Controller -->|"get,list,watch"| CoreRO
+    CR_Controller -->|"get,list,watch"| RuntimeClasses
+
+    %% TLS profile permissions
+    CR_TLS -->|"get,list,watch"| APIServers
+
+    %% Public permissions
+    R_Public -->|"get,list,watch"| PublicCM
+
+    %% User role permissions
+    CR_Admin -->|"create,delete,get,list,<br/>patch,update,watch"| UserTrainJobs
+    CR_Admin -->|"create,delete,get,list,<br/>patch,update,watch"| UserRuntimes
+    CR_Admin -->|"get"| UserStatus
+
+    CR_Edit -->|"create,delete,get,list,<br/>patch,update,watch"| UserTrainJobs
+    CR_Edit -->|"get,list,watch"| UserRuntimes
+    CR_Edit -->|"get"| UserStatus
+
+    CR_View -->|"get,list,watch"| UserTrainJobs
+    CR_View -->|"get,list,watch"| UserRuntimes
+    CR_View -->|"get"| UserStatus
+
+    %% Styling
+    style SA_Controller fill:#4a90e2,color:#fff
+    style SA_Authenticated fill:#4a90e2,color:#fff
+    style CR_Controller fill:#f5a623,color:#fff
+    style CR_TLS fill:#f5a623,color:#fff
+    style R_Public fill:#f5a623,color:#fff
+    style CR_Admin fill:#e07b6b,color:#fff
+    style CR_Edit fill:#e07b6b,color:#fff
+    style CR_View fill:#e07b6b,color:#fff
+    style TrainJobs fill:#7ed321,color:#fff
+    style JobSets fill:#7ed321,color:#fff
+    style PodGroups fill:#7ed321,color:#fff
+    style NetPolicies fill:#7ed321,color:#fff
+    style CoreRW fill:#7ed321,color:#fff
+    style Events fill:#7ed321,color:#fff
+    style Webhooks fill:#7ed321,color:#fff
+    style Leases fill:#7ed321,color:#fff
+    style CoreRO fill:#d5e8d4
+    style RuntimeClasses fill:#d5e8d4
+    style APIServers fill:#d5e8d4
+    style PublicCM fill:#d5e8d4
+    style UserTrainJobs fill:#dae8fc
+    style UserRuntimes fill:#dae8fc
+    style UserStatus fill:#dae8fc

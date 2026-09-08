@@ -1,0 +1,133 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External User / Data Scientist]                                        │
+│         │                                                                │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (platform ingress)                             │
+│         │ Auth: Platform authentication (OAuth2 Proxy / Istio)           │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  INGRESS (DMZ)                                                          │
+│                                                                          │
+│  [Kubeflow Gateway]                                                      │
+│  - Type: Gateway API / Istio Gateway                                     │
+│  - Exposure: External                                                    │
+│  - TLS Termination: At gateway                                           │
+│  - Routes: HTTPRoute or VirtualService per workspace                     │
+│         │                                                                │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: Internal (cluster network)                         │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION TIER (Internal Services)                                    │
+│                                                                          │
+│  [workspaces-frontend]                                                   │
+│  - Type: ClusterIP                                                       │
+│  - Port: 8080/TCP                                                        │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: None                                                      │
+│  - Auth: None (served by nginx)                                          │
+│  - Image: React SPA on nginx                                             │
+│         │                                                                │
+│         │ Port: 4000/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: Optional TLS 1.3 (cert/key flags)                  │
+│         │ Auth: Request header-based (upstream proxy sets identity)       │
+│         ▼                                                                │
+│  [workspaces-backend]                                                    │
+│  - Type: ClusterIP                                                       │
+│  - Port: 4000/TCP                                                        │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: Optional TLS 1.3 (MinVersion: tls.VersionTLS13)          │
+│  - Auth: Header-based authentication + SubjectAccessReview               │
+│  - AuthN: Extracts user ID & groups from configurable request headers    │
+│  - AuthZ: Kubernetes SubjectAccessReview per API call                    │
+│         │                                                                │
+│         │ Port: 6443/TCP                                                 │
+│         │ Protocol: HTTPS/WSS                                            │
+│         │ Encryption: TLS 1.2+                                           │
+│         │ Auth: ServiceAccount token                                     │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  CONTROLLER TIER (Operators)                                             │
+│                                                                          │
+│  [Workspace Controller (/manager)]                                       │
+│  - Reconciles: Workspace, WorkspaceKind CRs                             │
+│  - Creates: StatefulSets, Services, ServiceAccounts, RoleBindings        │
+│  - Creates: HTTPRoute or VirtualService (ingress mode dependent)         │
+│  - Watches: Pods (readiness tracking)                                    │
+│         │                                                                │
+│         │ Port: 6443/TCP                                                 │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS 1.2+                                           │
+│         │ Auth: ServiceAccount token                                     │
+│         ▼                                                                │
+│  [Kubernetes API Server]                                                 │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  WEBHOOK TIER (Admission Control)                                        │
+│                                                                          │
+│  [workspaces-webhook-service]                                            │
+│  - Type: ClusterIP                                                       │
+│  - Port: 443/TCP                                                         │
+│  - Protocol: HTTPS                                                       │
+│  - Encryption: TLS (cert-manager / controller-runtime)                   │
+│  - Auth: Kubernetes admission (API server client cert)                   │
+│                                                                          │
+│  Webhooks:                                                               │
+│  - /validate-kubeflow-org-v1beta1-workspace                              │
+│    Type: Validating | Operations: CREATE, UPDATE | FailurePolicy: Fail   │
+│  - /validate-kubeflow-org-v1beta1-workspacekind                          │
+│    Type: Validating | Operations: CREATE, DELETE, UPDATE | Fail: Fail    │
+│  - /convert                                                              │
+│    Type: Conversion | Operations: CONVERT (WorkspaceKind versions)       │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  METRICS                                                                 │
+│                                                                          │
+│  [workspaces-controller-metrics-service]                                 │
+│  - Type: ClusterIP                                                       │
+│  - Port: 8080/TCP                                                        │
+│  - Protocol: HTTP                                                        │
+│  - Encryption: None                                                      │
+│  - Auth: Unknown                                                         │
+│  - Purpose: Prometheus metrics scraping                                  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+EGRESS:
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL SERVICES                                                       │
+│                                                                          │
+│  [Kubernetes API Server]                                                 │
+│  - Port: 6443/TCP                                                        │
+│  - Protocol: HTTPS/WSS                                                   │
+│  - Encryption: TLS 1.2+                                                  │
+│  - Auth: ServiceAccount token                                            │
+│  - Purpose: Resource CRUD, watches, SubjectAccessReview                  │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+AUTHENTICATION & AUTHORIZATION SUMMARY:
+- Health probes (:8081/healthz, :8081/readyz): Unauthenticated by design
+- Admission webhooks: Kubernetes admission authentication (API server client cert)
+- Backend REST API: Request-header authentication (upstream proxy sets identity
+  headers) + Kubernetes SubjectAccessReview authorization per resource per call
+- Controller: ServiceAccount token for Kubernetes API access
+
+FIPS COMPLIANCE:
+- Controller: FIPS-compliant (CGO_ENABLED=1, GOEXPERIMENT=strictfipsruntime,
+  UBI9 PQC base image, dynamic linking with OpenSSL)
+- Backend: NOT FIPS-compliant in current checkout (CGO_ENABLED=0, static linking,
+  distroless base, no Konflux Dockerfile)
+
+SECRETS:
+- No explicitly declared secrets in architecture documentation
+- ServiceAccount tokens used for Kubernetes API authentication
+- TLS certificates managed by controller-runtime / cert-manager for webhooks
+- Backend TLS optional via runtime cert-file/key-file flags
+
+CRDs:
+- kubeflow.org/v1beta1/Workspace (Namespaced) - Interactive workspace instances
+- kubeflow.org/v1beta1/WorkspaceKind (Cluster) - Workspace templates/definitions

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "component": "ogx-distribution",
+  "reads": [
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-78",
+      "gap_category": ["fips_compliance", "integration_points", "internal_dependencies"],
+      "question": "What build-time FIPS signals, base image, and dependency installation patterns are present? What hermetic build tooling is used?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT, cachi2.env, base image reference, pip/uv install",
+      "outcome": "resolved",
+      "sections": ["Security", "Architecture Components", "Integration Points", "Dependencies"]
+    },
+    {
+      "path": "Dockerfile.konflux.in",
+      "line_range": "1-70",
+      "gap_category": ["fips_compliance"],
+      "question": "Is this the template for Dockerfile.konflux and does it contain different FIPS or build signals?",
+      "expected_signal": "Template markers, build flags, base image",
+      "outcome": "resolved",
+      "sections": ["Architecture Components", "Security"]
+    },
+    {
+      "path": "distribution/entrypoint.sh",
+      "line_range": "1-79",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "How does the container start, what secret handling exists, and what server flags are passed?",
+      "expected_signal": "Secret file resolution, auth configuration, ogx run flags, OTEL integration",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Security", "Integration Points", "Data Flows"]
+    },
+    {
+      "path": "distribution/config.yaml",
+      "line_range": "1-281",
+      "gap_category": ["authentication", "http_endpoints", "grpc_services", "integration_points", "internal_dependencies"],
+      "question": "What APIs are exposed, what port does the server listen on, what authentication is configured, what providers and storage backends are used?",
+      "expected_signal": "Server port, API list, auth provider_config, storage backends, provider types",
+      "outcome": "resolved",
+      "sections": ["Purpose", "HTTP Endpoints", "gRPC Services", "Authentication & Authorization", "Integration Points", "Internal Platform Dependencies", "Data Flows"],
+      "scope_reason": "Full config file is the primary architectural artifact defining all server behavior; each section (apis, providers, storage, server, auth) answers a different gap category"
+    },
+    {
+      "path": "build/build.yaml",
+      "line_range": "1-80",
+      "gap_category": ["integration_points", "internal_dependencies"],
+      "question": "Does the build configuration define additional providers or integrations not in the generated config.yaml?",
+      "expected_signal": "Provider definitions, stripped provider types",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Architectural Analysis"]
+    },
+    {
+      "path": "distribution/requirements-lock-konflux.txt",
+      "line_range": "1-50",
+      "gap_category": ["fips_compliance", "internal_dependencies"],
+      "question": "What Python packages are installed, is there a FIPS-relevant crypto library, what is the package index source?",
+      "expected_signal": "cryptography, pyOpenSSL, package index URL, hash-pinned dependencies",
+      "outcome": "resolved",
+      "sections": ["Security", "Dependencies"]
+    },
+    {
+      "path": "config/monitoring/servicemonitor.yaml",
+      "line_range": "1-18",
+      "gap_category": ["integration_points", "http_endpoints"],
+      "question": "What monitoring integration exists and what metrics endpoint is exposed?",
+      "expected_signal": "ServiceMonitor spec, metrics port, scrape path, operator labels",
+      "outcome": "resolved",
+      "sections": ["HTTP Endpoints", "Integration Points", "Architectural Analysis"]
+    },
+    {
+      "path": "tests/smoke.sh",
+      "line_range": "50-150",
+      "gap_category": ["http_endpoints", "authentication"],
+      "question": "What API paths does the smoke test exercise, confirming the HTTP endpoint inventory?",
+      "expected_signal": "curl calls to /v1/health, /v1/models, /v1/chat/completions, /v1/messages",
+      "outcome": "resolved",
+      "sections": ["HTTP Endpoints"]
+    }
+  ]
+}

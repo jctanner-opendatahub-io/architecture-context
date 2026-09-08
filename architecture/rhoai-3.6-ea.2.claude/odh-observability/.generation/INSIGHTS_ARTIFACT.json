@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "odh-observability",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "odh-observability-pqc-base-001",
+      "claim": "odh-observability uses the ubi9/ubi-minimal-pqc (post-quantum crypto) base image with GOEXPERIMENT=strictfipsruntime, positioning it among the earliest RHOAI components to adopt PQC-ready packaging.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfiles/Dockerfile.konflux:20-22"
+        }
+      ],
+      "reasoning": "The Dockerfile.konflux builds with strictfipsruntime tags and uses ubi-minimal-pqc rather than the standard ubi-minimal base. This signals an intentional migration to post-quantum crypto readiness at the container base layer, which may set a precedent for other RHOAI operator components.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "odh-observability-tls-delegation-002",
+      "claim": "TLS configuration for all proxy components is dynamically derived from the cluster APIServer TLSSecurityProfile rather than hardcoded, ensuring consistent cipher suite enforcement across the observability stack.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/tls/profile.go:150-163"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/resources/data-science-prometheus-cluster-proxy.tmpl.yaml:87-89"
+        }
+      ],
+      "reasoning": "The FromAPIServer function reads the cluster APIServer object and resolves the TLS profile to concrete min version and cipher suite strings that are injected into kube-rbac-proxy arguments via Go templates. This means changing the cluster TLS profile automatically updates all observability proxy components on the next reconciliation cycle, without operator version changes.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "odh-observability-platform-coupling-003",
+      "claim": "The Monitoring CRD schema is structurally coupled to odh-platform-utilities via embedded PlatformObject interface, ManagementSpec, Status, and ComponentReleaseStatus types, creating a compile-time dependency on the platform API contract.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "api/v1alpha1/monitoring_types.go:20,34,42,200,203"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:23,110-115"
+        }
+      ],
+      "reasoning": "The odh-platform-utilities dependency serves two purposes: CRD type embedding (api/common) and deployment mechanics (pkg/deploy). The CRD-level coupling means breaking changes to PlatformObject, ManagementSpec, or Status in odh-platform-utilities require coordinated updates to this operator's API types. The deployment-level coupling is more loosely held via the deployer interface. This dual dependency is a deliberate platform consistency trade-off.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

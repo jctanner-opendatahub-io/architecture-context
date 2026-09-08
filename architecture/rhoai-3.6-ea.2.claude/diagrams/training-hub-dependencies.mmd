@@ -1,0 +1,75 @@
+graph LR
+    TrainingHub[Training Hub]
+
+    %% Core ML Framework Dependencies
+    TrainingHub -->|tensor ops & training| PyTorch["PyTorch >=2.6.0"]
+    TrainingHub -->|model loading & tokenization| Transformers["Transformers >=4.57.6"]
+    TrainingHub -->|parameter-efficient training| PEFT["PEFT >=0.15"]
+    TrainingHub -->|training utilities| TRL["TRL >=0.18.0"]
+    TrainingHub -->|GPU acceleration| Accelerate["Accelerate >=0.34.2"]
+
+    %% Internal Platform Dependencies (Training Backends)
+    TrainingHub -->|SFT backend| InstructLab["InstructLab Training >=0.16.2"]
+    TrainingHub -->|OSFT backend| MiniTrainer["Mini-Trainer >=0.8.3"]
+    TrainingHub -->|GRPO backend| ART["OpenPipe ART >=0.5.17"]
+    TrainingHub -->|LoRA training| Unsloth["Unsloth >=2026.1.1"]
+    TrainingHub -->|distributed GRPO| VeRL["VeRL >=0.7"]
+
+    %% Prompt Optimization Dependencies
+    TrainingHub -->|prompt optimization| GEPA["GEPA >=0.1.1"]
+    TrainingHub -->|LLM API routing| LiteLLM["LiteLLM >=1.71.1"]
+    TrainingHub -->|experiment tracking| MLflow["MLflow >=3.5.0"]
+
+    %% GPU Optimization Libraries
+    TrainingHub -->|attention optimization| FlashAttn["Flash Attention >=2.8"]
+    TrainingHub -->|efficient kernels| LigerKernel["Liger Kernel >=0.5.10"]
+    TrainingHub -->|memory-efficient attn| xFormers["xFormers >=0.0.33"]
+    TrainingHub -->|quantization| BitsAndBytes["bitsandbytes >=0.47.0"]
+
+    %% Runtime Integration
+    TrainingHub -.->|inference scaling| ITSHub["ITS Hub"]
+    TrainingHub -.->|co-located inference| vLLM["vLLM Engine"]
+
+    %% Data & Compute Dependencies
+    TrainingHub -->|data loading| Datasets["Datasets >=4.0.0"]
+    TrainingHub -->|numerical compute| NumPy["NumPy >=1.26.4"]
+    TrainingHub -->|data manipulation| Pandas["Pandas >=2.2"]
+    TrainingHub -->|async HTTP| aiohttp["aiohttp >=3.12"]
+    TrainingHub -->|HTTP client| Requests["Requests >=2.32.5"]
+
+    %% Styling
+    style TrainingHub fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    %% Internal platform dependencies (green)
+    style InstructLab fill:#7ed321,stroke:#333,color:#fff
+    style MiniTrainer fill:#7ed321,stroke:#333,color:#fff
+    style ART fill:#7ed321,stroke:#333,color:#fff
+    style ITSHub fill:#7ed321,stroke:#333,color:#fff
+
+    %% Core ML frameworks (blue)
+    style PyTorch fill:#4a90e2,stroke:#333,color:#fff
+    style Transformers fill:#4a90e2,stroke:#333,color:#fff
+    style PEFT fill:#4a90e2,stroke:#333,color:#fff
+    style TRL fill:#4a90e2,stroke:#333,color:#fff
+    style Accelerate fill:#4a90e2,stroke:#333,color:#fff
+
+    %% External training backends (orange)
+    style Unsloth fill:#f5a623,stroke:#333,color:#fff
+    style VeRL fill:#f5a623,stroke:#333,color:#fff
+    style GEPA fill:#f5a623,stroke:#333,color:#fff
+    style LiteLLM fill:#f5a623,stroke:#333,color:#fff
+    style MLflow fill:#f5a623,stroke:#333,color:#fff
+
+    %% GPU optimization (purple)
+    style FlashAttn fill:#9b59b6,stroke:#333,color:#fff
+    style LigerKernel fill:#9b59b6,stroke:#333,color:#fff
+    style xFormers fill:#9b59b6,stroke:#333,color:#fff
+    style BitsAndBytes fill:#9b59b6,stroke:#333,color:#fff
+
+    %% Runtime (gray)
+    style vLLM fill:#999,stroke:#333,color:#fff
+    style Datasets fill:#999,stroke:#333,color:#fff
+    style NumPy fill:#999,stroke:#333,color:#fff
+    style Pandas fill:#999,stroke:#333,color:#fff
+    style aiohttp fill:#999,stroke:#333,color:#fff
+    style Requests fill:#999,stroke:#333,color:#fff

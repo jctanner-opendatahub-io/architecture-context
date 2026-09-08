@@ -1,0 +1,117 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                        │
+│                                                                              │
+│  [DSP API Server / CLI / UI]                                                 │
+│         │                                                                    │
+│         │ Port: 2746/TCP                                                     │
+│         │ Protocol: gRPC (HTTP/2) + HTTP/1.1 (grpc-gateway)                  │
+│         │ Encryption: TLS (configurable, Go FIPS 140-3 crypto module)        │
+│         │ Auth: Bearer Token / Basic Auth / SSO OIDC                         │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  API GATEWAY                                                                 │
+│                                                                              │
+│  [argo-server]                                                               │
+│  - Service: argo-server (ClusterIP)                                          │
+│  - Port: 2746/TCP                                                            │
+│  - Protocol: gRPC + HTTP multiplexed on single listener                      │
+│  - Auth Enforcement: Gatekeeper gRPC interceptor                             │
+│  - Auth Modes:                                                               │
+│    ├── Client: Forwards Bearer/Basic token → K8s API impersonation           │
+│    ├── Server: Uses argo-server's own ServiceAccount                         │
+│    └── SSO: Validates OIDC token, optional RBAC delegation to                │
+│            namespace-scoped SAs with rule annotations                        │
+│  - Endpoints:                                                                │
+│    ├── /api/              (gRPC-gateway REST)                                │
+│    ├── /artifacts/        (artifact download)                                │
+│    ├── /artifact-files/   (artifact file access)                             │
+│    ├── /metrics           (Prometheus metrics)                               │
+│    ├── /oauth2/callback   (SSO callback)                                     │
+│    ├── /oauth2/redirect   (SSO redirect)                                     │
+│    └── /debug/pprof/*     (profiling)                                        │
+│  - gRPC Services (9):                                                        │
+│    ├── WorkflowService                                                       │
+│    ├── CronWorkflowService                                                   │
+│    ├── WorkflowTemplateService                                               │
+│    ├── ClusterWorkflowTemplateService                                        │
+│    ├── ArchivedWorkflowService                                               │
+│    ├── EventService                                                          │
+│    ├── EventSourceService                                                    │
+│    ├── SensorService                                                         │
+│    └── InfoService                                                           │
+│         │                                                                    │
+│         │ Port: 6443/TCP                                                     │
+│         │ Protocol: HTTPS / WSS                                              │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: ServiceAccount token (or impersonated caller token)           │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  CONTROL PLANE                                                               │
+│                                                                              │
+│  [workflow-controller]                                                       │
+│  - Deployment: workflow-controller                                           │
+│  - Health: /healthz on port 6060 (NO authentication)                         │
+│  - Metrics: Prometheus via /metrics                                          │
+│  - Watches: Workflow, CronWorkflow, WorkflowTemplate,                        │
+│             ClusterWorkflowTemplate CRDs                                     │
+│  - Creates: Pods, ConfigMaps (memoization), PodDisruptionBudgets,            │
+│             Secrets (SSO state)                                              │
+│         │                                                                    │
+│         │ Port: 6443/TCP                                                     │
+│         │ Protocol: HTTPS / WSS                                              │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: ServiceAccount token                                         │
+│         ▼                                                                    │
+│  [Kubernetes API Server]                                                     │
+│  - Port: 6443/TCP                                                            │
+│  - Protocol: HTTPS + WebSocket                                               │
+│  - Encryption: TLS 1.2+                                                      │
+│  - Auth: ServiceAccount tokens, SelfSubjectAccessReview                      │
+│         ▲                                                                    │
+│         │ Port: 6443/TCP                                                     │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: ServiceAccount token                                         │
+│         │                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  DATA PLANE (per workflow execution)                                         │
+│                                                                              │
+│  [Step Pod + argoexec sidecar]                                               │
+│  - Namespace: {user-namespace}                                               │
+│  - Created by: workflow-controller                                           │
+│  - argoexec: handles artifact collection, container lifecycle                │
+│  - Reports: WorkflowTaskResult CR → Kubernetes API                           │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+FIPS Compliance:
+- Build flags: GOFIPS140=v1.0.0, CGO_ENABLED=0, -tags no_openssl
+- Linking: Static (CGO disabled, Go native FIPS 140-3 crypto module)
+- OpenSSL: Not used; Go native FIPS 140-3 module via GOFIPS140
+- Base image: ubi9/ubi-minimal-pqc (post-quantum cryptography support)
+- TLS: crypto/tls via Go FIPS 140-3 module; grpc/credentials for gRPC TLS
+
+Authentication & Authorization:
+- /healthz (port 6060): No authentication (health probe only)
+- Argo Server API (port 2746): Gatekeeper interceptor
+  ├── Client mode: Bearer/Basic token forwarded → K8s API impersonation
+  ├── Server mode: Uses argo-server ServiceAccount
+  └── SSO mode: Validates OIDC token with optional RBAC delegation
+      to namespace-scoped ServiceAccounts annotated with rule expressions
+
+Security Evidence:
+- TLS config: crypto/tls, google.golang.org/grpc/credentials
+- RBAC ref: SelfSubjectAccessReviews (token/subject access review calls)
+
+Egress:
+- Destination: Kubernetes API Server
+  - Port: 6443/TCP
+  - Protocol: HTTPS / WSS
+  - Encryption: TLS 1.2+
+  - Auth: ServiceAccount token
+  - Purpose: Kubernetes resource operations (Pods, ConfigMaps, Secrets,
+             PodDisruptionBudgets, CRDs, SelfSubjectAccessReviews)
+
+Note: No external egress beyond Kubernetes API detected.
+No ingress resources defined (internal ClusterIP service only).
+RBAC cluster roles table is empty in source documentation.

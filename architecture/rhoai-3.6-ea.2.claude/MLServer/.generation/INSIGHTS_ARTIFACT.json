@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "component": "MLServer",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "mlserver-trusted-runtimes-001",
+      "claim": "MLServer implements a build-time trusted runtimes allowlist that restricts which model implementations can be loaded in production container images, creating a security boundary between the CPU and CUDA variants.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:3,35-52"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux.cuda:3,38-55"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "mlserver/settings.py:140-166"
+        }
+      ],
+      "reasoning": "The CPU image trusts 4 runtimes (LightGBM, ONNX, Scikit-Learn, XGBoost) while the CUDA image trusts only ONNX. This is enforced at container build time via a JSON artifact at /etc/mlserver/trusted-runtimes.json, and the settings module's _assert_trusted_runtime_import_path function rejects any runtime not in the allowlist. This pattern limits the attack surface of each container variant to only the model frameworks it was built to serve.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "mlserver-no-app-auth-002",
+      "claim": "MLServer has zero application-level authentication or authorization; all security enforcement is fully delegated to the KServe platform's kube-rbac-proxy sidecar pattern.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "mlserver/grpc/interceptors.py:27-68"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "mlserver/rest/app.py:208-237"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "mlserver/grpc/server.py:88-89"
+        }
+      ],
+      "reasoning": "The gRPC interceptor chain contains only LoggingInterceptor and PromServerInterceptor (metrics), with no authentication interceptor. The REST middleware stack includes only CORS, GZip, and PrometheusMiddleware. The gRPC server uses add_insecure_port. This design means that if the kube-rbac-proxy sidecar is misconfigured or absent, the inference endpoints are fully unauthenticated. The trade-off simplifies the application but creates a hard dependency on correct platform-level security configuration.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "mlserver-no-tls-003",
+      "claim": "MLServer does not implement TLS at the application level for either its REST or gRPC interfaces, requiring platform-level TLS termination for encrypted transport.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "mlserver/grpc/server.py:88-89"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "mlserver/rest/server.py:86-100"
+        }
+      ],
+      "reasoning": "The gRPC server explicitly calls add_insecure_port and the uvicorn configuration does not include ssl_keyfile or ssl_certfile parameters. All encryption must be provided by the platform (Istio sidecar, kube-rbac-proxy, or OpenShift Route TLS termination). This is consistent with the KServe deployment model but means MLServer cannot provide end-to-end encryption independently.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

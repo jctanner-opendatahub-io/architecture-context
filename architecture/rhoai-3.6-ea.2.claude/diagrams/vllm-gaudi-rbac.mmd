@@ -1,0 +1,46 @@
+graph TD
+    subgraph "Container Security"
+        Container["vllm-gaudi Container<br/>UID 2000 (non-root)"]
+        BaseImage["UBI 9 Base Image"]
+    end
+
+    subgraph "RBAC (Platform-Delegated)"
+        Note["No ClusterRoles or RoleBindings<br/>defined by this component"]
+        KServeRBAC["KServe manages all RBAC<br/>for serving runtime pods"]
+    end
+
+    subgraph "Authentication & Authorization"
+        AuthNote["Auth Mechanism: None (platform-delegated)"]
+        Enforcement["Enforcement Point: KServe / Istio"]
+        Policy["Policy: Platform-managed"]
+    end
+
+    subgraph "Crypto / FIPS"
+        FIPSRemoved["OpenSSL FIPS Provider: REMOVED<br/>rpm -e openssl-fips-provider-so"]
+        NonFIPS["Runtime: Non-FIPS OpenSSL"]
+        TLSDelegated["TLS: Delegated to KServe / Istio"]
+    end
+
+    subgraph "API Surface"
+        API["/v1/* OpenAI-Compatible API<br/>(defined by upstream vLLM)"]
+    end
+
+    Container -->|"runs as"| BaseImage
+    API -->|"auth handled by"| Enforcement
+    Enforcement -->|"applies"| Policy
+    AuthNote -->|"enforcement"| Enforcement
+    FIPSRemoved -->|"results in"| NonFIPS
+    NonFIPS -->|"external TLS via"| TLSDelegated
+    KServeRBAC -->|"manages access to"| Container
+
+    style Container fill:#4a90e2,stroke:#333,color:#fff
+    style Note fill:#fff3cd,stroke:#856404
+    style KServeRBAC fill:#7ed321,stroke:#333
+    style FIPSRemoved fill:#f8cecc,stroke:#b85450
+    style NonFIPS fill:#f8cecc,stroke:#b85450
+    style AuthNote fill:#dae8fc,stroke:#6c8ebf
+    style Enforcement fill:#dae8fc,stroke:#6c8ebf
+    style Policy fill:#dae8fc,stroke:#6c8ebf
+    style TLSDelegated fill:#d5e8d4,stroke:#82b366
+    style API fill:#e1d5e7,stroke:#9673a6
+    style BaseImage fill:#bbb,stroke:#333

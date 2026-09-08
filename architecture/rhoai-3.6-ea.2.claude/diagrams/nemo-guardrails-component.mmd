@@ -1,0 +1,102 @@
+graph TB
+    subgraph "NeMo-Guardrails Server"
+        direction TB
+        Entrypoint["entrypoint.sh<br/>Startup Script"]
+        Uvicorn["Uvicorn ASGI Server<br/>Port 8000"]
+        FastAPI["GuardrailsApp<br/>(FastAPI)"]
+        LLMRails["LLMRails Engine<br/>Colang Runtime"]
+        ColangConfig["Colang Config<br/>Safety Rail Definitions"]
+
+        subgraph "API Endpoints"
+            ChatAPI["/v1/chat/completions<br/>OpenAI-compatible"]
+            ChecksAPI["/v1/checks<br/>Colang 1.0 Rails"]
+            GuardrailChecks["/v1/guardrail/checks<br/>Role-based Routing"]
+            HealthAPI["/healthz, /v1/health<br/>Health Checks"]
+            ModelsAPI["/v1/models<br/>Model Listing"]
+            ConfigsAPI["/v1/rails/configs<br/>Config Listing"]
+        end
+
+        subgraph "Rail Types"
+            InputRails["Input Rails<br/>User/System Messages"]
+            OutputRails["Output Rails<br/>Assistant Messages"]
+            ToolRails["Tool Input Rails<br/>Tool Messages"]
+        end
+
+        Entrypoint -->|launches| Uvicorn
+        Uvicorn -->|hosts| FastAPI
+        FastAPI --> ChatAPI
+        FastAPI --> ChecksAPI
+        FastAPI --> GuardrailChecks
+        FastAPI --> HealthAPI
+        FastAPI --> ModelsAPI
+        FastAPI --> ConfigsAPI
+        ChatAPI -->|evaluates| LLMRails
+        ChecksAPI -->|evaluates| LLMRails
+        GuardrailChecks -->|routes to| InputRails
+        GuardrailChecks -->|routes to| OutputRails
+        GuardrailChecks -->|routes to| ToolRails
+        LLMRails -->|loads| ColangConfig
+        LLMRails --> InputRails
+        LLMRails --> OutputRails
+    end
+
+    subgraph "Auxiliary Services"
+        AlignScore["AlignScore Server<br/>Port 5000<br/>Fact-checking"]
+        JailbreakDetect["Jailbreak Detection<br/>Port 1337<br/>Heuristic Analysis"]
+    end
+
+    subgraph "Pre-cached Models"
+        MiniLM["MiniLM<br/>Sentence Embeddings"]
+        Arctic["Snowflake Arctic<br/>Embeddings"]
+        SpaCy["spaCy Model<br/>NLP Pipeline"]
+        NLTK["NLTK Data<br/>Tokenization"]
+    end
+
+    Client[External Client] -->|HTTP/8000| FastAPI
+    LLMRails -->|uses| MiniLM
+    LLMRails -->|uses| Arctic
+    LLMRails -->|uses| SpaCy
+    LLMRails -->|uses| NLTK
+    LLMRails -.->|optional| AlignScore
+    LLMRails -.->|optional| JailbreakDetect
+
+    subgraph "External LLM Providers"
+        OpenAI["OpenAI API<br/>HTTPS/443"]
+        AzureOpenAI["Azure OpenAI<br/>HTTPS/443"]
+    end
+
+    ChatAPI -->|forwards approved<br/>requests| OpenAI
+    ChatAPI -->|forwards approved<br/>requests| AzureOpenAI
+
+    subgraph "Observability (Optional)"
+        OTel["OpenTelemetry<br/>Auto-instrumentation"]
+        OTLPEndpoint["OTLP Endpoint<br/>Trace Export"]
+    end
+
+    Entrypoint -.->|if OTEL_EXPORTER_OTLP_ENDPOINT set| OTel
+    OTel -.->|exports traces| OTLPEndpoint
+
+    style FastAPI fill:#4a90e2,stroke:#333,stroke-width:2px
+    style LLMRails fill:#4a90e2,stroke:#333,stroke-width:2px
+    style Uvicorn fill:#4a90e2,stroke:#333
+    style Entrypoint fill:#4a90e2,stroke:#333
+    style ChatAPI fill:#7ed321,stroke:#333
+    style ChecksAPI fill:#7ed321,stroke:#333
+    style GuardrailChecks fill:#7ed321,stroke:#333
+    style HealthAPI fill:#7ed321,stroke:#333
+    style ModelsAPI fill:#7ed321,stroke:#333
+    style ConfigsAPI fill:#7ed321,stroke:#333
+    style InputRails fill:#f5a623,stroke:#333
+    style OutputRails fill:#f5a623,stroke:#333
+    style ToolRails fill:#f5a623,stroke:#333
+    style AlignScore fill:#9b59b6,stroke:#333
+    style JailbreakDetect fill:#9b59b6,stroke:#333
+    style OpenAI fill:#e8e8e8,stroke:#333
+    style AzureOpenAI fill:#e8e8e8,stroke:#333
+    style Client fill:#f9f9f9,stroke:#999,stroke-width:2px
+    style MiniLM fill:#ddd,stroke:#333
+    style Arctic fill:#ddd,stroke:#333
+    style SpaCy fill:#ddd,stroke:#333
+    style NLTK fill:#ddd,stroke:#333
+    style OTel fill:#ddd,stroke:#999
+    style OTLPEndpoint fill:#ddd,stroke:#999

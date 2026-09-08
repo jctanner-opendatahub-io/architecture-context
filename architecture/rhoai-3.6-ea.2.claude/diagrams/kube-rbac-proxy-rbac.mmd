@@ -1,0 +1,67 @@
+graph TD
+    subgraph "Service Accounts"
+        SA_KRP["SA: kube-rbac-proxy<br/>(ns: default)"]
+        SA_KRPVO["SA: kube-rbac-proxy-verb-override<br/>(ns: default)"]
+        SA_Default["SA: default<br/>(ns: default)"]
+        SA_KRPCurl["SA: krp-curl-verb-override<br/>(ns: monitoring)"]
+    end
+
+    subgraph "ClusterRole Bindings"
+        CRB_KRP["kube-rbac-proxy<br/>(ClusterRoleBinding)"]
+        CRB_KRPVO["kube-rbac-proxy-verb-override<br/>(ClusterRoleBinding)"]
+        CRB_Client["kube-rbac-proxy-client<br/>(ClusterRoleBinding)"]
+        RB_VOClient["kube-rbac-proxy-verb-override-client<br/>(RoleBinding, ns: monitoring)"]
+    end
+
+    subgraph "ClusterRoles"
+        CR_KRP["ClusterRole:<br/>kube-rbac-proxy"]
+        CR_KRPVO["ClusterRole:<br/>kube-rbac-proxy-verb-override"]
+        CR_Client["ClusterRole:<br/>kube-rbac-proxy-client"]
+        CR_VOClient["Role:<br/>kube-rbac-proxy-verb-override-client"]
+    end
+
+    subgraph "API Resources"
+        TokenReviews["authentication.k8s.io<br/>tokenreviews"]
+        SAR["authorization.k8s.io<br/>subjectaccessreviews"]
+        SvcProxy["core<br/>services/proxy"]
+        Pods["core<br/>pods"]
+        NSMetrics["core<br/>namespace/metrics"]
+    end
+
+    %% Service Account → Binding
+    SA_KRP -->|"bound via"| CRB_KRP
+    SA_KRPVO -->|"bound via"| CRB_KRPVO
+    SA_Default -->|"bound via"| CRB_Client
+    SA_KRPCurl -->|"bound via"| RB_VOClient
+
+    %% Binding → Role
+    CRB_KRP -->|"grants"| CR_KRP
+    CRB_KRPVO -->|"grants"| CR_KRPVO
+    CRB_Client -->|"grants"| CR_Client
+    RB_VOClient -->|"grants"| CR_VOClient
+
+    %% Role → Resources
+    CR_KRP -->|"create"| TokenReviews
+    CR_KRP -->|"create"| SAR
+    CR_KRPVO -->|"create"| TokenReviews
+    CR_KRPVO -->|"create"| SAR
+    CR_Client -->|"get"| SvcProxy
+    CR_VOClient -->|"list"| Pods
+
+    style SA_KRP fill:#4a90e2,color:#fff
+    style SA_KRPVO fill:#4a90e2,color:#fff
+    style SA_Default fill:#4a90e2,color:#fff
+    style SA_KRPCurl fill:#4a90e2,color:#fff
+    style CRB_KRP fill:#e8e8e8,stroke:#333
+    style CRB_KRPVO fill:#e8e8e8,stroke:#333
+    style CRB_Client fill:#e8e8e8,stroke:#333
+    style RB_VOClient fill:#e8e8e8,stroke:#333
+    style CR_KRP fill:#f5a623,color:#fff
+    style CR_KRPVO fill:#f5a623,color:#fff
+    style CR_Client fill:#f5a623,color:#fff
+    style CR_VOClient fill:#f5a623,color:#fff
+    style TokenReviews fill:#7ed321,color:#fff
+    style SAR fill:#7ed321,color:#fff
+    style SvcProxy fill:#7ed321,color:#fff
+    style Pods fill:#7ed321,color:#fff
+    style NSMetrics fill:#7ed321,color:#fff

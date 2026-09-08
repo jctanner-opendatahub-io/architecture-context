@@ -1,0 +1,97 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_ClusterProxy["data-science-prometheus-<br/>cluster-proxy"]
+        SA_NSProxy["data-science-prometheus-<br/>namespace-proxy"]
+        SA_Collector["data-science-collector-<br/>collector"]
+        SA_AlertMgr["data-science-monitoringstack-<br/>alertmanager"]
+    end
+
+    subgraph ClusterRoleBindings["ClusterRole Bindings"]
+        CRB_ClusterView["data-science-prometheus-<br/>cluster-proxy"]
+        CRB_ClusterAuth["data-science-prometheus-<br/>cluster-proxy-auth-delegator"]
+        CRB_NSView["data-science-prometheus-<br/>namespace-proxy"]
+        CRB_NSAuth["data-science-prometheus-<br/>namespace-proxy-auth-delegator"]
+        CRB_MLflow["data-science-collector-<br/>mlflow-trace-export"]
+        CRB_GenProc["generate-processors-<br/>collector-rolebinding"]
+        CRB_Tempo["data-science-collector-<br/>tempo-trace-export"]
+        CRB_AlertMetrics["data-science-monitoringstack-<br/>alertmanager-prometheus-<br/>metrics-reader"]
+    end
+
+    subgraph ClusterRoles["ClusterRoles"]
+        CR_MonView["cluster-monitoring-view"]
+        CR_AuthDelegator["system:auth-delegator"]
+        CR_MLflow["data-science-collector-<br/>mlflow-trace-export"]
+        CR_GenProc["generate-processors-role"]
+        CR_Tempo["data-science-collector-<br/>tempo-trace-export"]
+        CR_MetricsView["data-science-metrics-view"]
+    end
+
+    subgraph APIResources["API Resources"]
+        R_Nodes["metrics.k8s.io<br/>nodes"]
+        R_Pods["metrics.k8s.io<br/>pods"]
+        R_MLflowExp["mlflow.kubeflow.org<br/>experiments"]
+        R_Infra["config.openshift.io<br/>infrastructures,<br/>infrastructures/status"]
+        R_CoreResources["core<br/>endpoints, namespaces,<br/>pods, services"]
+        R_Discovery["discovery.k8s.io<br/>endpointslices"]
+        R_MonitoringCom["monitoring.coreos.com<br/>podmonitors, probes,<br/>servicemonitors"]
+        R_ReplicaSets["apps<br/>replicasets"]
+        R_TempoNS["tempo.grafana.com<br/>registry namespace"]
+        R_TokenSAR["authentication.k8s.io<br/>TokenReview,<br/>SubjectAccessReview"]
+    end
+
+    %% Cluster Proxy bindings
+    SA_ClusterProxy -->|"bound via"| CRB_ClusterView
+    SA_ClusterProxy -->|"bound via"| CRB_ClusterAuth
+    CRB_ClusterView -->|"grants"| CR_MonView
+    CRB_ClusterAuth -->|"grants"| CR_AuthDelegator
+    CR_AuthDelegator -->|"create"| R_TokenSAR
+
+    %% Namespace Proxy bindings
+    SA_NSProxy -->|"bound via"| CRB_NSView
+    SA_NSProxy -->|"bound via"| CRB_NSAuth
+    CRB_NSView -->|"grants"| CR_MonView
+    CRB_NSAuth -->|"grants"| CR_AuthDelegator
+
+    %% Collector bindings
+    SA_Collector -->|"bound via"| CRB_MLflow
+    SA_Collector -->|"bound via"| CRB_GenProc
+    SA_Collector -->|"bound via"| CRB_Tempo
+    CRB_MLflow -->|"grants"| CR_MLflow
+    CRB_GenProc -->|"grants"| CR_GenProc
+    CRB_Tempo -->|"grants"| CR_Tempo
+
+    %% Alertmanager bindings
+    SA_AlertMgr -->|"bound via"| CRB_AlertMetrics
+    CRB_AlertMetrics -->|"grants"| CR_MonView
+
+    %% ClusterRole to resource permissions
+    CR_MLflow -->|"update"| R_MLflowExp
+    CR_GenProc -->|"get,list,watch"| R_Infra
+    CR_GenProc -->|"get,list,watch"| R_CoreResources
+    CR_GenProc -->|"get,list,watch"| R_Discovery
+    CR_GenProc -->|"get,list,watch"| R_MonitoringCom
+    CR_GenProc -->|"get,list,watch"| R_ReplicaSets
+    CR_Tempo -->|"create"| R_TempoNS
+    CR_MetricsView -->|"create"| R_Pods
+
+    %% Styling
+    style SA_ClusterProxy fill:#4a90e2,color:#fff
+    style SA_NSProxy fill:#4a90e2,color:#fff
+    style SA_Collector fill:#4a90e2,color:#fff
+    style SA_AlertMgr fill:#4a90e2,color:#fff
+    style CR_MonView fill:#f5a623,color:#000
+    style CR_AuthDelegator fill:#f5a623,color:#000
+    style CR_MLflow fill:#f5a623,color:#000
+    style CR_GenProc fill:#f5a623,color:#000
+    style CR_Tempo fill:#f5a623,color:#000
+    style CR_MetricsView fill:#f5a623,color:#000
+    style R_Nodes fill:#7ed321,color:#000
+    style R_Pods fill:#7ed321,color:#000
+    style R_MLflowExp fill:#7ed321,color:#000
+    style R_Infra fill:#7ed321,color:#000
+    style R_CoreResources fill:#7ed321,color:#000
+    style R_Discovery fill:#7ed321,color:#000
+    style R_MonitoringCom fill:#7ed321,color:#000
+    style R_ReplicaSets fill:#7ed321,color:#000
+    style R_TempoNS fill:#7ed321,color:#000
+    style R_TokenSAR fill:#7ed321,color:#000

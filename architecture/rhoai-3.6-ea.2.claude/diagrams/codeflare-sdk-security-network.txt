@@ -1,0 +1,109 @@
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  CLIENT ENVIRONMENT (User Workstation / Notebook / Workbench Pod)           │
+│                                                                             │
+│  [CodeFlare SDK - Python Client Library]                                    │
+│  - Runtime: Python 3.11+                                                    │
+│  - Crypto: cryptography >= 46.0.7 (OpenSSL backend)                        │
+│  - Cert Generation: RSA 3072-bit, x509 self-signed                         │
+│  - CA Cert Path Priority:                                                   │
+│    1. Explicit parameter                                                    │
+│    2. CF_SDK_CA_CERT_PATH env var                                           │
+│    3. /etc/pki/tls/custom-certs/ca-bundle.crt (workbench default)          │
+│         │                              │                                    │
+│         │ Path 1: CRD-Based            │ Path 2: Direct HTTP                │
+│         │                              │                                    │
+│         │ Port: 6443/TCP               │ Port: Configurable                 │
+│         │ Protocol: HTTPS              │ Protocol: HTTP/HTTPS               │
+│         │ Encryption: TLS              │ Encryption: TLS (configurable)     │
+│         │ Auth: Bearer token /         │ Auth: HTTP headers /               │
+│         │   kubeconfig /               │   cookies (caller-configured)      │
+│         │   in-cluster SA              │ TLS Verify: Enabled by default     │
+│         │ (kube-authkit auto-detect)   │                                    │
+│         ▼                              ▼                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES CLUSTER (Trusted)                                               │
+│                                                                             │
+│  [Kubernetes API Server]                                                    │
+│  - Port: 6443/TCP                                                           │
+│  - Protocol: HTTPS                                                          │
+│  - Encryption: TLS                                                          │
+│  - AuthN: Bearer Token / X.509 Client Cert / ServiceAccount Token          │
+│  - AuthZ: RBAC                                                              │
+│         │                                                                   │
+│         │ Internal cluster communication                                    │
+│         ▼                                                                   │
+│  ┌─────────────────────────────┐  ┌────────────────────────────────┐       │
+│  │ [KubeRay Operator]          │  │ [Kueue Controller]             │       │
+│  │ - Watches: RayJob,          │  │ - Watches: Workloads           │       │
+│  │   RayCluster CRs            │  │ - Manages: ClusterQueues,      │       │
+│  │ - Creates: Ray cluster pods │  │   LocalQueues,                  │       │
+│  │ - API Group: ray.io         │  │   ResourceFlavors               │       │
+│  └────────────┬────────────────┘  │ - API Group: kueue.x-k8s.io    │       │
+│               │                   └────────────────────────────────┘       │
+│               ▼                                                             │
+│  [Ray Cluster Pods]                                                         │
+│  - Head + Worker nodes                                                      │
+│  - Internal TLS: Self-signed certs (SDK-generated)                          │
+│  - Cert storage: Kubernetes Secrets                                         │
+│                                                                             │
+│  [Ray Dashboard]                                                            │
+│  - Port: Configurable                                                       │
+│  - Protocol: HTTP/HTTPS                                                     │
+│  - Auth: HTTP headers / cookies                                             │
+│                                                                             │
+│  ┌─────────────────────────────┐                                           │
+│  │ [MinIO - Test Infrastructure]│                                           │
+│  │ - Service: minio-service     │                                           │
+│  │ - Port: 9000/TCP (API)       │                                           │
+│  │ - Port: 9090/TCP (Console)   │                                           │
+│  │ - Type: ClusterIP             │                                           │
+│  │ - Exposure: Internal          │                                           │
+│  │ - Secret: minio-secret        │                                           │
+│  └─────────────────────────────┘                                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+  ClusterRole: test-user-kueue-admin
+  - API Groups: kueue.x-k8s.io
+  - Resources: clusterqueues, localqueues, resourceflavors, workloads
+  - Verbs: create, delete, get, list, patch, update, watch
+
+  ClusterRole: test-user-ray-admin
+  - API Groups: ray.io
+  - Resources: rayclusters, rayjobs
+  - Verbs: create, delete, get, list, patch, update, watch
+
+  ClusterRole: kueue-batch-user-role
+  - API Groups: (core), kueue.x-k8s.io, ray.io, apps
+  - Resources: namespaces, clusterqueues, localqueues, resourceflavors,
+               rayclusters, rayjobs, deployments, configmaps, pods, secrets, services
+  - Verbs: create, delete, get, list, patch, update, watch
+
+Role Bindings:
+  - test-user-self-provisioner → self-provisioner (ClusterRole) → User
+  - test-user-admin → admin (ClusterRole) → User
+  - test-user-cluster-admin → cluster-admin (ClusterRole) → User
+  - test-user-kueue-admin → test-user-kueue-admin (ClusterRole) → User
+  - test-user-ray-admin → test-user-ray-admin (ClusterRole) → User
+  - kueue-batch-user-rolebinding → kueue-batch-user-role → Group/system:authenticated
+  - kueue-batch-user-specific-rolebinding → kueue-batch-user-role → User
+
+Authentication Mechanisms:
+  Kubernetes API:
+  - Bearer token / kubeconfig / in-cluster ServiceAccount
+  - kube-authkit auto-detection priority chain
+  - Authentication required
+
+  Ray Dashboard API:
+  - HTTP headers / cookies (caller-configured)
+  - TLS verification enabled by default
+  - Auth delegated to caller
+
+Secrets:
+  - minio-secret (Opaque) - MinIO credentials - Provisioned by manifest - Rotation: Unknown
+
+FIPS Compliance:
+  - Crypto library: cryptography >= 46.0.7 (OpenSSL backend)
+  - Certificate generation: RSA 3072-bit, x509
+  - FIPS mode: Inherited from platform OpenSSL configuration
+  - No custom cipher suites or non-FIPS algorithms detected

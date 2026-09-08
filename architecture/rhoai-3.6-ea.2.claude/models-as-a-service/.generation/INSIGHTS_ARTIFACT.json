@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "models-as-a-service",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "maas-dual-auth-layers-001",
+      "claim": "Models-as-a-Service enforces authentication at two independent layers: Kuadrant/Authorino AuthPolicy at the Gateway and TenantAuthMiddleware within the Gin HTTP server, providing defense-in-depth for all API endpoints.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "maas-api/internal/auth/tenant_auth_middleware.go:17-90"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:989"
+        }
+      ],
+      "reasoning": "The TenantAuthMiddleware validates Bearer tokens via Kubernetes TokenReview and SubjectAccessReview within the application, while the MaaSAuthPolicy controller dynamically creates Kuadrant AuthPolicy resources at the gateway. This dual-layer enforcement means a request passes authentication checks both at the ingress gateway and within the API server.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "maas-gateway-route-coupling-002",
+      "claim": "The HTTPRoute rule ordering is tightly coupled to the payload-processing EnvoyFilter via Istio's per-route naming convention, creating a maintenance risk when routes are added or reordered.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "deployment/base/maas-api/networking/httproute.yaml:9-13"
+        }
+      ],
+      "reasoning": "A WARNING comment in the HTTPRoute manifest explicitly states that the EnvoyFilter uses Istio's '<namespace>.<httproute-name>.<rule-index>' naming convention, and that adding, removing, or reordering rules requires updating the EnvoyFilter route indices to match. This creates a fragile dependency between two manifest files.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "maas-pqc-base-image-003",
+      "claim": "Both maas-api and maas-controller use the UBI9 ubi-minimal-pqc (Post-Quantum Crypto) base image variant, indicating early adoption of post-quantum cryptography readiness within the RHOAI platform.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "maas-api/Dockerfile.konflux:17"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "maas-controller/Dockerfile.konflux:18"
+        }
+      ],
+      "reasoning": "The ubi-minimal-pqc base image variant is a Post-Quantum Crypto enabled image, which is a relatively new UBI variant. Combined with GOEXPERIMENT=strictfipsruntime, this signals an aggressive FIPS and crypto-readiness posture for the MaaS component.",
+      "applicability": "cross-component",
+      "confidence": "medium"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+graph TD
+    subgraph "Service Accounts"
+        SA1["workbenches-operator-<br/>controller-manager"]
+    end
+
+    subgraph "ClusterRole Bindings"
+        CRB1["workbenches-operator-<br/>manager-rolebinding"]
+        CRB2["workbenches-operator-manager-<br/>rbac-escalate-rolebinding"]
+    end
+
+    subgraph "Role Bindings (Namespaced)"
+        RB1["workbenches-operator-<br/>leader-election-rolebinding<br/>ns: workbenches-operator-system"]
+        RB2["workbenches-operator-<br/>webhook-tls-rolebinding<br/>ns: system"]
+    end
+
+    subgraph "ClusterRoles"
+        CR1["workbenches-operator-<br/>manager-role"]
+        CR2["workbenches-operator-manager-<br/>rbac-escalate-role"]
+    end
+
+    subgraph "Namespaced Roles"
+        R1["workbenches-operator-<br/>leader-election-role"]
+        R2["workbenches-operator-<br/>webhook-tls-role"]
+    end
+
+    subgraph "Core API Resources"
+        ConfigMaps["core<br/>configmaps"]
+        Secrets["core<br/>secrets"]
+        ServiceAccounts["core<br/>serviceaccounts"]
+        Services["core<br/>services"]
+        Events["core<br/>events"]
+        Namespaces["core<br/>namespaces"]
+    end
+
+    subgraph "Workloads & Networking"
+        Deployments["apps<br/>deployments"]
+        NetworkPolicies["networking.k8s.io<br/>networkpolicies"]
+    end
+
+    subgraph "Admission & CRDs"
+        MutatingWH["admissionregistration<br/>mutatingwebhookconfigurations"]
+        ValidatingWH["admissionregistration<br/>validatingwebhookconfigurations"]
+        CRDs["apiextensions<br/>customresourcedefinitions"]
+    end
+
+    subgraph "ODH / RHOAI Resources"
+        Workbenches["components.platform.opendatahub.io<br/>workbenches"]
+        WorkbenchesFin["components.platform.opendatahub.io<br/>workbenches/finalizers"]
+        WorkbenchesSt["components.platform.opendatahub.io<br/>workbenches/status"]
+        HardwareProfiles["infrastructure.opendatahub.io<br/>hardwareprofiles"]
+        Notebooks["kubeflow.org<br/>notebooks"]
+        WorkspaceKinds["kubeflow.org<br/>workspacekinds"]
+    end
+
+    subgraph "OpenShift Resources"
+        APIServers["config.openshift.io<br/>apiservers"]
+        ImageStreams["image.openshift.io<br/>imagestreams"]
+    end
+
+    subgraph "RBAC & Coordination"
+        RBACResources["rbac.authorization.k8s.io<br/>clusterroles, clusterrolebindings,<br/>roles, rolebindings"]
+        Leases["coordination.k8s.io<br/>leases"]
+        SAR["authorization.k8s.io<br/>subjectaccessreviews"]
+    end
+
+    subgraph "cert-manager Resources"
+        ClusterIssuers["cert-manager.io<br/>clusterissuers"]
+        Certificates["cert-manager.io<br/>certificates"]
+    end
+
+    %% SA to Bindings
+    SA1 -->|"bound via"| CRB1
+    SA1 -->|"bound via"| CRB2
+    SA1 -->|"bound via"| RB1
+    SA1 -->|"bound via"| RB2
+
+    %% Bindings to Roles
+    CRB1 -->|"grants"| CR1
+    CRB2 -->|"grants"| CR2
+    RB1 -->|"grants"| R1
+    RB2 -->|"grants"| R2
+
+    %% Manager Role permissions
+    CR1 -->|"CRUD"| ConfigMaps
+    CR1 -->|"CRUD"| Secrets
+    CR1 -->|"CRUD"| ServiceAccounts
+    CR1 -->|"CRUD"| Services
+    CR1 -->|"create,patch"| Events
+    CR1 -->|"CRUD"| Namespaces
+    CR1 -->|"CRUD"| Deployments
+    CR1 -->|"CRUD"| NetworkPolicies
+    CR1 -->|"CRUD"| MutatingWH
+    CR1 -->|"CRUD"| ValidatingWH
+    CR1 -->|"CRUD (no delete)"| CRDs
+    CR1 -->|"CRUD"| Workbenches
+    CR1 -->|"update"| WorkbenchesFin
+    CR1 -->|"get,patch,update"| WorkbenchesSt
+    CR1 -->|"get (read-only)"| HardwareProfiles
+    CR1 -->|"CRUD"| Notebooks
+    CR1 -->|"create,delete,list,patch"| WorkspaceKinds
+    CR1 -->|"get,list,watch"| APIServers
+    CR1 -->|"CRUD"| ImageStreams
+    CR1 -->|"CRUD"| RBACResources
+    CR1 -->|"CRUD"| Leases
+    CR1 -->|"create"| SAR
+    CR1 -->|"create,get,patch"| ClusterIssuers
+
+    %% Escalate Role
+    CR2 -->|"bind, escalate"| RBACResources
+
+    %% Leader Election Role
+    R1 -->|"CRUD"| ConfigMaps
+    R1 -->|"CRUD"| Leases
+    R1 -->|"create,patch"| Events
+
+    %% Webhook TLS Role
+    R2 -->|"create,get,patch"| Certificates
+
+    %% Styling
+    style SA1 fill:#4a90e2,stroke:#333,color:#fff
+    style CR1 fill:#f5a623,stroke:#333
+    style CR2 fill:#f5a623,stroke:#333
+    style R1 fill:#e67e22,stroke:#333,color:#fff
+    style R2 fill:#e67e22,stroke:#333,color:#fff
+    style Workbenches fill:#7ed321,stroke:#333
+    style HardwareProfiles fill:#7ed321,stroke:#333
+    style Notebooks fill:#7ed321,stroke:#333
+    style WorkspaceKinds fill:#7ed321,stroke:#333

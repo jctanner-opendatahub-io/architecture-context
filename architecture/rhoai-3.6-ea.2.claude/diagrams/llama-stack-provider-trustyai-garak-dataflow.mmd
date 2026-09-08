@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant CM as ConfigMap<br/>/meta/job.json
+    participant Job as K8s Job Pod<br/>GarakAdapter
+    participant Auth as Auth Resolver<br/>Secrets/Env
+    participant Garak as Garak CLI<br/>Subprocess
+    participant LLM as Target LLM<br/>Endpoint
+    participant KFP as Kubeflow Pipelines<br/>API Server
+    participant S3 as S3-Compatible<br/>Storage
+    participant OCI as OCI Registry
+    participant EH as Eval-Hub<br/>Service
+
+    Note over Job: Job starts
+
+    Job->>CM: Read JobSpec
+    CM-->>Job: Benchmark config,<br/>model endpoint, scan profile
+
+    Job->>Auth: Resolve credentials
+    Auth-->>Job: API Key<br/>(multi-tier chain)
+
+    alt Simple Mode
+        Job->>Garak: Build & execute CLI command
+        Note over Garak: Runs as subprocess<br/>in Job pod
+        Garak->>LLM: Red-teaming probes<br/>(HTTPS, API Key auth)
+        LLM-->>Garak: LLM responses
+        Garak-->>Job: JSONL report output
+        Job->>Job: Parse JSONL results
+    else KFP Mode
+        Job->>KFP: Submit 6-step pipeline<br/>(KFP_AUTH_TOKEN)
+        Note over KFP: 1. Validation<br/>2. Taxonomy Resolution<br/>3. SDG Generation<br/>4. Prompt Preparation<br/>5. Garak Scan<br/>6. Result Publishing
+        KFP->>S3: Store/retrieve artifacts<br/>(AWS_SECRET_ACCESS_KEY)
+        S3-->>KFP: Artifacts
+        KFP->>LLM: Execute Garak scan<br/>(OPENAICOMPATIBLE_API_KEY)
+        LLM-->>KFP: LLM responses
+        Job->>KFP: Poll for completion
+        KFP-->>Job: Pipeline results
+        Job->>S3: Download results<br/>(AWS_SECRET_ACCESS_KEY)
+        S3-->>Job: Scan artifacts
+    end
+
+    Job->>OCI: Persist result artifacts
+    Job->>EH: Report results via<br/>DefaultCallbacks
+
+    Note over Job: Job exits

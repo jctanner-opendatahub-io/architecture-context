@@ -1,0 +1,101 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["Browser / External Client"]
+    end
+
+    subgraph Ingress["INGRESS (DMZ)"]
+        Route["OpenShift Route<br/>443/TCP → 8443/TCP<br/>TLS re-encrypt"]
+    end
+
+    subgraph AuthProxy["AUTHENTICATION PROXY"]
+        KRBAC["kube-rbac-proxy<br/>8443/TCP<br/>TLS termination<br/>OpenShift project list AuthN"]
+    end
+
+    subgraph AppTier["APPLICATION TIER"]
+        direction TB
+
+        subgraph NodeJS["Node.js Backend"]
+            Fastify["Fastify Server<br/>x-forwarded-access-token auth<br/>Node.js 22+ / UBI9"]
+        end
+
+        subgraph BFFs["Go BFF Sidecars (8080/TCP each)"]
+            CoreBFF["core-bff"]
+            GenAI["gen-ai"]
+            MaaS["maas"]
+            ModelReg["model-registry"]
+            AgentOps["agent-ops"]
+            Others["automl, autorag,<br/>data-registry, eval-hub,<br/>mlflow, notebooks"]
+        end
+    end
+
+    subgraph OperatorTier["OPERATOR TIER"]
+        Operator["Dashboard Operator<br/>SA: odh-dashboard-operator<br/>CGO_ENABLED=1 + strictfipsruntime"]
+        Webhook["Webhook Service<br/>443/TCP → 9443/TCP<br/>TLS (cert-manager)<br/>K8s admission auth"]
+    end
+
+    subgraph PlatformSvcs["PLATFORM SERVICES (Internal)"]
+        K8sAPI["Kubernetes API<br/>6443/TCP<br/>TLS 1.2+<br/>SA Token + Impersonation"]
+        DSPipelines["DataScience Pipelines<br/>8443/TCP HTTPS<br/>Bearer Token"]
+        ModelRegSvc["Model Registry API<br/>8443/TCP HTTPS<br/>Bearer Token"]
+        KServe["KServe<br/>varies HTTPS<br/>Bearer Token"]
+        MLMD["ML Metadata<br/>8443/TCP gRPC-web<br/>Bearer Token"]
+        TrustyAI["TrustyAI<br/>443/TCP HTTPS<br/>Bearer Token"]
+        Prometheus["Prometheus/Thanos<br/>9092/TCP HTTPS<br/>Bearer Token"]
+    end
+
+    subgraph ExternalSvcs["EXTERNAL SERVICES"]
+        LlamaStack["Llama Stack<br/>varies HTTPS<br/>Bearer/API Key"]
+        MaaSAPI["MaaS API<br/>varies HTTPS<br/>Bearer Token"]
+        MLflowSvc["MLflow Tracking<br/>varies HTTPS<br/>Session"]
+        NeMo["NeMo Guardrails<br/>varies HTTPS<br/>API Key"]
+    end
+
+    %% External to Ingress
+    Client -->|"HTTPS/443<br/>TLS 1.2+<br/>OAuth session"| Route
+
+    %% Ingress to Auth
+    Route -->|"HTTPS/8443<br/>TLS<br/>re-encrypt"| KRBAC
+
+    %% Auth to App
+    KRBAC -->|"HTTP (internal)<br/>x-forwarded-access-token"| Fastify
+
+    %% App internal
+    Fastify -->|"HTTP/8080<br/>Bearer Token forwarded"| CoreBFF
+    Fastify -->|"HTTP/8080<br/>Bearer Token forwarded"| GenAI
+    Fastify -->|"HTTP/8080<br/>Bearer Token forwarded"| MaaS
+    Fastify -->|"HTTP/8080<br/>Bearer Token forwarded"| ModelReg
+    Fastify -->|"HTTP/8080<br/>Bearer Token forwarded"| AgentOps
+
+    %% App to K8s API
+    Fastify -->|"HTTPS/6443<br/>TLS 1.2+<br/>Impersonation"| K8sAPI
+
+    %% BFFs to Platform Services
+    CoreBFF -->|"HTTPS/8443<br/>Bearer Token"| DSPipelines
+    CoreBFF -->|"HTTPS/9092<br/>Bearer Token"| Prometheus
+    GenAI -->|"gRPC-web/8443<br/>TLS<br/>Bearer Token"| MLMD
+    GenAI -->|"HTTPS<br/>Bearer/API Key"| LlamaStack
+    GenAI -->|"HTTPS<br/>API Key"| NeMo
+    MaaS -->|"HTTPS<br/>Bearer Token"| MaaSAPI
+    ModelReg -->|"HTTPS/8443<br/>Bearer Token"| ModelRegSvc
+    AgentOps -->|"HTTPS/6443<br/>SA Token + SSAR"| K8sAPI
+
+    %% Operator flows
+    Operator -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token (59 RBAC rules)"| K8sAPI
+    K8sAPI -->|"HTTPS/9443<br/>TLS (cert-manager)<br/>Admission"| Webhook
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef authproxy fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef apptier fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef operator fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef platform fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef externalsvc fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Client external
+    class Route ingress
+    class KRBAC authproxy
+    class Fastify,CoreBFF,GenAI,MaaS,ModelReg,AgentOps,Others apptier
+    class Operator,Webhook operator
+    class K8sAPI,DSPipelines,ModelRegSvc,KServe,MLMD,TrustyAI,Prometheus platform
+    class LlamaStack,MaaSAPI,MLflowSvc,NeMo externalsvc

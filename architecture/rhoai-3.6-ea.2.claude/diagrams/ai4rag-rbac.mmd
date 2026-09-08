@@ -1,0 +1,44 @@
+graph TD
+    subgraph "ai4rag RBAC & Credentials"
+        direction TB
+
+        Note["ai4rag is a pure Python library<br/>No Kubernetes RBAC resources defined<br/>No ServiceAccounts, ClusterRoles, or RoleBindings"]
+    end
+
+    subgraph "Environment Variable Credentials"
+        direction TB
+
+        subgraph "S3 Authentication"
+            AWS_KEY["AWS_ACCESS_KEY_ID<br/>Type: env var<br/>Purpose: S3 identity"]
+            AWS_SECRET["AWS_SECRET_ACCESS_KEY<br/>Type: env var<br/>Purpose: S3 secret"]
+        end
+
+        subgraph "Vector Store Authentication"
+            MILVUS["MILVUS_TOKEN<br/>Type: env var<br/>Purpose: Milvus auth"]
+            MILVUS_CERT["MILVUS_SERVER_CERT<br/>Type: env var<br/>Purpose: Custom TLS cert (PEM)"]
+            PGVECTOR["PGVECTOR_PASSWORD<br/>Type: env var<br/>Purpose: PostgreSQL auth"]
+        end
+
+        subgraph "MaaS Authentication"
+            API_KEY["MaaS API Key<br/>Type: env var (OpenAI SDK)<br/>Purpose: Inference endpoint auth"]
+        end
+    end
+
+    AWS_KEY -->|"authenticates"| S3Target["S3-Compatible Storage"]
+    AWS_SECRET -->|"authenticates"| S3Target
+    MILVUS -->|"authenticates"| MilvusTarget["Milvus Server"]
+    MILVUS_CERT -->|"TLS cert"| MilvusTarget
+    PGVECTOR -->|"authenticates"| PGTarget["PostgreSQL + pgvector"]
+    API_KEY -->|"authenticates"| MaaSTarget["OpenAI-Compatible Endpoint"]
+
+    style Note fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    style AWS_KEY fill:#f8cecc,stroke:#b85450
+    style AWS_SECRET fill:#f8cecc,stroke:#b85450
+    style MILVUS fill:#f8cecc,stroke:#b85450
+    style MILVUS_CERT fill:#f8cecc,stroke:#b85450
+    style PGVECTOR fill:#f8cecc,stroke:#b85450
+    style API_KEY fill:#f8cecc,stroke:#b85450
+    style S3Target fill:#f9f9f9,stroke:#999
+    style MilvusTarget fill:#f9f9f9,stroke:#999
+    style PGTarget fill:#f9f9f9,stroke:#999
+    style MaaSTarget fill:#f9f9f9,stroke:#999

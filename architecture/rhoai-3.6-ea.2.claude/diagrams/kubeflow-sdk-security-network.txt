@@ -1,0 +1,75 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  CLIENT ENVIRONMENT (User Workstation / Notebook Pod)                    │
+│                                                                          │
+│  [Python Application / Jupyter Notebook]                                 │
+│  - Uses kubeflow-sdk Python library                                      │
+│  - Authentication: kube-config (dev) or in-cluster SA token (pod)       │
+│         │                                                                │
+│         │ Port: 6443/TCP                                                 │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (platform-delegated, inherits from kube-config)│
+│         │ Auth: kube-config credentials or ServiceAccount token          │
+│         │ Client: kubernetes Python client library                       │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES CONTROL PLANE (Trusted)                                      │
+│                                                                          │
+│  [Kubernetes API Server]                                                 │
+│  - Port: 6443/TCP (external)                                            │
+│  - TLS: Platform-managed                                                │
+│  - AuthN: x509 client certs / Bearer tokens / OIDC                      │
+│  - AuthZ: RBAC                                                          │
+│         │                                                                │
+│         │ API calls:                                                     │
+│         │ - POST /apis/kubeflow.org/v2alpha1/ns/{ns}/trainjobs           │
+│         │ - GET/LIST/WATCH TrainJob resources                            │
+│         │ - POST /apis/sparkoperator.k8s.io/v1alpha1/ns/{ns}/sparkconnects│
+│         │ - GET/LIST core/v1 Pods, Services, ConfigMaps                  │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  KUBEFLOW OPERATOR NAMESPACE (Trusted - Cluster Services)                │
+│                                                                          │
+│  [Kubeflow Trainer Controller]                                           │
+│  - Watches: TrainJob CRs                                                │
+│  - Creates: Training pods, services                                      │
+│  - Namespace: kubeflow-system (typical)                                  │
+│                                                                          │
+│  [Katib Controller]                                                      │
+│  - Watches: Experiment, Trial CRs                                       │
+│  - Creates: Hyperparameter tuning pods                                  │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  USER NAMESPACE (Workload Execution)                                     │
+│                                                                          │
+│  [Training Pods]                                                         │
+│  - Created by Kubeflow Trainer Controller                               │
+│  - May use HF_TOKEN env var for model downloads                         │
+│  - RHAI extensions: SpeculativeDecoding, TrainingHub, JIT Checkpoint    │
+│                                                                          │
+│  [SparkConnect Resources]                                                │
+│  - CRD: sparkoperator.k8s.io/v1alpha1/SparkConnect                     │
+│  - Managed via kubeflow-sdk Spark integration                            │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+SDK Authentication Model:
+- The SDK performs NO authentication itself
+- Authentication is fully delegated to the kubernetes Python client library
+- Development: kube-config file (~/.kube/config) with x509 certs or OIDC tokens
+- In-cluster: Mounted ServiceAccount token at /var/run/secrets/kubernetes.io/serviceaccount/token
+- All TLS is platform-delegated (SDK does not configure TLS directly)
+
+Secrets:
+- HF_TOKEN (environment variable) - HuggingFace API token for model downloads
+  - Provisioned by: runtime environment (user-provided)
+  - Auto-rotate: Unknown
+
+Security Evidence:
+- cryptography==46.0.5: Transitive dependency via pygithub→pyjwt (not direct SDK usage)
+- pyjwt==2.11.0: Transitive dependency via pygithub (development tooling, not SDK auth)
+- kubernetes client: Handles all TLS and auth via platform OpenSSL
+
+FIPS Compliance:
+- Python SDK: No compiled binaries, no direct cryptographic operations
+- TLS: Delegated to platform OpenSSL (FIPS-capable on RHEL/UBI)
+- Risk: No explicit FIPS opt-in or provider selection in SDK source

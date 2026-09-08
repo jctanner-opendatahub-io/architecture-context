@@ -1,0 +1,114 @@
+graph TD
+    subgraph "Authentication Model"
+        direction TB
+
+        subgraph ClientAuth["Client-Side Authentication"]
+            ClientSDK["MLflow Client SDK"]
+            AuthProvider["KubernetesRequestAuthProvider"]
+            SATokenFile["/var/run/secrets/<br/>kubernetes.io/serviceaccount/token"]
+            KubeConfig["~/.kube/config<br/>(fallback)"]
+
+            ClientSDK -->|"uses"| AuthProvider
+            AuthProvider -->|"reads token<br/>(60s TTL cache)"| SATokenFile
+            AuthProvider -.->|"fallback"| KubeConfig
+        end
+
+        subgraph ServerAuth["Server-Side Authentication"]
+            K8sAuthPlugin["kubernetes-auth Plugin<br/>(mlflow-kubernetes-plugins==1.5.0)"]
+            AppFramework["mlflow.app Plugin Framework<br/>(_find_app() entry point)"]
+
+            AppFramework -->|"loads at startup"| K8sAuthPlugin
+        end
+
+        subgraph RequestFlow["Request Authentication Flow"]
+            IncomingRequest["Incoming HTTP Request"]
+            BearerHeader["Authorization: Bearer &lt;token&gt;"]
+            WorkspaceHeader["X-MLFLOW-WORKSPACE: &lt;namespace&gt;"]
+            TokenValidation["Token Validation<br/>(K8s API)"]
+            NamespaceIsolation["Namespace-Based<br/>Workspace Isolation"]
+            APIHandler["API Handler<br/>(48 endpoints)"]
+
+            IncomingRequest --> BearerHeader
+            IncomingRequest --> WorkspaceHeader
+            BearerHeader --> K8sAuthPlugin
+            WorkspaceHeader --> K8sAuthPlugin
+            K8sAuthPlugin --> TokenValidation
+            K8sAuthPlugin --> NamespaceIsolation
+            TokenValidation -->|"valid"| APIHandler
+        end
+    end
+
+    subgraph "Secrets Management (19 Environment Variables)"
+        direction TB
+
+        subgraph AIProviderKeys["AI Provider API Keys"]
+            OPENAI["OPENAI_API_KEY"]
+            ANTHROPIC["ANTHROPIC_API_KEY"]
+            COHERE["COHERE_API_KEY"]
+            MISTRAL["MISTRAL_API_KEY"]
+            TOGETHERAI["TOGETHERAI_API_KEY"]
+            GROQ["GROQ_API_KEY"]
+            DEEPSEEK["DEEPSEEK_API_KEY"]
+            XAI["XAI_API_KEY"]
+            OPENROUTER["OPENROUTER_API_KEY"]
+            OLLAMA["OLLAMA_API_KEY"]
+        end
+
+        subgraph AWSKeys["AWS Credentials"]
+            AWSSECRET["AWS_SECRET_ACCESS_KEY"]
+            AWSSESSION["AWS_SESSION_TOKEN"]
+            AWSBEDROCK["AWS_BEARER_TOKEN_BEDROCK"]
+        end
+
+        subgraph DatabricksKeys["Databricks Credentials"]
+            DBTOKEN["DATABRICKS_TOKEN"]
+            DBPASS["DATABRICKS_PASSWORD"]
+            DBREFRESH["DATABRICKS_REFRESH_TOKEN"]
+            DBCLIENT["DATABRICKS_CLIENT_SECRET"]
+        end
+
+        subgraph OtherKeys["Other Credentials"]
+            AZURESTORAGE["AZURE_STORAGE_SAS_TOKEN"]
+            JUPYTERHUB["JUPYTERHUB_API_TOKEN"]
+        end
+    end
+
+    subgraph "FIPS Compliance"
+        BaseImage["Base Image:<br/>ubi9/ubi-minimal-pqc"]
+        CryptoLib["cryptography >=43.0.0<br/>(OpenSSL backend)"]
+        SystemSSL["System OpenSSL<br/>(FIPS mode if configured)"]
+
+        BaseImage --> SystemSSL
+        CryptoLib --> SystemSSL
+    end
+
+    %% Styling
+    style K8sAuthPlugin fill:#f5a623,stroke:#333,stroke-width:2px
+    style AuthProvider fill:#f5a623,stroke:#333
+    style TokenValidation fill:#d5e8d4,stroke:#82b366
+    style NamespaceIsolation fill:#d5e8d4,stroke:#82b366
+    style APIHandler fill:#4a90e2,stroke:#333,color:#fff
+    style SATokenFile fill:#dae8fc,stroke:#6c8ebf
+    style BaseImage fill:#e1d5e7,stroke:#9673a6
+    style CryptoLib fill:#e1d5e7,stroke:#9673a6
+    style SystemSSL fill:#e1d5e7,stroke:#9673a6
+
+    style OPENAI fill:#fff2cc,stroke:#d6b656
+    style ANTHROPIC fill:#fff2cc,stroke:#d6b656
+    style COHERE fill:#fff2cc,stroke:#d6b656
+    style MISTRAL fill:#fff2cc,stroke:#d6b656
+    style TOGETHERAI fill:#fff2cc,stroke:#d6b656
+    style GROQ fill:#fff2cc,stroke:#d6b656
+    style DEEPSEEK fill:#fff2cc,stroke:#d6b656
+    style XAI fill:#fff2cc,stroke:#d6b656
+    style OPENROUTER fill:#fff2cc,stroke:#d6b656
+    style OLLAMA fill:#fff2cc,stroke:#d6b656
+    style AWSSECRET fill:#f8cecc,stroke:#b85450
+    style AWSSESSION fill:#f8cecc,stroke:#b85450
+    style AWSBEDROCK fill:#f8cecc,stroke:#b85450
+    style DBTOKEN fill:#ffe6cc,stroke:#d79b00
+    style DBPASS fill:#ffe6cc,stroke:#d79b00
+    style DBREFRESH fill:#ffe6cc,stroke:#d79b00
+    style DBCLIENT fill:#ffe6cc,stroke:#d79b00
+    style AZURESTORAGE fill:#f8cecc,stroke:#b85450
+    style JUPYTERHUB fill:#dae8fc,stroke:#6c8ebf

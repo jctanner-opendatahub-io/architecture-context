@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "praxis-grid",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "praxis-grid-risk-001",
+      "claim": "The operator explicitly selects ring as its process-wide rustls CryptoProvider, which is not FIPS-validated; FIPS compliance would require migrating to aws-lc-rs or another validated provider.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "operator/src/main.rs:104"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/cross_cutting_evidence/security"
+        }
+      ],
+      "reasoning": "The operator installs ring::default_provider() at startup (main.rs:104) and the workspace Cargo.toml configures all TLS crates with ring features. The comment at lines 89-106 explains this is intentional to avoid aws-lc-rs conflicts. The analyzer's security evidence confirms ring as the sole crypto provider with a 'not-extracted' FIPS posture. For RHOAI deployments requiring FIPS compliance, this is a structural gap.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "praxis-grid-pattern-001",
+      "claim": "The sidecar overlay delivery pattern decouples control-plane CRD reconciliation from data-plane configuration, providing crash-safe file delivery to the Praxis proxy via content-addressed envelopes.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "overlay-sync/src/main.rs:1-8"
+        }
+      ],
+      "reasoning": "The grid-overlay-sync sidecar watches a ConfigMap, validates a content-addressed envelope, and atomically writes the overlay to a shared emptyDir. This pattern ensures the data-plane proxy only consumes validated overlays and can survive sidecar restarts without stale configuration.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "praxis-grid-pattern-002",
+      "claim": "SWIM revision leases use a durable ConfigMap-based reservation protocol to guarantee disjoint transport-revision ranges across concurrent operator instances.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "operator/src/main.rs:210-222"
+        }
+      ],
+      "reasoning": "The operator reserves a block of 2^32 revisions per instance by atomically updating a ConfigMap with resourceVersion-based optimistic concurrency. This prevents published-revision reuse across operator restarts or multi-replica deployments, which would cause SWIM state corruption.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

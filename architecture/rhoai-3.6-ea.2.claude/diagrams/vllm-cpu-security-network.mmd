@@ -1,0 +1,78 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client / Model Consumer"]
+    end
+
+    subgraph AppLayer["APPLICATION LAYER (vllm-cpu Pod)"]
+        direction TB
+
+        subgraph HTTPServer["FastAPI HTTP Server"]
+            direction TB
+            AuthMW["AuthenticationMiddleware<br/>Active when VLLM_API_KEY set<br/>SHA-256 + constant-time comparison"]
+
+            subgraph GuardedPaths["Guarded Paths (/v1/*, /v2/*, /inference/*)"]
+                ChatAPI["POST /v1/chat/completions"]
+                CompletionsAPI["POST /v1/completions"]
+                EmbeddingsAPI["POST /v1/embeddings"]
+                RerankAPI["POST /v1/rerank, /v2/rerank"]
+                MessagesAPI["POST /v1/messages"]
+                AudioAPI["POST /v1/audio/transcriptions"]
+                ResponsesAPI["POST /v1/responses"]
+                ModelsAPI["GET /v1/models"]
+                RealtimeAPI["WS /v1/realtime"]
+            end
+
+            subgraph UnguardedPaths["Unguarded Paths (No Auth)"]
+                HealthAPI["GET /health, /ready, /readyz"]
+                LoadAPI["GET /load"]
+                DocsAPI["GET /docs"]
+                PingAPI["GET|POST /ping"]
+                VersionAPI["GET /version"]
+            end
+        end
+
+        subgraph GRPCServer["gRPC Server (Optional)"]
+            VllmEngine["VllmEngine Service<br/>smg-grpc-servicer"]
+            HealthGRPC["grpc.health.v1.Health<br/>K8s Probes"]
+        end
+
+        Engine["AsyncLLM Engine<br/>CPU-Optimized Inference"]
+    end
+
+    subgraph K8sControl["KUBERNETES CONTROL PLANE"]
+        K8s["Kubernetes<br/>Liveness & Readiness Probes"]
+    end
+
+    %% External to HTTP
+    Client -->|"HTTP/HTTPS<br/>Configurable Port<br/>TLS: Platform-delegated<br/>Auth: Bearer Token (conditional)"| AuthMW
+    AuthMW -->|"Token validated<br/>SHA-256 + compare_digest"| GuardedPaths
+
+    %% External to gRPC
+    Client -->|"gRPC/50051<br/>HTTP/2<br/>⚠️ NO TLS<br/>⚠️ NO Auth"| VllmEngine
+
+    %% Unguarded access
+    Client -->|"HTTP<br/>No Auth Required"| UnguardedPaths
+
+    %% K8s probes
+    K8s -->|"GET /health, /ready<br/>No Auth"| HealthAPI
+    K8s -->|"grpc.health.v1.Health.Check()<br/>No Auth"| HealthGRPC
+
+    %% Internal flows
+    GuardedPaths --> Engine
+    VllmEngine --> Engine
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef authzone fill:#ffcccc,stroke:#cc0000,stroke-width:2px
+    classDef noauthzone fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef grpczone fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef engine fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef k8s fill:#e8e8e8,stroke:#666,stroke-width:2px
+
+    class Client external
+    class AuthMW authzone
+    class ChatAPI,CompletionsAPI,EmbeddingsAPI,RerankAPI,MessagesAPI,AudioAPI,ResponsesAPI,ModelsAPI,RealtimeAPI authzone
+    class HealthAPI,LoadAPI,DocsAPI,PingAPI,VersionAPI noauthzone
+    class VllmEngine,HealthGRPC grpczone
+    class Engine engine
+    class K8s k8s

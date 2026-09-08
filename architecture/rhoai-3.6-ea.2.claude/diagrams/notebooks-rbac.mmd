@@ -1,0 +1,50 @@
+graph TD
+    subgraph "Notebooks RBAC Model"
+        direction TB
+
+        Note["Note: The notebooks component itself<br/>defines NO ClusterRoles or RoleBindings.<br/>RBAC is managed by odh-notebook-controller."]
+
+        subgraph "Platform-Managed RBAC (odh-notebook-controller)"
+            Controller["odh-notebook-controller<br/>Manages pod lifecycle & RBAC"]
+        end
+
+        subgraph "Authentication Flow"
+            OAuthProxy["OAuth Proxy Sidecar<br/>Injected per-workbench"]
+            OpenShiftOAuth["OpenShift OAuth<br/>Identity Provider"]
+        end
+
+        subgraph "Workbench Pod Security"
+            JupyterLab["JupyterLab<br/>Built-in auth: DISABLED"]
+            CodeServer["code-server<br/>Built-in auth: DISABLED<br/>(--auth none)"]
+        end
+
+        subgraph "User Workload Access (Optional)"
+            SA["Workbench ServiceAccount"]
+            K8sAccess["Kubernetes API Access<br/>via kubernetes Python client"]
+            S3Access["S3 Storage Access<br/>via boto3 / minio"]
+        end
+    end
+
+    Controller -->|"injects"| OAuthProxy
+    OAuthProxy -->|"validates via"| OpenShiftOAuth
+    OAuthProxy -->|"proxies to"| JupyterLab
+    OAuthProxy -->|"proxies to"| CodeServer
+    Controller -->|"creates"| SA
+    SA -->|"enables"| K8sAccess
+    SA -.->|"credentials for"| S3Access
+
+    subgraph "Security-Critical Secrets"
+        direction LR
+        SecNote["All 7 secrets in architecture doc are<br/>CI/automation credentials, NOT runtime.<br/>No runtime secrets managed by notebook images."]
+    end
+
+    style Note fill:#fff3cd,stroke:#856d0a,stroke-width:2px
+    style Controller fill:#f5a623,stroke:#333
+    style OAuthProxy fill:#ff6666,stroke:#cc0000,color:#fff
+    style OpenShiftOAuth fill:#ee0000,stroke:#333,color:#fff
+    style JupyterLab fill:#ffcccc,stroke:#cc0000
+    style CodeServer fill:#ffcccc,stroke:#cc0000
+    style SA fill:#4a90e2,stroke:#333,color:#fff
+    style K8sAccess fill:#d5e8d4,stroke:#82b366
+    style S3Access fill:#d5e8d4,stroke:#82b366
+    style SecNote fill:#fff3cd,stroke:#856d0a

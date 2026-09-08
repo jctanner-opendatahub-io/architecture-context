@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant Client as External Client
+    participant KServe as KServe ServingRuntime<br/>(Pod Manager)
+    participant Istio as Istio Gateway<br/>(mTLS / Auth)
+    participant API as vLLM API Server<br/>8000/TCP HTTP
+    participant Engine as vLLM Engine<br/>(Inference Pipeline)
+    participant Plugin as vllm_gaudi Plugin<br/>(HPU Backend)
+    participant HPU as Intel Gaudi HPU<br/>(SynapseAI 1.23.0)
+    participant Storage as Model Storage<br/>(Volume Mount)
+
+    Note over KServe,API: Startup / Model Loading
+    KServe->>API: Start container<br/>(UID 2000, non-root)
+    API->>Engine: Initialize vLLM engine<br/>VLLM_TARGET_DEVICE=hpu
+    Engine->>Plugin: Register HPU device backend
+    Plugin->>HPU: Initialize SynapseAI runtime<br/>PyTorch 2.9.0 HPU
+    Engine->>Storage: Load model weights<br/>(configured storage path)
+    Storage-->>Engine: Model artifacts
+    Engine->>HPU: Transfer model to HPU memory
+    HPU-->>Engine: Model ready
+
+    Note over Client,HPU: Inference Request Flow
+    Client->>Istio: POST /v1/chat/completions<br/>Auth: Platform-managed
+    Istio->>API: Forward request<br/>(mTLS if configured)
+    API->>Engine: Enqueue inference request
+    Engine->>Plugin: Execute forward pass
+    Plugin->>HPU: Tensor operations<br/>(SynapseAI acceleration)
+    HPU-->>Plugin: Computation result
+    Plugin-->>Engine: Generated tokens
+    Engine-->>API: Inference response
+    API-->>Istio: JSON response
+    Istio-->>Client: OpenAI-compatible response
+
+    Note over Client,HPU: Build-time Dependency Flow
+    Note right of Engine: Konflux build clones<br/>vllm-project/vllm@v0.16.0<br/>installs with VLLM_TARGET_DEVICE=empty<br/>then installs vllm_gaudi<br/>with VLLM_TARGET_DEVICE=hpu

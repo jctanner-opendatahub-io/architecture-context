@@ -1,0 +1,65 @@
+graph TB
+    subgraph ClusterInternal["CLUSTER INTERNAL (Kubernetes Network)"]
+        direction TB
+
+        subgraph NS_Operator["Namespace: APPLICATIONS_NAMESPACE"]
+            Manager["trainer-operator-controller-manager<br/>SA: trainer-operator-controller-manager<br/>Image: /manager (UBI9 ubi-minimal-pqc)<br/>FIPS: strictfipsruntime + CGO"]
+            MetricsSvc["metrics-service<br/>ClusterIP 8443/TCP"]
+            HealthPort["Health Probes<br/>8081/TCP HTTP<br/>No Auth"]
+        end
+
+        subgraph K8sControl["Kubernetes Control Plane"]
+            APIServer["Kubernetes API Server<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>ServiceAccount Auth"]
+        end
+
+        subgraph Monitoring["Monitoring"]
+            Prometheus["Prometheus<br/>(via ServiceMonitor)"]
+        end
+
+        subgraph Dependencies["Watched Dependencies"]
+            JobSetOp["JobSet Operator<br/>CRD availability check<br/>Read-only"]
+            OSAPIServer["OpenShift APIServer<br/>TLS profile resolution<br/>Watch for changes"]
+            OLM["OLM<br/>OperatorConditions<br/>Read-only"]
+        end
+
+        subgraph ManagedResources["Deployed Resources (target namespace)"]
+            KFTrainer["Kubeflow Trainer v2<br/>Controller Deployment"]
+            CRDs["CRDs:<br/>TrainJob<br/>ClusterTrainingRuntime<br/>TrainingRuntime"]
+            WebhookCfg["Webhook Configs"]
+            RBACRes["RBAC Roles & Bindings"]
+            NetPol["NetworkPolicies"]
+            ImgStreams["ImageStreams"]
+        end
+    end
+
+    %% Flows
+    Manager -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount Token"| APIServer
+    APIServer -->|"Watch events<br/>Trainer CR"| Manager
+    Manager -->|"SSA Deploy"| KFTrainer
+    Manager -->|"SSA Deploy"| CRDs
+    Manager -->|"SSA Deploy"| WebhookCfg
+    Manager -->|"SSA Deploy"| RBACRes
+    Manager -->|"SSA Deploy"| NetPol
+    Manager -->|"SSA Deploy"| ImgStreams
+
+    Prometheus -->|"HTTPS/8443<br/>TLS (service-CA)<br/>TokenReview + SAR"| MetricsSvc
+    MetricsSvc --> Manager
+
+    Manager -.->|"CRD Watch<br/>Read-only"| JobSetOp
+    Manager -.->|"GET + Watch<br/>TLS profile"| OSAPIServer
+    Manager -.->|"List<br/>Read-only"| OLM
+
+    %% Styling
+    classDef operator fill:#4a90e2,stroke:#333,color:#fff,stroke-width:2px
+    classDef controlplane fill:#e8e8e8,stroke:#666,stroke-width:2px
+    classDef monitoring fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef dependency fill:#f9f9f9,stroke:#999,stroke-width:1px
+    classDef managed fill:#d5e8d4,stroke:#82b366,stroke-width:1px
+    classDef service fill:#dae8fc,stroke:#6c8ebf,stroke-width:1px
+
+    class Manager operator
+    class MetricsSvc,HealthPort service
+    class APIServer controlplane
+    class Prometheus monitoring
+    class JobSetOp,OSAPIServer,OLM dependency
+    class KFTrainer,CRDs,WebhookCfg,RBACRes,NetPol,ImgStreams managed

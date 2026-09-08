@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "llm-d-planner",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "llm-d-planner-risk-001",
+      "claim": "The FastAPI backend exposes 39 HTTP endpoints with no application-level authentication middleware and a permissive CORS policy (allow_origins=['*']), relying entirely on platform-level network controls for access restriction.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/planner/api/app.py:67-73"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/authentication"
+        }
+      ],
+      "reasoning": "The analyzer detected no auth middleware and source inspection confirmed only CORSMiddleware is registered with allow_origins=['*']. The comment 'In production, specify actual origins' indicates this is a known development configuration. Database admin routes have an optional HMAC password gate, but the remaining 36 endpoints are entirely unauthenticated at the application layer. OpenShift Routes provide TLS termination but no OAuth proxy or AuthorizationPolicy is configured.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "llm-d-planner-pattern-001",
+      "claim": "The LLM provider factory pattern enables runtime selection among three inference backends (Ollama, OpenAI, Vertex AI) via a single environment variable, supporting both air-gapped (local Ollama) and cloud-connected deployment topologies.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "src/planner/llm/factory.py:15-69"
+        }
+      ],
+      "reasoning": "The factory.py module implements a provider abstraction with LLM_PROVIDER env var defaulting to 'ollama'. Each provider is lazily imported and constructed with provider-specific credentials. This pattern allows the same deployment manifests to target different LLM backends by changing a single environment variable, which is architecturally significant for disconnected/air-gapped RHOAI deployments.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "llm-d-planner-risk-002",
+      "claim": "The container image uses python:3.14-slim (Debian-based) rather than a UBI base image, with no FIPS cryptographic configuration, making it incompatible with FIPS-enforcing OpenShift clusters.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile:2"
+        }
+      ],
+      "reasoning": "RHOAI components targeting production OpenShift clusters typically use UBI base images to ensure FIPS-validated OpenSSL and Red Hat security updates. The python:3.14-slim base provides no FIPS guarantees. No Konflux Dockerfiles or check-payload gates exist in the repository, suggesting this component is in an early incubation stage and has not yet undergone the downstream build pipeline integration required for FIPS compliance.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

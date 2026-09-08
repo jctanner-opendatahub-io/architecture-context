@@ -1,0 +1,63 @@
+sequenceDiagram
+    participant Browser as Browser<br/>(React SPA)
+    participant Route as OpenShift Route<br/>443/TCP HTTPS
+    participant KRBAC as kube-rbac-proxy<br/>8443/TCP TLS
+    participant Fastify as Node.js Fastify<br/>Backend
+    participant BFF as Go BFF Sidecar<br/>8080/TCP HTTP
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant Platform as Platform Services<br/>(KServe, MLflow, etc.)
+
+    Note over Browser,Platform: User Request Flow (SPA + API Proxy)
+
+    Browser->>Route: GET / (HTTPS/443)
+    Route->>KRBAC: Forward (TLS termination)
+    KRBAC->>Fastify: Forward (authenticated)<br/>x-forwarded-access-token
+    Fastify-->>Browser: React SPA + static assets
+
+    Note over Browser,Platform: Kubernetes API Proxy Flow
+
+    Browser->>Route: ALL /api/k8s/* (HTTPS/443)<br/>Auth: Bearer Token
+    Route->>KRBAC: TLS termination
+    KRBAC->>Fastify: x-forwarded-access-token
+    Fastify->>K8sAPI: Impersonated request<br/>User identity from token
+    K8sAPI-->>Fastify: K8s resource response
+    Fastify-->>Browser: JSON response
+
+    Note over Browser,Platform: WebSocket Watch Flow
+
+    Browser->>Route: WS /wss/k8s/* (WSS/443)<br/>Auth: Bearer Token
+    Route->>KRBAC: TLS + upgrade
+    KRBAC->>Fastify: WebSocket connection
+    Fastify->>K8sAPI: Watch stream<br/>Impersonated
+    K8sAPI-->>Fastify: Watch events (streaming)
+    Fastify-->>Browser: WebSocket events
+
+    Note over Browser,Platform: Module Federation BFF Flow
+
+    Browser->>Route: ALL /_mf/:name/api/v1/*<br/>Auth: Bearer Token
+    Route->>KRBAC: TLS termination
+    KRBAC->>Fastify: x-forwarded-access-token
+    Fastify->>BFF: Proxy to BFF sidecar<br/>Bearer Token forwarded
+    BFF->>Platform: HTTPS REST/gRPC-web<br/>Bearer Token or SA Token
+    Platform-->>BFF: Service response
+    BFF-->>Fastify: JSON response
+    Fastify-->>Browser: JSON response
+
+    Note over Browser,Platform: Operator Reconciliation Flow
+
+    participant Operator as Dashboard Operator<br/>controller-runtime
+
+    K8sAPI->>Operator: Watch: Dashboard CR created/updated
+    Operator->>K8sAPI: Create Deployment<br/>SA Token + RBAC
+    Operator->>K8sAPI: Create Service, Route
+    Operator->>K8sAPI: Create RBAC objects
+    Operator->>K8sAPI: Create NetworkPolicy
+    Operator->>K8sAPI: Update Dashboard CR status
+
+    Note over Browser,Platform: Admission Webhook Flow
+
+    K8sAPI->>Operator: POST /validate-dashboard<br/>TLS/9443
+    Operator-->>K8sAPI: Admission Response (allow/deny)
+
+    K8sAPI->>Operator: POST /validate-workspace<br/>TLS/9443
+    Operator-->>K8sAPI: Admission Response (allow/deny)

@@ -1,0 +1,65 @@
+sequenceDiagram
+    participant Agent as AI Agent<br/>(Claude Desktop)
+    participant Transport as rhoai-mcp Transport<br/>8000/TCP (SSE/streamable-http)
+    participant OIDC as OIDCAuthMiddleware<br/>(JWT/TokenReview)
+    participant MCP as FastMCP Server<br/>(Tool Dispatcher)
+    participant RBAC as RBAC Filter<br/>(SubjectAccessReview)
+    participant Workflow as Workflow Token<br/>(HMAC-SHA256)
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant ModelReg as Model Registry<br/>8080/TCP HTTP
+    participant Planner as Planner Backend<br/>8000/TCP HTTP
+
+    Note over Agent,Planner: Agent-to-Server Flow (OIDC Enabled)
+    Agent->>Transport: MCP Request (SSE/streamable-http)<br/>Authorization: Bearer <JWT>
+    Transport->>OIDC: Validate Bearer Token
+    alt JWT with JWKS
+        OIDC->>OIDC: Verify JWT signature via JWKS endpoint
+    else Kubernetes TokenReview
+        OIDC->>K8sAPI: POST /apis/authentication.k8s.io/v1/tokenreviews
+        K8sAPI-->>OIDC: TokenReview response (user identity)
+    end
+    OIDC-->>Transport: Authenticated (user context attached)
+
+    Note over Agent,Planner: Tool-Level RBAC Filtering
+    Transport->>MCP: Forward authenticated request
+    MCP->>RBAC: Check tool access for user
+    RBAC->>K8sAPI: POST /apis/authorization.k8s.io/v1/subjectaccessreviews
+    K8sAPI-->>RBAC: Allowed/Denied
+    RBAC-->>MCP: Filtered tool list
+
+    Note over Agent,Planner: Notebook Creation (Multi-Step Workflow)
+    Agent->>MCP: Tool: create_notebook(params)
+    MCP->>Workflow: Validate workflow token (if multi-step)
+    Workflow-->>MCP: Token valid (prerequisites met)
+
+    alt User-Token Strategy
+        MCP->>K8sAPI: POST /apis/kubeflow.org/v1/notebooks<br/>Authorization: Bearer <user-token>
+    else Impersonation Strategy
+        MCP->>K8sAPI: POST /apis/kubeflow.org/v1/notebooks<br/>Impersonate-User: <username><br/>SA Token
+    end
+    K8sAPI-->>MCP: Notebook CR created
+    MCP->>Workflow: Generate signed token for next step
+    Workflow-->>MCP: HMAC-signed workflow token
+    MCP-->>Agent: MCP Response + workflow token
+
+    Note over Agent,Planner: Model Serving Query
+    Agent->>MCP: Tool: list_inference_services()
+    MCP->>K8sAPI: GET /apis/serving.kserve.io/v1beta1/inferenceservices
+    K8sAPI-->>MCP: InferenceService list
+    MCP-->>Agent: Formatted model serving status
+
+    Note over Agent,Planner: Model Registry Integration
+    Agent->>MCP: Tool: get_registered_models()
+    MCP->>ModelReg: GET /api/model_registry/v1alpha3/registered_models<br/>Auth: OAuth/Token/None (configurable)
+    ModelReg-->>MCP: Registered models response
+    MCP-->>Agent: Model metadata
+
+    Note over Agent,Planner: Planner Integration
+    Agent->>MCP: Tool: plan_intent(description)
+    MCP->>Planner: POST /api/plan<br/>HTTP (cluster-internal)
+    Planner-->>MCP: Extracted intent + plan
+    MCP-->>Agent: Structured plan response
+
+    Note over Agent,Planner: Health Check (Unauthenticated)
+    Agent->>Transport: GET /health
+    Transport-->>Agent: 200 OK (bypasses OIDC)

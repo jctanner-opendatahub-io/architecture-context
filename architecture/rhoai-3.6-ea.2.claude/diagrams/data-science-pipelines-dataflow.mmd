@@ -1,0 +1,71 @@
+sequenceDiagram
+    participant Client as Data Scientist<br/>kubectl / SDK
+    participant UI as ml-pipeline-ui<br/>80/TCP → 3000
+    participant API as ml-pipeline API Server<br/>8887 gRPC / 8888 REST
+    participant WH as Admission Webhooks<br/>8443/TCP TLS
+    participant K8s as Kubernetes API<br/>6443/TCP TLS
+    participant MySQL as MySQL 8.4<br/>3306/TCP
+    participant S3 as SeaweedFS (S3)<br/>8333/TCP
+    participant Argo as Argo Workflow Controller
+    participant Driver as Driver / Launcher
+    participant PA as Persistence Agent
+    participant MW as Metadata Writer
+    participant Envoy as Metadata Envoy<br/>9090/TCP
+    participant MLMD as Metadata gRPC Store<br/>8080/TCP
+    participant Cache as Cache Server<br/>443/TCP
+
+    Note over Client,Cache: Pipeline Submission Flow
+    Client->>API: POST /apis/v2beta1/pipelines/upload<br/>Bearer Token
+    API->>K8s: TokenReview (validate token)<br/>authentication.k8s.io
+    K8s-->>API: Token valid + user identity
+    API->>K8s: SubjectAccessReview<br/>authorization.k8s.io
+    K8s-->>API: Authorized
+    API->>MySQL: Store pipeline metadata<br/>Istio mTLS
+    API->>S3: Store pipeline artifacts<br/>AWS SDK / MinIO client
+    API-->>Client: Pipeline created
+
+    Note over Client,Cache: Pipeline Run Execution Flow
+    Client->>API: POST /apis/v2beta1/runs<br/>Create pipeline run
+    API->>K8s: SubjectAccessReview
+    K8s-->>API: Authorized
+    API->>K8s: Create Argo Workflow<br/>SA: pipeline-runner
+    K8s-->>Argo: Workflow event
+    Argo->>Cache: Check execution cache<br/>Mutating webhook
+    alt Cache Hit
+        Cache-->>Argo: Inject cached outputs
+    else Cache Miss
+        Argo->>Driver: Execute pipeline step
+        Driver->>S3: Read input artifacts
+        S3-->>Driver: Artifact data
+        Driver->>Driver: Execute step logic
+        Driver->>S3: Write output artifacts
+        Driver-->>Argo: Step completed
+    end
+
+    Note over Client,Cache: State Synchronization Flow
+    PA->>Argo: Watch workflow status<br/>argoproj.io/workflows
+    Argo-->>PA: Workflow state change
+    PA->>API: Report run status<br/>pipelines.kubeflow.org
+
+    Note over Client,Cache: ML Metadata Flow
+    MW->>K8s: Watch Argo Workflow pods
+    K8s-->>MW: Pod status events
+    MW->>Envoy: Write ML Metadata artifacts<br/>gRPC
+    Envoy->>MLMD: Forward metadata<br/>gRPC
+    MLMD->>MySQL: Persist metadata
+
+    Note over Client,Cache: Admission Control Flow
+    Client->>K8s: Create PipelineVersion CR
+    K8s->>WH: POST /webhooks/validate-pipelineversion<br/>8443/TLS
+    WH-->>K8s: Validation result
+    K8s->>WH: POST /webhooks/mutate-pipelineversion<br/>8443/TLS
+    WH-->>K8s: Mutated resource
+    K8s-->>Client: PipelineVersion created
+
+    Note over Client,Cache: UI Query Flow
+    Client->>UI: Browse pipelines/runs<br/>HTTP/80
+    UI->>API: Query pipeline data<br/>REST/8888
+    API->>MySQL: Fetch metadata
+    MySQL-->>API: Results
+    API-->>UI: Pipeline/Run data
+    UI-->>Client: Rendered UI

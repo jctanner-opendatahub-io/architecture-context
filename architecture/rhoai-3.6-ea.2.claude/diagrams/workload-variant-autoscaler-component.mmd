@@ -1,0 +1,83 @@
+graph TB
+    subgraph WVA["Workload Variant Autoscaler"]
+        direction TB
+
+        subgraph Controllers["Reconciliation Controllers"]
+            ConfigMapCtrl["ConfigMap Controller<br/>Bootstraps & live-updates config"]
+            HPACtrl["HPA Controller<br/>Reconciles HorizontalPodAutoscalers"]
+            InferencePoolCtrl["InferencePool Controller<br/>Reconciles InferencePool resources"]
+            ScaledObjectCtrl["ScaledObject Controller<br/>Reconciles KEDA ScaledObjects"]
+        end
+
+        subgraph Engine["Optimization Engine Pipeline"]
+            KalmanFilter["Kalman Filter Engine<br/>Predictive scaling"]
+            GPURebalancer["GPU Rebalancer<br/>Reads ResourceQuota & Nodes"]
+            ScaleFromZero["Scale-from-Zero Engine<br/>Dynamic client discovery"]
+        end
+
+        subgraph Actuator["Scaling Actuator"]
+            DirectActuator["DirectActuator<br/>Patches Scale subresources"]
+        end
+
+        Datastore["Shared Datastore<br/>Active autoscaling targets"]
+
+        ConfigMapCtrl -->|populates config| Datastore
+        HPACtrl -->|tracks targets| Datastore
+        InferencePoolCtrl -->|tracks targets| Datastore
+        ScaledObjectCtrl -->|tracks targets| Datastore
+
+        Datastore -->|feeds| KalmanFilter
+        KalmanFilter -->|signals| GPURebalancer
+        GPURebalancer -->|decisions| DirectActuator
+        ScaleFromZero -->|discovers zero-replica workloads| DirectActuator
+    end
+
+    %% External watched resources
+    ConfigMapCR["ConfigMap Resources"]
+    HPACR["HPA Resources"]
+    InferencePoolCR["InferencePool CRs<br/>inference.networking.k8s.io"]
+    ScaledObjectCR["ScaledObject CRs<br/>keda.sh"]
+
+    ConfigMapCR -->|watched by| ConfigMapCtrl
+    HPACR -->|watched by| HPACtrl
+    InferencePoolCR -->|watched by| InferencePoolCtrl
+    ScaledObjectCR -->|watched by| ScaledObjectCtrl
+
+    %% External dependencies
+    Prometheus["Prometheus<br/>HTTP API"]
+    K8sAPI["Kubernetes API<br/>6443/HTTPS"]
+
+    Prometheus -->|metrics queries<br/>TLS 1.2+ / Bearer| Engine
+    DirectActuator -->|patches Scale subresource| K8sAPI
+
+    %% Scaling targets
+    Deployments["Deployments"]
+    LWS["LeaderWorkerSets"]
+
+    DirectActuator -->|scales| Deployments
+    DirectActuator -->|scales| LWS
+
+    %% Observability
+    MetricsEndpoint[":8443/metrics<br/>TokenReview + SAR<br/>Self-signed TLS"]
+    HealthEndpoint[":8081/healthz + /readyz<br/>Unauthenticated"]
+
+    %% Styling
+    style ConfigMapCtrl fill:#4a90e2,color:#fff
+    style HPACtrl fill:#4a90e2,color:#fff
+    style InferencePoolCtrl fill:#4a90e2,color:#fff
+    style ScaledObjectCtrl fill:#4a90e2,color:#fff
+    style KalmanFilter fill:#9b59b6,color:#fff
+    style GPURebalancer fill:#9b59b6,color:#fff
+    style ScaleFromZero fill:#9b59b6,color:#fff
+    style DirectActuator fill:#e74c3c,color:#fff
+    style Datastore fill:#f5a623,color:#fff
+    style Prometheus fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style ConfigMapCR fill:#f5a623
+    style HPACR fill:#f5a623
+    style InferencePoolCR fill:#f5a623
+    style ScaledObjectCR fill:#f5a623
+    style Deployments fill:#7ed321
+    style LWS fill:#7ed321
+    style MetricsEndpoint fill:#ddd,stroke:#333
+    style HealthEndpoint fill:#ddd,stroke:#333

@@ -1,0 +1,116 @@
+{
+  "component": "mlflow",
+  "reads": [
+    {
+      "expected_signal": "CMD app-name flag, base image identity, pip install targets",
+      "gap_category": [
+        "authentication",
+        "fips_compliance",
+        "integration_points"
+      ],
+      "line_range": "1-91",
+      "outcome": "resolved",
+      "path": "Dockerfile.konflux",
+      "question": "What authentication plugin is configured in the container CMD, what base image provides FIPS crypto, and what external packages are installed?",
+      "scope_reason": "Dockerfile is 91 lines total; all stages are relevant for multi-stage build analysis covering auth config, base image identity, and dependency installation",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis",
+        "Authentication & Authorization",
+        "FIPS Compliance",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "Service account token path, Authorization header injection, workspace header, caching behavior",
+      "gap_category": [
+        "authentication"
+      ],
+      "line_range": "1-295",
+      "outcome": "resolved",
+      "path": "mlflow/tracking/request_auth/kubernetes_request_auth_provider.py",
+      "question": "How does the kubernetes auth provider implement bearer token authentication and workspace isolation?",
+      "scope_reason": "Complete module at 295 lines; token injection, namespace resolution, and KubernetesAuth callable class are all interdependent",
+      "sections": [
+        "Architectural Analysis",
+        "Authentication & Authorization",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "_find_app function, mlflow.app entry point resolution",
+      "gap_category": [
+        "authentication"
+      ],
+      "line_range": "218-226",
+      "outcome": "resolved",
+      "path": "mlflow/server/__init__.py",
+      "question": "How does --app-name resolve the kubernetes-auth plugin at server startup?",
+      "sections": [
+        "Architectural Analysis",
+        "Authentication & Authorization"
+      ]
+    },
+    {
+      "expected_signal": "App name registration, create_app factory",
+      "gap_category": [
+        "authentication"
+      ],
+      "line_range": "1-80",
+      "outcome": "resolved",
+      "path": "mlflow/server/auth/__init__.py",
+      "question": "Does the built-in auth module provide kubernetes-auth or only basic-auth?",
+      "sections": [
+        "Architectural Analysis"
+      ]
+    },
+    {
+      "expected_signal": "kubernetes.client API usage, Job creation, namespace operations",
+      "gap_category": [
+        "internal_dependencies"
+      ],
+      "line_range": "1-138",
+      "outcome": "resolved",
+      "path": "mlflow/projects/kubernetes.py",
+      "question": "What is the interaction boundary with the Kubernetes API and what specific API calls are made?",
+      "sections": [
+        "Internal Platform Dependencies",
+        "Architectural Analysis",
+        "Data Flows"
+      ]
+    },
+    {
+      "expected_signal": "Package name, version pin, source index",
+      "gap_category": [
+        "authentication",
+        "integration_points"
+      ],
+      "line_range": "1-17",
+      "outcome": "resolved",
+      "path": "requirements/konflux-pypi.in",
+      "question": "Where does the mlflow-kubernetes-plugins package come from and what version is used?",
+      "sections": [
+        "Purpose",
+        "Architectural Analysis",
+        "Authentication & Authorization"
+      ]
+    },
+    {
+      "expected_signal": "Original read intent was not recorded by the agent; preserve the source-read audit trail for follow-up.",
+      "gap_category": [
+        "authentication",
+        "integration_points",
+        "internal_dependencies",
+        "fips_compliance"
+      ],
+      "line_range": "unknown",
+      "outcome": "unhelpful",
+      "path": "pyproject.toml",
+      "question": "Orchestrator observed this source file read, but the agent omitted its read-justification metadata.",
+      "repair": true,
+      "repair_reason": "observed-source-read-missing-from-sidecar",
+      "sections": []
+    }
+  ],
+  "schema_version": 1
+}

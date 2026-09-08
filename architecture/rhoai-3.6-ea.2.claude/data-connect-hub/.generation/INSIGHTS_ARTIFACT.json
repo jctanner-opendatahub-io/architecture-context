@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "data-connect-hub",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "data-connect-hub-pattern-001",
+      "claim": "Data Connect Hub implements a two-tier authentication architecture: kube-rbac-proxy sidecar handles Kubernetes TokenReview for external authentication, while the REST service's actix-web middleware enforces tenant isolation via a required X-Tenant-ID header.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "dc-controller/internal/controller/dataconnectservice_controller.go:354-367"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "services/rest/src/rest/middleware.rs:16-57"
+        }
+      ],
+      "reasoning": "The controller deploys kube-rbac-proxy as a sidecar (line 355: setDeploymentImage for kube-rbac-proxy) and configures token review audiences (line 362-367). The REST service validate_headers middleware independently requires X-Tenant-ID (middleware.rs:20-43) and extracts Authorization headers (middleware.rs:45-49). This layered approach separates platform-level identity verification from application-level tenant scoping.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "data-connect-hub-risk-001",
+      "claim": "The Rust services select aws_lc_rs as the rustls crypto provider but do not enable the fips feature, leaving FIPS compliance status unverified despite using a FIPS-capable provider.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Cargo.toml:78"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/cross_cutting_evidence/security"
+        }
+      ],
+      "reasoning": "Cargo.toml line 78 specifies rustls with features=[\"aws_lc_rs\"] and default-features=false. The aws-lc-rs crate supports FIPS validation when built with the fips feature and a FIPS-validated aws-lc library, but neither is configured. The ring crate (a non-FIPS provider) remains as a transitive dependency. This means the component uses a FIPS-capable stack but does not activate FIPS mode.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "data-connect-hub-pattern-002",
+      "claim": "The operator's controller-to-service communication pattern uses in-cluster HTTP clients (NewHTTPConnectionTypeClient, NewHTTPMigrationClient) for synchronizing connection types and migrations between the Go controller and the deployed Rust REST service.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "dc-controller/cmd/main.go:209-240"
+        }
+      ],
+      "reasoning": "Three reconcilers (InitDataConnectionTypeReconciler at line 214, ConfigMapWatcherReconciler at line 230, SecretWatcherReconciler at line 239) create HTTP clients via RestServiceURLResolver to communicate with the deployed REST service. This cross-language (Go-to-Rust) controller-to-service integration pattern is unusual and creates a runtime dependency of the operator on its own managed workloads.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

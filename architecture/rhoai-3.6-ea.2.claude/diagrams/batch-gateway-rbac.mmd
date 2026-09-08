@@ -1,0 +1,55 @@
+graph TD
+    subgraph "batch-gateway Authentication Model"
+        direction TB
+
+        subgraph "External Auth Boundary"
+            PlatformGW["llm-d-inference-gateway<br/>(Platform Gateway)<br/>── Auth Enforcement Point ──<br/>Validates Bearer tokens<br/>before forwarding"]
+        end
+
+        subgraph "Application Layer (No Auth Enforcement)"
+            direction TB
+            APIServer["batch-gateway-apiserver<br/>Port 8000/TCP"]
+            Middleware["Middleware Chain<br/>Recovery → RequestMiddleware → SecurityHeaders<br/>── No AuthN/AuthZ middleware ──"]
+            TenantExtract["Tenant Identification<br/>X-MaaS-Username header extraction"]
+            AuthPassthrough["Authorization Header<br/>Captured and passed through<br/>to downstream inference calls"]
+
+            APIServer --> Middleware
+            Middleware --> TenantExtract
+            Middleware --> AuthPassthrough
+        end
+
+        subgraph "Observability Endpoints (Unauthenticated)"
+            ObsListener["Observability Listener<br/>Port 8081/TCP (always plain HTTP)<br/>No middleware applied"]
+            HealthEP["/health - Health check"]
+            ReadyEP["/ready - Readiness probe"]
+            MetricsEP["/metrics - Prometheus metrics"]
+
+            ObsListener --> HealthEP
+            ObsListener --> ReadyEP
+            ObsListener --> MetricsEP
+        end
+
+        subgraph "Downstream Auth"
+            LLMd["llm-d Inference Gateway<br/>Receives Authorization header<br/>from original client request"]
+        end
+    end
+
+    PlatformGW -->|"Authenticated request<br/>+ X-MaaS-Username"| APIServer
+    AuthPassthrough -->|"Authorization: Bearer ..."| LLMd
+
+    subgraph "RBAC Status"
+        Note["No ClusterRoles or RoleBindings<br/>defined in component manifests.<br/>RBAC managed externally<br/>or via operator."]
+    end
+
+    %% Styling
+    style PlatformGW fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    style APIServer fill:#4a90e2,stroke:#333,color:#fff
+    style Middleware fill:#dae8fc,stroke:#6c8ebf
+    style TenantExtract fill:#dae8fc,stroke:#6c8ebf
+    style AuthPassthrough fill:#dae8fc,stroke:#6c8ebf
+    style ObsListener fill:#f8cecc,stroke:#b85450
+    style HealthEP fill:#f8cecc,stroke:#b85450
+    style ReadyEP fill:#f8cecc,stroke:#b85450
+    style MetricsEP fill:#f8cecc,stroke:#b85450
+    style LLMd fill:#d5e8d4,stroke:#82b366
+    style Note fill:#fff2cc,stroke:#d6b656

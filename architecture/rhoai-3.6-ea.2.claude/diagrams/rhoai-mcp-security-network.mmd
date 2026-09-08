@@ -1,0 +1,79 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Agent["AI Agent / Claude Desktop"]
+    end
+
+    subgraph Application["APPLICATION (Namespace: rhoai-mcp)"]
+        direction TB
+
+        subgraph AuthLayer["Authentication Layer"]
+            OIDCAuth["OIDCAuthMiddleware<br/>JWT JWKS / K8s TokenReview<br/>Excludes: /health, /.well-known/*"]
+            RBACFilter["RBAC Tool Filter<br/>SubjectAccessReview per tool"]
+        end
+
+        subgraph MCPServer["MCP Server"]
+            Transport["rhoai-mcp Service<br/>ClusterIP 8000/TCP<br/>SSE / streamable-http"]
+            WorkflowToken["Workflow Token Manager<br/>HMAC-SHA256"]
+            PluginDispatch["Plugin Dispatcher<br/>(pluggy)"]
+        end
+
+        OIDCAuth --> RBACFilter
+        RBACFilter --> Transport
+        Transport --> WorkflowToken
+        Transport --> PluginDispatch
+    end
+
+    subgraph ClusterServices["CLUSTER SERVICES (Trusted - Internal)"]
+        direction TB
+
+        K8sAPI["Kubernetes API Server<br/>6443/TCP HTTPS<br/>TLS 1.2+<br/>SA Token / User-Token / Impersonation"]
+
+        subgraph CRDs["Managed CRD Resources"]
+            Notebooks["kubeflow.org/Notebooks<br/>CRUD"]
+            InferenceServices["serving.kserve.io/InferenceServices<br/>CRUD"]
+            ServingRuntimes["serving.kserve.io/ServingRuntimes<br/>Read/Create"]
+            TrainJobs["trainer.kubeflow.org/TrainJobs<br/>Full CRUD"]
+            TrainingRuntimes["trainer.kubeflow.org/TrainingRuntimes<br/>Read"]
+            ClusterTrainingRuntimes["trainer.kubeflow.org/ClusterTrainingRuntimes<br/>CRUD"]
+            DSPApps["opendatahub.io/DSPApplications<br/>CRUD"]
+        end
+
+        ModelRegistry["Model Registry<br/>odh-model-registries.svc:8080<br/>HTTP<br/>None/OAuth/Token"]
+
+        PlannerBackend["Planner Backend<br/>planner.svc:8000<br/>HTTP"]
+    end
+
+    %% Flows
+    Agent -->|"MCP Protocol<br/>8000/TCP<br/>Bearer Token (OIDC)"| OIDCAuth
+
+    PluginDispatch -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token / User-Token /<br/>Impersonation"| K8sAPI
+
+    K8sAPI -.-> Notebooks
+    K8sAPI -.-> InferenceServices
+    K8sAPI -.-> ServingRuntimes
+    K8sAPI -.-> TrainJobs
+    K8sAPI -.-> TrainingRuntimes
+    K8sAPI -.-> ClusterTrainingRuntimes
+    K8sAPI -.-> DSPApps
+
+    PluginDispatch -->|"HTTP/8080<br/>Configurable Auth"| ModelRegistry
+    PluginDispatch -->|"HTTP/8000<br/>Cluster-internal"| PlannerBackend
+
+    %% Health/Discovery (bypasses auth)
+    Agent -.->|"GET /health<br/>Unauthenticated"| Transport
+    Agent -.->|"GET /.well-known/*<br/>Unauthenticated"| Transport
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef auth fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    classDef server fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff
+    classDef k8s fill:#326ce5,stroke:#2456b8,stroke-width:2px,color:#fff
+    classDef crd fill:#f5a623,stroke:#d4891e,stroke-width:1px
+    classDef platform fill:#9b59b6,stroke:#8e44ad,stroke-width:2px,color:#fff
+
+    class Agent external
+    class OIDCAuth,RBACFilter auth
+    class Transport,WorkflowToken,PluginDispatch server
+    class K8sAPI k8s
+    class Notebooks,InferenceServices,ServingRuntimes,TrainJobs,TrainingRuntimes,ClusterTrainingRuntimes,DSPApps crd
+    class ModelRegistry,PlannerBackend platform

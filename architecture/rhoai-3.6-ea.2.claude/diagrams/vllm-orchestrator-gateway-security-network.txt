@@ -1,0 +1,77 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [Client - OpenAI-compatible]                                            │
+│         │                                                                │
+│         │ Port: 8090/TCP                                                 │
+│         │ Protocol: HTTP/1.1                                             │
+│         │ Encryption: None (plaintext HTTP)                              │
+│         │ Auth: Authorization header (optional, passthrough)             │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  GATEWAY LAYER (vllm-orchestrator-gateway)                              │
+│                                                                          │
+│  [vllm-orchestrator-gateway]                                             │
+│  - Container: /app/bin/vllm-orchestrator-gateway                        │
+│  - Image: ubi9/ubi-minimal-pqc based (Konflux)                          │
+│  - Listen Port: 8090/TCP (HTTP_PORT env override)                       │
+│  - Language: Rust (axum framework)                                       │
+│  - TLS Termination: None (does NOT terminate inbound TLS)               │
+│  - Auth Enforcement: None (passthrough only)                            │
+│  - Dynamic Routes: /{route_name}/v1/chat/completions (POST)            │
+│  - Crypto: openssl 0.10.73 + native-tls 0.2.12                         │
+│         │                                                                │
+│         │ Port: configurable (default 8085)                              │
+│         │ Protocol: HTTP or HTTPS                                        │
+│         │ Encryption: Optional mTLS                                      │
+│         │   - When certs present:                                        │
+│         │     Client cert: /etc/tls/private/tls.crt                     │
+│         │     Client key:  /etc/tls/private/tls.key                     │
+│         │     CA cert:     /etc/tls/ca/service-ca.crt                   │
+│         │     Method: PKCS#12 identity via openssl → native-tls         │
+│         │   - When certs absent: plaintext HTTP                          │
+│         │ Auth: Authorization header forwarded from client               │
+│         │ X-Forwarded-* headers forwarded                                │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  BACKEND SERVICES                                                        │
+│                                                                          │
+│  [TrustyAI Orchestrator (vllm-orchestrator)]                             │
+│  - Endpoint: /api/v2/chat/completions-detection                         │
+│  - Port: configurable (default 8085)                                     │
+│  - Purpose: Content safety evaluation with detector services             │
+│  - Auth: Receives forwarded Authorization header                         │
+│  - Encryption: Depends on gateway mTLS configuration                     │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- No ClusterRoles or RoleBindings defined in component manifests
+- Gateway operates without Kubernetes API RBAC requirements
+
+Secrets:
+- No Kubernetes Secrets defined in component manifests
+- TLS certificates expected as volume mounts (not Secrets managed by gateway):
+  - /etc/tls/private/tls.crt (client certificate)
+  - /etc/tls/private/tls.key (client private key)
+  - /etc/tls/ca/service-ca.crt (CA certificate)
+
+Authentication & Authorization:
+- Gateway performs NO authentication or authorization
+- Authorization header from client is forwarded to orchestrator
+- Orchestrator backend is responsible for all auth enforcement
+- No token validation at gateway layer
+
+FIPS Compliance:
+- Crypto libraries: openssl 0.10.73, native-tls 0.2.12
+- TLS implementation: system OpenSSL (not rustls)
+- reqwest configured with native-tls feature (system OpenSSL)
+- Base image: ubi9/ubi-minimal-pqc (post-quantum cryptography variant)
+- No explicit FIPS mode enablement in application code
+- FIPS posture depends on container platform configuration
+- FIPS validation status: NOT VERIFIED
+
+Network Trust Boundaries:
+- Inbound: Plaintext HTTP (no TLS termination at gateway)
+- Outbound: Optional mTLS to orchestrator (depends on cert presence)
+- No service mesh sidecar injection detected
+- No NetworkPolicy definitions in component

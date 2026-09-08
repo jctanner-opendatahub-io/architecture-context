@@ -1,0 +1,37 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["Client<br/>(OpenAI-compatible)"]
+    end
+
+    subgraph GatewayLayer["GATEWAY LAYER (No TLS Termination)"]
+        Gateway["vllm-orchestrator-gateway<br/>Listen: 8090/TCP HTTP<br/>Image: ubi9/ubi-minimal-pqc<br/>Crypto: openssl + native-tls<br/>Auth: None (passthrough only)<br/>Routes: /{route}/v1/chat/completions"]
+    end
+
+    subgraph Backend["BACKEND SERVICES"]
+        Orchestrator["TrustyAI Orchestrator<br/>(vllm-orchestrator)<br/>Endpoint: /api/v2/chat/completions-detection<br/>Port: configurable (default 8085)<br/>Auth: Receives forwarded headers"]
+    end
+
+    subgraph TLSCerts["TLS CERTIFICATES (Optional)"]
+        direction LR
+        ClientCert["/etc/tls/private/tls.crt"]
+        ClientKey["/etc/tls/private/tls.key"]
+        CACert["/etc/tls/ca/service-ca.crt"]
+    end
+
+    %% Flows
+    Client -->|"HTTP/8090<br/>Plaintext (no TLS)<br/>Auth: Bearer token (optional)"| Gateway
+    Gateway -->|"HTTP or HTTPS<br/>Port: configurable<br/>Optional mTLS (when certs mounted)<br/>Auth: Forwarded headers"| Orchestrator
+
+    %% TLS cert relationship
+    TLSCerts -.->|"volume mount<br/>enables mTLS"| Gateway
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef gateway fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef backend fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef certs fill:#fff2cc,stroke:#d6b656,stroke-width:1px,stroke-dasharray: 5 5
+
+    class Client external
+    class Gateway gateway
+    class Orchestrator backend
+    class ClientCert,ClientKey,CACert certs

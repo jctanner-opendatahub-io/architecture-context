@@ -1,0 +1,49 @@
+sequenceDiagram
+    participant Pod as Pod Startup
+    participant Init as Init Container<br/>init_managed_pipelines
+    participant Volume as Shared Volume<br/>/config/managed-pipelines
+    participant KFP as KFP API Server
+    participant TaskPod as KFP Task Pod<br/>(Component)
+    participant S3 as S3-Compatible Storage<br/>HTTPS
+    participant K8s as Kubernetes API<br/>In-cluster
+    participant Ray as Ray Cluster<br/>(CodeFlare SDK)
+
+    Note over Pod,KFP: Phase 1: Init Container Pipeline Staging
+
+    Pod->>Init: Container starts
+    Init->>Init: Read pre-compiled YAML from /app
+    alt RELATED_IMAGE env vars set (Konflux)
+        Init->>Init: Recompile pipelines with<br/>correct image references
+    end
+    Init->>Volume: Copy pipeline YAMLs to<br/>/config/managed-pipelines
+    Volume->>KFP: KFP server reads YAMLs<br/>Registers managed pipelines
+
+    Note over KFP,Ray: Phase 2: Pipeline Component Execution
+
+    KFP->>TaskPod: Orchestrate component<br/>as task pod
+
+    alt Tabular Data Loader / Dataset Download
+        TaskPod->>S3: Read/Write data<br/>boto3 HTTPS<br/>Auth: AWS_ACCESS_KEY_ID +<br/>AWS_SECRET_ACCESS_KEY
+        S3-->>TaskPod: Data artifacts
+    end
+
+    alt Parse & Chunk (Distributed)
+        TaskPod->>K8s: Authenticate via<br/>SA token (in-cluster)
+        K8s-->>TaskPod: Auth OK
+        TaskPod->>Ray: Submit RayJob<br/>(CodeFlare SDK)
+        Ray-->>TaskPod: Processing results
+        TaskPod->>S3: Store processed chunks<br/>boto3 HTTPS
+        S3-->>TaskPod: Write confirmation
+    end
+
+    alt SDG Component
+        TaskPod->>TaskPod: Invoke SDG Hub SDK<br/>Generate synthetic data
+        TaskPod->>S3: Store generated data<br/>boto3 HTTPS
+        S3-->>TaskPod: Write confirmation
+    end
+
+    alt AutoRAG Optimization
+        TaskPod->>TaskPod: Invoke ai4rag SDK<br/>Optimize RAG templates
+    end
+
+    TaskPod-->>KFP: Task complete

@@ -1,0 +1,144 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_Operator["odh-dashboard-operator<br/>(namespace: system)"]
+        SA_Dashboard["dashboard-operator<br/>(namespace: system)"]
+    end
+
+    subgraph ClusterRoleBindings["ClusterRole Bindings"]
+        CRB_Operator["odh-dashboard-operator-rolebinding"]
+        CRB_Dashboard["dashboard-operator-rolebinding"]
+    end
+
+    subgraph ClusterRoles["ClusterRoles"]
+        CR_Operator["odh-dashboard-operator-role<br/>(59 rules)"]
+        CR_Dashboard["dashboard-operator-role<br/>(59 rules)"]
+    end
+
+    SA_Operator -->|"bound via"| CRB_Operator
+    CRB_Operator -->|"grants"| CR_Operator
+    SA_Dashboard -->|"bound via"| CRB_Dashboard
+    CRB_Dashboard -->|"grants"| CR_Dashboard
+
+    subgraph CoreResources["Core Kubernetes Resources"]
+        ConfigMaps["core<br/>ConfigMaps"]
+        Secrets["core<br/>Secrets"]
+        Services["core<br/>Services"]
+        ServiceAccts["core<br/>ServiceAccounts"]
+        PVCs["core<br/>PersistentVolumeClaims"]
+        Namespaces["core<br/>Namespaces"]
+        Nodes["core<br/>Nodes"]
+        PVs["core<br/>PersistentVolumes"]
+        Pods["core<br/>Pods"]
+        Events["core<br/>Events"]
+    end
+
+    subgraph AppResources["App Resources"]
+        Deployments["apps<br/>Deployments"]
+        ReplicaSets["apps<br/>ReplicaSets"]
+    end
+
+    subgraph RBACResources["RBAC Resources"]
+        Roles["rbac<br/>Roles"]
+        RoleBindings["rbac<br/>RoleBindings"]
+        ClusterRolesR["rbac<br/>ClusterRoles"]
+        ClusterRoleBindingsR["rbac<br/>ClusterRoleBindings"]
+    end
+
+    subgraph NetworkResources["Network Resources"]
+        Routes["route.openshift.io<br/>Routes"]
+        NetworkPolicies["networking.k8s.io<br/>NetworkPolicies"]
+        Ingresses["networking.k8s.io<br/>Ingresses"]
+        HTTPRoutes["gateway.networking.k8s.io<br/>HTTPRoutes"]
+        Gateways["gateway.networking.k8s.io<br/>Gateways"]
+    end
+
+    subgraph ODHResources["ODH/RHOAI Resources"]
+        DashboardCR["components.platform.opendatahub.io<br/>Dashboards"]
+        InferenceServices["serving.kserve.io<br/>InferenceServices"]
+        ServingRuntimes["serving.kserve.io<br/>ServingRuntimes"]
+        ModelRegistries["modelregistry.opendatahub.io<br/>ModelRegistries"]
+        Workspaces["kubeflow.org<br/>Workspaces"]
+        WorkspaceKinds["kubeflow.org<br/>WorkspaceKinds"]
+        KFNotebooks["kubeflow.org<br/>Notebooks"]
+        FeatureStores["feast.dev<br/>FeatureStores"]
+        MLflows["mlflow.opendatahub.io<br/>MLflows"]
+        EvalHubs["trustyai.opendatahub.io<br/>EvalHubs"]
+        NIMAccounts["nim.opendatahub.io<br/>Accounts"]
+        HardwareProfiles["infrastructure.opendatahub.io<br/>HardwareProfiles"]
+        DSClusters["datasciencecluster.opendatahub.io<br/>DataScienceClusters"]
+        DSCInit["dscinitialization.opendatahub.io<br/>DSCInitializations"]
+        DashboardConfig["opendatahub.io<br/>ODHDashboardConfigs"]
+        AccelProfiles["dashboard.opendatahub.io<br/>AcceleratorProfiles"]
+    end
+
+    subgraph AuthResources["Auth/Security Resources"]
+        TokenReviews["authentication.k8s.io<br/>TokenReviews"]
+        SAR["authorization.k8s.io<br/>SubjectAccessReviews"]
+        OAuthClients["oauth.openshift.io<br/>OAuthClients"]
+        Impersonation["core<br/>Users, Groups, SAs<br/>(impersonate)"]
+    end
+
+    %% CRUD permissions
+    CR_Operator -->|"CRUD"| ConfigMaps
+    CR_Operator -->|"CRUD"| Secrets
+    CR_Operator -->|"CRUD"| Services
+    CR_Operator -->|"CRUD"| ServiceAccts
+    CR_Operator -->|"CRUD"| PVCs
+    CR_Operator -->|"get,list,patch,watch"| Namespaces
+    CR_Operator -->|"get,list"| Nodes
+    CR_Operator -->|"get,list,watch"| PVs
+    CR_Operator -->|"get,list,watch"| Pods
+    CR_Operator -->|"create,get,list,patch,watch"| Events
+    CR_Operator -->|"CRUD"| Deployments
+    CR_Operator -->|"CRUD"| ReplicaSets
+    CR_Operator -->|"CRUD"| Roles
+    CR_Operator -->|"CRUD"| RoleBindings
+    CR_Operator -->|"CRUD"| ClusterRolesR
+    CR_Operator -->|"CRUD"| ClusterRoleBindingsR
+    CR_Operator -->|"CRUD"| Routes
+    CR_Operator -->|"CRUD"| NetworkPolicies
+    CR_Operator -->|"CRUD"| HTTPRoutes
+    CR_Operator -->|"get"| Gateways
+    CR_Operator -->|"CRUD"| DashboardCR
+    CR_Operator -->|"get,list,watch"| InferenceServices
+    CR_Operator -->|"CRUD"| ServingRuntimes
+    CR_Operator -->|"CRUD"| ModelRegistries
+    CR_Operator -->|"CRUD"| Workspaces
+    CR_Operator -->|"CRUD"| WorkspaceKinds
+    CR_Operator -->|"CRUD"| KFNotebooks
+    CR_Operator -->|"get,list,watch"| FeatureStores
+    CR_Operator -->|"get,list,watch"| MLflows
+    CR_Operator -->|"get,list,watch"| EvalHubs
+    CR_Operator -->|"CRUD"| NIMAccounts
+    CR_Operator -->|"get,list,watch"| HardwareProfiles
+    CR_Operator -->|"get,list,watch"| DSClusters
+    CR_Operator -->|"get,list,watch"| DSCInit
+    CR_Operator -->|"CRUD"| DashboardConfig
+    CR_Operator -->|"CRUD"| AccelProfiles
+    CR_Operator -->|"create"| TokenReviews
+    CR_Operator -->|"create"| SAR
+    CR_Operator -->|"CRUD"| OAuthClients
+    CR_Operator -->|"impersonate"| Impersonation
+
+    %% Styling
+    style SA_Operator fill:#4a90e2,stroke:#333,color:#fff
+    style SA_Dashboard fill:#4a90e2,stroke:#333,color:#fff
+    style CR_Operator fill:#f5a623,stroke:#333,color:#000
+    style CR_Dashboard fill:#f5a623,stroke:#333,color:#000
+    style CRB_Operator fill:#d5e8d4,stroke:#82b366
+    style CRB_Dashboard fill:#d5e8d4,stroke:#82b366
+    style DashboardCR fill:#7ed321,stroke:#333
+    style InferenceServices fill:#7ed321,stroke:#333
+    style ServingRuntimes fill:#7ed321,stroke:#333
+    style ModelRegistries fill:#7ed321,stroke:#333
+    style Workspaces fill:#7ed321,stroke:#333
+    style WorkspaceKinds fill:#7ed321,stroke:#333
+    style KFNotebooks fill:#7ed321,stroke:#333
+    style FeatureStores fill:#7ed321,stroke:#333
+    style MLflows fill:#7ed321,stroke:#333
+    style EvalHubs fill:#7ed321,stroke:#333
+    style NIMAccounts fill:#7ed321,stroke:#333
+    style TokenReviews fill:#e8e8e8,stroke:#999
+    style SAR fill:#e8e8e8,stroke:#999
+    style OAuthClients fill:#e8e8e8,stroke:#999
+    style Impersonation fill:#e8e8e8,stroke:#999

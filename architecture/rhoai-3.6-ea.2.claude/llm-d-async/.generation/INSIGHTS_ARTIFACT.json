@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "component": "llm-d-async",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "llm-d-async-transport-abstraction-001",
+      "claim": "The pluggable transport layer (redis-pubsub, redis-sortedset, gcp-pubsub) behind the pipeline.Flow interface allows the same worker binary to operate across different message queue backends without code changes.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/server/runner.go:290-331"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/server/options.go:105-108"
+        }
+      ],
+      "reasoning": "The loadFlow function uses a transport type switch to instantiate the correct Flow implementation, and the rest of the runner operates entirely through the pipeline.Flow interface. This decouples the worker lifecycle from any specific message broker.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "llm-d-async-metrics-gate-002",
+      "claim": "Flow-control gates backed by Prometheus queries create a runtime dependency on an external metrics service that, if unavailable, could block inference dispatch for gated worker pools.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/server/runner.go:97-98"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/server/options.go:112-113"
+        }
+      ],
+      "reasoning": "The GateFactory is initialized with a Prometheus URL and used to create per-pool gates. If the Prometheus endpoint becomes unreachable, gate evaluation behavior determines whether requests are admitted or blocked, which is a latent availability risk for metric-gated pools.",
+      "applicability": "cross-component",
+      "confidence": "medium"
+    },
+    {
+      "id": "llm-d-async-fips-strictruntime-003",
+      "claim": "The Konflux build uses GOEXPERIMENT=strictfipsruntime with CGO_ENABLED=1 on a UBI9-pqc base image, establishing build-time FIPS compliance. The application TLS configuration delegates to system crypto with TLS 1.2 minimum.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:6,30,32"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/server/runner.go:419"
+        }
+      ],
+      "reasoning": "The strictfipsruntime experiment tag forces Go to use the system OpenSSL for all crypto operations at runtime. Combined with CGO_ENABLED=1 and the UBI9-pqc base, this satisfies both check-payload validation and application-level FIPS requirements for the Go binary.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "component": "llm-d-latency-predictor",
+  "reads": [
+    {
+      "path": "prediction/prediction_server.py",
+      "line_range": "1-100",
+      "gap_category": ["authentication", "integration_points", "internal_dependencies", "fips_compliance"],
+      "question": "Does the prediction server register any authentication middleware, and what external services does it connect to?",
+      "expected_signal": "middleware registration, auth dependency, HTTP client configuration, external URL references",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Authentication & Authorization", "Integration Points", "Internal Platform Dependencies", "FIPS Compliance"]
+    },
+    {
+      "path": "prediction/prediction_server.py",
+      "line_range": "100-179",
+      "gap_category": ["integration_points", "internal_dependencies"],
+      "question": "How does the ModelSyncer connect to the training server and what protocol/auth does it use?",
+      "expected_signal": "HTTP client setup, URL construction, authentication headers, retry logic",
+      "outcome": "resolved",
+      "sections": ["Integration Points", "Internal Platform Dependencies", "Data Flows", "Architectural Analysis"]
+    },
+    {
+      "path": "prediction/prediction_server.py",
+      "line_range": "1140-1199",
+      "gap_category": ["authentication"],
+      "question": "Are any routes protected by auth dependencies or is the app startup adding middleware?",
+      "expected_signal": "Depends injection, middleware.add, startup auth configuration",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis"]
+    },
+    {
+      "path": "training/training_server.py",
+      "line_range": "1-100",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "Does the training server register any authentication middleware or connect to external services?",
+      "expected_signal": "middleware registration, auth imports, external URL configuration",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile.konflux.prediction",
+      "line_range": "1-27",
+      "gap_category": ["fips_compliance"],
+      "question": "What base image is used and are there any FIPS-related build flags or crypto library installations?",
+      "expected_signal": "AIPCC base image, FIPS build flags, crypto package installation, OpenSSL configuration",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "Dockerfile.konflux.training",
+      "line_range": "1-22",
+      "gap_category": ["fips_compliance"],
+      "question": "What base image is used and are there any FIPS-related build flags?",
+      "expected_signal": "AIPCC base image, FIPS build flags, crypto package installation",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    }
+  ]
+}

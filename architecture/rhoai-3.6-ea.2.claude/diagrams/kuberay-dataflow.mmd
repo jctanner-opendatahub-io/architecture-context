@@ -1,0 +1,55 @@
+sequenceDiagram
+    participant User as User / Platform Controller
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS TLS 1.2+
+    participant Webhook as Webhook Server<br/>HTTPS TLS
+    participant RCCtrl as RayCluster<br/>Reconciler
+    participant AuthCtrl as Authentication<br/>Controller
+    participant MTLSCtrl as mTLS<br/>Controller
+    participant NPCtrl as NetworkPolicy<br/>Controller
+    participant CertMgr as cert-manager
+    participant OpenShift as OpenShift<br/>APIServer Config
+    participant Prometheus as Prometheus<br/>8080/TCP HTTP
+
+    Note over User,Prometheus: CRD Reconciliation Flow
+    User->>K8sAPI: kubectl apply RayCluster CR
+    K8sAPI->>Webhook: POST /mutate-ray-io-v1-raycluster<br/>Admission (TLS)
+    Webhook-->>K8sAPI: Mutated CR
+    K8sAPI->>Webhook: POST /validate-ray-io-v1-raycluster<br/>Admission (TLS)
+    Webhook-->>K8sAPI: Accepted
+    K8sAPI-->>User: CR Created
+
+    K8sAPI->>RCCtrl: Watch event: RayCluster created
+    RCCtrl->>K8sAPI: Create Head Pod<br/>SA token auth
+    RCCtrl->>K8sAPI: Create Worker Pods<br/>SA token auth
+    RCCtrl->>K8sAPI: Create Services<br/>SA token auth
+    RCCtrl->>K8sAPI: Create ServiceAccount<br/>SA token auth
+
+    Note over AuthCtrl,OpenShift: Authentication Injection Flow
+    K8sAPI->>AuthCtrl: Watch event: RayCluster created
+    AuthCtrl->>OpenShift: Detect auth mode<br/>(OAuth vs OIDC)
+    OpenShift-->>AuthCtrl: Cluster configuration
+    AuthCtrl->>K8sAPI: Inject kube-rbac-proxy sidecar<br/>(:8443) into Head Pod
+    AuthCtrl->>K8sAPI: Create HTTPRoute<br/>(Gateway API)
+    AuthCtrl->>K8sAPI: Create ReferenceGrant
+
+    Note over MTLSCtrl,CertMgr: mTLS Certificate Provisioning
+    K8sAPI->>MTLSCtrl: Watch event: RayCluster created
+    MTLSCtrl->>K8sAPI: Create self-signed CA Issuer<br/>(cert-manager)
+    MTLSCtrl->>K8sAPI: Create CA Certificate<br/>(cert-manager)
+    MTLSCtrl->>K8sAPI: Create per-node Certificates
+    CertMgr-->>K8sAPI: ray-head-secret (TLS)
+    CertMgr-->>K8sAPI: ray-worker-secret (TLS)
+
+    Note over NPCtrl: Network Policy Enforcement
+    K8sAPI->>NPCtrl: Watch event: RayCluster created
+    NPCtrl->>K8sAPI: Create NetworkPolicy<br/>for pod-level isolation
+
+    Note over Prometheus: Metrics Collection
+    Prometheus->>RCCtrl: GET /metrics<br/>:8080/TCP HTTP
+    RCCtrl-->>Prometheus: Prometheus metrics
+
+    Note over RCCtrl: Health Probes
+    K8sAPI->>RCCtrl: GET /healthz :8082<br/>Liveness (unauthenticated)
+    RCCtrl-->>K8sAPI: 200 OK
+    K8sAPI->>RCCtrl: GET /readyz :8082<br/>Readiness (unauthenticated)
+    RCCtrl-->>K8sAPI: 200 OK

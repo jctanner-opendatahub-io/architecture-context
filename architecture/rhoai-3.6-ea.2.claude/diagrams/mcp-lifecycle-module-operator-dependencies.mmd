@@ -1,0 +1,52 @@
+graph LR
+    MCPModuleOp["MCP Lifecycle<br/>Module Operator"]
+
+    %% Runtime Framework
+    MCPModuleOp -->|"operator framework"| ControllerRuntime["controller-runtime<br/>v0.24.1"]
+    MCPModuleOp -->|"K8s client"| K8sClientGo["k8s.io/client-go<br/>v0.36.2"]
+    MCPModuleOp -->|"K8s types"| K8sAPI["k8s.io/api<br/>v0.36.2"]
+    MCPModuleOp -->|"K8s machinery"| K8sApimachinery["k8s.io/apimachinery<br/>v0.36.2"]
+
+    %% Internal RHOAI Dependencies
+    MCPModuleOp -->|"platform behaviors<br/>(conditions, phases,<br/>manifest rendering)"| ODHPlatUtils["odh-platform-<br/>utilities v0.2.0"]
+    MCPModuleOp -->|"manifest rendering"| Manifestival["manifestival<br/>v0.7.2"]
+
+    %% OpenShift Dependencies
+    MCPModuleOp -->|"OpenShift types"| OpenshiftAPI["openshift/api"]
+    MCPModuleOp -->|"TLS profile<br/>cipher conversion"| OpenshiftLibGo["openshift/<br/>library-go"]
+    MCPModuleOp -->|"TLS fetching"| OpenshiftCRCommon["openshift/<br/>controller-runtime-common"]
+
+    %% CRD Extensions
+    MCPModuleOp -->|"CRD management"| K8sApiExt["k8s.io/<br/>apiextensions-apiserver<br/>v0.36.2"]
+
+    %% Platform Resources (Runtime)
+    MCPModuleOp -->|"TLS profile<br/>read-only"| APIServer["OpenShift<br/>APIServer"]
+    MCPModuleOp -->|"distribution<br/>detection"| PlatformCM["Platform<br/>ConfigMap"]
+    MCPModuleOp -->|"ServiceMonitor<br/>management"| PrometheusOp["Prometheus<br/>Operator"]
+
+    %% Operand
+    MCPModuleOp -->|"deploys via SSA"| Operand["mcp-lifecycle-operator-<br/>controller-manager"]
+    Operand -->|"manages"| MCPServer["MCPServer CRs"]
+
+    %% Kubernetes API
+    MCPModuleOp -->|"resource operations<br/>6443/TCP"| K8sAPIServer["Kubernetes API"]
+    Operand -->|"resource operations<br/>6443/TCP"| K8sAPIServer
+
+    %% Styling
+    style MCPModuleOp fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style ControllerRuntime fill:#999,stroke:#333
+    style K8sClientGo fill:#999,stroke:#333
+    style K8sAPI fill:#999,stroke:#333
+    style K8sApimachinery fill:#999,stroke:#333
+    style K8sApiExt fill:#999,stroke:#333
+    style ODHPlatUtils fill:#7ed321,stroke:#333,color:#fff
+    style Manifestival fill:#999,stroke:#333
+    style OpenshiftAPI fill:#e06666,stroke:#333,color:#fff
+    style OpenshiftLibGo fill:#e06666,stroke:#333,color:#fff
+    style OpenshiftCRCommon fill:#e06666,stroke:#333,color:#fff
+    style APIServer fill:#e06666,stroke:#333,color:#fff
+    style PlatformCM fill:#7ed321,stroke:#333,color:#fff
+    style PrometheusOp fill:#f5a623,stroke:#333,color:#fff
+    style Operand fill:#7ed321,stroke:#333,color:#fff
+    style MCPServer fill:#f5a623,stroke:#333,color:#fff
+    style K8sAPIServer fill:#f5a623,stroke:#333,color:#fff

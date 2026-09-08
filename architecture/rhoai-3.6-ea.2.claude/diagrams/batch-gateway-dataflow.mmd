@@ -1,0 +1,52 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Gateway as Platform Gateway<br/>(llm-d-inference-gateway)
+    participant API as API Server<br/>8000/TCP (optional TLS)
+    participant PG as PostgreSQL<br/>TCP
+    participant Redis as Redis/Valkey<br/>TCP
+    participant Processor as Batch Processor
+    participant FileStore as File Store<br/>(PVC or S3)
+    participant LLMd as llm-d Inference<br/>Gateway
+    participant GC as Garbage Collector
+    participant OTel as OTel Collector<br/>OTLP/gRPC
+
+    Note over Client, OTel: Flow 1: Batch Job Submission
+    Client->>Gateway: POST /v1/batches<br/>Authorization: Bearer Token
+    Gateway->>API: Forward request<br/>(auth enforced at gateway)
+    API->>API: Middleware: Recovery → RequestMiddleware<br/>(X-MaaS-Username tenant, OTel trace, metrics)
+    API->>FileStore: Store input file<br/>(if inline data)
+    API->>PG: Persist job metadata<br/>(status: pending)
+    API->>Redis: Enqueue job<br/>(llm-d-async producer)
+    API-->>Gateway: 202 Accepted<br/>{batch_id, status: pending}
+    Gateway-->>Client: 202 Accepted
+
+    Note over Client, OTel: Flow 2: File Upload
+    Client->>Gateway: POST /v1/files<br/>multipart/form-data (max 200MB)
+    Gateway->>API: Forward upload
+    API->>FileStore: Store file<br/>(PVC or S3)
+    API->>PG: Record file metadata<br/>(expiry: 90 days)
+    API-->>Gateway: 200 OK {file_id}
+    Gateway-->>Client: 200 OK
+
+    Note over Client, OTel: Flow 3: Batch Job Processing
+    Processor->>Redis: Poll for pending jobs
+    Redis-->>Processor: Job payload
+    Processor->>PG: Update status: processing
+    Processor->>FileStore: Retrieve input file
+    FileStore-->>Processor: Input data
+    Processor->>LLMd: POST inference request<br/>Authorization header passthrough
+    LLMd-->>Processor: Inference result
+    Processor->>FileStore: Write output file
+    Processor->>PG: Update status: completed
+
+    Note over Client, OTel: Flow 4: Garbage Collection
+    GC->>PG: Scan for expired jobs/files
+    PG-->>GC: Expired records
+    GC->>FileStore: Delete expired files
+    GC->>PG: Remove expired records
+
+    Note over Client, OTel: Flow 5: Observability (all components)
+    API->>OTel: Export traces (OTLP/gRPC)
+    Processor->>OTel: Export traces (OTLP/gRPC)
+    GC->>OTel: Export traces (OTLP/gRPC)
+    Note right of API: Prometheus metrics on :8081/metrics<br/>Health checks on :8081/health

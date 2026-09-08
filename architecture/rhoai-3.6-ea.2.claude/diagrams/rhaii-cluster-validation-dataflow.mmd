@@ -1,0 +1,44 @@
+sequenceDiagram
+    participant Operator as Operator Workstation<br/>rhaii-validator CLI
+    participant KubeAPI as Kubernetes API<br/>6443/TCP TLS 1.2+
+    participant NS as rhaii-validation<br/>Namespace
+    participant Job as Probe Job<br/>(GPU Node)
+    participant Host as Host Devices<br/>/sys/class/*
+
+    Note over Operator: Phase 1 - Cleanup & Setup
+    Operator->>KubeAPI: DELETE prior rhaii-validation namespace<br/>Auth: kubeconfig credentials
+    KubeAPI-->>Operator: Namespace deleted (if existed)
+
+    Operator->>KubeAPI: CREATE Namespace rhaii-validation
+    KubeAPI-->>Operator: Namespace created
+
+    Operator->>KubeAPI: CREATE ServiceAccount rhaii-validator
+    KubeAPI-->>Operator: SA created
+
+    Operator->>KubeAPI: CREATE ClusterRole rhaii-validator<br/>(empty rules - SCC subject only)
+    Operator->>KubeAPI: CREATE ClusterRoleBinding<br/>SCC: privileged
+    KubeAPI-->>Operator: RBAC provisioned
+
+    Note over Operator: Phase 2 - Deploy Probe Jobs
+    Operator->>KubeAPI: CREATE Job (gpu-check / rdma-check / etc.)<br/>nodeSelector: GPU nodes<br/>SA: rhaii-validator (privileged SCC)
+    KubeAPI->>Job: Schedule on GPU node
+
+    Note over Job: Phase 3 - Agent Execution
+    Job->>Host: Read GPU driver version, ECC status<br/>via /sys/class/drm, nvidia-smi
+    Host-->>Job: GPU health data
+    Job->>Host: Read RDMA devices, NIC status<br/>via /sys/class/infiniband
+    Host-->>Job: RDMA/IB device data
+    Job->>Host: PCI topology scan<br/>GPU-NIC affinity
+    Host-->>Job: Topology data
+
+    Note over Job: Phase 4 - Result Collection
+    Job->>KubeAPI: CREATE ConfigMap (mesh results)<br/>namespace: rhaii-validation
+    Job-->>Job: Write results to stdout
+
+    Note over Operator: Phase 5 - Collect & Report
+    Operator->>KubeAPI: GET Pod logs (Job results)<br/>via Kubernetes log API
+    KubeAPI-->>Operator: stdout results
+    Operator->>KubeAPI: GET ConfigMaps (mesh topology)<br/>namespace: rhaii-validation
+    KubeAPI-->>Operator: ConfigMap data
+
+    Note over Operator: Validation report generated

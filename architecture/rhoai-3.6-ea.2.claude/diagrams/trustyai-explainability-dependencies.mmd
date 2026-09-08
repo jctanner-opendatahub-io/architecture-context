@@ -1,0 +1,31 @@
+graph LR
+    TrustyAI["TrustyAI Explainability<br/>Quarkus 3.8 Native"]
+
+    %% Internal Platform Dependencies
+    TrustyAI -->|"receives inference<br/>payloads via<br/>/consumer/kserve/v2"| KServe["KServe/ModelMesh"]
+    TrustyAI -->|"exports metrics<br/>at /q/metrics"| Prometheus["Prometheus"]
+    TrustyAI -.->|"optional storage<br/>backend (Hibernate ORM)"| MariaDB["MariaDB/MySQL"]
+
+    %% Infrastructure Dependencies
+    TrustyAI -->|"ConfigMap CRUD<br/>(init container)"| K8sAPI["Kubernetes API"]
+    TrustyAI -->|"PVC mount<br/>/inputs"| PVC["PVC Storage"]
+
+    %% Outbound (disabled in RHOAI)
+    TrustyAI -.->|"gRPC predictions<br/>(DISABLED in RHOAI)"| KServeInference["KServe Inference<br/>Services"]
+
+    %% Exposure
+    Route["OpenShift Route"] -->|"HTTP 80→8080"| TrustyAI
+
+    %% Integration Points
+    KServe -->|"inference payloads<br/>HTTP POST"| TrustyAI
+    Prometheus -->|"scrape metrics<br/>HTTP GET"| TrustyAI
+
+    %% Styling
+    style TrustyAI fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style KServe fill:#7ed321,stroke:#333
+    style Prometheus fill:#7ed321,stroke:#333
+    style MariaDB fill:#999,stroke:#333,stroke-dasharray: 5 5
+    style K8sAPI fill:#f5a623,stroke:#333
+    style PVC fill:#f5a623,stroke:#333
+    style KServeInference fill:#e0e0e0,stroke:#999,stroke-dasharray: 5 5
+    style Route fill:#ddd,stroke:#333

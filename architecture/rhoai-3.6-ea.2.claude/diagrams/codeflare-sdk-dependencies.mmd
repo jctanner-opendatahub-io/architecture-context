@@ -1,0 +1,30 @@
+graph LR
+    CodeFlareSDK["CodeFlare SDK<br/>(Python Client Library)"]
+
+    %% External Dependencies
+    CodeFlareSDK -->|"Python client<br/>kubernetes >= 25.0.0"| K8sAPI["Kubernetes API<br/>Server"]
+    CodeFlareSDK -->|"Python runtime<br/>^3.11"| Python["Python 3.11+"]
+    CodeFlareSDK -->|"TLS cert generation<br/>>= 46.0.7"| Cryptography["cryptography<br/>(OpenSSL backend)"]
+
+    %% Internal ODH Dependencies
+    CodeFlareSDK -->|"CRD management<br/>vendored client"| KubeRay["KubeRay Operator"]
+    CodeFlareSDK -->|"queue scheduling<br/>annotations"| Kueue["Kueue"]
+    CodeFlareSDK -->|"distributed compute<br/>orchestration"| Ray["Ray"]
+    CodeFlareSDK -->|"auth auto-detection"| KubeAuthkit["kube-authkit"]
+
+    %% Integration Points (inbound)
+    Notebooks["ODH Notebooks /<br/>Workbenches"] -->|"imports SDK"| CodeFlareSDK
+
+    %% External Services
+    CodeFlareSDK -->|"direct HTTP<br/>job submission"| RayDashboard["Ray Dashboard"]
+
+    style CodeFlareSDK fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style K8sAPI fill:#f5a623,stroke:#333,color:#fff
+    style Python fill:#999,stroke:#333,color:#fff
+    style Cryptography fill:#999,stroke:#333,color:#fff
+    style KubeRay fill:#7ed321,stroke:#333,color:#fff
+    style Kueue fill:#7ed321,stroke:#333,color:#fff
+    style Ray fill:#7ed321,stroke:#333,color:#fff
+    style KubeAuthkit fill:#7ed321,stroke:#333,color:#fff
+    style Notebooks fill:#7ed321,stroke:#333,color:#fff
+    style RayDashboard fill:#f5a623,stroke:#333,color:#fff

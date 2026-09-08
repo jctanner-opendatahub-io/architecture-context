@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "component": "kserve-autogluon-server",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "kserve-autogluon-server-fips-split-001",
+      "claim": "The autogluon server's FIPS posture is split: the Python serving container inherits FIPS from the AIPCC UBI9 base image and system OpenSSL, while the upstream Go manager Dockerfile uses static linking (CGO_ENABLED=0) on distroless, which would fail check-payload validation.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux.autogluon:1 (AIPCC base image)"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile:19 (CGO_ENABLED=0)"
+        }
+      ],
+      "reasoning": "The Konflux autogluon Dockerfile uses registry.redhat.io/rhai/base-image-cpu-rhel9 which provides system OpenSSL and FIPS support through the platform. The upstream Dockerfile builds with CGO_ENABLED=0 producing a statically linked binary on distroless/static:nonroot without OpenSSL, which cannot pass Konflux check-payload FIPS validation. The downstream Konflux build for the Go manager likely uses a separate FIPS-compliant Dockerfile not scoped to this autogluon server analysis.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "kserve-autogluon-server-auth-delegation-002",
+      "claim": "The Python model servers (including autogluonserver) expose HTTP and gRPC inference endpoints without built-in authentication middleware, delegating authentication enforcement to the platform ingress layer.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/authentication (HTTP API :: All :: None)"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "python/autogluonserver/pyproject.toml:9 (kserve dependency, no auth packages)"
+        }
+      ],
+      "reasoning": "The analyzer detected no authentication middleware in the Python model server surface. The autogluonserver pyproject.toml depends only on kserve SDK, kserve-storage, and autogluon framework libraries with no authentication packages. The kserve SDK dependency on pyjwt exists at the SDK level but no middleware registration was detected. Platform-level authentication (e.g., Istio AuthorizationPolicy, Gateway API auth) is expected to protect inference endpoints.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "kserve-autogluon-server-rh-patched-003",
+      "claim": "AutoGluon framework dependencies use Red Hat-patched versions (v1.5.0+rhaiv.3) installed from the RHEL AI Python Package Index, indicating a managed supply chain for ML framework libraries.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "python/autogluonserver/pyproject.toml:11-12 (autogluon.tabular==1.5.0+rhaiv.3)"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux.autogluon:21 (RHEL AI PyPI index)"
+        }
+      ],
+      "reasoning": "The autogluonserver pyproject.toml pins autogluon.tabular and autogluon.timeseries to ==1.5.0+rhaiv.3, a Red Hat-patched version suffix. The Konflux Dockerfile installs from the RHEL AI Python Package Index (console.redhat.com/api/pypi/public-rhai/rhoai/3.5-EA2/cpu-ubi9/simple/). This establishes a managed supply chain for ML framework binaries distinct from upstream PyPI.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

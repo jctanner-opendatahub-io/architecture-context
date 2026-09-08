@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "component": "kubeflow",
+  "reads": [
+    {
+      "path": "components/notebook-controller/Dockerfile.konflux",
+      "line_range": "1-58",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags are used for the notebook-controller Konflux build?",
+      "expected_signal": "GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1, or similar FIPS build configuration",
+      "outcome": "resolved",
+      "sections": ["Security / FIPS Compliance"]
+    },
+    {
+      "path": "components/odh-notebook-controller/Dockerfile.konflux",
+      "line_range": "1-52",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags are used for the odh-notebook-controller Konflux build?",
+      "expected_signal": "GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1, or similar FIPS build configuration",
+      "outcome": "resolved",
+      "sections": ["Security / FIPS Compliance"]
+    },
+    {
+      "path": "components/odh-notebook-controller/controllers/notebook_dspa_secret.go",
+      "line_range": "1-60",
+      "gap_category": ["internal_dependencies", "integration_points"],
+      "question": "How does the odh-notebook-controller interact with data-science-pipelines-operator beyond Go library import?",
+      "expected_signal": "CRD read, client.Get, typed API usage for DataSciencePipelinesApplication",
+      "outcome": "resolved",
+      "sections": ["Internal Platform Dependencies", "Integration Points", "Data Flows"]
+    },
+    {
+      "path": "components/odh-notebook-controller/controllers/notebook_mutating_webhook.go",
+      "line_range": "1-80",
+      "gap_category": ["authentication"],
+      "question": "What authentication mechanism does the mutating webhook enforce, and does it inject authentication sidecars?",
+      "expected_signal": "kubebuilder webhook marker, admission handler, kube-rbac-proxy injection",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Architectural Analysis"]
+    },
+    {
+      "path": "components/odh-notebook-controller/main.go",
+      "line_range": "130-209",
+      "gap_category": ["authentication", "fips_compliance"],
+      "question": "How is TLS configured for the webhook and metrics servers, and what authentication flags are required?",
+      "expected_signal": "TLS profile fetch, kube-rbac-proxy image flag, webhook port and cert configuration",
+      "outcome": "resolved",
+      "sections": ["Security / FIPS Compliance", "Authentication & Authorization", "Architectural Analysis"]
+    }
+  ]
+}

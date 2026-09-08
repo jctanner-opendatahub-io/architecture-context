@@ -1,0 +1,98 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  CI/CD BUILD ENVIRONMENT (Build-Time Only)                              │
+│                                                                          │
+│  [model-extractor CLI]                                                   │
+│  - Language: Go 1.24                                                     │
+│  - Build: CGO_ENABLED=0 (static binary)                                 │
+│  - NOT shipped in production image                                       │
+│         │                                                                │
+│         │ Port: 443/TCP                                                  │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (Go stdlib net/http)                           │
+│         │ Auth: Bearer token (HF_TOKEN env var, optional)                │
+│         ▼                                                                │
+│  [HuggingFace API - huggingface.co/api]                                 │
+│  - Purpose: Fetch model collections, model cards, enrichment             │
+│  - Auth: Optional Bearer token; higher rate limits when authenticated    │
+│  - Encryption: TLS                                                       │
+│                                                                          │
+│  [model-extractor CLI]                                                   │
+│         │                                                                │
+│         │ Port: 443/TCP                                                  │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS (Go stdlib net/http)                           │
+│         │ Auth: Bearer token (GITHUB_TOKEN env var, optional)            │
+│         ▼                                                                │
+│  [GitHub API - api.github.com]                                           │
+│  - Purpose: Fetch agent metadata and README files                        │
+│  - Auth: Optional Bearer token; higher rate limits when authenticated    │
+│  - Encryption: TLS                                                       │
+│                                                                          │
+│  [model-extractor CLI]                                                   │
+│         │                                                                │
+│         │ Port: 443/TCP                                                  │
+│         │ Protocol: HTTPS                                                │
+│         │ Encryption: TLS                                                │
+│         │ Auth: Container registry credential chain (containers/image)   │
+│         ▼                                                                │
+│  [OCI Container Registries]                                              │
+│  - Purpose: Inspect container image manifests for architecture info      │
+│  - Auth: Registry credential chain via containers/image library          │
+│  - Encryption: TLS                                                       │
+│                                                                          │
+│  [metadata-report CLI]                                                   │
+│  - Reads locally generated YAML files only                               │
+│  - No network access                                                     │
+│  - NOT shipped in production image                                       │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PRODUCTION RUNTIME (Data Sidecar)                                      │
+│                                                                          │
+│  [Data Sidecar Container]                                                │
+│  - Base image: ubi-minimal-pqc                                           │
+│  - User: UID 1001 (non-root)                                             │
+│  - CMD: sleep infinity                                                   │
+│  - No Go binaries shipped                                                │
+│  - No network listeners                                                  │
+│  - No outbound network connections                                       │
+│                                                                          │
+│  Volume Mount: /app/data (read-only YAML catalog files)                  │
+│         ▲                                                                │
+│         │                                                                │
+│         │ Mount: Volume                                                  │
+│         │ Protocol: Filesystem (local)                                   │
+│         │ Auth: Kubernetes pod volume mount                              │
+│         │ Data: Static YAML catalogs and index files                     │
+│         │                                                                │
+│  [Other RHOAI Platform Components]                                       │
+│  - Purpose: Read model catalog data for platform operations              │
+│  - Access: Volume mount (no network required)                            │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- No cluster roles or role bindings defined in this repository
+- Container deployment managed externally by platform operator
+
+Secrets / Credentials:
+- HF_TOKEN (env var, optional): HuggingFace API Bearer token
+  - Used only at CI/CD build time by model-extractor
+  - Not present in production container image
+- GITHUB_TOKEN (env var, optional): GitHub API Bearer token
+  - Used only at CI/CD build time by model-extractor
+  - Not present in production container image
+- OCI registry credentials: Standard containers/image credential chain
+  - Used only at CI/CD build time by model-extractor
+  - Not present in production container image
+
+FIPS Compliance:
+- Production image: Data-only, no Go binaries, no TLS-terminating code
+- FIPS compliance inherited from ubi-minimal-pqc base image
+- CI/CD Go binaries built with CGO_ENABLED=0 (would fail check-payload)
+  but are NOT included in production image
+
+Attack Surface:
+- Production: Minimal — no network listeners, no binaries, data-only container
+- CI/CD: External API calls to HuggingFace, GitHub, OCI registries over TLS

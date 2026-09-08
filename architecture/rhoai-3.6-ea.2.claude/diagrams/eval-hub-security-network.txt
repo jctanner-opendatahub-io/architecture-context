@@ -1,0 +1,122 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client]                                                       │
+│         │                                                                │
+│         │ Port: 8080/TCP                                                 │
+│         │ Protocol: HTTP or HTTPS                                        │
+│         │ Encryption: TLS 1.2-1.3 (when TLS enabled)                     │
+│         │ Auth: X-User + X-Tenant headers (conditional)                  │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  APPLICATION LAYER                                                       │
+│                                                                          │
+│  [eval-hub API Server]                                                   │
+│  - Port: 8080/TCP (API)                                                  │
+│  - TLS: MinVersion 1.2, MaxVersion 1.3 (when enabled)                   │
+│  - FIPS: strictfipsruntime + CGO_ENABLED=1 (OpenSSL via UBI9 PQC)       │
+│  - FIPS Guard: Rejects InsecureSkipVerify when /proc/sys/crypto/         │
+│    fips_enabled is set                                                    │
+│  - Identity: X-User and X-Tenant headers required when                   │
+│    RequiresIdentityHeaders() returns true                                │
+│  - Unauthenticated routes: /api/v1/health, /docs, /openapi.yaml         │
+│  - Authenticated routes: /api/v1/evaluations/{jobs,collections,          │
+│    providers}                                                             │
+│                                                                          │
+│  [Metrics Server]                                                        │
+│  - Port: separate (cluster mode) or 8080 (local mode)                   │
+│  - Endpoint: /metrics                                                    │
+│  - Protocol: HTTP                                                        │
+│  - Auth: None (Prometheus scrape)                                        │
+│                                                                          │
+│  [evalhub-mcp Server]                                                    │
+│  - Endpoint: / (MCP), /health (probe)                                    │
+│  - Protocol: HTTP                                                        │
+│         │                                                                │
+│         │                                                                │
+├─────────┼───────────────────────────────────────────────────────────────┤
+│  KUBERNETES CLUSTER INTERNAL                                             │
+│         │                                                                │
+│         ├──────────────────────────────────────────┐                     │
+│         │                                          │                     │
+│         │ Port: 6443/TCP                           │                     │
+│         │ Protocol: HTTPS/WSS                      │                     │
+│         │ Encryption: TLS 1.2+                     │                     │
+│         │ Auth: ServiceAccount token               │                     │
+│         ▼                                          │                     │
+│  [Kubernetes API Server]                           │                     │
+│  - Resources managed:                              │                     │
+│    - ConfigMaps (create)                           │                     │
+│    - Secrets (create)                              │                     │
+│    - Jobs/batch/v1 (create)                        │                     │
+│    - Events (create via event recorder)            │                     │
+│    - HardwareProfiles/infrastructure.              │                     │
+│      opendatahub.io/v1 (get, delete)              │                     │
+│                                                    │                     │
+│  [eval-runtime-init Container]                     │                     │
+│  - Role: Init container in evaluation Jobs         │                     │
+│  - Downloads test data from S3                     │                     │
+│                                                    │                     │
+│  [eval-runtime-sidecar Container]                  │                     │
+│  - Role: Sidecar in evaluation Jobs                │                     │
+│  - Manages evaluation lifecycle                    │                     │
+│                                                    │                     │
+├────────────────────────────────────────────────────┼─────────────────────┤
+│  EXTERNAL SERVICES                                 │                     │
+│                                                    │                     │
+│  [PostgreSQL Database]                              │                     │
+│  - Protocol: TCP (pgx driver)                       │                     │
+│  - Encryption: Configured by runtime                │                     │
+│  - Auth: Connection string credentials              │                     │
+│  - OTel instrumented (otelsql)                      │                     │
+│  - Serialization failure retry logic                │                     │
+│                                                      │                     │
+│  [SQLite Database]  (alternative backend)            │                     │
+│  - Protocol: Local file                              │                     │
+│  - Encryption: N/A                                   │                     │
+│  - Driver: modernc.org/sqlite                        │                     │
+│                                                      │                     │
+│  [S3-compatible Storage]                             │                     │
+│  - Protocol: HTTP/HTTPS                              │                     │
+│  - Encryption: Configured by runtime                 │                     │
+│  - Auth: AWS SDK v2 credentials                      │                     │
+│  - Purpose: Test data artifact storage               │                     │
+│                                                      │                     │
+│  [MLflow Tracking Server]                            │                     │
+│  - Protocol: HTTP/HTTPS                              │                     │
+│  - Encryption: Configurable TLS with CA cert         │                     │
+│  - Auth: Optional token authentication               │                     │
+│  - Purpose: Experiment tracking                      │                     │
+│                                                      │                     │
+│  [OpenTelemetry Collector]                           │                     │
+│  - Protocol: OTLP/gRPC                               │                     │
+│  - Encryption: Configured by runtime                 │                     │
+│  - Purpose: Trace, metric, and log export             │                     │
+│                                                      │                     │
+└──────────────────────────────────────────────────────┘
+
+Authentication & Authorization Summary:
+- /api/v1/evaluations/jobs       - ALL methods - Conditional: X-User + X-Tenant headers
+- /api/v1/evaluations/collections - ALL methods - Conditional: X-User + X-Tenant headers
+- /api/v1/evaluations/providers  - ALL methods - Conditional: X-User + X-Tenant headers
+- /api/v1/health                 - GET         - None (unauthenticated)
+- /docs                          - GET         - None (unauthenticated)
+- /openapi.yaml                  - GET         - None (unauthenticated)
+- Kubernetes API                 - REST        - ServiceAccount / kubeconfig credentials
+
+FIPS Compliance:
+- Build: GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1 (dynamic linking)
+- Base image: UBI9 PQC (Post-Quantum Cryptography) minimal
+- Runtime: TLS 1.2 min / TLS 1.3 max
+- Guard: InsecureSkipVerify rejected when /proc/sys/crypto/fips_enabled is set
+- Crypto: stdlib crypto/tls routed through OpenSSL via strictfipsruntime
+
+RBAC Summary:
+- No ClusterRoles or RoleBindings defined in this repository
+- Kubernetes access uses ServiceAccount token (in-cluster) or kubeconfig credentials
+
+Secrets:
+- No secrets defined in this repository
+- Storage credentials configured via runtime configuration
+- MLflow token configured via runtime configuration
+- TLS cert/key files configured via server configuration

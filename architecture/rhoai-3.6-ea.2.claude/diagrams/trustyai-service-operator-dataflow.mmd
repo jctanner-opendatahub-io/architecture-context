@@ -1,0 +1,46 @@
+sequenceDiagram
+    participant User as User / Platform
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant Manager as Manager Process
+    participant APIServer as OpenShift APIServer<br/>TLS Profile
+    participant DSC as trustyai-dsc-config<br/>ConfigMap
+    participant OTel as OpenTelemetry Collector<br/>OTLP gRPC/HTTP
+
+    Note over Manager: Startup & Configuration
+    Manager->>APIServer: Read TLS profile (10s timeout)
+    APIServer-->>Manager: TLS cipher suites + ALPN config
+    Note over Manager: Falls back to intermediate<br/>ciphers on non-OpenShift
+    Manager->>DSC: Read eval security policies
+    DSC-->>Manager: permitOnline, permitCodeExecution
+    Manager->>Manager: Register all reconciler controllers<br/>Configure metrics server auth
+
+    Note over User,OTel: TrustyAI Service Lifecycle
+    User->>K8sAPI: Create TrustyAIService CR
+    K8sAPI-->>Manager: Watch notification
+    Manager->>K8sAPI: Create Deployment<br/>(TrustyAI + kube-rbac-proxy sidecar)
+    Manager->>K8sAPI: Create Secret (TLS cert)
+    Manager->>K8sAPI: Create ClusterIP Service<br/>(443→8443 TLS)
+    Manager->>K8sAPI: Create Route / VirtualService
+    Manager->>K8sAPI: Create RBAC bindings<br/>(proxy-role, auth-reviewer)
+
+    Note over User,OTel: Evaluation & Guardrails Flow
+    User->>K8sAPI: Create EvalHub CR
+    K8sAPI-->>Manager: Watch notification
+    Manager->>K8sAPI: Create eval Deployment + Service
+    Manager->>K8sAPI: Create ServiceMonitor
+    Manager->>K8sAPI: Create Route (per evaluation)
+    Manager->>K8sAPI: Create ClusterRoleBinding
+
+    User->>K8sAPI: Create LMEvalJob CR
+    K8sAPI-->>Manager: Watch notification
+    Manager->>K8sAPI: Create eval Pod + PVC
+    Manager->>K8sAPI: Create Kueue Workload
+
+    Note over User,OTel: Guardrails Coordination
+    K8sAPI-->>Manager: InferenceService watch event
+    Manager->>Manager: GuardrailsOrchestrator<br/>coordinates with model serving
+
+    Note over User,OTel: Observability
+    Manager->>OTel: Export traces (OTLP gRPC/HTTP)
+    Manager->>OTel: Export metrics (OTLP)
+    Note over Manager: Prometheus scrapes<br/>metrics endpoint<br/>(conditional auth)

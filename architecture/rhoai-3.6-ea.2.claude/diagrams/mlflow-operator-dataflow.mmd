@@ -1,0 +1,69 @@
+sequenceDiagram
+    participant User as User / kubectl
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant MLflowCtrl as MLflowReconciler
+    participant MLflowOpCtrl as MLflowOperatorReconciler
+    participant NSRBACCtrl as NamespaceRBACReconciler
+    participant Helm as Helm Chart Engine<br/>(embedded charts/mlflow)
+    participant TargetNS as Target Namespace
+    participant GatewayAPI as Gateway API<br/>(conditional)
+    participant Prometheus as prometheus-operator<br/>(conditional)
+    participant Console as OpenShift Console<br/>(conditional)
+
+    Note over MLflowCtrl,MLflowOpCtrl: Startup: Discovery API checks for<br/>HTTPRoute, ConsoleLink, ServiceMonitor CRDs
+
+    rect rgb(230, 245, 255)
+        Note right of User: Control Plane Reconciliation
+        User->>K8sAPI: Create/Update MLflow CR
+        K8sAPI-->>MLflowCtrl: Watch event (MLflow CR change)
+        MLflowCtrl->>Helm: Render chart templates
+        Helm-->>MLflowCtrl: Kubernetes manifests
+        MLflowCtrl->>K8sAPI: Apply Deployment<br/>(owner ref → MLflow CR)
+        MLflowCtrl->>K8sAPI: Apply Service<br/>(owner ref → MLflow CR)
+        MLflowCtrl->>K8sAPI: Apply ServiceAccount<br/>(owner ref → MLflow CR)
+        MLflowCtrl->>K8sAPI: Apply PVC<br/>(owner ref → MLflow CR)
+        MLflowCtrl->>K8sAPI: Apply NetworkPolicy<br/>(owner ref → MLflow CR)
+        MLflowCtrl->>K8sAPI: Apply CronJob<br/>(owner ref → MLflow CR)
+        MLflowCtrl->>K8sAPI: Update MLflow CR status
+    end
+
+    rect rgb(255, 243, 224)
+        Note right of User: Platform Lifecycle Bridge
+        User->>K8sAPI: Create/Update MLflowOperator CR
+        K8sAPI-->>MLflowOpCtrl: Watch event (MLflowOperator CR change)
+        MLflowOpCtrl->>K8sAPI: Read ConfigMaps
+        MLflowOpCtrl->>K8sAPI: Trigger MLflow instance reconciliation
+        K8sAPI-->>MLflowCtrl: Watch event (cross-reference)
+        MLflowCtrl->>Helm: Re-render with updated config
+    end
+
+    rect rgb(232, 245, 233)
+        Note right of User: Conditional Platform Integrations
+        MLflowCtrl->>K8sAPI: Check HTTPRoute CRD exists
+        K8sAPI-->>MLflowCtrl: CRD available
+        MLflowCtrl->>GatewayAPI: Create/Update HTTPRoute<br/>(external routing)
+
+        MLflowCtrl->>K8sAPI: Check ServiceMonitor CRD exists
+        K8sAPI-->>MLflowCtrl: CRD available
+        MLflowCtrl->>Prometheus: Create/Update ServiceMonitor<br/>(metrics collection)
+
+        MLflowCtrl->>K8sAPI: Check ConsoleLink CRD exists
+        K8sAPI-->>MLflowCtrl: CRD available
+        MLflowCtrl->>Console: Create/Update ConsoleLink<br/>(UI integration)
+    end
+
+    rect rgb(243, 229, 245)
+        Note right of User: RBAC Propagation
+        K8sAPI-->>NSRBACCtrl: Watch event (Namespace with workspace label)
+        K8sAPI-->>NSRBACCtrl: Watch event (Auth CR change)
+        K8sAPI-->>NSRBACCtrl: Watch event (MLflow CR change)
+        NSRBACCtrl->>TargetNS: Create/Update mlflow-view RoleBinding
+        NSRBACCtrl->>TargetNS: Create/Update mlflow-edit RoleBinding
+    end
+
+    rect rgb(255, 235, 238)
+        Note right of User: Metrics & Health
+        Note over MLflowCtrl: :8081/healthz — unauthenticated
+        Note over MLflowCtrl: :8081/readyz — unauthenticated
+        Note over MLflowCtrl: :8443/metrics — TLS +<br/>TokenReview/SAR auth
+    end

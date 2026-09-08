@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "component": "ml-metadata",
+  "reads": [
+    {
+      "path": "ml_metadata/tools/docker_server/Dockerfile.konflux",
+      "line_range": "1-69",
+      "gap_category": ["grpc_services", "fips_compliance", "authentication", "integration_points"],
+      "question": "What gRPC port, entrypoint, base image, and build dependencies does the Konflux Dockerfile use?",
+      "expected_signal": "GRPC_PORT env var, ENTRYPOINT command, base image reference, openssl/crypto packages",
+      "outcome": "resolved",
+      "sections": ["gRPC Services", "FIPS Compliance", "Architectural Analysis", "Purpose", "Integration Points"]
+    },
+    {
+      "path": "ml_metadata/tools/docker_server/Dockerfile.redhat",
+      "line_range": "1-66",
+      "gap_category": ["grpc_services", "integration_points"],
+      "question": "What gRPC port and database connector libraries does the Red Hat Dockerfile use?",
+      "expected_signal": "GRPC_PORT env var, entrypoint flags, mariadb-connector copy step",
+      "outcome": "resolved",
+      "sections": ["gRPC Services", "Integration Points", "Purpose"]
+    },
+    {
+      "path": "ml_metadata/proto/metadata_store_service.proto",
+      "line_range": "1140-1320",
+      "gap_category": ["grpc_services"],
+      "question": "What is the gRPC service name and what RPCs does it expose?",
+      "expected_signal": "service definition with rpc methods for metadata CRUD operations",
+      "outcome": "resolved",
+      "sections": ["gRPC Services", "Purpose", "Architectural Analysis"]
+    },
+    {
+      "path": "ml_metadata/proto/metadata_store.proto",
+      "line_range": "607-874",
+      "gap_category": ["authentication", "integration_points", "fips_compliance", "internal_dependencies"],
+      "question": "What database backends, SSL/auth configuration, and server config options does the metadata store support?",
+      "expected_signal": "MetadataStoreServerConfig with SSLConfig, ConnectionConfig with MySQL/PostgreSQL/SQLite options, database SSL options",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Integration Points", "Internal Platform Dependencies", "FIPS Compliance", "Data Flows"],
+      "scope_reason": "Multiple bounded reads across the file were needed: database config (607-656), PostgreSQL config (694-754), ConnectionConfig/GrpcChannelArguments (788-815), and MetadataStoreServerConfig/SSLConfig (852-874). Each range addresses a different gap facet that could not be narrowed to a single symbol."
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+graph TB
+    subgraph ClusterInternal["CLUSTER INTERNAL (RBAC Enforced)"]
+        direction TB
+
+        subgraph ControllerPod["controller-manager Pod<br/>SA: controller-manager"]
+            direction TB
+            Manager["Manager Process<br/>Image: controller:latest"]
+            MetricsPort[":8443/TCP Metrics<br/>Self-signed TLS<br/>TokenReview + SAR"]
+            HealthPort[":8081/TCP Health<br/>HTTP Plaintext<br/>No Auth (by design)"]
+        end
+
+        subgraph MetricsService["controller-manager-metrics-service"]
+            SvcPort["ClusterIP<br/>8443/TCP -> 8443/TCP"]
+        end
+
+        subgraph Monitoring["Prometheus Monitoring"]
+            PromStack["kube-prometheus-stack<br/>SA: kube-prometheus-stack-prometheus<br/>RoleBinding: metrics-reader"]
+        end
+
+        SvcPort -->|"TCP/8443<br/>Self-signed TLS<br/>TokenReview + SAR"| MetricsPort
+        PromStack -->|"scrapes via<br/>ServiceMonitor"| SvcPort
+    end
+
+    subgraph KubeControl["KUBERNETES CONTROL PLANE"]
+        K8sAPI["Kubernetes API Server<br/>6443/TCP<br/>TLS 1.2+"]
+    end
+
+    subgraph PromServer["PROMETHEUS (Metrics Source)"]
+        Prometheus["Prometheus HTTP API<br/>Configurable Port<br/>TLS 1.2+ (min)<br/>Optional CA + mTLS"]
+    end
+
+    subgraph WatchedResources["WATCHED RESOURCES (via K8s API)"]
+        ConfigMaps["ConfigMaps"]
+        HPAs["HorizontalPodAutoscalers"]
+        InferencePools["InferencePools<br/>(inference.networking.k8s.io)"]
+        ScaledObjects["ScaledObjects<br/>(keda.sh)"]
+        Nodes["Nodes + ResourceQuotas"]
+    end
+
+    subgraph ScaleTargets["SCALE TARGETS (via K8s API)"]
+        Deployments["Deployments<br/>(apps/v1)"]
+        LWS["LeaderWorkerSets<br/>(leaderworkerset.x-k8s.io)"]
+    end
+
+    %% Flows
+    Manager -->|"HTTPS/6443<br/>TLS 1.2+<br/>SA Token (in-cluster)<br/>RBAC: manager-role"| K8sAPI
+    Manager -->|"HTTPS<br/>TLS 1.2+<br/>Bearer Token<br/>Optional mTLS"| Prometheus
+
+    K8sAPI -->|"Watch streams<br/>TLS 1.2+"| ConfigMaps
+    K8sAPI -->|"Watch streams<br/>TLS 1.2+"| HPAs
+    K8sAPI -->|"Watch streams<br/>TLS 1.2+"| InferencePools
+    K8sAPI -->|"Watch streams<br/>TLS 1.2+"| ScaledObjects
+    K8sAPI -->|"List<br/>TLS 1.2+"| Nodes
+
+    Manager -->|"PATCH Scale subresource<br/>autoscaling/v1<br/>TLS 1.2+"| Deployments
+    Manager -->|"PATCH Scale subresource<br/>autoscaling/v1<br/>TLS 1.2+"| LWS
+
+    %% Styling
+    classDef controller fill:#4a90e2,stroke:#333,color:#fff,stroke-width:2px
+    classDef service fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef kubeapi fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef target fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef monitoring fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+
+    class Manager,MetricsPort,HealthPort controller
+    class SvcPort service
+    class Prometheus external
+    class K8sAPI kubeapi
+    class ConfigMaps,HPAs,InferencePools,ScaledObjects,Nodes target
+    class Deployments,LWS target
+    class PromStack monitoring

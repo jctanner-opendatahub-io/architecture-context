@@ -1,0 +1,75 @@
+sequenceDiagram
+    participant User as Platform Operator
+    participant Route as OpenShift Route<br/>(TLS Termination)
+    participant UI as Streamlit UI<br/>8501/TCP
+    participant Backend as FastAPI Backend<br/>8000/TCP
+    participant Ollama as Ollama LLM<br/>11434/TCP HTTP
+    participant OpenAI as OpenAI API<br/>HTTPS
+    participant VertexAI as Vertex AI (Claude)<br/>443/TCP HTTPS
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant HFHub as HuggingFace Hub<br/>HTTPS
+
+    Note over User, HFHub: Deployment Planning Flow
+
+    User->>Route: HTTPS Request
+    Route->>UI: HTTP/8501 (TLS terminated)
+    UI->>Backend: POST /api/v1/extract-intent<br/>HTTP/8000
+
+    alt LLM_PROVIDER=ollama (default)
+        Backend->>Ollama: POST /v1/chat/completions<br/>HTTP/11434 (no encryption)
+        Ollama-->>Backend: Intent extraction result
+    else LLM_PROVIDER=openai
+        Backend->>OpenAI: POST /v1/chat/completions<br/>HTTPS, API Key auth
+        OpenAI-->>Backend: Intent extraction result
+    else LLM_PROVIDER=vertex
+        Backend->>VertexAI: POST /v1/messages<br/>HTTPS/443, GCP credentials
+        VertexAI-->>Backend: Intent extraction result
+    end
+
+    Backend-->>UI: Extracted intent JSON
+    UI-->>Route: Response
+    Route-->>User: HTTPS Response
+
+    Note over User, HFHub: GPU Detection & Capacity Planning Flow
+
+    User->>Route: HTTPS Request
+    Route->>Backend: GET /api/v1/gpu-types<br/>HTTP/8000
+    Backend->>K8sAPI: List Nodes<br/>HTTPS/6443, ServiceAccount token
+    K8sAPI-->>Backend: Node list with nvidia.com/gpu.product labels
+    Note over Backend: Cache GPU types (TTL: 300s)
+    Backend-->>Route: Available GPU types
+    Route-->>User: GPU types JSON
+
+    User->>Route: HTTPS Request
+    Route->>Backend: POST /api/v1/calculate<br/>HTTP/8000 (capacity request)
+    Backend->>Backend: Query benchmark database
+    Backend-->>Route: Capacity plan result
+    Route-->>User: Deployment recommendations
+
+    Note over User, HFHub: Deployment Generation Flow
+
+    User->>Route: HTTPS Request
+    Route->>Backend: POST /api/v1/generate-deployment<br/>HTTP/8000
+    Backend->>Backend: Generate K8s manifests
+    Backend->>K8sAPI: Apply manifests<br/>HTTPS/6443, ServiceAccount token
+    K8sAPI-->>Backend: Deployment created
+    Backend-->>Route: Deployment status
+    Route-->>User: Deployment confirmation
+
+    Note over User, HFHub: Model Info Flow
+
+    User->>Route: HTTPS Request
+    Route->>Backend: POST /api/v1/model-info<br/>HTTP/8000
+    Backend->>HFHub: GET model metadata<br/>HTTPS, HF_TOKEN
+    HFHub-->>Backend: Model card & config
+    Backend-->>Route: Model information
+    Route-->>User: Model details JSON
+
+    Note over User, HFHub: Database Admin Flow (Optional HMAC Auth)
+
+    User->>Route: HTTPS Request
+    Route->>Backend: POST /api/v1/db/upload-benchmarks<br/>HTTP/8000<br/>Header: X-Admin-Password
+    Backend->>Backend: Verify HMAC password<br/>(if DB_ADMIN_PASSWORD set)
+    Backend->>Backend: Update benchmark database
+    Backend-->>Route: Upload result
+    Route-->>User: Admin operation result

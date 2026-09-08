@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "component": "ml-metadata",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "ml-metadata-language-mismatch-001",
+      "claim": "The ml-metadata repository is classified as a Python application by the analyzer, but the deployable server binary (metadata_store_server) is a C++ application built with Bazel. The Python code is a client SDK, not the server runtime.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "ml_metadata/tools/docker_server/Dockerfile.konflux:29-34"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/architecture_components"
+        }
+      ],
+      "reasoning": "The Bazel build target //ml_metadata/metadata_store:metadata_store_server produces a C++ binary. The analyzer detected the Python __init__.py as the primary language signal, but the deployed container runs a compiled C++ gRPC server. This affects FIPS compliance analysis since Go-specific FIPS build flags are irrelevant, and C++ crypto behavior depends on system OpenSSL linkage.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "ml-metadata-no-app-auth-002",
+      "claim": "The metadata store server has no application-level authentication or authorization mechanism; all access control is delegated to the platform's network layer.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "ml_metadata/proto/metadata_store.proto:860-873"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "ml_metadata/tools/docker_server/Dockerfile.konflux:56-59"
+        }
+      ],
+      "reasoning": "The MetadataStoreServerConfig.SSLConfig supports optional mutual TLS (client_verify flag), but there is no token-based, RBAC, or policy-based auth mechanism in the server code or configuration schema. Any client that can reach the gRPC port has full read/write access to all metadata. In RHOAI deployments, network-level isolation (e.g., Kubernetes NetworkPolicy, service mesh) is the only access control boundary.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

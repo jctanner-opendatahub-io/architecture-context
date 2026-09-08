@@ -1,0 +1,52 @@
+graph LR
+    MCPOp["MCP Lifecycle Operator"]
+
+    %% Core Runtime Dependencies
+    MCPOp -->|"operator framework"| ControllerRuntime["controller-runtime 0.24.1"]
+    MCPOp -->|"MCP protocol"| MCPSDK["MCP Go SDK 1.6.1"]
+    MCPOp -->|"runtime"| Go["Go 1.26"]
+
+    %% Kubernetes Client Libraries
+    MCPOp -->|"API types"| K8sAPI["k8s.io/api 0.36.2"]
+    MCPOp -->|"API machinery"| K8sApimachinery["k8s.io/apimachinery 0.36.2"]
+    MCPOp -->|"API client"| K8sClientGo["k8s.io/client-go 0.36.2"]
+    MCPOp -->|"utilities"| K8sUtils["k8s.io/utils"]
+
+    %% Observability
+    MCPOp -->|"metrics"| Prometheus["prometheus/client_golang 1.23.2"]
+
+    %% Testing
+    MCPOp -.->|"BDD testing"| Ginkgo["ginkgo/v2 2.31.0"]
+    MCPOp -.->|"assertions"| Gomega["gomega 1.42.0"]
+    MCPOp -.->|"e2e framework"| E2EFramework["e2e-framework 0.7.0"]
+
+    %% Runtime Infrastructure
+    MCPOp -->|"resource operations<br/>6443/TCP HTTPS"| K8sAPIServer["Kubernetes API Server"]
+
+    %% Managed Resources (created by operator)
+    MCPOp ==>|"creates/owns"| Deployments["Deployments"]
+    MCPOp ==>|"creates/owns"| Services["Services"]
+    MCPOp ==>|"creates/owns"| NetworkPolicies["NetworkPolicies"]
+
+    %% Watched Resources
+    ConfigMaps["ConfigMaps"] -.->|"field-indexed watch"| MCPOp
+    Secrets["Secrets"] -.->|"field-indexed watch"| MCPOp
+
+    style MCPOp fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style ControllerRuntime fill:#999,stroke:#333,color:#fff
+    style MCPSDK fill:#999,stroke:#333,color:#fff
+    style Go fill:#999,stroke:#333,color:#fff
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style K8sApimachinery fill:#999,stroke:#333,color:#fff
+    style K8sClientGo fill:#999,stroke:#333,color:#fff
+    style K8sUtils fill:#999,stroke:#333,color:#fff
+    style Prometheus fill:#999,stroke:#333,color:#fff
+    style Ginkgo fill:#ccc,stroke:#333,color:#333
+    style Gomega fill:#ccc,stroke:#333,color:#333
+    style E2EFramework fill:#ccc,stroke:#333,color:#333
+    style K8sAPIServer fill:#f5a623,stroke:#333,color:#fff
+    style Deployments fill:#7ed321,stroke:#333,color:#fff
+    style Services fill:#7ed321,stroke:#333,color:#fff
+    style NetworkPolicies fill:#7ed321,stroke:#333,color:#fff
+    style ConfigMaps fill:#f5a623,stroke:#333,color:#fff
+    style Secrets fill:#f5a623,stroke:#333,color:#fff

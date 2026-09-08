@@ -1,0 +1,181 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                        │
+│                                                                              │
+│  [User / kubectl]                                                            │
+│         │                                                                    │
+│         │ Port: 6443/TCP                                                     │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: kubeconfig credentials                                       │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  KUBERNETES API SERVER                                                       │
+│                                                                              │
+│  [kube-apiserver]                                                            │
+│  - Port: 6443/TCP (external + internal)                                      │
+│  - Protocol: HTTPS / WSS (watch streams)                                     │
+│  - Encryption: TLS 1.2+                                                      │
+│  - AuthN: ServiceAccount tokens (in-cluster), kubeconfig (external)          │
+│  - AuthZ: RBAC (odh-model-controller-role, model-serving-api ClusterRoles)   │
+│         │                          │                                         │
+│         │ Admission Webhook        │ Watch/CRUD                              │
+│         │ Port: 9443/TCP           │ Port: 6443/TCP                          │
+│         │ Protocol: HTTPS          │ Protocol: HTTPS/WSS                     │
+│         │ Encryption: TLS          │ Encryption: TLS 1.2+                    │
+│         │ Cert: service-ca         │ Auth: ServiceAccount token              │
+│         ▼                          ▼                                         │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  OPERATOR NAMESPACE (redhat-ods-applications)                                │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐         │
+│  │  [odh-model-controller] Deployment                              │         │
+│  │  - Image: controller:latest                                     │         │
+│  │  - ServiceAccount: odh-model-controller                         │         │
+│  │  - Entrypoint: /manager                                         │         │
+│  │                                                                 │         │
+│  │  Webhook Server:                                                │         │
+│  │  - Port: 9443/TCP (internal)                                    │         │
+│  │  - Protocol: HTTPS                                              │         │
+│  │  - Encryption: TLS (cert: odh-model-controller-webhook-cert)    │         │
+│  │  - Auth: Kubernetes admission (API server → webhook)            │         │
+│  │  - Failure Policy: Fail (all 8 webhooks)                        │         │
+│  │  - Service: odh-model-controller-webhook-service (443→9443)     │         │
+│  │                                                                 │         │
+│  │  Metrics:                                                       │         │
+│  │  - Port: 8443/TCP                                               │         │
+│  │  - Protocol: HTTPS                                              │         │
+│  │  - Encryption: TLS (cert: odh-model-controller-metrics-tls)     │         │
+│  │  - Auth: TokenReview + SubjectAccessReview                      │         │
+│  │  - Service: odh-model-controller-metrics-service (8443→8443)    │         │
+│  │                                                                 │         │
+│  │  Health Probes:                                                 │         │
+│  │  - :8081/healthz (liveness, unauthenticated)                    │         │
+│  │  - :8081/readyz (readiness, unauthenticated)                    │         │
+│  └─────────────────────────────────────────────────────────────────┘         │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────┐         │
+│  │  [model-serving-api] Deployment                                 │         │
+│  │  - Image: controller:latest                                     │         │
+│  │  - ServiceAccount: model-serving-api                            │         │
+│  │                                                                 │         │
+│  │  API Server:                                                    │         │
+│  │  - Port: 8443/TCP (TLS)                                         │         │
+│  │  - Service: model-serving-api (443→8443)                        │         │
+│  │  - Encryption: TLS (cert: model-serving-api-tls)                │         │
+│  │  - Endpoints:                                                   │         │
+│  │    /api/v1/gateways     Auth: Bearer token → SSAR validation    │         │
+│  │    /api/v1/samples/llm-d Auth: None (static templates)          │         │
+│  │    /healthz              Auth: None (probe)                     │         │
+│  │    /readyz               Auth: None (probe)                     │         │
+│  │                                                                 │         │
+│  │  Metrics:                                                       │         │
+│  │  - Port: 8080/TCP                                               │         │
+│  │  - Service: model-serving-api (8080→8080)                       │         │
+│  │  - Encryption: TLS (cert: model-serving-api-tls)                │         │
+│  │  - Auth: None (TLS transport only)                              │         │
+│  └─────────────────────────────────────────────────────────────────┘         │
+│         │                                                                    │
+│         │ Port: Configured at runtime                                        │
+│         │ Protocol: OTLP/gRPC                                                │
+│         │ Encryption: TLS (enabled by default)                               │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  PLATFORM SERVICES (Trusted - Internal)                                      │
+│                                                                              │
+│  [OpenTelemetry Collector]                                                   │
+│  - Purpose: Distributed trace collection                                     │
+│  - Protocol: OTLP/gRPC                                                      │
+│  - Encryption: TLS                                                           │
+│                                                                              │
+│  [Prometheus]                                                                │
+│  - Purpose: Metrics scraping via ServiceMonitor/PodMonitor CRDs             │
+│  - Scrapes: :8443/metrics (controller), :8080/metrics (serving-api)          │
+│  - Auth: TokenReview for controller metrics; TLS-only for serving-api        │
+│                                                                              │
+│  [Istio Service Mesh]                                                        │
+│  - Purpose: EnvoyFilter management for model serving traffic                │
+│  - Interaction: CRD CRUD (EnvoyFilter resources)                            │
+│                                                                              │
+│  [Kuadrant]                                                                  │
+│  - Purpose: AuthPolicy management for gateway authorization                 │
+│  - Interaction: CRD CRUD (AuthPolicy resources)                             │
+│                                                                              │
+│  [KEDA]                                                                      │
+│  - Purpose: TriggerAuthentication for autoscaling                           │
+│  - Interaction: CRD CRUD (TriggerAuthentication resources)                  │
+│                                                                              │
+│  [cert-manager / OpenShift service-ca]                                       │
+│  - Purpose: TLS certificate provisioning                                     │
+│  - Provisions: webhook-cert, metrics-tls, model-serving-api-tls             │
+│                                                                              │
+│  [OpenShift APIServer CR]                                                    │
+│  - Purpose: Cluster-wide TLS profile (cipher suites, protocol versions)     │
+│  - Read by: ProfileWatcher controller                                        │
+│                                                                              │
+│  [DataScienceCluster / DSCInitialization CRs]                               │
+│  - Purpose: Platform component enablement and initialization state          │
+│  - Read by: Controller manager for conditional feature registration          │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ADMISSION WEBHOOKS:
+
+  Mutating (failurePolicy: Fail):
+  - /mutate--v1-pod                                          pods CREATE
+  - /mutate-serving-kserve-io-v1beta1-inferenceservice       inferenceservices CREATE, UPDATE
+  - /mutate-serving-kserve-io-v1alpha1-inferencegraph        inferencegraphs CREATE
+  - /mutate-serving-kserve-io-v1alpha1-llminferenceservice   llminferenceservices CREATE, UPDATE
+  - /mutate-serving-kserve-io-v1alpha2-llminferenceservice   llminferenceservices CREATE, UPDATE
+
+  Validating (failurePolicy: Fail):
+  - /validate-nim-opendatahub-io-v1-account                  accounts CREATE, UPDATE
+  - /validate-serving-kserve-io-v1alpha1-inferencegraph      inferencegraphs CREATE, UPDATE
+  - /validate-serving-kserve-io-v1beta1-inferenceservice     inferenceservices CREATE, UPDATE
+
+RBAC Summary:
+
+  ClusterRole: odh-model-controller-role
+  - ServiceAccount: odh-model-controller (namespace: redhat-ods-applications)
+  - API Groups: serving.kserve.io, nim.opendatahub.io, gateway.networking.k8s.io,
+                monitoring.coreos.com, networking.istio.io, keda.sh, kuadrant.io,
+                rbac.authorization.k8s.io, networking.k8s.io, core, apps
+  - Resources: inferenceservices, servingruntimes, inferencegraphs, llminferenceservices,
+               accounts, gateways, httproutes, envoyfilters, authpolicies, networkpolicies,
+               servicemonitors, podmonitors, triggerauthentications, configmaps, secrets,
+               services, serviceaccounts, pods, namespaces, endpoints, events,
+               clusterrolebindings, roles, rolebindings
+  - Verbs: get, list, watch, create, update, patch, delete (varies per resource)
+
+  ClusterRole: model-serving-api
+  - ServiceAccount: model-serving-api
+  - Resources: gateways (list), namespaces (get)
+
+  ClusterRole: kserve-prometheus-k8s
+  - Resources: endpoints, pods, services (get, list, watch)
+
+  Role: leader-election-role (namespace-scoped)
+  - Resources: configmaps, leases, events
+
+Secrets:
+
+  - odh-model-controller-webhook-cert (kubernetes.io/tls)
+    Purpose: Webhook server TLS certificate
+    Provisioned by: OpenShift service-ca operator
+    Auto-rotate: Managed by service-ca
+
+  - odh-model-controller-metrics-tls (kubernetes.io/tls)
+    Purpose: Metrics endpoint TLS certificate
+    Provisioned by: OpenShift service-ca operator
+    Auto-rotate: Managed by service-ca
+
+  - model-serving-api-tls (kubernetes.io/tls)
+    Purpose: Model-serving API TLS certificate
+    Provisioned by: OpenShift service-ca operator
+    Auto-rotate: Managed by service-ca
+
+FIPS Compliance:
+
+  Build flags: GOEXPERIMENT=strictfipsruntime, -tags strictfipsruntime, CGO_ENABLED=1
+  Linking: Dynamic (CGO_ENABLED=1) for OpenSSL-backed crypto
+  Base image: UBI9 ubi-minimal-pqc (includes OpenSSL)
+  TLS profiles: Aligned with OpenShift APIServer CR (platform-managed cipher suites)
+  Non-FIPS crypto risks: None detected

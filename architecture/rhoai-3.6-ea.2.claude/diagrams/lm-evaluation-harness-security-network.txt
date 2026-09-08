@@ -1,0 +1,110 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  KUBERNETES CONTROL PLANE (Trusted)                                     │
+│                                                                          │
+│  [LMES Operator / trustyai-service-operator]                            │
+│  - Creates and manages K8s Jobs                                          │
+│  - Injects environment variables (API keys)                              │
+│  - Mounts volumes (output path, HF cache)                               │
+│         │                                                                │
+│         │ Mechanism: Kubernetes Job API                                   │
+│         │ Auth: Kubernetes RBAC (ServiceAccount)                          │
+│         │ No network port (API server interaction)                        │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  JOB POD (Batch Workload - runs to completion)                          │
+│                                                                          │
+│  [lm-evaluation-harness Job Pod]                                         │
+│  - Image: odh-ta-lmes-job-rhel9                                         │
+│  - User: non-root (UID 65532)                                            │
+│  - Entrypoint: /opt/app-root/bin/python                                  │
+│  - No inbound ports exposed                                              │
+│  - No Kubernetes Services                                                │
+│  - No Ingress                                                            │
+│  - Stateless: runs evaluation, writes results, exits                     │
+│         │                                                                │
+│         │ OUTBOUND CONNECTIONS ONLY                                       │
+│         │                                                                │
+│         ├──── Connection 1 ──────────────────────────────────────────┐   │
+│         │     Destination: Model Inference API                        │   │
+│         │     (OpenAI / vLLM / WatsonX / Anthropic)                  │   │
+│         │     Port: Configured at runtime                             │   │
+│         │     Protocol: HTTPS                                         │   │
+│         │     Encryption: TLS                                         │   │
+│         │     Auth: API key via environment variable                  │   │
+│         │       - OPENAI_API_KEY (OpenAI/vLLM)                       │   │
+│         │       - ANTHROPIC_API_KEY (Anthropic)                      │   │
+│         │       - WATSONX_API_KEY (IBM WatsonX)                      │   │
+│         │                                                             │   │
+│         ├──── Connection 2 ──────────────────────────────────────────┤   │
+│         │     Destination: datasets-server.huggingface.co            │   │
+│         │     Port: 443/TCP                                           │   │
+│         │     Protocol: HTTPS                                         │   │
+│         │     Encryption: TLS                                         │   │
+│         │     Auth: HF_TOKEN via environment variable                │   │
+│         │                                                             │   │
+│         ├──── Connection 3 ──────────────────────────────────────────┤   │
+│         │     Destination: S3-compatible storage                     │   │
+│         │     (AWS S3 / IBM Cloud Object Storage)                    │   │
+│         │     Port: Configured at runtime (typically 443)            │   │
+│         │     Protocol: HTTPS                                         │   │
+│         │     Encryption: TLS                                         │   │
+│         │     Auth: AWS_ACCESS_KEY_ID +                               │   │
+│         │           AWS_SECRET_ACCESS_KEY via environment variable    │   │
+│         │                                                             │   │
+│         └──── Connection 4 ──────────────────────────────────────────┘   │
+│               Destination: Output path (local volume / PVC)              │
+│               Protocol: Filesystem (no network)                          │
+│               Encryption: N/A                                            │
+│               Auth: N/A                                                  │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  EXTERNAL SERVICES                                                       │
+│                                                                          │
+│  [Model Inference APIs]                                                  │
+│  - OpenAI API / OpenAI-compatible endpoints (e.g., vLLM)               │
+│  - Anthropic API                                                         │
+│  - IBM WatsonX API                                                       │
+│  - Purpose: Language model inference for evaluation                      │
+│  - Auth: Per-provider API key                                            │
+│  - Encryption: TLS                                                       │
+│                                                                          │
+│  [HuggingFace Hub - datasets-server.huggingface.co]                     │
+│  - Purpose: Benchmark dataset retrieval                                  │
+│  - Port: 443/TCP                                                         │
+│  - Auth: HF_TOKEN                                                        │
+│  - Encryption: TLS                                                       │
+│                                                                          │
+│  [S3-Compatible Storage - AWS S3 / IBM COS]                             │
+│  - Purpose: Dataset and model artifact storage                           │
+│  - Auth: AWS IAM credentials                                             │
+│  - Encryption: TLS                                                       │
+└─────────────────────────────────────────────────────────────────────────┘
+
+NETWORK EXPOSURE:
+- Inbound: NONE (no Services, no Ingress, no listening ports)
+- Outbound: HTTPS to external APIs and storage services only
+- Service Mesh: Not applicable (batch Job, no inbound traffic)
+
+RBAC Summary:
+- No ClusterRoles defined by this component
+- No RoleBindings defined by this component
+- Job pod runs under ServiceAccount provisioned by LMES operator
+
+Secrets (Environment Variables - injected by LMES Operator):
+- HF_TOKEN (environment variable) - HuggingFace Hub authentication
+- OPENAI_API_KEY (environment variable) - OpenAI/vLLM API authentication
+- ANTHROPIC_API_KEY (environment variable) - Anthropic API authentication
+- WATSONX_API_KEY (environment variable) - IBM WatsonX API authentication
+- AWS_SECRET_ACCESS_KEY (environment variable) - S3/IBM COS authentication
+
+Container Security:
+- Runs as non-root user (UID 65532)
+- Base image: Parameterized (CUDA_BASE_IMAGE / CPU_BASE_IMAGE for Konflux)
+- Development base: UBI9 Python 3.11
+- Multi-arch: amd64/arm64 (CUDA), ppc64le/s390x (CPU)
+
+FIPS Compliance:
+- Delegated to container base image
+- Python ssl module uses system OpenSSL (FIPS-validated on RHEL/UBI)
+- No explicit FIPS configuration in application code
+- No non-FIPS crypto overrides detected

@@ -1,0 +1,49 @@
+graph LR
+    LLMD["llm-d<br/>Disaggregated LLM<br/>Inference Framework"]
+
+    %% Internal Platform Dependencies
+    LLMD -->|"runtime backend"| vllm["vllm<br/>Python inference engine"]
+    LLMD -->|"request routing<br/>Envoy + EPP"| LLMDRouter["llm-d-router<br/>Intelligent routing"]
+    LLMD -->|"pool abstraction"| GatewayAPI["Gateway API<br/>InferencePool CRD"]
+
+    %% Optional Dependencies
+    LLMD -.->|"mTLS + AuthZ<br/>(optional)"| Istio["Istio Service Mesh"]
+
+    %% Observability Dependencies
+    LLMD -->|"OTLP traces<br/>gRPC/4317"| OTel["OpenTelemetry<br/>Collector"]
+    OTel -->|"forward traces<br/>gRPC/4317"| Jaeger["Jaeger"]
+    LLMD -.->|"metrics scraping<br/>PodMonitor"| Prometheus["Prometheus"]
+
+    %% Transport Layer
+    LLMD -->|"KV-cache transfer<br/>RDMA/5600"| nixl["nixl<br/>RDMA library"]
+
+    %% Container Variants
+    subgraph "Container Variants"
+        CPU["Dockerfile.cpu<br/>Standard CPU"]
+        ROCm["Dockerfile.rocm<br/>AMD GPU"]
+        XPU["Dockerfile.xpu<br/>Intel GPU"]
+        RDMA["Dockerfile.rdma-tools<br/>RDMA utilities"]
+    end
+
+    LLMD --- CPU
+    LLMD --- ROCm
+    LLMD --- XPU
+    LLMD --- RDMA
+
+    %% Kubernetes
+    LLMD -->|"workload deployment"| K8s["Kubernetes API"]
+
+    style LLMD fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style vllm fill:#7ed321,stroke:#333,color:#fff
+    style LLMDRouter fill:#7ed321,stroke:#333,color:#fff
+    style GatewayAPI fill:#f5a623,stroke:#333,color:#fff
+    style Istio fill:#999,stroke:#333,color:#fff
+    style OTel fill:#f5a623,stroke:#333,color:#fff
+    style Jaeger fill:#f5a623,stroke:#333,color:#fff
+    style Prometheus fill:#f5a623,stroke:#333,color:#fff
+    style nixl fill:#e8544e,stroke:#333,color:#fff
+    style K8s fill:#999,stroke:#333,color:#fff
+    style CPU fill:#dae8fc,stroke:#6c8ebf
+    style ROCm fill:#dae8fc,stroke:#6c8ebf
+    style XPU fill:#dae8fc,stroke:#6c8ebf
+    style RDMA fill:#dae8fc,stroke:#6c8ebf

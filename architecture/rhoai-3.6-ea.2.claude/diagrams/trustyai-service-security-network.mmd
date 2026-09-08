@@ -1,0 +1,70 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client"]
+    end
+
+    subgraph AuthBoundary["AUTHENTICATION BOUNDARY"]
+        KRBP["kube-rbac-proxy<br/>8443/TCP → 8081/TCP loopback<br/>TLS termination<br/>Kubernetes RBAC (TokenReview)"]
+    end
+
+    subgraph Application["APPLICATION (TrustyAI Service Pod)"]
+        direction TB
+
+        subgraph MainAPI["Main API (loopback only)"]
+            Main["Main FastAPI App<br/>127.0.0.1:8081/TCP<br/>Fairness · Drift · Explainability<br/>Auth: pre-authenticated"]
+        end
+
+        subgraph HealthAPI["Health/Consumer API (all interfaces)"]
+            Health["Health/Consumer FastAPI App<br/>0.0.0.0:8080/TCP<br/>Probes · Inference · Metrics<br/>Auth: none (internal)"]
+        end
+
+        subgraph TLSListener["Optional HTTPS (all interfaces)"]
+            HTTPS["HTTPS Listener<br/>0.0.0.0:4443/TCP<br/>PolicyAwareConfig<br/>System crypto policy (FIPS)"]
+        end
+    end
+
+    subgraph InternalCluster["INTERNAL CLUSTER (Trusted)"]
+        Kubelet["Kubelet<br/>(health probes)"]
+        KServe["KServe Inference Logger<br/>(CloudEvents)"]
+        ModelMesh["ModelMesh Agent<br/>(KServe v2 payloads)"]
+        Prometheus["Prometheus<br/>(metrics scraping)"]
+    end
+
+    subgraph StorageBackends["STORAGE BACKENDS"]
+        PVC["PVC (HDF5 Files)<br/>Filesystem mount<br/>Default storage"]
+        MariaDB["MariaDB<br/>3306/TCP MySQL<br/>TLS optional (CA: /etc/tls/db/ca.crt)<br/>Auth: env var password"]
+    end
+
+    %% External flows
+    Client -->|"HTTPS/8443<br/>TLS (platform-managed)<br/>Bearer Token / SA"| KRBP
+    KRBP -->|"HTTP/8081<br/>Loopback only<br/>Pre-authenticated"| Main
+
+    %% Internal cluster flows
+    Kubelet -->|"HTTP/8080<br/>No encryption<br/>No auth"| Health
+    KServe -->|"HTTP/8080<br/>No encryption<br/>POST / CloudEvent"| Health
+    ModelMesh -->|"HTTP/8080<br/>No encryption<br/>POST /consumer/kserve/v2"| Health
+    Prometheus -->|"HTTP/8080<br/>No encryption<br/>GET /q/metrics"| Health
+
+    %% Storage flows
+    Main -->|"Filesystem<br/>HDF5 read/write"| PVC
+    Health -->|"Filesystem<br/>HDF5 write"| PVC
+    Main -->|"MySQL/3306<br/>TLS optional<br/>DB password"| MariaDB
+    Health -->|"MySQL/3306<br/>TLS optional<br/>DB password"| MariaDB
+
+    %% TLS certificate dependency
+    TLSCerts["/etc/tls/internal/<br/>tls.crt + tls.key"] -.->|mounted| HTTPS
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef authboundary fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef application fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef internalcluster fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef storage fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef certfile fill:#f8cecc,stroke:#b85450,stroke-width:1px,stroke-dasharray:5
+
+    class Client external
+    class KRBP authboundary
+    class Main,Health,HTTPS application
+    class Kubelet,KServe,ModelMesh,Prometheus internalcluster
+    class PVC,MariaDB storage
+    class TLSCerts certfile

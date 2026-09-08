@@ -1,0 +1,69 @@
+graph LR
+    DW["Distributed Workloads<br/>(Image Factory)"]
+
+    %% Base Image Dependencies
+    DW -->|"FROM (runtime)"| AIPCC["AIPCC Base Images<br/>cuda-13.0-el9.6"]
+    DW -->|"FROM (universal)"| Workbench["Workbench Base Images<br/>odh-workbench-jupyter-minimal-*"]
+
+    %% Build System
+    DW -->|"hermetic builds"| Konflux["Konflux<br/>cachi2.env prefetch"]
+
+    %% ML Framework Dependencies (Key Python)
+    DW -->|"training framework"| PyTorch["PyTorch 2.10.0"]
+    DW -->|"distributed training"| DeepSpeed["DeepSpeed 0.18.7"]
+    DW -->|"model architecture"| Transformers["Transformers 4.57.6"]
+    DW -->|"inference engine"| vLLM["vLLM 0.26.0+rhaiv.1"]
+    DW -->|"training toolkit"| InstructLab["InstructLab Training 0.14.2"]
+    DW -->|"GPU acceleration"| Accelerate["Accelerate 1.12.0"]
+    DW -->|"parameter-efficient"| PEFT["PEFT 0.18.1"]
+    DW -->|"attention"| FlashAttn["Flash Attention 2.8.3"]
+
+    %% MPI / Communication
+    DW -->|"multi-node comm"| OpenMPI["OpenMPI 4.1<br/>(SSH port 2222)"]
+
+    %% Platform Operators (Consumers)
+    KFTrainer["Kubeflow Trainer v2.3.0"] -->|"schedules pods"| DW
+    Kueue["Kueue 0.15.7"] -->|"admits workloads"| DW
+    KubeRay["KubeRay 1.5.1"] -->|"orchestrates Ray"| DW
+
+    %% Runtime Dependencies
+    DW -->|"API server"| K8sAPI["Kubernetes API<br/>k8s.io/client-go 0.36.2"]
+    DW -->|"observability"| OTel["OpenTelemetry SDK 1.40.0"]
+    DW -->|"metrics"| Prometheus["Prometheus Client 0.25.0"]
+
+    %% Example Storage
+    DW -.->|"example: model storage"| MinIO["MinIO<br/>S3-compatible"]
+    DW -.->|"example: shared fs"| NFS["NFS Server<br/>2049/TCP"]
+
+    %% Example Serving
+    DW -.->|"example: serving"| KServe["KServe ServingRuntime<br/>stable-diffusion"]
+
+    %% Crypto / Security
+    DW -->|"TLS/crypto"| Cryptography["cryptography 46.0.5<br/>+ pyopenssl 26.4.0"]
+    DW -->|"JWT auth"| PyJWT["PyJWT 2.13.0"]
+
+    %% Styling
+    style DW fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style AIPCC fill:#f5a623,stroke:#333,color:#fff
+    style Workbench fill:#f5a623,stroke:#333,color:#fff
+    style Konflux fill:#e74c3c,stroke:#333,color:#fff
+    style PyTorch fill:#ee4c2c,stroke:#333,color:#fff
+    style DeepSpeed fill:#ee4c2c,stroke:#333,color:#fff
+    style Transformers fill:#ee4c2c,stroke:#333,color:#fff
+    style vLLM fill:#ee4c2c,stroke:#333,color:#fff
+    style InstructLab fill:#ee4c2c,stroke:#333,color:#fff
+    style Accelerate fill:#ee4c2c,stroke:#333,color:#fff
+    style PEFT fill:#ee4c2c,stroke:#333,color:#fff
+    style FlashAttn fill:#ee4c2c,stroke:#333,color:#fff
+    style OpenMPI fill:#3498db,stroke:#333,color:#fff
+    style KFTrainer fill:#9b59b6,stroke:#333,color:#fff
+    style Kueue fill:#9b59b6,stroke:#333,color:#fff
+    style KubeRay fill:#9b59b6,stroke:#333,color:#fff
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style OTel fill:#999,stroke:#333,color:#fff
+    style Prometheus fill:#999,stroke:#333,color:#fff
+    style MinIO fill:#e8e8e8,stroke:#999
+    style NFS fill:#e8e8e8,stroke:#999
+    style KServe fill:#7ed321,stroke:#333,color:#fff
+    style Cryptography fill:#2c3e50,stroke:#333,color:#fff
+    style PyJWT fill:#2c3e50,stroke:#333,color:#fff

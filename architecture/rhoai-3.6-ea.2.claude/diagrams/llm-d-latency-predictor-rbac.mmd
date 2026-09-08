@@ -1,0 +1,54 @@
+graph TD
+    subgraph "Authentication Status"
+        NoAuth["WARNING: No Authentication<br/>No auth middleware detected<br/>on any endpoint"]
+    end
+
+    subgraph "Training Server (Port 8000)"
+        T_Telemetry["POST /add_training_data_bulk<br/>Auth: None"]
+        T_Models["GET /models/list<br/>GET /model/{name}/info<br/>GET /model/{name}/download<br/>Auth: None"]
+        T_Debug["GET /data/status<br/>GET /debug/prefix_distribution<br/>Auth: None"]
+        T_Admin["POST /flush<br/>GET /model/export<br/>Auth: None"]
+        T_Metrics["GET /metrics<br/>Auth: None"]
+        T_Health["GET /healthz<br/>GET /readyz<br/>Auth: None"]
+    end
+
+    subgraph "Prediction Server (Port 8001)"
+        P_Predict["POST /predict<br/>POST /predict/bulk<br/>POST /predict/bulk/strict<br/>Auth: None"]
+        P_Admin["POST /reload<br/>GET /status<br/>Auth: None"]
+        P_Health["GET /healthz<br/>GET /readyz<br/>Auth: None"]
+    end
+
+    subgraph "RBAC Configuration"
+        NoRBAC["No ClusterRoles defined<br/>No RoleBindings defined<br/>No explicit ServiceAccounts"]
+    end
+
+    subgraph "Expected Security Boundary"
+        NetworkPolicy["NetworkPolicy<br/>(not configured in component)"]
+        ServiceMesh["Service Mesh / mTLS<br/>(not configured in component)"]
+        PlatformNote["Security enforcement<br/>delegated to platform"]
+    end
+
+    NoAuth -->|"applies to"| T_Telemetry
+    NoAuth -->|"applies to"| T_Models
+    NoAuth -->|"applies to"| T_Debug
+    NoAuth -->|"applies to"| T_Admin
+    NoAuth -->|"applies to"| P_Predict
+    NoAuth -->|"applies to"| P_Admin
+
+    PlatformNote -.->|"expected to protect"| T_Telemetry
+    PlatformNote -.->|"expected to protect"| P_Predict
+
+    style NoAuth fill:#f8cecc,stroke:#b85450,stroke-width:3px
+    style NoRBAC fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    style T_Telemetry fill:#ffe6cc,stroke:#d79b00
+    style T_Models fill:#ffe6cc,stroke:#d79b00
+    style T_Debug fill:#ffe6cc,stroke:#d79b00
+    style T_Admin fill:#f8cecc,stroke:#b85450
+    style T_Metrics fill:#d5e8d4,stroke:#82b366
+    style T_Health fill:#d5e8d4,stroke:#82b366
+    style P_Predict fill:#ffe6cc,stroke:#d79b00
+    style P_Admin fill:#f8cecc,stroke:#b85450
+    style P_Health fill:#d5e8d4,stroke:#82b366
+    style NetworkPolicy fill:#dae8fc,stroke:#6c8ebf
+    style ServiceMesh fill:#dae8fc,stroke:#6c8ebf
+    style PlatformNote fill:#dae8fc,stroke:#6c8ebf

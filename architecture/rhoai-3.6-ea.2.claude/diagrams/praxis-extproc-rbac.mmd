@@ -1,0 +1,50 @@
+graph TD
+    subgraph "Service Account"
+        SA["payload-processing<br/>(ServiceAccount)<br/>Namespace: openshift-ingress"]
+    end
+
+    subgraph "ClusterRole Binding"
+        CRB["payload-processing-reader-binding<br/>(ClusterRoleBinding)"]
+    end
+
+    subgraph "ClusterRole"
+        CR["payload-processing-reader<br/>(ClusterRole)"]
+    end
+
+    subgraph "API Resources - Core"
+        ConfigMaps["core (v1)<br/>ConfigMaps"]
+        SecretsRes["core (v1)<br/>Secrets"]
+    end
+
+    subgraph "API Resources - inference.opendatahub.io"
+        ExternalProviders["inference.opendatahub.io<br/>ExternalProviders"]
+        ExternalModels["inference.opendatahub.io<br/>ExternalModels"]
+    end
+
+    SA -->|"bound via"| CRB
+    CRB -->|"grants"| CR
+
+    CR -->|"get, list, watch"| ConfigMaps
+    CR -->|"get"| SecretsRes
+    CR -->|"get, list, watch"| ExternalProviders
+    CR -->|"get, list, watch"| ExternalModels
+
+    subgraph "Authentication & Authorization"
+        direction TB
+        ExtProcAuth["ExtProc gRPC Endpoint<br/>Auth: Network-level<br/>(NetworkPolicy + optional TLS)<br/>Enforcement: K8s NetworkPolicy,<br/>Istio DestinationRule"]
+        K8sAuth["Kubernetes API Access<br/>Auth: ServiceAccount Token<br/>Enforcement: K8s API Server<br/>Policy: ClusterRole above"]
+    end
+
+    SA -.->|"authenticates"| K8sAuth
+    SA -.->|"network restricted"| ExtProcAuth
+
+    %% Styling
+    style SA fill:#4a90e2,stroke:#333,color:#fff
+    style CRB fill:#74b9ff,stroke:#333,color:#333
+    style CR fill:#f5a623,stroke:#333,color:#fff
+    style ConfigMaps fill:#7ed321,stroke:#333,color:#fff
+    style SecretsRes fill:#e17055,stroke:#333,color:#fff
+    style ExternalProviders fill:#7ed321,stroke:#333,color:#fff
+    style ExternalModels fill:#7ed321,stroke:#333,color:#fff
+    style ExtProcAuth fill:#dfe6e9,stroke:#333
+    style K8sAuth fill:#dfe6e9,stroke:#333

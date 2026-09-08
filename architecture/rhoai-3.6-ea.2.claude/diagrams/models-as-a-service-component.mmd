@@ -1,0 +1,94 @@
+graph TB
+    subgraph MaaS["Models-as-a-Service Platform"]
+        direction TB
+
+        subgraph API["maas-api (REST Server)"]
+            GinRouter["Gin HTTP Router"]
+            TenantAuth["TenantAuthMiddleware<br/>Bearer Token Validation"]
+            ModelHandler["Model Handler<br/>/v1/models"]
+            SubHandler["Subscription Handler<br/>/v1/subscriptions"]
+            APIKeyHandler["API Key Handler<br/>/v1/api-keys"]
+            TenantHandler["Tenant Handler<br/>/v1/tenants (internal only)"]
+            HealthEndpoint["Health Endpoint<br/>/health :8080"]
+            MetricsEndpoint["Metrics Endpoint<br/>/metrics :9090"]
+
+            GinRouter --> TenantAuth
+            TenantAuth --> ModelHandler
+            TenantAuth --> SubHandler
+            TenantAuth --> APIKeyHandler
+            TenantAuth --> TenantHandler
+        end
+
+        subgraph Controller["maas-controller (Operator)"]
+            AITenantCtrl["AITenant Controller"]
+            AuthPolicyCtrl["MaaSAuthPolicy Controller"]
+            ModelRefCtrl["MaaSModelRef Controller"]
+            SubscriptionCtrl["MaaSSubscription Controller"]
+            TenantCtrl["MaasTenantConfig Controller"]
+            LifecycleCtrl["Lifecycle Controller"]
+            ExternalModelCtrl["ExternalModel Controller"]
+            WebhookServer["Webhook Server<br/>Validating Admission"]
+        end
+    end
+
+    %% CRDs
+    AITenantCR["AITenant CR"]
+    ConfigCR["Config CR (Cluster)"]
+    ExternalModelCR["ExternalModel CR"]
+    AuthPolicyCR["MaaSAuthPolicy CR"]
+    ModelRefCR["MaaSModelRef CR"]
+    SubscriptionCR["MaaSSubscription CR"]
+    TenantConfigCR["MaasTenantConfig CR"]
+    TenantCR["Tenant CR"]
+
+    %% CRD watches
+    AITenantCR -->|watched by| AITenantCtrl
+    AITenantCR -->|watched by| AuthPolicyCtrl
+    AITenantCR -->|watched by| SubscriptionCtrl
+    AITenantCR -->|watched by| TenantCtrl
+    AITenantCR -->|watched by| LifecycleCtrl
+    AuthPolicyCR -->|watched by| AuthPolicyCtrl
+    AuthPolicyCR -->|watched by| ModelRefCtrl
+    ModelRefCR -->|watched by| ModelRefCtrl
+    ModelRefCR -->|watched by| AuthPolicyCtrl
+    ModelRefCR -->|watched by| SubscriptionCtrl
+    SubscriptionCR -->|watched by| SubscriptionCtrl
+    SubscriptionCR -->|watched by| ModelRefCtrl
+    TenantConfigCR -->|watched by| TenantCtrl
+    TenantConfigCR -->|watched by| AITenantCtrl
+    TenantConfigCR -->|watched by| LifecycleCtrl
+    ConfigCR -->|watched by| LifecycleCtrl
+    ConfigCR -->|watched by| TenantCtrl
+    ExternalModelCR -->|watched by| ExternalModelCtrl
+
+    %% Controller outputs
+    AuthPolicyCtrl -->|creates| KuadrantAuthPolicy["Kuadrant AuthPolicy"]
+    SubscriptionCtrl -->|creates| HTTPRoute["Gateway API HTTPRoute"]
+    SubscriptionCtrl -->|creates| TokenRateLimit["TokenRateLimitPolicy"]
+    AITenantCtrl -->|creates| Namespace["Tenant Namespace"]
+
+    %% External dependencies
+    API -->|SQL queries| PostgreSQL["PostgreSQL<br/>(maas-db-config Secret)"]
+    TenantAuth -->|TokenReview| K8sAPI["Kubernetes API<br/>:6443"]
+    TenantAuth -->|SubjectAccessReview| K8sAPI
+    ModelRefCtrl -->|conditional watch| KServeIS["KServe InferenceService"]
+    Controller -->|reconciles| K8sAPI
+
+    %% Styling
+    style API fill:#4a90e2,stroke:#333,color:#fff
+    style Controller fill:#4a90e2,stroke:#333,color:#fff
+    style MaaS fill:#e8f0fe,stroke:#4a90e2,stroke-width:2px
+    style AITenantCR fill:#f5a623,stroke:#333
+    style ConfigCR fill:#f5a623,stroke:#333
+    style ExternalModelCR fill:#f5a623,stroke:#333
+    style AuthPolicyCR fill:#f5a623,stroke:#333
+    style ModelRefCR fill:#f5a623,stroke:#333
+    style SubscriptionCR fill:#f5a623,stroke:#333
+    style TenantConfigCR fill:#f5a623,stroke:#333
+    style TenantCR fill:#f5a623,stroke:#333
+    style KuadrantAuthPolicy fill:#7ed321,stroke:#333
+    style HTTPRoute fill:#7ed321,stroke:#333
+    style TokenRateLimit fill:#7ed321,stroke:#333
+    style PostgreSQL fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style KServeIS fill:#e8e8e8,stroke:#333

@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "component": "workbenches-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "workbenches-operator-pqc-migration-001",
+      "claim": "The operator has migrated to a post-quantum cryptography (PQC) base image (ubi9/ubi-minimal-pqc), signaling early adoption of PQC readiness ahead of broader platform alignment.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:20"
+        }
+      ],
+      "reasoning": "The recent commit 212f860 ('Migrate runtime base image to PQC variant for main') switched the runtime base from standard ubi9-minimal to the PQC variant. This is an early signal of post-quantum cryptographic transition that may need to be tracked across other platform components for consistency.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "workbenches-operator-defensive-webhook-002",
+      "claim": "The operator implements defensive webhook architecture that gracefully degrades when no TLS certificate provider is available, enabling the same binary to run on both OpenShift and vanilla Kubernetes.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:132-136"
+        }
+      ],
+      "reasoning": "The configureWebhookServingCerts function dynamically detects whether OpenShift service-ca or cert-manager is available. If neither is found, enableWebhooks is set to false rather than failing startup. This defensive pattern avoids hard dependencies on platform-specific TLS providers and may be a useful pattern for other RHOAI operators.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "workbenches-operator-tls-profile-watcher-003",
+      "claim": "The operator watches the OpenShift APIServer TLS security profile at runtime and triggers pod restart on profile changes, ensuring ongoing alignment with cluster-wide TLS policy.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:224-226"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/tlsconfig/tlsconfig.go:107-154"
+        }
+      ],
+      "reasoning": "Pod restart on TLS profile change is a strong security posture (no stale TLS configuration) but introduces a brief availability gap during the restart. This trade-off favors security correctness over continuous availability, which is appropriate for an operator that primarily handles reconciliation rather than serving live traffic.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

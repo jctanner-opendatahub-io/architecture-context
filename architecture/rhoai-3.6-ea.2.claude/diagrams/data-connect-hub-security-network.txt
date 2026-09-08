@@ -1,0 +1,172 @@
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                        │
+│                                                                              │
+│  [External Client]                                                           │
+│         │                                                                    │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: Bearer Token                                                 │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  INGRESS (Gateway API)                                                       │
+│                                                                              │
+│  [Gateway API Gateway + HTTPRoute]                                           │
+│  - Managed by: DataConnectServiceReconciler                                  │
+│  - Routes configured from OpenShift Ingress domain discovery                 │
+│         │                                                                    │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: Passthrough (Bearer Token forwarded)                         │
+│         ▼                                                                    │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  CLUSTER INTERNAL - Namespace: {dataconnectservice-namespace}                │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐     │
+│  │  REST Service Pod                                                    │     │
+│  │                                                                      │     │
+│  │  [kube-rbac-proxy sidecar]                                           │     │
+│  │  - Port: HTTPS (external-facing)                                     │     │
+│  │  - Encryption: TLS 1.2+                                              │     │
+│  │  - Auth: TokenReview (Kubernetes API)                                │     │
+│  │  - Configurable audiences for token validation                       │     │
+│  │         │                                                            │     │
+│  │         │ Port: HTTP (localhost)                                      │     │
+│  │         │ Encryption: None (loopback)                                │     │
+│  │         │ Auth: X-Tenant-ID header required                          │     │
+│  │         │       Authorization header passthrough (optional)          │     │
+│  │         ▼                                                            │     │
+│  │  [REST Service (actix-web)]                                          │     │
+│  │  - Endpoints: /api/{version}/data/*                                  │     │
+│  │  - Middleware: validate_headers (X-Tenant-ID enforcement)            │     │
+│  │  - TLS library: rustls 0.23 + aws_lc_rs provider                    │     │
+│  │  - FIPS: Not verified (fips feature not enabled)                     │     │
+│  │         │                                                            │     │
+│  │         │ Protocol: Backend-specific                                 │     │
+│  │         │ Encryption: Backend-specific                               │     │
+│  │         │ Auth: Backend credentials                                  │     │
+│  │         ▼                                                            │     │
+│  │  [Backend Connectors]                                                │     │
+│  │  - PostgreSQL, Elasticsearch, Milvus, Neo4j, S3, SQLite, URI         │     │
+│  └─────────────────────────────────────────────────────────────────────┘     │
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐     │
+│  │  Flight Service Pod                                                  │     │
+│  │                                                                      │     │
+│  │  [kube-rbac-proxy sidecar]                                           │     │
+│  │  - Port: HTTPS (external-facing)                                     │     │
+│  │  - Auth: TokenReview                                                 │     │
+│  │         │                                                            │     │
+│  │         │ Protocol: gRPC (localhost)                                  │     │
+│  │         │ Encryption: None (loopback)                                │     │
+│  │         ▼                                                            │     │
+│  │  [Flight Service (Arrow Flight)]                                     │     │
+│  │  - Protocol: Apache Arrow Flight                                     │     │
+│  │  - Metrics: Prometheus                                               │     │
+│  └─────────────────────────────────────────────────────────────────────┘     │
+│                                                                              │
+│  [NetworkPolicy] - Operator-managed, per DataConnectService CR               │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  CLUSTER INTERNAL - Namespace: dc-controller-system                          │
+│                                                                              │
+│  [dc-controller-manager]                                                     │
+│  - ServiceAccount: dc-controller-manager                                     │
+│  - Leader Election: Lease resource in dc-controller-system                   │
+│  - Image: controller:latest                                                  │
+│  - TLS: crypto/tls (Go), self-signed by controller-runtime (default)         │
+│  - FIPS: Not verified (no GOEXPERIMENT=strictfipsruntime observed)           │
+│         │                                                                    │
+│         │ Port: 6443/TCP                                                     │
+│         │ Protocol: HTTPS                                                    │
+│         │ Encryption: TLS 1.2+                                               │
+│         │ Auth: ServiceAccount token (in-cluster)                            │
+│         ▼                                                                    │
+│                                                                              │
+│  [dc-controller-metrics-service]                                             │
+│  - Type: ClusterIP                                                           │
+│  - Port: 8443/TCP                                                            │
+│  - Encryption: TLS (controller-runtime self-signed cert)                     │
+│  - Auth: TokenReview + SubjectAccessReview                                   │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  PLATFORM SERVICES                                                           │
+│                                                                              │
+│  [Kubernetes API - kube-apiserver]                                           │
+│  - Port: 6443/TCP                                                            │
+│  - Protocol: HTTPS/WSS                                                       │
+│  - Encryption: TLS 1.2+                                                      │
+│  - Auth: ServiceAccount tokens, user tokens                                  │
+│                                                                              │
+│  [OpenShift Ingress Config - config.openshift.io/v1/Ingress]                 │
+│  - Purpose: Cluster routing domain discovery                                 │
+│  - Access: Read-only (get, list, watch)                                      │
+│                                                                              │
+│  [OpenShift IngressController - operator.openshift.io/v1/IngressController]  │
+│  - Purpose: Ingress configuration details                                    │
+│  - Access: Read-only (get, list, watch)                                      │
+│                                                                              │
+│  [Gateway API]                                                               │
+│  - Gateway: Read (get, list, watch)                                          │
+│  - HTTPRoute: Full CRUD (create, delete, get, list, patch, update, watch)    │
+│                                                                              │
+├──────────────────────────────────────────────────────────────────────────────┤
+│  BACKEND DATA SERVICES (External to cluster or cluster-internal)             │
+│                                                                              │
+│  [PostgreSQL] - Backend database                                             │
+│  [Elasticsearch] - Search engine backend                                     │
+│  [Milvus] - Vector database backend                                          │
+│  [Neo4j] - Graph database backend                                            │
+│  [S3 Storage] - Object storage backend                                       │
+│  [SQLite] - Embedded database backend                                        │
+│  [URI] - Generic URI-based data source                                       │
+│  - Auth: Backend-specific credentials                                        │
+│  - Encryption: Backend-specific                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+
+ClusterRoles (Operator):
+  dc-controller-manager-role / manager-role:
+  - core: configmaps, serviceaccounts, services (full CRUD)
+  - core: secrets (get, list, patch, update, watch)
+  - apps: deployments (full CRUD)
+  - authentication.k8s.io: tokenreviews (create)
+  - authorization.k8s.io: subjectaccessreviews (create)
+  - config.openshift.io: ingresses (get, list, watch)
+  - dataconnecthub.opendatahub.io: dataconnectservices (full CRUD + finalizers)
+  - dataconnecthub.opendatahub.io: initdataconnections, initdataconnectiontypes (get, list, watch)
+  - dataconnecthub.opendatahub.io: data-connection-types, data-connections (full CRUD + post, put)
+  - gateway.networking.k8s.io: gateways (get, list, watch)
+  - gateway.networking.k8s.io: httproutes (full CRUD)
+  - networking.k8s.io: networkpolicies (full CRUD)
+  - operator.openshift.io: ingresscontrollers (get, list, watch)
+  - rbac.authorization.k8s.io: clusterroles, clusterrolebindings (full CRUD)
+
+ClusterRoles (User-Facing):
+  dataconnecthub-admin-role:    dataconnectservices (full CRUD) + status (get)
+  dataconnecthub-editor-role:   dataconnectservices (full CRUD) + status (get)
+  dataconnecthub-viewer-role:   dataconnectservices (get, list, watch) + status (get)
+
+ClusterRoles (Metrics):
+  dc-controller-metrics-auth-role / metrics-auth-role:
+  - authentication.k8s.io: tokenreviews (create)
+  - authorization.k8s.io: subjectaccessreviews (create)
+
+Roles (Leader Election):
+  dc-controller-leader-election-role / leader-election-role:
+  - core: configmaps (full CRUD), events (create, patch)
+  - coordination.k8s.io: leases (full CRUD)
+
+Service Accounts:
+  dc-controller-manager → dc-controller-manager-role, dc-controller-metrics-auth-role
+  manager → manager-role, metrics-auth-role, leader-election-role
+
+Cryptographic Posture:
+  Rust Services:
+  - TLS: rustls 0.23 with aws_lc_rs provider (explicit selection)
+  - HTTP client: reqwest with rustls-tls
+  - FIPS: NOT verified (aws-lc-rs fips feature not enabled)
+  Go Controller:
+  - TLS: crypto/tls via controller-runtime
+  - Certificates: Self-signed by controller-runtime (default)
+  - FIPS: NOT verified (no GOEXPERIMENT=strictfipsruntime)

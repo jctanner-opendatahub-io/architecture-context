@@ -1,0 +1,50 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Gateway as maas-default-gateway<br/>openshift-ingress
+    participant Authorino as Kuadrant/Authorino<br/>AuthPolicy Enforcement
+    participant API as maas-api<br/>:8443 HTTPS
+    participant DB as PostgreSQL<br/>SQL (pgx)
+    participant K8sAPI as Kubernetes API<br/>:6443 TLS 1.2+
+    participant Controller as maas-controller<br/>(Operator)
+    participant KServe as KServe<br/>InferenceService
+
+    Note over Client,Gateway: External Client Request Flow
+
+    Client->>Gateway: POST /v1/models, /v1/subscriptions,<br/>/v1/api-keys, /maas-api/*<br/>via HTTPRoute (maas-api-route)
+    Gateway->>Authorino: Enforce AuthPolicy<br/>API Key / TokenReview / OIDC JWT
+    Authorino->>K8sAPI: TokenReview validation
+    K8sAPI-->>Authorino: Token valid + identity
+    Authorino->>Authorino: CEL evaluation<br/>Inject X-MaaS-Username,<br/>X-MaaS-Group,<br/>X-MaaS-Subscription headers
+    Authorino-->>Gateway: Authenticated request
+    Gateway->>API: Forward to backend<br/>:8443 HTTPS
+    API->>DB: Query subscriptions,<br/>API keys, tenant metadata
+    DB-->>API: Results
+    API-->>Gateway: JSON Response
+    Gateway-->>Client: Response
+
+    Note over Client,API: Internal Direct Access (/v1/tenants)
+
+    Client->>API: GET /v1/tenants<br/>(internal ClusterIP only)
+    API->>K8sAPI: TokenReview<br/>(5s timeout)
+    K8sAPI-->>API: Identity
+    API->>K8sAPI: SubjectAccessReview<br/>(5s timeout)
+    K8sAPI-->>API: Authorization decision
+    API->>DB: Query tenant data
+    DB-->>API: Results
+    API-->>Client: Response
+
+    Note over Controller,KServe: Controller Reconciliation Flow
+
+    Controller->>K8sAPI: Watch AITenant, MaaSSubscription,<br/>MaaSModelRef, MaaSAuthPolicy,<br/>MaasTenantConfig, ExternalModel CRs
+    K8sAPI-->>Controller: Resource change events
+    Controller->>K8sAPI: Create/Update HTTPRoute<br/>(Gateway API)
+    Controller->>K8sAPI: Create/Update AuthPolicy<br/>(Kuadrant)
+    Controller->>K8sAPI: Create/Update<br/>TokenRateLimitPolicy
+    Controller->>KServe: Watch InferenceService<br/>(conditional)
+    KServe-->>Controller: Model availability state
+    Controller->>K8sAPI: Update MaaSModelRef status<br/>(reflect model state)
+
+    Note over API,Controller: Webhook Validation
+
+    K8sAPI->>Controller: Admission Review<br/>(AITenant, MaaSAuthPolicy,<br/>MaaSModelRef, MaaSSubscription)
+    Controller-->>K8sAPI: Admit / Deny

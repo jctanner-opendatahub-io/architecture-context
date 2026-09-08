@@ -1,0 +1,60 @@
+sequenceDiagram
+    participant Client as External Client
+    participant Route as OpenShift Route<br/>HTTPS TLS
+    participant Proxy as kube-auth-proxy<br/>4180/TCP
+    participant OAuth as OAuth2/OIDC Provider<br/>(OpenShift OAuth)
+    participant K8sAPI as Kubernetes API<br/>6443/TCP HTTPS
+    participant Redis as Redis/Valkey<br/>TLS (optional)
+    participant Upstream as Upstream Service
+
+    Note over Client,Upstream: Flow 1: Browser OAuth2 Authentication
+    Client->>Route: GET /protected-resource<br/>HTTPS TLS
+    Route->>Proxy: Forward (port 80→4180)
+    Proxy->>Proxy: Pre-auth chain<br/>(logging, metrics)
+    Proxy->>Proxy: Check session cookie
+    Note right of Proxy: No valid session
+    Proxy-->>Client: 302 Redirect → /oauth2/sign_in
+
+    Client->>Route: GET /oauth2/start
+    Route->>Proxy: Forward
+    Proxy-->>Client: 302 Redirect → OAuth Provider<br/>(with state + CSRF)
+
+    Client->>OAuth: Authorization Code Flow<br/>User authenticates
+    OAuth-->>Client: 302 Redirect → /oauth2/callback<br/>(with auth code)
+
+    Client->>Route: GET /oauth2/callback?code=...
+    Route->>Proxy: Forward
+    Proxy->>OAuth: Exchange code for tokens
+    OAuth-->>Proxy: Access Token + ID Token
+    Proxy->>Redis: Store session (if Redis enabled)
+    Redis-->>Proxy: OK
+    Proxy-->>Client: 302 Redirect → /protected-resource<br/>Set-Cookie: session
+
+    Client->>Route: GET /protected-resource<br/>Cookie: session
+    Route->>Proxy: Forward
+    Proxy->>Proxy: Validate session cookie
+    Proxy->>Upstream: Forward request<br/>X-Forwarded-User<br/>X-Forwarded-Email<br/>X-Forwarded-Groups
+    Upstream-->>Proxy: Response
+    Proxy-->>Client: Response
+
+    Note over Client,Upstream: Flow 2: K8s ServiceAccount Token Auth
+    Client->>Route: GET /api/endpoint<br/>Authorization: Bearer <sa-token>
+    Route->>Proxy: Forward
+    Proxy->>Proxy: Detect Bearer token
+    Proxy->>Proxy: Check singleflight cache<br/>(TTL: 10s)
+    Note right of Proxy: Cache miss
+    Proxy->>K8sAPI: POST /apis/authentication.k8s.io/v1/tokenreviews<br/>Bearer: SA token<br/>Timeout: 30s
+    K8sAPI-->>Proxy: TokenReview response<br/>(authenticated: true, user info)
+    Proxy->>Proxy: Cache result (TTL: 10s)
+    Proxy->>Upstream: Forward request<br/>X-Forwarded-User
+    Upstream-->>Proxy: Response
+    Proxy-->>Client: Response
+
+    Note over Client,Upstream: Flow 3: JWT Bearer Token Auth
+    Client->>Route: GET /api/endpoint<br/>Authorization: Bearer <jwt>
+    Route->>Proxy: Forward
+    Proxy->>OAuth: Validate JWT against OIDC issuer
+    OAuth-->>Proxy: Token valid + claims
+    Proxy->>Upstream: Forward request
+    Upstream-->>Proxy: Response
+    Proxy-->>Client: Response

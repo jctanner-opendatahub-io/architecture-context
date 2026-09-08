@@ -1,0 +1,57 @@
+graph LR
+    GarakAdapter["llama-stack-provider-trustyai-garak<br/>Garak Red-Teaming Adapter"]
+
+    %% Core Framework Dependencies
+    GarakAdapter -->|"red-teaming engine<br/>v0.15.0+rhaiv.5"| Garak["garak<br/>(NVIDIA)"]
+    GarakAdapter -->|"adapter framework<br/>~=0.4.2"| EvalHubSDK["eval-hub-sdk"]
+    GarakAdapter -->|"pipeline SDK<br/>>=2.14.6"| KFP["kfp + kfp-kubernetes"]
+
+    %% Runtime Integration Dependencies
+    GarakAdapter -->|"S3 storage<br/>>=1.35.88"| Boto3["boto3"]
+    GarakAdapter -->|"K8s client<br/>==36.0.2"| Kubernetes["kubernetes"]
+    GarakAdapter -->|"HTTP client<br/>==0.28.1"| Httpx["httpx"]
+    GarakAdapter -->|"HTTP client<br/>==2.33.0"| Requests["requests"]
+
+    %% ML/AI Dependencies
+    GarakAdapter -->|"ML framework"| Torch["torch ==2.11.0"]
+    GarakAdapter -->|"transformers"| Transformers["transformers ==5.13.0"]
+    GarakAdapter -->|"tokenizer"| Tiktoken["tiktoken ==0.13.0"]
+    GarakAdapter -->|"LLM proxy"| LiteLLM["litellm ==1.84.0"]
+    GarakAdapter -->|"OpenAI client"| OpenAI["openai ==2.45.0"]
+
+    %% Security Dependencies
+    GarakAdapter -->|"crypto (transitive)"| Cryptography["cryptography ==49.0.0"]
+    GarakAdapter -->|"JWT (transitive)"| PyJWT["pyjwt ==2.13.0"]
+
+    %% Observability
+    GarakAdapter -->|"tracing"| OTel["opentelemetry-sdk ==1.43.0"]
+
+    %% Internal Platform Dependencies
+    GarakAdapter -->|"pipeline execution"| KFPipelines["Kubeflow Pipelines<br/>API Server"]
+
+    %% OCI artifact persistence
+    GarakAdapter -->|"OCI artifacts"| ORAS["oras ==0.2.42"]
+
+    %% Integration Points
+    EvalHub["Eval-Hub Service"] -->|"creates Job"| GarakAdapter
+    GarakAdapter -->|"reports results"| EvalHub
+
+    style GarakAdapter fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style Garak fill:#7ed321,stroke:#333
+    style EvalHubSDK fill:#7ed321,stroke:#333
+    style KFP fill:#7ed321,stroke:#333
+    style Boto3 fill:#f5a623,stroke:#333
+    style Kubernetes fill:#f5a623,stroke:#333
+    style Httpx fill:#999,stroke:#333
+    style Requests fill:#999,stroke:#333
+    style Torch fill:#999,stroke:#333
+    style Transformers fill:#999,stroke:#333
+    style Tiktoken fill:#999,stroke:#333
+    style LiteLLM fill:#999,stroke:#333
+    style OpenAI fill:#999,stroke:#333
+    style Cryptography fill:#e8e8e8,stroke:#333
+    style PyJWT fill:#e8e8e8,stroke:#333
+    style OTel fill:#e8e8e8,stroke:#333
+    style KFPipelines fill:#7ed321,stroke:#333
+    style ORAS fill:#999,stroke:#333
+    style EvalHub fill:#7ed321,stroke:#333

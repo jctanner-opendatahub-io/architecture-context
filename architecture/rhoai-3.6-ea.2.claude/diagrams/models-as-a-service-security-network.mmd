@@ -1,0 +1,78 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client"]
+    end
+
+    subgraph Ingress["INGRESS (Gateway API)"]
+        Gateway["maas-default-gateway<br/>Namespace: openshift-ingress<br/>HTTPRoute: maas-api-route"]
+        Authorino["Kuadrant/Authorino AuthPolicy<br/>API Key + TokenReview + OIDC JWT<br/>CEL: X-MaaS-Username, X-MaaS-Group,<br/>X-MaaS-Subscription headers"]
+        Gateway --> Authorino
+    end
+
+    subgraph AppLayer["APPLICATION LAYER (Namespace: opendatahub)"]
+        direction TB
+
+        subgraph MaaSAPI["maas-api (SA: maas-api)"]
+            APIServer["REST Server<br/>:8443/TCP HTTPS<br/>TLS 1.2+ (configurable)<br/>FIPS: strictfipsruntime"]
+            Health["Health/Ready<br/>:8080/TCP HTTP<br/>No Auth"]
+            Metrics["Metrics<br/>:9090/TCP"]
+            TenantMW["TenantAuthMiddleware<br/>Bearer → TokenReview (5s)<br/>→ SubjectAccessReview (5s)"]
+        end
+
+        subgraph MaaSCtrl["maas-controller"]
+            ControllerMgr["Controller Manager<br/>FIPS: strictfipsruntime<br/>UBI9 ubi-minimal-pqc"]
+            Webhooks["Validating Webhooks<br/>HTTPS/TLS<br/>Failure Policy: fail"]
+            CtrlHealth["Health: :8081<br/>/healthz, /readyz<br/>No Auth"]
+        end
+    end
+
+    subgraph K8sLayer["KUBERNETES API"]
+        K8sAPI["kube-apiserver<br/>:6443/TCP<br/>HTTPS/WSS TLS 1.2+<br/>ServiceAccount Auth"]
+    end
+
+    subgraph DataLayer["DATA LAYER"]
+        PostgreSQL["PostgreSQL<br/>Credentials: maas-db-config Secret<br/>Access: RBAC resourceNames restricted"]
+    end
+
+    subgraph PlatformIntegrations["PLATFORM INTEGRATIONS"]
+        KServe["KServe InferenceService<br/>Conditional watch"]
+        OTEL["OpenTelemetry Collector<br/>OTLP/gRPC"]
+        GatewayAPI["Gateway API Resources<br/>HTTPRoute, AuthPolicy,<br/>TokenRateLimitPolicy"]
+    end
+
+    %% External flows
+    Client -->|"HTTPS<br/>API Key / TokenReview / OIDC JWT<br/>/v1/models, /v1/subscriptions,<br/>/v1/api-keys, /maas-api/*"| Gateway
+    Authorino -->|"HTTPS/8443<br/>Authenticated + identity headers"| APIServer
+
+    %% Internal direct access
+    Client -.->|"ClusterIP only<br/>/v1/tenants<br/>Bearer Token"| TenantMW
+
+    %% App to K8s
+    TenantMW -->|"HTTPS/6443<br/>TokenReview + SAR<br/>TLS 1.2+"| K8sAPI
+    APIServer -->|"HTTPS/6443<br/>SA token<br/>TLS 1.2+"| K8sAPI
+    ControllerMgr -->|"HTTPS/6443<br/>SA token<br/>CRD watches + CRUD"| K8sAPI
+    Webhooks -->|"HTTPS/TLS<br/>Admission Review"| K8sAPI
+    Authorino -->|"HTTPS/6443<br/>TokenReview"| K8sAPI
+
+    %% Data layer
+    APIServer -->|"SQL (pgx)<br/>maas-db-config credentials"| PostgreSQL
+
+    %% Platform integrations
+    ControllerMgr -->|"Kubernetes API<br/>Conditional watch"| KServe
+    APIServer -->|"OTLP/gRPC<br/>Trace export"| OTEL
+    ControllerMgr -->|"Kubernetes API<br/>Create/Update"| GatewayAPI
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef ingress fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef app fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef k8s fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef data fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef platform fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+
+    class Client external
+    class Gateway,Authorino ingress
+    class APIServer,Health,Metrics,TenantMW,ControllerMgr,Webhooks,CtrlHealth app
+    class K8sAPI k8s
+    class PostgreSQL data
+    class KServe,OTEL,GatewayAPI platform

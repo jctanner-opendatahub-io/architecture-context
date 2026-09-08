@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "component": "mlflow-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "mlflow-operator-conditional-api-001",
+      "claim": "The operator uses discovery-API-gated conditional watches for Gateway API, OpenShift Console, and prometheus-operator CRDs, allowing the same binary to run on clusters with or without these optional APIs.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/mlflow_controller.go:527-549"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/routing.go:46-73"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:344-360"
+        }
+      ],
+      "reasoning": "Three independent CRD availability checks (IsConsoleLinkAvailable, IsHTTPRouteAvailable, IsServiceMonitorAvailable) using the discovery API control both cache configuration and watch registration. This is a graceful degradation pattern that avoids hard dependencies on optional platform APIs.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "mlflow-operator-auth-rbac-002",
+      "claim": "The NamespaceRBACReconciler watches the platform Auth CR (services.platform.opendatahub.io/v1alpha1) to propagate MLflow view/edit RoleBindings into workspace namespaces, coupling this operator to the RHOAI authorization model.",
+      "category": "cross-component implication",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/namespace_rbac_controller.go:48-52"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/namespace_rbac_controller.go:104-106"
+        }
+      ],
+      "reasoning": "The Auth CR watch establishes a cross-component dependency on whatever operator manages the services.platform.opendatahub.io Auth resource. Changes to the Auth CR schema or lifecycle would affect this operator's RBAC propagation behavior.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "mlflow-operator-pqc-base-003",
+      "claim": "The operator uses the PQC (Post-Quantum Crypto) variant of UBI 9 minimal as its runtime base image, indicating forward-looking cryptographic compliance beyond standard FIPS 140 requirements.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfile.konflux:34"
+        }
+      ],
+      "reasoning": "Using ubi9/ubi-minimal-pqc instead of standard ubi9/ubi-minimal signals that the downstream build configuration has adopted post-quantum cryptographic libraries. Combined with strictfipsruntime, this represents a strong cryptographic posture. The recent commit 'Migrate runtime base image to PQC variant' confirms this is an intentional migration.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "mlflow-operator-tls-adherence-004",
+      "claim": "The operator integrates with the OpenShift cluster TLS profile from apiservers.config.openshift.io/cluster and restarts the manager process when the TLS adherence policy changes, ensuring alignment with cluster-wide cryptographic configuration.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "cmd/main.go:550-562"
+        }
+      ],
+      "reasoning": "The TLS profile watcher calls cancel() on the manager context when the adherence policy changes, triggering a graceful shutdown and restart. This ensures the operator's TLS configuration stays current with cluster policy without requiring manual intervention.",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

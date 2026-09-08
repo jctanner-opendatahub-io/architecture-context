@@ -1,0 +1,129 @@
+graph TB
+    subgraph External["External Clients"]
+        User[User / Browser]
+    end
+
+    subgraph DashboardStack["ODH Dashboard Stack"]
+        subgraph Operator["Dashboard Operator"]
+            DashCtrl["Dashboard Controller<br/>(controller-runtime)"]
+            WSCtrl["Workspace Controller"]
+            WSKindCtrl["WorkspaceKind Controller"]
+            Webhooks["Admission Webhooks<br/>/validate-dashboard<br/>/validate-workspace<br/>/validate-workspacekind<br/>/convert"]
+        end
+
+        subgraph Frontend["Frontend Tier"]
+            SPA["React/TypeScript SPA<br/>(PatternFly 6.5)<br/>Webpack Module Federation Host"]
+        end
+
+        subgraph Backend["Node.js Backend"]
+            Fastify["Fastify Server<br/>port 8443 (via kube-rbac-proxy)"]
+            K8sProxy["K8s API Proxy<br/>/api/k8s/*"]
+            WSSProxy["WebSocket Proxy<br/>/wss/k8s/*"]
+            MFProxy["Module Federation Proxy<br/>/_mf/:name/*"]
+        end
+
+        subgraph BFFServices["Go BFF Sidecars (port 8080)"]
+            CoreBFF["core-bff"]
+            GenAI["gen-ai BFF"]
+            MaaS["maas BFF"]
+            ModelReg["model-registry BFF"]
+            AgentOps["agent-ops BFF"]
+            AutoML["automl BFF"]
+            AutoRAG["autorag BFF"]
+            DataReg["data-registry BFF"]
+            EvalHub["eval-hub BFF"]
+            MLflowBFF["mlflow BFF"]
+            NotebooksBFF["notebooks BFF"]
+        end
+    end
+
+    subgraph CRDs["Custom Resources"]
+        DashboardCR["Dashboard CR<br/>(Cluster-scoped)"]
+        WorkspaceCR["Workspace CR<br/>(Namespaced)"]
+        WorkspaceKindCR["WorkspaceKind CR<br/>(Cluster-scoped)"]
+    end
+
+    subgraph PlatformServices["Platform Services"]
+        KServe["KServe"]
+        TrustyAI["TrustyAI"]
+        ModelRegistry["Model Registry"]
+        DSPipelines["DataScience Pipelines"]
+        Feast["Feast"]
+        MLflow["MLflow"]
+        MLMD["ML Metadata"]
+        Prometheus["Prometheus/Thanos"]
+        LlamaStack["Llama Stack"]
+        NeMo["NeMo Guardrails"]
+    end
+
+    subgraph K8sInfra["Kubernetes Infrastructure"]
+        K8sAPI["Kubernetes API Server"]
+        Istio["Istio / Service Mesh"]
+        GatewayAPI["Gateway API"]
+        CertManager["cert-manager"]
+    end
+
+    %% User flows
+    User -->|HTTPS/443| Fastify
+    Fastify -->|serves| SPA
+    SPA -->|API calls| Fastify
+    Fastify --> K8sProxy
+    Fastify --> WSSProxy
+    Fastify --> MFProxy
+    MFProxy -->|proxies to| BFFServices
+
+    %% Operator watches CRDs
+    DashCtrl -->|reconciles| DashboardCR
+    WSCtrl -->|reconciles| WorkspaceCR
+    WSKindCtrl -->|reconciles| WorkspaceKindCR
+
+    %% Operator manages resources
+    DashCtrl -->|manages| K8sAPI
+    WSCtrl -->|manages| K8sAPI
+
+    %% BFF integrations
+    GenAI -->|gRPC-web| MLMD
+    GenAI -->|REST| LlamaStack
+    GenAI -->|REST| NeMo
+    MaaS -->|REST| KServe
+    ModelReg -->|REST| ModelRegistry
+    CoreBFF -->|REST| DSPipelines
+    CoreBFF -->|REST| Prometheus
+    EvalHub -->|REST| TrustyAI
+    MLflowBFF -->|REST| MLflow
+    AgentOps -->|REST| K8sAPI
+
+    %% Infrastructure
+    Operator -->|TLS certs| CertManager
+    WSCtrl -->|HTTPRoute| GatewayAPI
+
+    %% Styling
+    style DashCtrl fill:#4a90e2,stroke:#333,color:#fff
+    style WSCtrl fill:#4a90e2,stroke:#333,color:#fff
+    style WSKindCtrl fill:#4a90e2,stroke:#333,color:#fff
+    style Webhooks fill:#4a90e2,stroke:#333,color:#fff
+    style Fastify fill:#68a063,stroke:#333,color:#fff
+    style SPA fill:#61dafb,stroke:#333,color:#000
+    style CoreBFF fill:#f5a623,stroke:#333,color:#000
+    style GenAI fill:#f5a623,stroke:#333,color:#000
+    style MaaS fill:#f5a623,stroke:#333,color:#000
+    style ModelReg fill:#f5a623,stroke:#333,color:#000
+    style AgentOps fill:#f5a623,stroke:#333,color:#000
+    style AutoML fill:#f5a623,stroke:#333,color:#000
+    style AutoRAG fill:#f5a623,stroke:#333,color:#000
+    style DataReg fill:#f5a623,stroke:#333,color:#000
+    style EvalHub fill:#f5a623,stroke:#333,color:#000
+    style MLflowBFF fill:#f5a623,stroke:#333,color:#000
+    style NotebooksBFF fill:#f5a623,stroke:#333,color:#000
+    style DashboardCR fill:#e8e8e8,stroke:#999
+    style WorkspaceCR fill:#e8e8e8,stroke:#999
+    style WorkspaceKindCR fill:#e8e8e8,stroke:#999
+    style KServe fill:#7ed321,stroke:#333
+    style TrustyAI fill:#7ed321,stroke:#333
+    style ModelRegistry fill:#7ed321,stroke:#333
+    style DSPipelines fill:#7ed321,stroke:#333
+    style Feast fill:#7ed321,stroke:#333
+    style MLflow fill:#7ed321,stroke:#333
+    style MLMD fill:#7ed321,stroke:#333
+    style K8sAPI fill:#326ce5,stroke:#333,color:#fff
+    style Istio fill:#466bb0,stroke:#333,color:#fff

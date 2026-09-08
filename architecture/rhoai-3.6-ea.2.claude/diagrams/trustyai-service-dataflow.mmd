@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Client as External Client
+    participant KRBP as kube-rbac-proxy<br/>8443/TCP TLS
+    participant MainAPI as Main FastAPI<br/>8081/TCP loopback
+    participant HealthAPI as Health/Consumer FastAPI<br/>8080/TCP
+    participant Storage as Storage Backend<br/>(PVC/MariaDB)
+    participant KServe as KServe Inference Logger
+    participant ModelMesh as ModelMesh Agent
+    participant Prom as Prometheus
+    participant Scheduler as Background Scheduler
+
+    Note over Client, MainAPI: Authenticated API Flow
+    Client->>KRBP: HTTPS request<br/>Auth: Bearer/ServiceAccount
+    KRBP->>KRBP: Authenticate via<br/>Kubernetes RBAC
+    KRBP->>MainAPI: Forward to 127.0.0.1:8081<br/>(loopback, no encryption)
+    MainAPI->>Storage: Read/write data
+    Storage-->>MainAPI: Data response
+    MainAPI-->>KRBP: JSON response
+    KRBP-->>Client: Authenticated response
+
+    Note over KServe, Storage: Inference Data Ingestion (KServe)
+    KServe->>HealthAPI: POST / (CloudEvent)<br/>8080/TCP HTTP
+    HealthAPI->>HealthAPI: Parse CloudEvent<br/>Reconcile input/output by ID
+    HealthAPI->>Storage: Persist inference data
+    Storage-->>HealthAPI: Ack
+    HealthAPI-->>KServe: 200 OK
+
+    Note over ModelMesh, Storage: Inference Data Ingestion (ModelMesh)
+    ModelMesh->>HealthAPI: POST /consumer/kserve/v2<br/>8080/TCP HTTP
+    HealthAPI->>HealthAPI: Parse KServe v2 payload<br/>Reconcile input/output by ID
+    HealthAPI->>Storage: Persist inference data
+    Storage-->>HealthAPI: Ack
+    HealthAPI-->>ModelMesh: 200 OK
+
+    Note over Scheduler, Prom: Metrics Publishing
+    loop Every 30s (configurable)
+        Scheduler->>Storage: Read scheduled metric requests
+        Storage-->>Scheduler: Metric data
+        Scheduler->>Scheduler: Compute fairness/drift metrics
+        Scheduler->>HealthAPI: Update Prometheus counters/gauges
+    end
+    Prom->>HealthAPI: GET /q/metrics<br/>8080/TCP HTTP
+    HealthAPI-->>Prom: Prometheus text format

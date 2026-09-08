@@ -1,0 +1,46 @@
+sequenceDiagram
+    participant User as Data Scientist<br/>(Notebook / Workbench)
+    participant SDK as CodeFlare SDK<br/>(Python Client)
+    participant AuthKit as kube-authkit<br/>Auth Auto-Detection
+    participant K8sAPI as Kubernetes API<br/>6443/TCP TLS
+    participant KubeRay as KubeRay Operator
+    participant Kueue as Kueue Controller
+    participant RayCluster as Ray Cluster Pods
+    participant RayDash as Ray Dashboard<br/>HTTP/HTTPS
+
+    Note over User,RayDash: Flow 1: CRD-Based Job Submission (KubeRay Path)
+
+    User->>SDK: Submit RayJob<br/>(entrypoint, runtime_env, queue)
+    SDK->>AuthKit: config_check()<br/>Auto-detect credentials
+    AuthKit-->>SDK: K8s client configured<br/>(Bearer / kubeconfig / in-cluster SA)
+    SDK->>SDK: Generate TLS certs<br/>(RSA 3072-bit, x509)
+    SDK->>K8sAPI: Create Secret<br/>(TLS certificates)
+    K8sAPI-->>SDK: Secret created
+    SDK->>K8sAPI: Create RayJob CR<br/>(via vendored RayjobApi)<br/>+ Kueue annotations
+    K8sAPI-->>SDK: RayJob CR created
+    K8sAPI->>Kueue: Workload admission<br/>(local queue + priority class)
+    Kueue-->>K8sAPI: Workload admitted
+    K8sAPI->>KubeRay: Reconcile RayJob CR
+    KubeRay->>K8sAPI: Create Ray cluster pods
+    K8sAPI-->>KubeRay: Pods scheduled
+    KubeRay->>RayCluster: Start Ray head + workers
+    RayCluster-->>KubeRay: Job completed
+    KubeRay->>K8sAPI: Update RayJob status
+    SDK->>K8sAPI: Poll RayJob status
+    K8sAPI-->>SDK: Job status + results
+
+    Note over User,RayDash: Flow 2: Direct Job Submission (Ray Dashboard Path)
+
+    User->>SDK: Submit via RayJobClient<br/>(dashboard_address, headers)
+    SDK->>RayDash: POST job submission<br/>HTTP headers + cookies<br/>TLS verification enabled
+    RayDash-->>SDK: Job ID
+    SDK->>RayDash: GET job status<br/>(poll)
+    RayDash-->>SDK: Job result
+
+    Note over User,RayDash: Flow 3: Certificate Generation
+
+    User->>SDK: generate_cert()
+    SDK->>SDK: Generate CA cert<br/>(RSA 3072-bit, x509)
+    SDK->>SDK: Generate server cert<br/>(signed by CA)
+    SDK->>K8sAPI: Create TLS Secret<br/>(ca.crt, tls.crt, tls.key)
+    K8sAPI-->>SDK: Secret stored

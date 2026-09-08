@@ -1,0 +1,126 @@
+┌─────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                   │
+│                                                                          │
+│  [External Client]                                                       │
+│         │                                                                │
+│         │ Port: 8081/TCP                                                 │
+│         │ Protocol: HTTP                                                 │
+│         │ Encryption: None (platform-delegated)                          │
+│         │ Auth: None (platform-delegated)                                │
+│         ▼                                                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ROUTING LAYER                                                           │
+│                                                                          │
+│  [Envoy Sidecar Proxy]                                                   │
+│  - Port: 8081/TCP (client-facing)                                       │
+│  - Routing: ORIGINAL_DST via x-gateway-destination-endpoint header      │
+│  - Proxy Types: envoy, agentgateway (configurable)                      │
+│         │                                                                │
+│         │ Port: 9002/TCP                                                 │
+│         │ Protocol: gRPC (ext_proc)                                      │
+│         │ Encryption: None (localhost)                                    │
+│         │ Auth: None (localhost)                                          │
+│         ▼                                                                │
+│  [Endpoint Picker Plugin (EPP)]                                          │
+│  - Port: 9002/TCP                                                        │
+│  - Protocol: envoy.service.ext_proc.v3.ExternalProcessor                │
+│  - Purpose: Routing decisions via InferencePool membership & load       │
+│  - Sets: x-gateway-destination-endpoint header                          │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  MODEL SERVING LAYER                                                     │
+│                                                                          │
+│  [Decode Deployment - vllm]                                              │
+│  - Namespace: {model-namespace}                                          │
+│  - Image: REPLACE_MODEL_SERVER_IMAGE                                    │
+│  - Entrypoint: python -m vllm.entrypoints.openai.api_server            │
+│  - Port: 8000/TCP                                                        │
+│  - Protocol: HTTP (OpenAI-compatible API)                                │
+│  - Endpoints: /v1/completions, /v1/chat/completions                     │
+│  - Health: /health, /v1/models (GET)                                    │
+│  - Encryption: None                                                      │
+│  - Auth: None (platform-delegated)                                       │
+│                                                                          │
+│  [Prefill Deployment - vllm] (disaggregated mode only)                  │
+│  - Namespace: {model-namespace}                                          │
+│  - Image: REPLACE_MODEL_SERVER_IMAGE                                    │
+│  - Port: 8000/TCP (API) + 5600/TCP (nixl RDMA)                         │
+│  - Encryption: None                                                      │
+│  - Auth: None                                                            │
+│         │                                                                │
+│         │ Port: 5600/TCP                                                 │
+│         │ Protocol: RDMA (nixl)                                          │
+│         │ Encryption: None (BYPASSES SERVICE MESH)                       │
+│         │ Auth: None                                                     │
+│         ▼                                                                │
+│  [Routing Sidecar]                                                       │
+│  - Flag: --kv-connector=nixlv2                                          │
+│  - Flag: --secure-proxy=false (TLS disabled on sidecar-to-vllm)         │
+│  - Purpose: Coordinate KV-cache handoff between prefill and decode      │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OPTIONAL: ISTIO SERVICE MESH (when deployed with ModelExpress)          │
+│                                                                          │
+│  [PeerAuthentication]                                                    │
+│  - Mode: STRICT                                                          │
+│  - Scope: Broker workload                                                │
+│  - Encryption: mTLS                                                      │
+│                                                                          │
+│  [AuthorizationPolicy]                                                   │
+│  - Port: 8001/TCP (gRPC)                                                │
+│  - Restriction: Decode ServiceAccount only                              │
+│  - Purpose: Restrict broker gRPC access                                  │
+│                                                                          │
+│  ⚠ WARNING: RDMA transfers on port 5600 bypass Istio mesh entirely     │
+│                                                                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  OBSERVABILITY                                                           │
+│                                                                          │
+│  [OpenTelemetry Collector]                                               │
+│  - Port: 4317/TCP                                                        │
+│  - Protocol: gRPC (OTLP)                                                │
+│  - Encryption: None                                                      │
+│  - Purpose: Receive traces from model servers and EPP                   │
+│         │                                                                │
+│         │ Port: 4317/TCP                                                 │
+│         │ Protocol: gRPC (OTLP)                                          │
+│         ▼                                                                │
+│  [Jaeger - jaeger-collector]                                             │
+│  - Purpose: Distributed trace storage and visualization                  │
+│                                                                          │
+│  [Prometheus]                                                            │
+│  - Discovery: PodMonitor                                                 │
+│  - Purpose: Metrics scraping from model servers                          │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Authentication & Authorization Summary:
+- Model Server API: No built-in auth (platform-delegated)
+  - Endpoints: /v1/completions, /v1/chat/completions, /health, /v1/models
+  - Auth: None at vllm level
+  - Encryption: None at vllm level
+
+- ModelExpress Broker (optional):
+  - Auth: Istio mTLS (STRICT) via PeerAuthentication
+  - Authorization: AuthorizationPolicy restricts gRPC port 8001 to decode SA
+  - Encryption: mTLS (Istio-managed)
+
+RBAC Summary:
+- No ClusterRoles defined in component
+- No RoleBindings defined in component
+- Security is entirely platform-delegated
+
+Secrets:
+- No secrets defined in component manifests
+
+FIPS Compliance:
+- No FIPS compliance signals detected
+- Python-based vllm server with no explicit FIPS crypto configuration
+- Standard base images (not UBI/RHEL FIPS-validated)
+
+Security Concerns:
+1. RDMA traffic on port 5600/TCP bypasses Istio service mesh entirely
+2. --secure-proxy=false explicitly disables TLS on sidecar-to-vllm path
+3. No built-in authentication on model server API (port 8000)
+4. ext_proc gRPC (port 9002) has no encryption (localhost assumed)
+5. OTLP traces exported without encryption (port 4317)

@@ -1,0 +1,60 @@
+graph TD
+    subgraph "Service Accounts"
+        SA_SD["stable-diffusion-nb<br/>Namespace: distributed"]
+        SA_NFS["nfs-server-sa<br/>Namespace: nfs"]
+    end
+
+    subgraph "Role Bindings"
+        RB_Edit["edit<br/>Namespace: distributed"]
+        RB_Anyuid["nfs-server-sa-anyuid<br/>Namespace: nfs"]
+        RB_Priv["nfs-server-sa-privileged<br/>Namespace: nfs"]
+    end
+
+    subgraph "ClusterRoles"
+        CR_Edit["edit<br/>(ClusterRole)"]
+        CR_Anyuid["system:openshift:scc:anyuid<br/>(ClusterRole)"]
+        CR_Priv["system:openshift:scc:privileged<br/>(ClusterRole)"]
+    end
+
+    subgraph "Effective Permissions"
+        Perm_Edit["Standard Edit Access<br/>Create, update, delete<br/>most namespace resources"]
+        Perm_Anyuid["anyuid SCC<br/>Run containers as<br/>any user ID"]
+        Perm_Priv["privileged SCC<br/>Full host access,<br/>all capabilities"]
+    end
+
+    subgraph "Secrets Accessed"
+        Secret_Minio["minio<br/>Type: Opaque<br/>MinIO credentials"]
+        Secret_MinioAlt["minio-secret<br/>Type: Opaque<br/>MinIO credentials"]
+    end
+
+    %% Bindings
+    SA_SD -->|"bound via"| RB_Edit
+    RB_Edit -->|"grants"| CR_Edit
+    CR_Edit -->|"provides"| Perm_Edit
+
+    SA_NFS -->|"bound via"| RB_Anyuid
+    RB_Anyuid -->|"grants"| CR_Anyuid
+    CR_Anyuid -->|"provides"| Perm_Anyuid
+
+    SA_NFS -->|"bound via"| RB_Priv
+    RB_Priv -->|"grants"| CR_Priv
+    CR_Priv -->|"provides"| Perm_Priv
+
+    %% Secret access
+    SA_SD -.->|"accesses"| Secret_Minio
+    SA_SD -.->|"accesses"| Secret_MinioAlt
+
+    %% Styling
+    style SA_SD fill:#4a90e2,stroke:#333,color:#fff
+    style SA_NFS fill:#4a90e2,stroke:#333,color:#fff
+    style RB_Edit fill:#dae8fc,stroke:#6c8ebf
+    style RB_Anyuid fill:#dae8fc,stroke:#6c8ebf
+    style RB_Priv fill:#dae8fc,stroke:#6c8ebf
+    style CR_Edit fill:#f5a623,stroke:#333,color:#fff
+    style CR_Anyuid fill:#f5a623,stroke:#333,color:#fff
+    style CR_Priv fill:#e74c3c,stroke:#333,color:#fff
+    style Perm_Edit fill:#d5e8d4,stroke:#82b366
+    style Perm_Anyuid fill:#fff2cc,stroke:#d6b656
+    style Perm_Priv fill:#f8cecc,stroke:#b85450
+    style Secret_Minio fill:#e8e8e8,stroke:#999
+    style Secret_MinioAlt fill:#e8e8e8,stroke:#999

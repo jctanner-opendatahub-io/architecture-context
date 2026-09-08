@@ -1,0 +1,94 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["Data Scientist / Client<br/>kubectl · SDK · Web UI"]
+    end
+
+    subgraph APITier["API TIER (Control Plane)"]
+        direction TB
+        APIServer["ml-pipeline API Server<br/>8887/TCP gRPC · 8888/TCP REST · 8443/TCP Webhooks<br/>SA: ml-pipeline<br/>Auth: TokenReview + HTTP Header<br/>FIPS: GOFIPS140=v1.0.0"]
+        MLUI["ml-pipeline-ui<br/>80/TCP → 3000/TCP<br/>SA: ml-pipeline-ui"]
+    end
+
+    subgraph ExecutionTier["EXECUTION TIER (Workflow Processing)"]
+        direction TB
+        ArgoCtrl["Argo Workflow Controller<br/>v3.7.14"]
+        DriverLauncher["Driver + Launcher Pods<br/>SA: pipeline-runner<br/>FIPS: GOFIPS140 · CGO_ENABLED=0<br/>RBAC: kubeflow.org ★ broad"]
+        PersAgent["Persistence Agent<br/>SA: ml-pipeline-persistenceagent"]
+        SchedWF["Scheduled Workflow Ctrl<br/>SA: ml-pipeline-scheduledworkflow"]
+        CacheSrv["Cache Server<br/>443/TCP webhook<br/>SA: kubeflow-pipelines-cache<br/>TLS: webhook-server-tls"]
+        ViewerCtrl["Viewer Controller<br/>SA: ml-pipeline-viewer-crd-service-account<br/>RBAC: ★/deployments,services ★ broad"]
+    end
+
+    subgraph MetadataTier["METADATA TIER"]
+        direction TB
+        MetaWriter["Metadata Writer<br/>SA: kubeflow-pipelines-metadata-writer"]
+        MetaEnvoy["Metadata Envoy<br/>9090/TCP gRPC proxy"]
+        MetaGRPC["Metadata gRPC Store<br/>8080/TCP<br/>ml_metadata_store_server:1.14.0<br/>VirtualService: metadata-grpc"]
+    end
+
+    subgraph DataTier["DATA TIER (Istio AuthorizationPolicy Protected)"]
+        direction TB
+        MySQL["MySQL 8.4<br/>3306/TCP<br/>Auth: mysql-secret<br/>Istio AuthzPolicy: 7 SAs allowed"]
+        SeaweedFS["SeaweedFS<br/>8333/TCP S3 API · 9333/TCP master<br/>Auth: mlpipeline-minio-artifact"]
+    end
+
+    subgraph ExternalSvc["EXTERNAL SERVICES"]
+        K8sAPI["Kubernetes API<br/>6443/TCP HTTPS/WSS<br/>TLS 1.2+<br/>SA token auth"]
+        Prometheus["Prometheus<br/>Scrape: 8888/TCP HTTP<br/>prometheus.io/scrape"]
+        ExtS3["S3 Storage (external)<br/>HTTP/HTTPS<br/>AWS IAM / Access Keys"]
+    end
+
+    %% External → API Tier
+    Client -->|"gRPC/8887 · REST/8888<br/>Bearer Token or HTTP Header"| APIServer
+    Client -->|"HTTP/80"| MLUI
+
+    %% API Tier → Execution
+    APIServer -->|"Create Argo Workflow<br/>SA: pipeline-runner"| ArgoCtrl
+    MLUI -->|"REST/8888"| APIServer
+
+    %% Execution internal
+    ArgoCtrl -->|"Orchestrate steps"| DriverLauncher
+    PersAgent -->|"Watch workflows<br/>argoproj.io"| ArgoCtrl
+    PersAgent -->|"Report status<br/>pipelines.kubeflow.org"| APIServer
+    SchedWF -->|"Create workflows<br/>argoproj.io"| ArgoCtrl
+    CacheSrv -->|"Intercept steps<br/>Mutating webhook"| ArgoCtrl
+
+    %% Metadata flows
+    MetaWriter -->|"gRPC/9090"| MetaEnvoy
+    MetaEnvoy -->|"gRPC/8080"| MetaGRPC
+
+    %% Data Tier access
+    APIServer -->|"MySQL/3306<br/>Istio mTLS"| MySQL
+    MLUI -->|"MySQL/3306<br/>Istio mTLS"| MySQL
+    MetaGRPC -->|"MySQL/3306<br/>Istio mTLS"| MySQL
+    APIServer -->|"S3 API/8333<br/>Access Key"| SeaweedFS
+    DriverLauncher -->|"S3 API/8333<br/>Read/Write artifacts"| SeaweedFS
+    DriverLauncher -->|"S3 API<br/>AWS SDK"| ExtS3
+
+    %% External services
+    APIServer -->|"HTTPS/6443<br/>TokenReview · SAR"| K8sAPI
+    ArgoCtrl -->|"HTTPS/6443<br/>Workflow mgmt"| K8sAPI
+    PersAgent -->|"HTTPS/6443"| K8sAPI
+    SchedWF -->|"HTTPS/6443"| K8sAPI
+    MetaWriter -->|"HTTPS/6443<br/>Watch pods"| K8sAPI
+    CacheSrv -->|"HTTPS/6443"| K8sAPI
+    Prometheus -->|"HTTP/8888<br/>Metrics scrape"| APIServer
+
+    %% Webhook flow
+    K8sAPI -->|"HTTPS/8443<br/>Admission webhooks"| APIServer
+    K8sAPI -->|"HTTPS/443<br/>Cache webhook"| CacheSrv
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef api fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    classDef execution fill:#d1fae5,stroke:#10b981,stroke-width:2px
+    classDef metadata fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
+    classDef data fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+    classDef extsvc fill:#f3f4f6,stroke:#6b7280,stroke-width:2px
+
+    class Client external
+    class APIServer,MLUI api
+    class ArgoCtrl,DriverLauncher,PersAgent,SchedWF,CacheSrv,ViewerCtrl execution
+    class MetaWriter,MetaEnvoy,MetaGRPC metadata
+    class MySQL,SeaweedFS data
+    class K8sAPI,Prometheus,ExtS3 extsvc

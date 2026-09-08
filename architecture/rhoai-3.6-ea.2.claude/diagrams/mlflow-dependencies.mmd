@@ -1,0 +1,97 @@
+graph LR
+    MLflow["MLflow Tracking Server<br/>(Port 5000)"]
+
+    %% Runtime Frameworks
+    MLflow -->|"WSGI server"| Gunicorn["gunicorn <27"]
+    MLflow -->|"ASGI server"| Uvicorn["uvicorn <1"]
+    MLflow -->|"web framework"| Flask["Flask <4"]
+    MLflow -->|"async framework"| FastAPI["FastAPI <1"]
+    MLflow -->|"ASGI toolkit"| Starlette["Starlette <2"]
+
+    %% Authentication
+    MLflow -->|"auth plugin"| K8sAuthPlugin["mlflow-kubernetes-plugins<br/>==1.5.0"]
+    MLflow -->|"K8s client"| K8sClient["kubernetes<br/>(Python client)"]
+    MLflow -->|"TLS/crypto"| Cryptography["cryptography<br/>>=43.0.0,<49"]
+
+    %% Cloud Storage
+    MLflow -->|"S3 storage"| Boto3["boto3 >1"]
+    MLflow -->|"GCS storage"| GCS["google-cloud-storage<br/>>=1.30.0"]
+    MLflow -->|"Azure storage"| AzureBlob["azure-storage-blob<br/>>=12"]
+
+    %% AI Provider SDKs
+    MLflow -->|"tokenization"| Tiktoken["tiktoken <1"]
+    MLflow -->|"LLM framework"| Langchain["langchain<br/>>=0.3.26"]
+    MLflow -->|"MCP protocol"| FastMCP["fastmcp<br/>>=2.7.0,<4"]
+
+    %% Data & ML Libraries
+    MLflow -->|"data processing"| Pandas["pandas <3"]
+    MLflow -->|"numerical"| NumPy["numpy <3"]
+    MLflow -->|"ML models"| Sklearn["scikit-learn <2"]
+    MLflow -->|"data format"| PyArrow["pyarrow<br/>>=4.0.0,<25"]
+
+    %% Database & ORM
+    MLflow -->|"ORM"| SQLAlchemy["SQLAlchemy<br/>>=1.4.0,<3"]
+    MLflow -->|"migrations"| Alembic["alembic <2"]
+    MLflow -->|"PostgreSQL"| Psycopg2["psycopg2-binary"]
+
+    %% Observability
+    MLflow -->|"tracing"| OTelAPI["opentelemetry-api<br/>>=1.9.0,<3"]
+    MLflow -->|"tracing SDK"| OTelSDK["opentelemetry-sdk<br/>>=1.9.0,<3"]
+    MLflow -->|"metrics"| Prometheus["prometheus-flask-exporter"]
+
+    %% Internal Platform
+    MLflow -->|"Job execution<br/>BatchV1Api"| K8sAPI["Kubernetes API"]
+
+    %% External Services (Egress)
+    MLflow -->|"HTTPS/443"| OpenAI["api.openai.com"]
+    MLflow -.->|"HTTPS/443"| AWSBedrock["AWS Bedrock"]
+    MLflow -.->|"HTTPS/443"| Cohere["Cohere API"]
+    MLflow -.->|"HTTPS/443"| Anthropic["Anthropic API"]
+    MLflow -.->|"HTTPS/443"| Mistral["Mistral API"]
+
+    %% Styling
+    style MLflow fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    %% Frameworks (blue)
+    style Gunicorn fill:#6c8ebf,stroke:#333
+    style Uvicorn fill:#6c8ebf,stroke:#333
+    style Flask fill:#6c8ebf,stroke:#333
+    style FastAPI fill:#6c8ebf,stroke:#333
+    style Starlette fill:#6c8ebf,stroke:#333
+
+    %% Auth & Security (orange)
+    style K8sAuthPlugin fill:#f5a623,stroke:#333
+    style K8sClient fill:#f5a623,stroke:#333
+    style Cryptography fill:#f5a623,stroke:#333
+
+    %% Cloud Storage (pink)
+    style Boto3 fill:#f8cecc,stroke:#b85450
+    style GCS fill:#f8cecc,stroke:#b85450
+    style AzureBlob fill:#f8cecc,stroke:#b85450
+
+    %% AI/ML Libraries (green)
+    style Tiktoken fill:#d5e8d4,stroke:#82b366
+    style Langchain fill:#d5e8d4,stroke:#82b366
+    style FastMCP fill:#d5e8d4,stroke:#82b366
+    style Pandas fill:#d5e8d4,stroke:#82b366
+    style NumPy fill:#d5e8d4,stroke:#82b366
+    style Sklearn fill:#d5e8d4,stroke:#82b366
+    style PyArrow fill:#d5e8d4,stroke:#82b366
+
+    %% Database (purple)
+    style SQLAlchemy fill:#e1d5e7,stroke:#9673a6
+    style Alembic fill:#e1d5e7,stroke:#9673a6
+    style Psycopg2 fill:#e1d5e7,stroke:#9673a6
+
+    %% Observability (yellow)
+    style OTelAPI fill:#fff2cc,stroke:#d6b656
+    style OTelSDK fill:#fff2cc,stroke:#d6b656
+    style Prometheus fill:#fff2cc,stroke:#d6b656
+
+    %% External services (grey)
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style OpenAI fill:#999,stroke:#333,color:#fff
+    style AWSBedrock fill:#999,stroke:#333,color:#fff
+    style Cohere fill:#999,stroke:#333,color:#fff
+    style Anthropic fill:#999,stroke:#333,color:#fff
+    style Mistral fill:#999,stroke:#333,color:#fff

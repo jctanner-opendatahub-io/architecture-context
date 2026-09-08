@@ -1,0 +1,141 @@
+graph TD
+    subgraph AuthMechanisms["Authentication Mechanisms"]
+        Auth_ExtAuthz["Gateway ext_authz<br/>OAuth2/OIDC sessions<br/>data-science-gateway"]
+        Auth_Kuadrant["Kuadrant AuthPolicy<br/>API key sk-oai-* +<br/>OpenShift bearer token<br/>maas-default-gateway"]
+        Auth_KRBP["kube-rbac-proxy<br/>TokenReview + SAR<br/>Per-pod sidecar (8443)"]
+        Auth_Bearer["Kubernetes Bearer Token<br/>TokenReview API<br/>Application-level"]
+        Auth_TLSProfile["OpenShift TLS Profile<br/>Inheritance from<br/>config.openshift.io APIServer"]
+        Auth_SA["ServiceAccount RBAC<br/>All operators (26+)"]
+        Auth_LeaderElect["Leader Election<br/>coordination.k8s.io Leases<br/>19 components"]
+    end
+
+    subgraph KeyServiceAccounts["Key ServiceAccounts"]
+        SA_RHODS["rhods-operator<br/>controller-manager<br/>NS: opendatahub"]
+        SA_KServe["kserve-controller-manager<br/>NS: kserve"]
+        SA_ODHMC["odh-model-controller<br/>NS: opendatahub"]
+        SA_KF["notebook-controller<br/>NS: opendatahub"]
+        SA_Dashboard["odh-dashboard<br/>NS: opendatahub"]
+        SA_MaaS["maas-controller<br/>NS: opendatahub"]
+        SA_DSPO["dspo<br/>NS: opendatahub"]
+        SA_MRO["model-registry-operator<br/>NS: model-registry-operator-system"]
+    end
+
+    subgraph ClusterRoles["ClusterRoles (Most Privileged)"]
+        CR_RHODS["rhods-operator-manager-role<br/>DataScienceCluster/*<br/>DSCInitialization/*<br/>14+ CRD types, Gateway API"]
+        CR_KServe["kserve-manager-role<br/>serving.kserve.io/* (13 CRDs)<br/>30 webhooks<br/>core/services, apps/deployments"]
+        CR_ODHMC["odh-model-controller-role<br/>serving.kserve.io resources<br/>Gateway API HTTPRoute<br/>Kuadrant AuthPolicy"]
+        CR_Kueue["kueue-operator-role<br/>70 webhooks (34M + 36V)<br/>Broad workload admission<br/>(Jobs, Pods, RayJobs, etc.)"]
+        CR_KF["notebook-controller-role<br/>kubeflow.org Notebooks<br/>Pod mutation (webhook)<br/>HTTPRoute, NetworkPolicy"]
+    end
+
+    subgraph WebhookSecurity["Webhook Security (213 total, failurePolicy: Fail)"]
+        WH_KServe["kserve: 8M + 21V + 1C<br/>Pod mutator (all pods<br/>in watched namespaces)"]
+        WH_Kueue["kueue-operator: 34M + 36V<br/>Broad workload admission"]
+        WH_ODHMC["odh-model-controller: 10M + 6V<br/>InferenceService mutations"]
+        WH_KF["kubeflow: 2M + 2V + 1C<br/>kube-rbac-proxy injection"]
+        WH_CrossComp["Cross-component targets:<br/>kserve pod-mutator → all Pods<br/>kubeflow webhook → Notebooks<br/>odh-mc webhooks → InferenceServices<br/>kueue → Jobs, Pods, RayJobs"]
+    end
+
+    subgraph GatewayAuth["Gateway Authentication Chains"]
+        GW_DSG["data-science-gateway<br/>EnvoyFilter ext_authz<br/>→ kube-auth-proxy:8443<br/>/oauth2/auth endpoint<br/>202 Accepted + identity headers<br/>→ Lua (cookie strip, token fwd)<br/>→ kube-rbac-proxy sidecar<br/>(notebooks) or app auth"]
+        GW_MaaS["maas-default-gateway<br/>praxis-extproc ipp-pre (fail-open)<br/>→ Kuadrant WasmPlugin<br/>(Authorino: API key + token)<br/>→ praxis-extproc ipp (fail-closed)<br/>→ maas-api app auth"]
+    end
+
+    subgraph ContainerSecurity["Container Security Patterns"]
+        CS_FIPS_Go["FIPS Go Binaries<br/>GOEXPERIMENT=strictfipsruntime<br/>CGO_ENABLED=1<br/>-tags strictfipsruntime<br/>OpenSSL dynamic linking<br/>13+ components"]
+        CS_UBI9["UBI9 PQC Base Images<br/>ubi9/ubi-minimal-pqc<br/>(post-quantum crypto)<br/>Most Go and Python components"]
+        CS_NonRoot["Non-Root Execution<br/>Dropped capabilities<br/>All operators and controllers"]
+        CS_FIPS_Gap["FIPS GAP: Rust Components<br/>ring crate NOT FIPS-validated<br/>fms-guardrails-orchestrator<br/>OpenShell (rustls/ring)"]
+        CS_FIPS_Rust_OK["FIPS Rust (compatible)<br/>data-connect-hub<br/>guardrails-regex-detector<br/>praxis-extproc<br/>vllm-orchestrator-gateway"]
+    end
+
+    subgraph TLSConfig["TLS Configuration"]
+        TLS_Gateway["Gateway TLS<br/>Cipher suites from<br/>OpenShift APIServer profile<br/>TLS 1.2+ minimum<br/>Runtime reload on changes"]
+        TLS_Webhook["Webhook TLS<br/>Port 9443<br/>cert-manager or self-signed<br/>failurePolicy: Fail"]
+        TLS_Metrics["Metrics TLS<br/>Port 8443<br/>kube-rbac-proxy proxy<br/>TokenReview + SAR"]
+        TLS_mTLS["Istio mTLS<br/>OPTIONAL (not platform-wide)<br/>llm-d port 8001<br/>OpenShell (optional)"]
+    end
+
+    subgraph IstioSecurity["Service Mesh Security"]
+        Istio_Sidecar["Istio Sidecar Injection<br/>Per-namespace or per-pod<br/>kserve, data-science-pipelines"]
+        Istio_ExtAuthz["EnvoyFilter ext_authz<br/>data-science-gateway<br/>→ kube-auth-proxy"]
+        Istio_ExtProc["EnvoyFilter ext_proc<br/>maas-default-gateway<br/>→ praxis-extproc (dual-stage)"]
+        Istio_DR["DestinationRule<br/>TLS origination<br/>rhods-operator, odh-model-controller"]
+    end
+
+    %% RBAC bindings
+    SA_RHODS -->|"bound to"| CR_RHODS
+    SA_KServe -->|"bound to"| CR_KServe
+    SA_ODHMC -->|"bound to"| CR_ODHMC
+    SA_KF -->|"bound to"| CR_KF
+
+    %% Auth mechanism usage
+    Auth_ExtAuthz -->|"enforced at"| GW_DSG
+    Auth_Kuadrant -->|"enforced at"| GW_MaaS
+    Auth_KRBP -->|"used by"| SA_KF
+    Auth_KRBP -->|"used by"| SA_Dashboard
+    Auth_Bearer -->|"used by"| SA_Dashboard
+    Auth_Bearer -->|"used by"| SA_MaaS
+    Auth_Bearer -->|"used by"| SA_KServe
+    Auth_SA -->|"used by"| SA_RHODS
+    Auth_SA -->|"used by"| SA_KServe
+
+    %% TLS profile inheritance
+    Auth_TLSProfile -->|"configures"| TLS_Gateway
+    TLS_Gateway -->|"applied to"| GW_DSG
+    TLS_Gateway -->|"applied to"| GW_MaaS
+
+    %% Container security application
+    CS_FIPS_Go -->|"applies to"| SA_RHODS
+    CS_FIPS_Go -->|"applies to"| SA_KServe
+    CS_FIPS_Go -->|"applies to"| SA_ODHMC
+    CS_UBI9 -->|"base for"| CS_FIPS_Go
+
+    %% Webhook → cluster role connection
+    WH_KServe -->|"enforced by"| CR_KServe
+    WH_Kueue -->|"enforced by"| CR_Kueue
+    WH_KF -->|"enforced by"| CR_KF
+
+    %% Istio → Gateway
+    Istio_ExtAuthz -->|"powers"| GW_DSG
+    Istio_ExtProc -->|"powers"| GW_MaaS
+
+    %% Styling
+    style CR_RHODS fill:#ff6b6b,stroke:#333,color:#fff
+    style CR_KServe fill:#ff6b6b,stroke:#333,color:#fff
+    style CR_ODHMC fill:#ff6b6b,stroke:#333,color:#fff
+    style CR_Kueue fill:#ff6b6b,stroke:#333,color:#fff
+    style CR_KF fill:#ff6b6b,stroke:#333,color:#fff
+
+    style WH_KServe fill:#ff9999,stroke:#333
+    style WH_Kueue fill:#ff9999,stroke:#333
+    style WH_ODHMC fill:#ff9999,stroke:#333
+    style WH_KF fill:#ff9999,stroke:#333
+    style WH_CrossComp fill:#ff9999,stroke:#333
+
+    style CS_FIPS_Gap fill:#ffd93d,stroke:#333
+    style CS_FIPS_Go fill:#d5e8d4,stroke:#333
+    style CS_UBI9 fill:#d5e8d4,stroke:#333
+    style CS_NonRoot fill:#d5e8d4,stroke:#333
+    style CS_FIPS_Rust_OK fill:#d5e8d4,stroke:#333
+
+    style TLS_Gateway fill:#dae8fc,stroke:#333
+    style TLS_Webhook fill:#dae8fc,stroke:#333
+    style TLS_Metrics fill:#dae8fc,stroke:#333
+    style TLS_mTLS fill:#fff2cc,stroke:#d6b656
+
+    style GW_DSG fill:#ffe6cc,stroke:#d79b00
+    style GW_MaaS fill:#ffe6cc,stroke:#d79b00
+
+    style Auth_ExtAuthz fill:#e1d5e7,stroke:#9673a6
+    style Auth_Kuadrant fill:#e1d5e7,stroke:#9673a6
+    style Auth_KRBP fill:#e1d5e7,stroke:#9673a6
+    style Auth_Bearer fill:#e1d5e7,stroke:#9673a6
+    style Auth_TLSProfile fill:#e1d5e7,stroke:#9673a6
+    style Auth_SA fill:#e1d5e7,stroke:#9673a6
+    style Auth_LeaderElect fill:#e1d5e7,stroke:#9673a6
+
+    style Istio_Sidecar fill:#b8d4e3,stroke:#333
+    style Istio_ExtAuthz fill:#b8d4e3,stroke:#333
+    style Istio_ExtProc fill:#b8d4e3,stroke:#333
+    style Istio_DR fill:#b8d4e3,stroke:#333

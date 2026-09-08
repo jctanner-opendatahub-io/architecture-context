@@ -1,0 +1,122 @@
+graph TD
+    subgraph ServiceAccounts["Service Accounts"]
+        SA_Operator["feast-operator-controller-manager<br/>(feast-operator-system)"]
+        SA_Controller["controller-manager<br/>(system)"]
+    end
+
+    subgraph ClusterRoleBindings["ClusterRole Bindings"]
+        CRB_Manager["feast-operator-manager-rolebinding"]
+        CRB_Metrics["feast-operator-metrics-auth-rolebinding"]
+        CRB_ManagerAlt["manager-rolebinding"]
+        CRB_MetricsAlt["metrics-auth-rolebinding"]
+    end
+
+    subgraph ClusterRoles["ClusterRoles"]
+        CR_Manager["feast-operator-manager-role"]
+        CR_Metrics["feast-operator-metrics-auth-role"]
+        CR_Editor["feast-operator-featurestore-editor-role"]
+        CR_Viewer["feast-operator-featurestore-viewer-role"]
+        CR_ManagerAlt["manager-role"]
+        CR_MetricsAlt["metrics-auth-role"]
+    end
+
+    subgraph CoreResources["Core API Resources"]
+        ConfigMaps["core/v1<br/>ConfigMaps<br/>CRUD + deletecollection"]
+        Namespaces["core/v1<br/>Namespaces<br/>get, list, update, watch"]
+        PVCs["core/v1<br/>PersistentVolumeClaims<br/>CRUD + deletecollection"]
+        Services["core/v1<br/>Services<br/>CRUD + deletecollection"]
+        Pods["core/v1<br/>Pods<br/>CRUD + deletecollection"]
+        PodsExec["core/v1<br/>Pods/exec<br/>create"]
+        Secrets["core/v1<br/>Secrets<br/>get"]
+        ServiceAcctsRes["core/v1<br/>ServiceAccounts<br/>CRUD"]
+    end
+
+    subgraph FeastResources["feast.dev API Resources"]
+        FeatureStores["feast.dev<br/>FeatureStores<br/>full CRUD"]
+        FeatureStoresFin["feast.dev<br/>FeatureStores/finalizers<br/>update"]
+        FeatureStoresStatus["feast.dev<br/>FeatureStores/status<br/>get, patch, update"]
+    end
+
+    subgraph WorkloadResources["Workload API Resources"]
+        Deployments["apps/v1<br/>Deployments<br/>CRUD"]
+        HPA["autoscaling/v2<br/>HPA<br/>full CRUD"]
+        CronJobs["batch/v1<br/>CronJobs<br/>full CRUD"]
+        PDB["policy/v1<br/>PDB<br/>full CRUD"]
+    end
+
+    subgraph PlatformResources["Platform API Resources"]
+        Routes["route.openshift.io<br/>Routes<br/>CRUD"]
+        SparkApps["sparkoperator.k8s.io<br/>SparkApplications<br/>create, delete, get"]
+        ServiceMonitors["monitoring.coreos.com<br/>ServiceMonitors<br/>CRUD"]
+        Notebooks["kubeflow.org<br/>Notebooks<br/>get, list, watch"]
+        MLflows["mlflow.opendatahub.io<br/>MLflows<br/>get, list, watch"]
+        APIServers["config.openshift.io<br/>APIServers<br/>get, list, watch"]
+    end
+
+    subgraph RBACResources["RBAC API Resources"]
+        Roles["rbac.authorization.k8s.io<br/>Roles, RoleBindings<br/>CRUD"]
+        ClusterRolesRes["rbac.authorization.k8s.io<br/>ClusterRoles,<br/>ClusterRoleBindings<br/>CRUD"]
+    end
+
+    subgraph AuthResources["Auth API Resources"]
+        TokenReviews["authentication.k8s.io<br/>TokenReviews<br/>create"]
+        SAR["authorization.k8s.io<br/>SubjectAccessReviews<br/>create"]
+    end
+
+    subgraph LeaderElection["Leader Election (Role)"]
+        LE_Role["feast-operator-leader-election-role<br/>(feast-operator-system)"]
+        LE_ConfigMaps["ConfigMaps<br/>full CRUD"]
+        LE_Leases["coordination.k8s.io/Leases<br/>full CRUD"]
+        LE_Events["Events<br/>create, patch"]
+    end
+
+    %% Operator SA bindings
+    SA_Operator -->|"bound via"| CRB_Manager
+    SA_Operator -->|"bound via"| CRB_Metrics
+    CRB_Manager -->|"grants"| CR_Manager
+    CRB_Metrics -->|"grants"| CR_Metrics
+
+    %% Controller SA bindings
+    SA_Controller -->|"bound via"| CRB_ManagerAlt
+    SA_Controller -->|"bound via"| CRB_MetricsAlt
+    CRB_ManagerAlt -->|"grants"| CR_ManagerAlt
+    CRB_MetricsAlt -->|"grants"| CR_MetricsAlt
+
+    %% Manager role permissions
+    CR_Manager -->|"manages"| CoreResources
+    CR_Manager -->|"manages"| FeastResources
+    CR_Manager -->|"manages"| WorkloadResources
+    CR_Manager -->|"manages"| PlatformResources
+    CR_Manager -->|"manages"| RBACResources
+    CR_Manager -->|"creates"| TokenReviews
+
+    %% Metrics auth role
+    CR_Metrics -->|"creates"| TokenReviews
+    CR_Metrics -->|"creates"| SAR
+
+    %% Editor/Viewer roles (user-facing)
+    CR_Editor -->|"full CRUD"| FeatureStores
+    CR_Editor -->|"read"| FeatureStoresStatus
+    CR_Viewer -->|"read-only"| FeatureStores
+    CR_Viewer -->|"read"| FeatureStoresStatus
+
+    %% Leader election
+    SA_Operator -->|"bound via RoleBinding"| LE_Role
+    LE_Role -->|"manages"| LE_ConfigMaps
+    LE_Role -->|"manages"| LE_Leases
+    LE_Role -->|"manages"| LE_Events
+
+    style SA_Operator fill:#4a90e2,color:#fff
+    style SA_Controller fill:#4a90e2,color:#fff
+    style CR_Manager fill:#f5a623,color:#fff
+    style CR_Metrics fill:#f5a623,color:#fff
+    style CR_Editor fill:#f5a623,color:#fff
+    style CR_Viewer fill:#f5a623,color:#fff
+    style CR_ManagerAlt fill:#f5a623,color:#fff
+    style CR_MetricsAlt fill:#f5a623,color:#fff
+    style LE_Role fill:#f5a623,color:#fff
+    style FeatureStores fill:#7ed321,color:#fff
+    style FeatureStoresFin fill:#7ed321,color:#fff
+    style FeatureStoresStatus fill:#7ed321,color:#fff
+    style TokenReviews fill:#e74c3c,color:#fff
+    style SAR fill:#e74c3c,color:#fff

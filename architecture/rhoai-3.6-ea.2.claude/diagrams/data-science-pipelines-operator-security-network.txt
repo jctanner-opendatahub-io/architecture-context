@@ -1,0 +1,127 @@
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│  EXTERNAL (Untrusted)                                                           │
+│                                                                                  │
+│  [Data Scientist / Client]                                                       │
+│         │                                                                        │
+│         │ Port: 8443/TCP                                                         │
+│         │ Protocol: HTTPS                                                        │
+│         │ Encryption: TLS (service-serving cert)                                 │
+│         │ Auth: OpenShift OAuth proxy                                            │
+│         ▼                                                                        │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  DSPA SERVICE STACK (Per-Namespace)                                              │
+│                                                                                  │
+│  [OAuth Proxy]                                                                   │
+│  - Port: 8443/TCP (external-facing)                                              │
+│  - Encryption: TLS (service-serving cert via OpenShift annotation)               │
+│  - Auth: OpenShift OAuth (conditional on EnableRoute)                            │
+│         │                                                                        │
+│         │ Port: 8888/TCP                                                         │
+│         │ Protocol: HTTP                                                         │
+│         │ Encryption: None (cluster-internal)                                    │
+│         │ Auth: None (proxied)                                                   │
+│         ▼                                                                        │
+│  [DS Pipeline API Server]                                                        │
+│  - Ports: 8888/TCP (HTTP REST), 8887/TCP (gRPC)                                 │
+│  - Namespace: {dspa-namespace}                                                   │
+│  - ServiceAccount: ds-pipeline-{name}                                            │
+│         │                          │                                             │
+│         │ Port: 3306/TCP           │ Port: 9000/TCP                              │
+│         │ Protocol: MySQL          │ Protocol: HTTP                              │
+│         │ Encryption: Optional     │ Encryption: None                            │
+│         │   (PodToPodTLS)          │ Auth: S3 credentials                        │
+│         ▼                          ▼                                             │
+│  [MariaDB]                   [MinIO]                                             │
+│  - Port: 3306/TCP            - Ports: 9000/TCP, 80/TCP (kfp-ui)                 │
+│  - Encryption: Optional TLS  - Encryption: None                                 │
+│  - (or external DB)          - (or external S3-compatible storage)               │
+│                                                                                  │
+│  [Argo Workflow Controller]                                                      │
+│  - Metrics: 9090/TCP                                                             │
+│  - Creates workflow pods in namespace                                            │
+│                                                                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  OPERATOR NAMESPACE (datasciencepipelinesapplications-controller)                │
+│                                                                                  │
+│  [controller-manager]                                                            │
+│  - ServiceAccount: controller-manager                                            │
+│  - Health: :8081/TCP (healthz, readyz) - No auth                                │
+│  - Metrics: :8080/TCP - TLS (OpenShift TLS profile)                             │
+│  - Webhook: :9443/TCP - TLS (OpenShift TLS profile)                             │
+│         │                                                                        │
+│         │ Port: 6443/TCP                                                         │
+│         │ Protocol: HTTPS / WSS                                                  │
+│         │ Encryption: TLS 1.2+                                                   │
+│         │ Auth: ServiceAccount token                                             │
+│         ▼                                                                        │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  CLUSTER SERVICES                                                                │
+│                                                                                  │
+│  [Kubernetes API Server]                                                         │
+│  - Port: 6443/TCP                                                                │
+│  - Protocol: HTTPS                                                               │
+│  - Auth: ServiceAccount (RBAC)                                                   │
+│  - Purpose: Resource CRUD, watch events, webhook invocation                      │
+│                                                                                  │
+│  [OpenShift APIServer]                                                           │
+│  - config.openshift.io                                                           │
+│  - Purpose: TLS security profile configuration                                   │
+│  - Access: get, list, watch                                                      │
+│                                                                                  │
+│  [prometheus-operator]                                                           │
+│  - Purpose: ServiceMonitor management                                            │
+│  - Access: CRUD on monitoring.coreos.com/servicemonitors                         │
+│                                                                                  │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│  INTERNAL PLATFORM DEPENDENCIES                                                  │
+│                                                                                  │
+│  [MLflow CR] (mlflow.opendatahub.io)                                             │
+│  - Access: Direct API read (bypasses cache)                                      │
+│  - Verbs: get, list, watch                                                       │
+│                                                                                  │
+│  [KServe InferenceService] (serving.kserve.io)                                   │
+│  - Access: CRD Watch                                                             │
+│  - Verbs: create, delete, get, list, patch                                       │
+│                                                                                  │
+│  [Kubeflow Notebooks] (kubeflow.org)                                             │
+│  - Access: CRD CRUD                                                              │
+│  - Verbs: all (*)                                                                │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+RBAC Summary:
+- ClusterRole: manager-role
+  - 33+ rule entries covering core, apps, argoproj.io, datasciencepipelinesapplications.opendatahub.io,
+    kubeflow.org, pipelines.kubeflow.org, serving.kserve.io, monitoring.coreos.com, rbac.authorization.k8s.io,
+    route.openshift.io, networking.k8s.io, config.openshift.io, and more
+  - Full lifecycle management of DSPA, Pipeline, PipelineVersion CRDs
+  - Manages webhook configurations, RBAC roles/bindings, routes, network policies
+- ClusterRole: argo-cluster-role
+  - Full CRUD on Argo Workflow CRDs (argoproj.io)
+  - Pod management (create, delete, exec)
+  - Secret access restricted to specific resourceNames
+- ClusterRole: aggregate-dspa-admin-edit / aggregate-dspa-admin-view
+  - Aggregated roles for user-facing DSPA and Pipeline resource access
+- Role: leader-election-role
+  - ConfigMaps and Leases for leader election
+- Role: argo-role
+  - Namespace-scoped Argo workflow management
+
+Service Mesh / TLS Configuration:
+- Operator TLS: OpenShift APIServer TLS profile (webhook :9443, metrics :8080)
+- Fallback: Intermediate TLS profile on non-OpenShift clusters
+- SecurityProfileWatcher: Detects TLS profile changes, triggers graceful restart
+- Service-serving certs: Provisioned via service.beta.openshift.io/serving-cert-secret-name
+- Pod-to-Pod TLS: Optional for MariaDB connections (configurable in DSPA CR)
+
+FIPS Compliance:
+- Build: GOFIPS140=v1.0.0, CGO_ENABLED=0, -tags no_openssl (static binary)
+- Base image: registry.redhat.io/ubi9/ubi-minimal-pqc (Post-Quantum Cryptography)
+- Crypto: Go native FIPS 140 module (not OpenSSL)
+
+Authentication Summary:
+- :8081 health/readyz: Unauthenticated (by design)
+- :8080 metrics: TLS-secured, no app-level auth
+- :9443 webhook: TLS-secured, invoked only by kube-apiserver
+- :8443 DSPA proxy: OAuth proxy (OpenShift OAuth), conditional on EnableRoute
+- Argo secrets: RBAC-restricted to argo-workflows-agent-ca-certificates only

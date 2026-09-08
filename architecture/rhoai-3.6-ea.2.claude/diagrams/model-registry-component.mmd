@@ -1,0 +1,72 @@
+graph TB
+    subgraph "Model Registry System"
+        direction TB
+
+        subgraph "API Layer"
+            Registry["model-registry<br/>(Go HTTP Proxy)<br/>Port 8080"]
+            BFF["BFF Server<br/>(Go)<br/>Port 4000"]
+        end
+
+        subgraph "Controller Layer"
+            Controller["controller-controller-manager<br/>(controller-runtime Operator)"]
+            MetricsEndpoint["Metrics Endpoint<br/>Port 8443<br/>TLS + TokenReview"]
+            HealthProbe["Health/Readiness<br/>Port 8081<br/>Unauthenticated"]
+        end
+
+        subgraph "Job Layer"
+            AsyncUpload["async-upload Job<br/>(Python)<br/>boto3 / ORAS / skopeo"]
+        end
+    end
+
+    subgraph "Data Store"
+        DB[("PostgreSQL / MySQL<br/>(GORM)")]
+    end
+
+    subgraph "Istio Service Mesh"
+        VS_Registry["VirtualService<br/>model-registry"]
+        VS_Catalog["VirtualService<br/>model-catalog"]
+        VS_UI["VirtualService<br/>model-registry-ui"]
+        AuthPolicy["AuthorizationPolicy<br/>JWT + Principal"]
+    end
+
+    User[Data Scientist / Client] -->|HTTPS| VS_Registry
+    User -->|HTTPS| VS_Catalog
+    User -->|HTTPS| VS_UI
+
+    VS_Registry -->|"HTTP"| Registry
+    VS_Catalog -->|"HTTP"| Registry
+    VS_UI -->|"HTTP"| BFF
+    AuthPolicy -.->|enforces| VS_Registry
+    AuthPolicy -.->|enforces| VS_UI
+
+    BFF -->|"REST API"| Registry
+    BFF -->|"HTTPS/6443"| K8sAPI[Kubernetes API]
+    BFF -->|"creates"| AsyncUpload
+    BFF -->|"SubjectAccessReview"| K8sAPI
+
+    Registry -->|"GORM"| DB
+
+    Controller -->|"watches"| InferenceServiceCR["KServe<br/>InferenceService CR"]
+    Controller -->|"discovers"| RegistrySvc["model-registry Service<br/>(label: component=model-registry)"]
+    Controller -->|"syncs serving URLs"| Registry
+    Controller --> MetricsEndpoint
+    Controller --> HealthProbe
+
+    AsyncUpload -->|"boto3"| S3["S3 Storage"]
+    AsyncUpload -->|"ORAS/skopeo"| OCI["OCI Registry"]
+    AsyncUpload -->|"Sigstore"| Signing["Model Signing"]
+    AsyncUpload -->|"registers"| Registry
+
+    style Registry fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    style BFF fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    style Controller fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    style AsyncUpload fill:#4a90e2,stroke:#333,stroke-width:2px,color:#fff
+    style DB fill:#f5a623,stroke:#333,stroke-width:2px
+    style InferenceServiceCR fill:#f5a623,stroke:#333,stroke-width:2px
+    style K8sAPI fill:#e8e8e8,stroke:#333,stroke-width:2px
+    style S3 fill:#e8e8e8,stroke:#333,stroke-width:2px
+    style OCI fill:#e8e8e8,stroke:#333,stroke-width:2px
+    style VS_Registry fill:#7ed321,stroke:#333,stroke-width:2px
+    style VS_Catalog fill:#7ed321,stroke:#333,stroke-width:2px
+    style VS_UI fill:#7ed321,stroke:#333,stroke-width:2px
+    style AuthPolicy fill:#d0021b,stroke:#333,stroke-width:2px,color:#fff

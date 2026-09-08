@@ -1,0 +1,44 @@
+graph LR
+    KueueOp["Kueue Operator<br/>(Two-Tier)"]
+
+    %% Platform Dependencies (Required)
+    KueueOp -->|"webhook TLS certs<br/>Certificate + Issuer CRs"| CertManager["cert-manager"]
+    KueueOp -->|"metrics collection<br/>ServiceMonitor CRs"| PromOperator["prometheus-operator"]
+    KueueOp -->|"resource mgmt<br/>6443/HTTPS"| K8sAPI["Kubernetes API"]
+    KueueOp -->|"capacity scheduling<br/>node list"| Nodes["Kubernetes Nodes"]
+
+    %% Workload Framework Integrations (CRD watch/patch)
+    KueueOp -->|"queue batch jobs<br/>watch/patch"| BatchV1["batch/v1<br/>Jobs"]
+    KueueOp -->|"queue training jobs<br/>watch/patch"| Kubeflow["Kubeflow Training<br/>MPI, PyTorch, TF,<br/>XGBoost, Paddle"]
+    KueueOp -->|"queue ray workloads<br/>watch/patch"| Ray["Ray Operator<br/>RayClusters, RayJobs"]
+    KueueOp -->|"queue jobsets<br/>watch/patch"| JobSet["JobSet Controller<br/>jobset.x-k8s.io"]
+    KueueOp -->|"queue LWS<br/>watch"| LWS["LeaderWorkerSet<br/>Controller"]
+    KueueOp -->|"queue appwrappers<br/>watch/patch"| CodeFlare["CodeFlare<br/>AppWrappers"]
+
+    %% Core workload interception
+    KueueOp -->|"queue pods/deploys<br/>webhooks"| CoreK8s["Core Kubernetes<br/>Pods, Deployments,<br/>StatefulSets"]
+
+    %% Build/Runtime Dependencies
+    KueueOp -.->|"operator framework"| LibraryGo["openshift/library-go"]
+    KueueOp -.->|"controller framework"| CtrlRuntime["controller-runtime<br/>0.20.4"]
+    KueueOp -.->|"upstream kueue"| KueueUpstream["sigs.k8s.io/kueue<br/>0.10.2"]
+
+    %% Provisioning API
+    KueueOp -->|"cluster autoscaler<br/>ProvisioningRequest CRs"| AutoscalingAPI["autoscaling.x-k8s.io<br/>ProvisioningRequests"]
+
+    style KueueOp fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style CertManager fill:#7ed321,stroke:#333,color:#fff
+    style PromOperator fill:#7ed321,stroke:#333,color:#fff
+    style K8sAPI fill:#999,stroke:#333,color:#fff
+    style Nodes fill:#999,stroke:#333,color:#fff
+    style BatchV1 fill:#f5a623,stroke:#333
+    style Kubeflow fill:#f5a623,stroke:#333
+    style Ray fill:#f5a623,stroke:#333
+    style JobSet fill:#f5a623,stroke:#333
+    style LWS fill:#f5a623,stroke:#333
+    style CodeFlare fill:#f5a623,stroke:#333
+    style CoreK8s fill:#f5a623,stroke:#333
+    style LibraryGo fill:#e8e8e8,stroke:#333
+    style CtrlRuntime fill:#e8e8e8,stroke:#333
+    style KueueUpstream fill:#e8e8e8,stroke:#333
+    style AutoscalingAPI fill:#e8e8e8,stroke:#333

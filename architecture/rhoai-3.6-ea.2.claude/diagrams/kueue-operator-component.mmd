@@ -1,0 +1,88 @@
+graph TB
+    subgraph "Kueue Operator (Two-Tier Pattern)"
+        subgraph "Tier 1: Operator"
+            OperatorDeploy["openshift-kueue-operator<br/>Deployment (2 replicas)<br/>system-cluster-critical"]
+            OperatorCLI["kueue-operator CLI<br/>Cobra / library-go"]
+            OperatorDeploy --- OperatorCLI
+        end
+
+        subgraph "Tier 2: Operand (Controller Manager)"
+            Controller["kueue-controller-manager<br/>Deployment (1 replica)"]
+            WebhookServer["Webhook Server<br/>Port 9443/TLS"]
+            VisibilityAPI["Visibility API Server<br/>Port 8082"]
+            MetricsEndpoint["Metrics Endpoint<br/>Port 8443<br/>TokenReview Auth"]
+            HealthProbe["Health/Readiness<br/>Port 8081"]
+            Controller --- WebhookServer
+            Controller --- VisibilityAPI
+            Controller --- MetricsEndpoint
+            Controller --- HealthProbe
+        end
+
+        OperatorDeploy -->|"reconciles"| Controller
+    end
+
+    KueueCR["Kueue CR<br/>kueue.openshift.io/v1"]
+    Admin["Cluster Admin"] -->|"creates"| KueueCR
+    KueueCR -->|"watched by"| OperatorDeploy
+
+    subgraph "Kueue CRDs (Managed)"
+        ClusterQueue["ClusterQueue"]
+        LocalQueue["LocalQueue"]
+        Workload["Workload"]
+        ResourceFlavor["ResourceFlavor"]
+        Cohort["Cohort"]
+        Topology["Topology"]
+        AdmissionCheck["AdmissionCheck"]
+        MultiKueueCluster["MultiKueueCluster"]
+        WorkloadPriorityClass["WorkloadPriorityClass"]
+    end
+
+    Controller -->|"manages"| ClusterQueue
+    Controller -->|"manages"| LocalQueue
+    Controller -->|"manages"| Workload
+    Controller -->|"manages"| ResourceFlavor
+
+    subgraph "Intercepted Workloads (34 Webhooks)"
+        BatchJobs["batch/v1 Jobs"]
+        KubeflowJobs["Kubeflow Training Jobs<br/>MPI, PyTorch, TF, XGBoost, Paddle"]
+        RayWorkloads["Ray Clusters/Jobs"]
+        JobSets["JobSets"]
+        LeaderWorkerSets["LeaderWorkerSets"]
+        AppWrappers["AppWrappers"]
+        CoreWorkloads["Pods, Deployments,<br/>StatefulSets"]
+    end
+
+    WebhookServer -->|"mutates/validates"| BatchJobs
+    WebhookServer -->|"mutates/validates"| KubeflowJobs
+    WebhookServer -->|"mutates/validates"| RayWorkloads
+    WebhookServer -->|"mutates/validates"| JobSets
+    WebhookServer -->|"mutates/validates"| LeaderWorkerSets
+    WebhookServer -->|"mutates/validates"| AppWrappers
+    WebhookServer -->|"mutates/validates"| CoreWorkloads
+
+    Controller -->|"depends on"| CertManager["cert-manager<br/>TLS Certificates"]
+    Controller -->|"depends on"| K8sAPI["Kubernetes API<br/>6443/HTTPS"]
+    MetricsEndpoint -->|"scraped by"| Prometheus["prometheus-operator<br/>ServiceMonitor"]
+    Controller -->|"reads nodes"| Nodes["Kubernetes Nodes<br/>Capacity Data"]
+
+    style OperatorDeploy fill:#4a90e2,stroke:#333,color:#fff
+    style OperatorCLI fill:#4a90e2,stroke:#333,color:#fff
+    style Controller fill:#4a90e2,stroke:#333,color:#fff
+    style WebhookServer fill:#e27a4a,stroke:#333,color:#fff
+    style VisibilityAPI fill:#e27a4a,stroke:#333,color:#fff
+    style MetricsEndpoint fill:#e27a4a,stroke:#333,color:#fff
+    style HealthProbe fill:#e27a4a,stroke:#333,color:#fff
+    style KueueCR fill:#f5a623,stroke:#333
+    style ClusterQueue fill:#7ed321,stroke:#333
+    style LocalQueue fill:#7ed321,stroke:#333
+    style Workload fill:#7ed321,stroke:#333
+    style ResourceFlavor fill:#7ed321,stroke:#333
+    style Cohort fill:#7ed321,stroke:#333
+    style Topology fill:#7ed321,stroke:#333
+    style AdmissionCheck fill:#7ed321,stroke:#333
+    style MultiKueueCluster fill:#7ed321,stroke:#333
+    style WorkloadPriorityClass fill:#7ed321,stroke:#333
+    style CertManager fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333
+    style Nodes fill:#e8e8e8,stroke:#333

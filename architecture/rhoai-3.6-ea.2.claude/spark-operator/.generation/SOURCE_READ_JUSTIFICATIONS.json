@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "component": "spark-operator",
+  "reads": [
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-100",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags (GOEXPERIMENT, CGO_ENABLED, build tags) are used in the Konflux build?",
+      "expected_signal": "GOEXPERIMENT=strictfipsruntime, CGO_ENABLED=1, dynamic linking flags",
+      "outcome": "resolved",
+      "sections": ["Security > FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "pkg/tls/tls.go",
+      "line_range": "1-87",
+      "gap_category": ["fips_compliance", "authentication"],
+      "question": "What TLS configuration does the operator use and are there any non-FIPS cipher suites?",
+      "expected_signal": "crypto/tls usage, cipher suite selection, min TLS version configuration",
+      "outcome": "resolved",
+      "sections": ["Security > FIPS Compliance", "Architectural Analysis"]
+    },
+    {
+      "path": "spark-operator-module/pkg/apis/v1alpha1/types.go",
+      "line_range": "1-50",
+      "gap_category": ["internal_dependencies"],
+      "question": "How does spark-operator-module use odh-platform-utilities at runtime?",
+      "expected_signal": "import of odh-platform-utilities packages, interface implementation, embedded types",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "pkg/tls/profile.go",
+      "line_range": "1-228",
+      "gap_category": ["fips_compliance", "authentication"],
+      "question": "How does the operator read and apply the OpenShift TLS security profile?",
+      "expected_signal": "config.openshift.io APIServer resource read, TLS profile parsing, fallback behavior",
+      "outcome": "resolved",
+      "sections": ["Security > FIPS Compliance", "Architectural Analysis", "Data Flows"],
+      "scope_reason": "Full file needed to understand complete TLS profile lifecycle including parsing, fallback paths, and cipher suite definitions used across multiple functions"
+    },
+    {
+      "path": "spark-operator-module/go.mod",
+      "line_range": "1-113",
+      "gap_category": ["internal_dependencies"],
+      "question": "What is the odh-platform-utilities version and what other internal dependencies exist?",
+      "expected_signal": "odh-platform-utilities version, k8s-manifest-kit, helm dependencies",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis"]
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "component": "guardrails-regex-detector",
+  "reads": [
+    {
+      "path": "src/main.rs",
+      "line_range": "1-46",
+      "gap_category": ["authentication", "grpc_services", "integration_points", "internal_dependencies"],
+      "question": "Does the Axum router register any auth middleware, gRPC services, or outbound integration calls? What port does the service bind?",
+      "expected_signal": "middleware registration, auth filter, gRPC route, outbound HTTP client, port binding",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "gRPC Services", "Integration Points", "Architectural Analysis", "Purpose"]
+    },
+    {
+      "path": "src/detectors.rs",
+      "line_range": "1-137",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "Does the handler inspect auth headers, call downstream services, or make any outbound network requests?",
+      "expected_signal": "header extraction, token validation, HTTP client call, database query",
+      "outcome": "resolved",
+      "sections": ["Authentication & Authorization", "Integration Points", "Data Flows", "Purpose"]
+    },
+    {
+      "path": "Dockerfile",
+      "line_range": "1-45",
+      "gap_category": ["fips_compliance"],
+      "question": "Does the Dockerfile configure FIPS-specific build flags, install FIPS-validated crypto providers, or set crypto-related environment variables?",
+      "expected_signal": "FIPS build flag, OpenSSL FIPS module, crypto provider selection, GOEXPERIMENT",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "Security Evidence", "Architectural Analysis"]
+    },
+    {
+      "path": "Cargo.toml",
+      "line_range": "1-16",
+      "gap_category": ["fips_compliance", "grpc_services", "internal_dependencies"],
+      "question": "Does the crate depend on any TLS/crypto libraries (openssl, rustls, native-tls), gRPC libraries (tonic, prost), or internal platform crates?",
+      "expected_signal": "openssl crate, rustls crate, tonic crate, prost crate, internal platform dependency",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance", "gRPC Services", "Internal Platform Dependencies", "Architectural Analysis"]
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "line_range": "1-2",
+      "gap_category": ["fips_compliance"],
+      "question": "Does the Rust toolchain configuration include FIPS-related target or feature flags?",
+      "expected_signal": "FIPS target triple, feature flags, custom build configuration",
+      "outcome": "resolved",
+      "sections": ["FIPS Compliance"]
+    }
+  ]
+}

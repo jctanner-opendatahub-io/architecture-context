@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "component": "llm-d-kv-cache",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "llm-d-kv-cache-no-auth-001",
+      "claim": "All HTTP and gRPC endpoints expose unauthenticated interfaces, relying entirely on network isolation for access control.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "examples/kv_events/online/main.go:242-316"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "examples/kv_cache_index_service/server/main.go:98-101"
+        }
+      ],
+      "reasoning": "The HTTP server uses http.NewServeMux with no middleware and calls ListenAndServe (not ListenAndServeTLS). The gRPC server is created with grpc.NewServer using only an OTel stats handler, no TLS credentials or auth interceptors. In a multi-tenant or externally-reachable deployment, this would be a security concern.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "llm-d-kv-cache-redis-tls-002",
+      "claim": "Redis/Valkey client supports TLS via URL scheme (rediss://) but defaults to unauthenticated plaintext TCP.",
+      "category": "trade-off",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "pkg/kvcache/kvblock/redis.go:43-90"
+        }
+      ],
+      "reasoning": "The RedisIndexConfig defaults to redis://127.0.0.1:6379 without authentication. TLS is available by configuring a rediss:// URL, but must be explicitly enabled. This is a trade-off between ease of local development and production security posture.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "llm-d-kv-cache-zmq-ingestion-003",
+      "claim": "ZeroMQ pub/sub is the primary cache event ingestion path, decoupling cache awareness from inference engines.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "vllm-setup-helm/templates/kv-cache-manager.yaml:62-76"
+        },
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/architecture_components"
+        }
+      ],
+      "reasoning": "The Helm chart configures a ZMQ_ENDPOINT env var binding tcp://*:5557 and a ZMQ_TOPIC for event filtering. This pub/sub pattern allows vLLM engines and the kv-cache-manager to scale independently and supports multiple subscribers for the same event stream.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    }
+  ]
+}

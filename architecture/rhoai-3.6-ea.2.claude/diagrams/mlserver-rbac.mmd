@@ -1,0 +1,113 @@
+graph TD
+    subgraph PlatformAuth["Platform-Delegated Authentication & Authorization"]
+        direction TB
+
+        subgraph ClientAuth["Client Authentication"]
+            Client["External Client / Data Scientist"]
+            Token["Bearer Token or<br/>ServiceAccount Token"]
+            Client -->|"presents"| Token
+        end
+
+        subgraph SidecarEnforcement["kube-rbac-proxy Sidecar (Enforcement Point)"]
+            KRBP["kube-rbac-proxy"]
+            OAuthValidator["OpenShift OAuth<br/>Token Validator"]
+            SAValidator["ServiceAccount<br/>Token Validator"]
+            RBACCheck["Kubernetes RBAC<br/>Policy Check"]
+
+            KRBP -->|"validates"| OAuthValidator
+            KRBP -->|"validates"| SAValidator
+            OAuthValidator -->|"authorized?"| RBACCheck
+            SAValidator -->|"authorized?"| RBACCheck
+        end
+
+        Token -->|"forwarded to"| KRBP
+    end
+
+    subgraph MLServerApp["MLServer Application (No App-Level Auth)"]
+        direction TB
+
+        subgraph RESTEndpoints["REST Endpoints (8080/TCP)"]
+            R1["GET /v2 - Server metadata"]
+            R2["GET /v2/health/live - Liveness"]
+            R3["GET /v2/health/ready - Readiness"]
+            R4["GET /v2/models/{name} - Model metadata"]
+            R5["POST /v2/models/{name}/infer - Inference"]
+            R6["POST /v2/models/{name}/generate - Generation"]
+            R7["POST /v2/repository/index - Repository"]
+            R8["POST /v2/repository/models/{name}/load - Load"]
+            R9["POST /v2/repository/models/{name}/unload - Unload"]
+        end
+
+        subgraph GRPCEndpoints["gRPC Endpoints (8081/TCP)"]
+            G1["ModelInfer"]
+            G2["ModelMetadata"]
+            G3["ModelReady / ServerReady / ServerLive"]
+            G4["ModelStreamInfer"]
+            G5["RepositoryIndex / ModelLoad / ModelUnload"]
+            G6["RuntimeSecurity / ServerMetadata"]
+        end
+
+        subgraph MetricsEndpoint["Metrics Endpoint (8082/TCP)"]
+            M1["GET /metrics<br/>NO AUTHENTICATION"]
+        end
+    end
+
+    subgraph RuntimeSecurity["Runtime Security (Application-Level)"]
+        TrustedRuntimes["trusted-runtimes.json<br/>/etc/mlserver/trusted-runtimes.json"]
+
+        subgraph CPUAllowed["CPU Image Allowed Runtimes"]
+            RT1["mlserver-lightgbm"]
+            RT2["mlserver-onnx"]
+            RT3["mlserver-sklearn"]
+            RT4["mlserver-xgboost"]
+        end
+
+        subgraph CUDAAllowed["CUDA Image Allowed Runtimes"]
+            RT5["mlserver-onnx"]
+        end
+
+        TrustedRuntimes -->|"CPU allows"| CPUAllowed
+        TrustedRuntimes -->|"CUDA allows"| CUDAAllowed
+    end
+
+    RBACCheck -->|"allow"| RESTEndpoints
+    RBACCheck -->|"allow"| GRPCEndpoints
+
+    %% Note: Metrics has no auth
+    Prometheus["Prometheus Scraper"] -->|"direct access<br/>no auth"| M1
+
+    %% Styling
+    style KRBP fill:#e74c3c,stroke:#333,color:#fff
+    style OAuthValidator fill:#e74c3c,stroke:#333,color:#fff
+    style SAValidator fill:#e74c3c,stroke:#333,color:#fff
+    style RBACCheck fill:#e74c3c,stroke:#333,color:#fff
+    style Client fill:#f9f9f9,stroke:#999
+    style Token fill:#f5a623,stroke:#333
+    style TrustedRuntimes fill:#f5a623,stroke:#333
+
+    style R1 fill:#4a90e2,stroke:#333,color:#fff
+    style R2 fill:#4a90e2,stroke:#333,color:#fff
+    style R3 fill:#4a90e2,stroke:#333,color:#fff
+    style R4 fill:#4a90e2,stroke:#333,color:#fff
+    style R5 fill:#4a90e2,stroke:#333,color:#fff
+    style R6 fill:#4a90e2,stroke:#333,color:#fff
+    style R7 fill:#4a90e2,stroke:#333,color:#fff
+    style R8 fill:#4a90e2,stroke:#333,color:#fff
+    style R9 fill:#4a90e2,stroke:#333,color:#fff
+
+    style G1 fill:#4a90e2,stroke:#333,color:#fff
+    style G2 fill:#4a90e2,stroke:#333,color:#fff
+    style G3 fill:#4a90e2,stroke:#333,color:#fff
+    style G4 fill:#4a90e2,stroke:#333,color:#fff
+    style G5 fill:#4a90e2,stroke:#333,color:#fff
+    style G6 fill:#4a90e2,stroke:#333,color:#fff
+
+    style M1 fill:#ff9800,stroke:#333,color:#fff
+
+    style RT1 fill:#7ed321,stroke:#333
+    style RT2 fill:#7ed321,stroke:#333
+    style RT3 fill:#7ed321,stroke:#333
+    style RT4 fill:#7ed321,stroke:#333
+    style RT5 fill:#7ed321,stroke:#333
+
+    style Prometheus fill:#e8e8e8,stroke:#333

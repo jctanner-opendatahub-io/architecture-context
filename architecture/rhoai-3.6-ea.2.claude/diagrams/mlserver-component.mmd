@@ -1,0 +1,82 @@
+graph TB
+    subgraph External["External Clients"]
+        Client[Client Application]
+    end
+
+    subgraph KServePod["KServe InferenceService Pod"]
+        subgraph AuthProxy["Authentication Layer"]
+            KRBP["kube-rbac-proxy Sidecar<br/>OpenShift OAuth/SA Token"]
+        end
+
+        subgraph MLServerCore["MLServer Core"]
+            REST["REST Server<br/>FastAPI/uvicorn<br/>Port 8080/TCP"]
+            GRPC["gRPC Server<br/>grpc.aio<br/>Port 8081/TCP"]
+            Metrics["Metrics Server<br/>Prometheus<br/>Port 8082/TCP"]
+            DataPlane["DataPlane Handler<br/>V2 Inference Protocol"]
+
+            REST -->|delegates| DataPlane
+            GRPC -->|delegates| DataPlane
+        end
+
+        subgraph Runtimes["Runtime Plugins"]
+            Sklearn["mlserver-sklearn<br/>Scikit-Learn"]
+            XGBoost["mlserver-xgboost<br/>XGBoost"]
+            LightGBM["mlserver-lightgbm<br/>LightGBM"]
+            ONNX["mlserver-onnx<br/>ONNX Runtime"]
+            MLflow["mlserver-mlflow<br/>MLflow"]
+            HuggingFace["mlserver-huggingface<br/>HuggingFace"]
+            CatBoost["mlserver-catboost<br/>CatBoost"]
+            MLlib["mlserver-mllib<br/>Spark MLlib"]
+            AlibiDetect["mlserver-alibi-detect<br/>Alibi Detect"]
+            AlibiExplain["mlserver-alibi-explain<br/>Alibi Explain"]
+        end
+
+        subgraph Security["Runtime Security"]
+            TrustedRuntimes["Trusted Runtimes Allowlist<br/>/etc/mlserver/trusted-runtimes.json"]
+        end
+
+        DataPlane -->|loads via| TrustedRuntimes
+        TrustedRuntimes -->|allows| Sklearn
+        TrustedRuntimes -->|allows| XGBoost
+        TrustedRuntimes -->|allows| LightGBM
+        TrustedRuntimes -->|allows| ONNX
+
+        KRBP -->|authenticated| REST
+        KRBP -->|authenticated| GRPC
+    end
+
+    subgraph ModelStorage["Model Storage"]
+        ModelsDir["/mnt/models<br/>MLSERVER_MODELS_DIR"]
+    end
+
+    subgraph Observability["Observability"]
+        Prometheus["Prometheus"]
+        OTelCollector["OpenTelemetry Collector"]
+    end
+
+    Client -->|"REST: HTTP/8080<br/>gRPC: HTTP2/8081"| KRBP
+    DataPlane -->|"loads models"| ModelsDir
+    Metrics -->|"/metrics"| Prometheus
+    MLServerCore -.->|"OTLP gRPC traces"| OTelCollector
+
+    %% Styling
+    style REST fill:#4a90e2,stroke:#333,color:#fff
+    style GRPC fill:#4a90e2,stroke:#333,color:#fff
+    style Metrics fill:#4a90e2,stroke:#333,color:#fff
+    style DataPlane fill:#4a90e2,stroke:#333,color:#fff
+    style KRBP fill:#e74c3c,stroke:#333,color:#fff
+    style TrustedRuntimes fill:#f5a623,stroke:#333,color:#fff
+    style Sklearn fill:#7ed321,stroke:#333
+    style XGBoost fill:#7ed321,stroke:#333
+    style LightGBM fill:#7ed321,stroke:#333
+    style ONNX fill:#7ed321,stroke:#333
+    style MLflow fill:#7ed321,stroke:#333
+    style HuggingFace fill:#7ed321,stroke:#333
+    style CatBoost fill:#7ed321,stroke:#333
+    style MLlib fill:#7ed321,stroke:#333
+    style AlibiDetect fill:#7ed321,stroke:#333
+    style AlibiExplain fill:#7ed321,stroke:#333
+    style Client fill:#f9f9f9,stroke:#999
+    style ModelsDir fill:#f5a623,stroke:#333
+    style Prometheus fill:#e8e8e8,stroke:#333
+    style OTelCollector fill:#e8e8e8,stroke:#333

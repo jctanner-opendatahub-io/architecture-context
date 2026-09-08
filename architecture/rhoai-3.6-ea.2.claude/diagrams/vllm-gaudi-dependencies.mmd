@@ -1,0 +1,42 @@
+graph LR
+    VllmGaudi["vllm-gaudi<br/>HPU Plugin"]
+
+    %% Internal RHOAI Dependencies
+    VllmGaudi -->|"build-time<br/>runtime framework"| Vllm["vLLM<br/>v0.16.0"]
+    VllmGaudi -->|"container consumer<br/>deployment platform"| KServe["KServe<br/>ServingRuntime"]
+
+    %% Hardware / Runtime Dependencies
+    VllmGaudi -->|"runtime library<br/>HPU acceleration"| SynapseAI["Habana SynapseAI<br/>1.23.0"]
+    VllmGaudi -->|"HPU support"| PyTorch["PyTorch<br/>2.9.0"]
+
+    %% Key Python Dependencies
+    VllmGaudi -->|"model loading"| Transformers["transformers<br/>>= 4.56.0"]
+    VllmGaudi -->|"distributed exec"| Ray["Ray<br/>>= 2.48.0"]
+    VllmGaudi -->|"numerics"| NumPy["NumPy<br/>>= 1.26.0"]
+    VllmGaudi -->|"numerics"| Numba["Numba<br/>>= 0.58.0"]
+    VllmGaudi -->|"data processing"| Pandas["Pandas<br/>>= 2.2.3"]
+
+    %% Platform Integration
+    KServe -.->|"auth & mTLS"| Istio["Istio<br/>Service Mesh"]
+
+    %% Base Image
+    VllmGaudi -->|"base image"| UBI9["UBI 9<br/>Container base"]
+
+    %% Build Tools
+    VllmGaudi -.->|"build tool"| Ruff["Ruff<br/>Linter"]
+    VllmGaudi -.->|"build tool"| PreCommit["pre-commit<br/>4.0.1"]
+
+    style VllmGaudi fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+    style Vllm fill:#7ed321,stroke:#333
+    style KServe fill:#7ed321,stroke:#333
+    style Istio fill:#7ed321,stroke:#333
+    style SynapseAI fill:#f5a623,stroke:#333
+    style PyTorch fill:#f5a623,stroke:#333
+    style Transformers fill:#999,stroke:#333
+    style Ray fill:#999,stroke:#333
+    style NumPy fill:#999,stroke:#333
+    style Numba fill:#999,stroke:#333
+    style Pandas fill:#999,stroke:#333
+    style UBI9 fill:#bbb,stroke:#333
+    style Ruff fill:#ddd,stroke:#999,stroke-dasharray: 5 5
+    style PreCommit fill:#ddd,stroke:#999,stroke-dasharray: 5 5

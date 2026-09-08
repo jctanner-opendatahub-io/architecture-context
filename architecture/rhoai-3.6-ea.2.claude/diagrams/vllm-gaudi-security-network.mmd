@@ -1,0 +1,50 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client<br/>Application / User"]
+    end
+
+    subgraph Platform["PLATFORM LAYER (KServe / Service Mesh)"]
+        direction TB
+        KServe["KServe ServingRuntime<br/>Pod lifecycle & networking<br/>TLS termination"]
+        Istio["Istio / Service Mesh<br/>mTLS (if configured)<br/>AuthN/AuthZ policies"]
+    end
+
+    subgraph Container["APPLICATION CONTAINER (vllm-gaudi)"]
+        direction TB
+        APIServer["vLLM API Server<br/>8000/TCP HTTP<br/>UID 2000 (non-root)<br/>UBI 9 base"]
+        Plugin["vllm_gaudi Plugin<br/>HPU device backend"]
+        OpenSSLNote["OpenSSL: FIPS REMOVED<br/>Non-FIPS crypto"]
+    end
+
+    subgraph Hardware["HARDWARE LAYER"]
+        HPU["Intel Gaudi HPU<br/>SynapseAI 1.23.0<br/>PyTorch HPU 2.9.0"]
+    end
+
+    subgraph Storage["MODEL STORAGE"]
+        ModelStore["Volume Mount<br/>Model weights<br/>Filesystem read"]
+    end
+
+    %% Flows
+    Client -->|"HTTPS/443<br/>TLS (platform-managed)<br/>Auth: Platform-delegated"| KServe
+    KServe -->|"Manages pod"| APIServer
+    Istio -.->|"mTLS (if enabled)<br/>Service Identity"| APIServer
+    APIServer -->|"In-process<br/>Python plugin"| Plugin
+    Plugin -->|"SynapseAI Runtime API<br/>Local hardware bus"| HPU
+    APIServer -->|"Filesystem read<br/>Volume mount"| ModelStore
+
+    KServe --- Istio
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef platform fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef container fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef hardware fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef storage fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef warning fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Client external
+    class KServe,Istio platform
+    class APIServer,Plugin container
+    class OpenSSLNote warning
+    class HPU hardware
+    class ModelStore storage

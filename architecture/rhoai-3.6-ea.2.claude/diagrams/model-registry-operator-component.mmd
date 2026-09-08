@@ -1,0 +1,91 @@
+graph TB
+    subgraph OperatorPod["model-registry-operator-controller-manager"]
+        direction TB
+        Manager["Manager Process<br/>/manager"]
+
+        subgraph Controllers["Controllers"]
+            MRController["ModelRegistry<br/>Reconciler"]
+            CatalogController["Catalog<br/>Reconciler"]
+            AIHubController["AIHub<br/>Reconciler"]
+        end
+
+        subgraph Webhooks["Admission Webhooks"]
+            ValidatingWH["Validating Webhook<br/>/validate-modelregistry-..."]
+            MutatingWH["Mutating Webhook<br/>/mutate-modelregistry-..."]
+            ConversionWH["Conversion Webhook<br/>/convert (v1alpha1↔v1beta1)"]
+        end
+
+        Manager --> Controllers
+        Manager --> Webhooks
+    end
+
+    %% CRDs watched
+    ModelRegistryCR["ModelRegistry CR<br/>modelregistry.opendatahub.io<br/>v1alpha1 / v1beta1"]
+    CatalogCR["Catalog CR<br/>aihub.opendatahub.io/v1alpha1"]
+    AIHubCR["AIHub CR<br/>components.platform.opendatahub.io/v1alpha1"]
+
+    ModelRegistryCR -->|watched by| MRController
+    CatalogCR -->|watched by| CatalogController
+    AIHubCR -->|watched by| AIHubController
+    AIHubController -->|manages| CatalogCR
+
+    %% Resources created by ModelRegistry controller
+    subgraph MRStack["Per-Registry Stack"]
+        direction TB
+        RESTDeploy["{registry-name}<br/>Deployment<br/>rest-container + kube-rbac-proxy"]
+        PostgresDeploy["{registry-name}-postgres<br/>Deployment"]
+        RegistrySvc["{registry-name} Service<br/>8080/HTTP, 8443/HTTPS"]
+        PostgresSvc["{registry-name}-postgres Service<br/>5432/TCP"]
+        RegistrySecrets["Secrets<br/>TLS certs, DB credentials"]
+        RegistryRBAC["RBAC<br/>Role: registry-user-{name}<br/>RoleBinding"]
+        NetworkPolicy["NetworkPolicy"]
+        IngressRoute["Route / HTTPRoute"]
+    end
+
+    MRController -->|creates| MRStack
+
+    %% Resources created by Catalog controller
+    subgraph CatalogStack["Per-Catalog Stack"]
+        direction TB
+        CatalogDeploy["model-catalog<br/>Deployment<br/>catalog + kube-rbac-proxy"]
+        CatalogPostgres["model-catalog-postgres<br/>Deployment"]
+        CatalogSvc["model-catalog Service<br/>8080/HTTP, 8443/HTTPS"]
+        CatalogPostgresSvc["model-catalog-postgres Service<br/>5432/TCP"]
+    end
+
+    CatalogController -->|creates| CatalogStack
+
+    %% External integrations
+    K8sAPI["Kubernetes API<br/>6443/TCP HTTPS"]
+    PlatformAuth["ODH Platform Auth<br/>services.platform.opendatahub.io"]
+    ComponentMgr["ODH Component Manager<br/>components.platform.opendatahub.io"]
+    GatewayAPI["Gateway API<br/>data-science-gateway"]
+
+    Manager -->|watches| PlatformAuth
+    Manager -->|watches| ComponentMgr
+    MRController -->|provisions HTTPRoutes| GatewayAPI
+    OperatorPod -->|HTTPS/6443| K8sAPI
+
+    %% User interaction
+    User["User / ODH Operator"] -->|creates| ModelRegistryCR
+    Client["API Client"] -->|HTTPS/8443| IngressRoute
+
+    %% Styling
+    style Manager fill:#4a90e2,color:#fff
+    style MRController fill:#4a90e2,color:#fff
+    style CatalogController fill:#4a90e2,color:#fff
+    style AIHubController fill:#4a90e2,color:#fff
+    style ValidatingWH fill:#e8724a,color:#fff
+    style MutatingWH fill:#e8724a,color:#fff
+    style ConversionWH fill:#e8724a,color:#fff
+    style ModelRegistryCR fill:#f5a623
+    style CatalogCR fill:#f5a623
+    style AIHubCR fill:#f5a623
+    style RESTDeploy fill:#7ed321,color:#fff
+    style PostgresDeploy fill:#7ed321,color:#fff
+    style CatalogDeploy fill:#7ed321,color:#fff
+    style CatalogPostgres fill:#7ed321,color:#fff
+    style K8sAPI fill:#e8e8e8,stroke:#333
+    style PlatformAuth fill:#e8e8e8,stroke:#333
+    style ComponentMgr fill:#e8e8e8,stroke:#333
+    style GatewayAPI fill:#e8e8e8,stroke:#333

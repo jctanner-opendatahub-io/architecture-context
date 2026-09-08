@@ -1,0 +1,70 @@
+graph LR
+    OpenShell["OpenShell<br/>(Gateway + Supervisor)"]
+
+    %% Internal Platform Dependencies
+    OpenShell -->|"TLS passthrough<br/>ingress"| Route["OpenShift Route"]
+    OpenShell -->|"certificate<br/>lifecycle"| CertMgr["cert-manager"]
+    OpenShell -->|"OIDC JWT<br/>validation"| Keycloak["Keycloak / OIDC<br/>Provider"]
+    OpenShell -->|"credential<br/>storage"| Vault["Vault / OpenBao"]
+    OpenShell -->|"workload<br/>identity"| SPIFFE["SPIFFE / SPIRE"]
+    OpenShell -->|"Gateway API<br/>ingress"| Envoy["Envoy Gateway"]
+
+    %% External Services
+    OpenShell -->|"pod lifecycle<br/>RBAC, CRDs"| K8sAPI["Kubernetes API"]
+    OpenShell -->|"persistent<br/>state"| PostgreSQL["PostgreSQL"]
+    OpenShell -.->|"metrics<br/>scrape"| Prometheus["Prometheus"]
+
+    %% Key Rust Crate Dependencies
+    subgraph RustCrates["Core Rust Dependencies"]
+        direction TB
+        tokio["tokio 1.43<br/>Async Runtime"]
+        tonic["tonic 0.14<br/>gRPC Framework"]
+        axum["axum 0.8<br/>HTTP/WebSocket"]
+        rustls["rustls 0.23<br/>TLS (ring crypto)"]
+        sqlx["sqlx 0.8<br/>DB (SQLite/Postgres)"]
+        kube["kube 0.90<br/>K8s Client"]
+        z3["z3 0.20<br/>SMT Solver"]
+        jwt["jsonwebtoken 10<br/>(aws_lc_rs)"]
+    end
+
+    OpenShell --> tokio
+    OpenShell --> tonic
+    OpenShell --> axum
+    OpenShell --> rustls
+    OpenShell --> sqlx
+    OpenShell --> kube
+    OpenShell --> z3
+    OpenShell --> jwt
+
+    %% Consumed CRD
+    SandboxCR["agents.x-k8s.io<br/>Sandbox CRD<br/>(consumed, not owned)"]
+    OpenShell -->|"watches/creates"| SandboxCR
+
+    %% Styling
+    style OpenShell fill:#4a90e2,stroke:#333,stroke-width:4px,color:#fff
+
+    %% Internal Platform (green)
+    style Route fill:#7ed321,stroke:#333,color:#fff
+    style CertMgr fill:#7ed321,stroke:#333,color:#fff
+    style Keycloak fill:#7ed321,stroke:#333,color:#fff
+    style Vault fill:#7ed321,stroke:#333,color:#fff
+    style SPIFFE fill:#7ed321,stroke:#333,color:#fff
+    style Envoy fill:#7ed321,stroke:#333,color:#fff
+
+    %% External Services (orange)
+    style K8sAPI fill:#f5a623,stroke:#333,color:#fff
+    style PostgreSQL fill:#f5a623,stroke:#333,color:#fff
+    style Prometheus fill:#f5a623,stroke:#333
+
+    %% CRD (yellow)
+    style SandboxCR fill:#f5a623,stroke:#333
+
+    %% Rust crates (gray)
+    style tokio fill:#999,stroke:#333,color:#fff
+    style tonic fill:#999,stroke:#333,color:#fff
+    style axum fill:#999,stroke:#333,color:#fff
+    style rustls fill:#999,stroke:#333,color:#fff
+    style sqlx fill:#999,stroke:#333,color:#fff
+    style kube fill:#999,stroke:#333,color:#fff
+    style z3 fill:#999,stroke:#333,color:#fff
+    style jwt fill:#999,stroke:#333,color:#fff

@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "component": "argo-workflows",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "argo-workflows-pattern-001",
+      "claim": "Argo Workflows Konflux builds use Go native FIPS 140-3 (GOFIPS140=v1.0.0) with static linking and no OpenSSL, diverging from the traditional CGO+OpenSSL FIPS approach used by most RHOAI Go components.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "argo-workflowcontroller/Dockerfile.konflux:25"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "argo-argoexec/Dockerfile.konflux:24"
+        }
+      ],
+      "reasoning": "Both Konflux Dockerfiles specify CGO_ENABLED=0 with GOFIPS140=v1.0.0 and -tags no_openssl. This uses Go 1.24+'s native FIPS 140-3 crypto module instead of linking to system OpenSSL via CGO. The resulting binaries are statically linked with FIPS-validated Go crypto. This differs from the typical RHOAI pattern of CGO_ENABLED=1 + GOEXPERIMENT=strictfipsruntime + OpenSSL linking, and may have implications for check-payload validation if it expects dynamic OpenSSL linkage.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "argo-workflows-pattern-002",
+      "claim": "The argo-server Gatekeeper supports three concurrent authentication modes (Client, Server, SSO) with runtime mode selection based on token format, enabling flexible deployment configurations from service-to-service to end-user SSO access.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "server/auth/gatekeeper.go:48-53"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "server/auth/mode.go:33-44"
+        }
+      ],
+      "reasoning": "The Gatekeeper's GetMode function selects auth mode by token prefix: SSO tokens with a specific prefix route to OIDC validation, Bearer/Basic tokens route to Client mode (Kubernetes API impersonation), and empty/unrecognized tokens fall through to Server mode if enabled. SSO mode further supports RBAC delegation to namespace-scoped ServiceAccounts via annotation-based rules. This multi-modal approach means the same API surface serves both automated pipelines (Client/Server mode) and interactive users (SSO mode).",
+      "applicability": "component",
+      "confidence": "high"
+    }
+  ]
+}

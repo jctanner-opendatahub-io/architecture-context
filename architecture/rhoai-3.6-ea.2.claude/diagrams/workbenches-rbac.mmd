@@ -1,0 +1,90 @@
+graph TD
+    subgraph "Authentication Layer"
+        UpstreamProxy["Upstream Proxy<br/>(OAuth2 Proxy / Istio)"]
+        HeaderExtract["Header Extraction<br/>(User ID + Groups)"]
+        UpstreamProxy -->|"sets identity headers"| HeaderExtract
+    end
+
+    subgraph "Authorization Layer"
+        SAR["SubjectAccessReview<br/>(per API call)"]
+        HeaderExtract -->|"authenticated identity"| SAR
+    end
+
+    subgraph "Backend Service Account"
+        BackendSA["workspaces-backend SA"]
+    end
+
+    subgraph "Controller Service Account"
+        ControllerSA["workspaces-controller-manager SA"]
+    end
+
+    subgraph "Controller Managed Resources"
+        direction TB
+        WorkspaceCR["kubeflow.org<br/>Workspace<br/>(watch, get, list, patch, update)"]
+        WorkspaceKindCR["kubeflow.org<br/>WorkspaceKind<br/>(watch, get, list, update)"]
+        StatefulSets["apps/v1<br/>StatefulSet<br/>(create, list, own)"]
+        Services["core/v1<br/>Service<br/>(get, list, own)"]
+        ServiceAccounts["core/v1<br/>ServiceAccount<br/>(get, list, own)"]
+        RoleBindings["rbac/v1<br/>RoleBinding<br/>(list, own)"]
+        ClusterRoleBindings["rbac/v1<br/>ClusterRoleBinding<br/>(delete, get, update)"]
+        HTTPRoutes["gateway.networking.k8s.io<br/>HTTPRoute<br/>(delete, get, update)"]
+        VirtualServices["networking.istio.io<br/>VirtualService<br/>(own)"]
+        ReferenceGrants["gateway.networking.k8s.io<br/>ReferenceGrant<br/>(get, update)"]
+        ConfigMaps["core/v1<br/>ConfigMap<br/>(get, update)"]
+        Pods["core/v1<br/>Pod<br/>(watch, list)"]
+        Namespaces["core/v1<br/>Namespace<br/>(get, list)"]
+    end
+
+    subgraph "Backend Managed Resources"
+        direction TB
+        PVCs["core/v1<br/>PersistentVolumeClaim<br/>(create, delete, get, list)"]
+        PVs["core/v1<br/>PersistentVolume<br/>(get)"]
+        Secrets["core/v1<br/>Secret<br/>(delete, get, update)"]
+        StorageClasses["storage/v1<br/>StorageClass<br/>(get, list)"]
+        BackendPods["core/v1<br/>Pod<br/>(list - metrics)"]
+    end
+
+    subgraph "Admission Webhooks"
+        ValidateWS["Validate Workspace<br/>CREATE, UPDATE<br/>FailurePolicy: Fail"]
+        ValidateWSK["Validate WorkspaceKind<br/>CREATE, DELETE, UPDATE<br/>FailurePolicy: Fail"]
+        ConvertWSK["Convert WorkspaceKind<br/>CRD Version Migration"]
+    end
+
+    %% Controller access
+    ControllerSA -->|"reconciles"| WorkspaceCR
+    ControllerSA -->|"reconciles"| WorkspaceKindCR
+    ControllerSA -->|"creates/owns"| StatefulSets
+    ControllerSA -->|"creates/owns"| Services
+    ControllerSA -->|"creates/owns"| ServiceAccounts
+    ControllerSA -->|"creates/owns"| RoleBindings
+    ControllerSA -->|"manages"| ClusterRoleBindings
+    ControllerSA -->|"manages"| HTTPRoutes
+    ControllerSA -->|"owns"| VirtualServices
+    ControllerSA -->|"manages"| ReferenceGrants
+    ControllerSA -->|"reads/updates"| ConfigMaps
+    ControllerSA -->|"watches"| Pods
+    ControllerSA -->|"reads"| Namespaces
+
+    %% Backend access (on behalf of user via SAR)
+    BackendSA -->|"manages"| PVCs
+    BackendSA -->|"reads"| PVs
+    BackendSA -->|"manages"| Secrets
+    BackendSA -->|"reads"| StorageClasses
+    BackendSA -->|"reads"| BackendPods
+    SAR -->|"authorizes user ops via"| BackendSA
+
+    %% Webhook access
+    ControllerSA -->|"serves"| ValidateWS
+    ControllerSA -->|"serves"| ValidateWSK
+    ControllerSA -->|"serves"| ConvertWSK
+
+    style ControllerSA fill:#4a90e2,color:#fff
+    style BackendSA fill:#4a90e2,color:#fff
+    style SAR fill:#e74c3c,color:#fff
+    style HeaderExtract fill:#e74c3c,color:#fff
+    style UpstreamProxy fill:#f5a623,color:#fff
+    style WorkspaceCR fill:#7ed321,color:#fff
+    style WorkspaceKindCR fill:#7ed321,color:#fff
+    style ValidateWS fill:#9b59b6,color:#fff
+    style ValidateWSK fill:#9b59b6,color:#fff
+    style ConvertWSK fill:#9b59b6,color:#fff

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "component": "feast",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "feast-auth-split-001",
+      "claim": "The Go feature server has no authentication interceptors while the Python feature server has a full auth pipeline, creating an asymmetric security posture between the two serving implementations.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/authentication"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "sdk/python/feast/permissions/server/rest.py:29-72"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "go/embedded/online_features.go:322"
+        }
+      ],
+      "reasoning": "The analyzer confirmed that gRPC services (Go) have 'no authentication interceptor configured' and the Go HTTP handler chain has 'no authentication enforcement'. Source inspection of the Python permissions system reveals a complete auth pipeline with SecurityManager, AuthManager, and pluggable token extractors/parsers (OIDC, Kubernetes). This means the Go feature server must rely on network-level isolation (e.g., OpenShift NetworkPolicy or Service Mesh) for security, while the Python server can enforce application-level auth.",
+      "applicability": "component",
+      "confidence": "high"
+    },
+    {
+      "id": "feast-platform-tls-002",
+      "claim": "The operator uses platform-delegated TLS configuration via the OpenShift APIServer TLS profile, ensuring automatic alignment with cluster-wide cipher suite and protocol version policies.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "infra/feast-operator/cmd/tls_bootstrap.go:94-126"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "infra/feast-operator/cmd/main.go:140-164"
+        }
+      ],
+      "reasoning": "The bootstrapTLS function fetches the TLS profile from apiservers.config.openshift.io/cluster using the openshift/controller-runtime-common library. This pattern ensures the operator's webhook and metrics TLS configuration follows the cluster administrator's security policy without hardcoding cipher suites. The Intermediate profile fallback provides reasonable defaults on non-OpenShift clusters.",
+      "applicability": "cross-component",
+      "confidence": "high"
+    },
+    {
+      "id": "feast-notebook-bridge-003",
+      "claim": "The NotebookConfigMapReconciler bridges the feature engineering and model development workflows by watching Kubeflow Notebook resources and injecting FeatureStore connection ConfigMaps.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "analyzer-fact",
+          "location": "component-architecture.json#/cross_references"
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "infra/feast-operator/internal/controller/notebook_configmap_controller.go:154"
+        }
+      ],
+      "reasoning": "The deterministic cross-references show NotebookConfigMapReconciler watches both /v1/ConfigMap and api/v1/FeatureStore resources. The RBAC grants read-only access to kubeflow.org/notebooks (get, list, watch). This pattern enables automatic discovery of notebook workbenches and injection of feature store connection details, reducing manual configuration for data scientists.",
+      "applicability": "cross-component",
+      "confidence": "medium"
+    }
+  ]
+}

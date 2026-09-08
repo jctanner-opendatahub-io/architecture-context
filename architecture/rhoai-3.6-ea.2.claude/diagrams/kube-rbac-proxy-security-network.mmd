@@ -1,0 +1,73 @@
+graph TB
+    subgraph External["EXTERNAL (Untrusted)"]
+        Client["External Client / Pod"]
+    end
+
+    subgraph SidecarProxy["SIDECAR PROXY (TLS Termination Boundary)"]
+        direction TB
+
+        subgraph TLSLayer["TLS Layer"]
+            TLSTerm["TLS Termination<br/>8443/TCP<br/>TLS 1.2+ FIPS<br/>strictfipsruntime + OpenSSL<br/>Cert hot-reload"]
+        end
+
+        subgraph AuthNLayer["Authentication (one of)"]
+            OIDC["OIDC Token<br/>Validation (local)"]
+            TokenReview["Kubernetes<br/>TokenReview (delegated)"]
+        end
+
+        subgraph AuthZLayer["Authorization (union chain)"]
+            MetricsAuth["Hardcoded Metrics<br/>Authorizer"]
+            StaticAuth["Static Policy<br/>Authorizer"]
+            SARAuth["SubjectAccessReview<br/>Authorizer"]
+        end
+
+        ReverseProxy["Reverse Proxy<br/>httputil.ReverseProxy"]
+        HealthEP["/healthz<br/>Proxy-endpoints port<br/>TLS, No Auth"]
+    end
+
+    subgraph SamePod["SAME POD (localhost)"]
+        Upstream["Upstream Application<br/>8080/TCP HTTP<br/>No auth required"]
+    end
+
+    subgraph ClusterServices["KUBERNETES SERVICES (Internal)"]
+        SvcKRP["kube-rbac-proxy Service<br/>ClusterIP 8443/TCP"]
+        SvcKRPVO["kube-rbac-proxy-verb-override<br/>ClusterIP 8443/TCP"]
+    end
+
+    subgraph K8sControl["KUBERNETES CONTROL PLANE"]
+        APIServer["Kubernetes API Server<br/>6443/TCP HTTPS<br/>TLS 1.2+"]
+    end
+
+    %% Flows
+    Client -->|"HTTPS/8443<br/>TLS 1.2+ FIPS<br/>Bearer Token"| TLSTerm
+    TLSTerm --> OIDC
+    TLSTerm --> TokenReview
+    OIDC --> MetricsAuth
+    TokenReview --> MetricsAuth
+    MetricsAuth --> StaticAuth
+    StaticAuth --> SARAuth
+    SARAuth --> ReverseProxy
+    ReverseProxy -->|"HTTP/8080<br/>plaintext (localhost)<br/>No auth"| Upstream
+
+    TokenReview -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount token"| APIServer
+    SARAuth -->|"HTTPS/6443<br/>TLS 1.2+<br/>ServiceAccount token"| APIServer
+
+    SvcKRP -.->|"routes to"| TLSTerm
+    SvcKRPVO -.->|"routes to"| TLSTerm
+
+    %% Styling
+    classDef external fill:#f9f9f9,stroke:#999,stroke-width:2px
+    classDef proxy fill:#dae8fc,stroke:#6c8ebf,stroke-width:2px
+    classDef authn fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef authz fill:#ffe6cc,stroke:#d79b00,stroke-width:2px
+    classDef upstream fill:#d5e8d4,stroke:#82b366,stroke-width:2px
+    classDef k8s fill:#e1d5e7,stroke:#9673a6,stroke-width:2px
+    classDef service fill:#f8cecc,stroke:#b85450,stroke-width:2px
+
+    class Client external
+    class TLSTerm,ReverseProxy,HealthEP proxy
+    class OIDC,TokenReview authn
+    class MetricsAuth,StaticAuth,SARAuth authz
+    class Upstream upstream
+    class APIServer k8s
+    class SvcKRP,SvcKRPVO service

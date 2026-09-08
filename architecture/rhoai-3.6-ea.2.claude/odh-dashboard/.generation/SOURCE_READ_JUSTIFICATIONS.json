@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "component": "odh-dashboard",
+  "reads": [
+    {
+      "path": "Dockerfile.konflux.dashboard-operator",
+      "line_range": "1-45",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS build flags and base images are used for the dashboard-operator Go binary?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT, -tags strictfipsruntime, or equivalent FIPS build configuration",
+      "outcome": "resolved",
+      "sections": ["Security", "Architectural Analysis"]
+    },
+    {
+      "path": "backend/src/utils/constants.ts",
+      "line_range": "1-40",
+      "gap_category": ["authentication"],
+      "question": "How does the Node.js backend extract user identity from incoming requests?",
+      "expected_signal": "Token header name, authentication mechanism, or middleware configuration",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "Dockerfile.konflux.core-bff",
+      "line_range": "70-99",
+      "gap_category": ["fips_compliance"],
+      "question": "Do Go BFF builds use the same FIPS flags as the operator?",
+      "expected_signal": "CGO_ENABLED, -tags strictfipsruntime, or equivalent",
+      "outcome": "resolved",
+      "sections": ["Security", "Architectural Analysis"]
+    },
+    {
+      "path": "distributions/core-bff/bff/internal/api/app.go",
+      "line_range": "1-50",
+      "gap_category": ["authentication", "fips_compliance"],
+      "question": "What is the core BFF application structure and does it use crypto/tls for certificate handling?",
+      "expected_signal": "App struct, crypto/tls import, x509.CertPool, or TLS configuration",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Security"]
+    },
+    {
+      "path": "packages/agent-ops/bff/internal/api/middleware.go",
+      "line_range": "1-188",
+      "gap_category": ["authentication"],
+      "question": "How does the Go BFF authentication middleware enforce identity and authorization?",
+      "expected_signal": "Middleware chain, identity extraction, SubjectAccessReview, or per-route authorization",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "Dockerfile.konflux",
+      "line_range": "1-60",
+      "gap_category": ["fips_compliance"],
+      "question": "What FIPS-related build configuration exists for the Node.js backend?",
+      "expected_signal": "FIPS build flags, OpenSSL configuration, or Node.js FIPS mode",
+      "outcome": "partially-resolved",
+      "sections": ["Security", "Architectural Analysis"]
+    }
+  ]
+}

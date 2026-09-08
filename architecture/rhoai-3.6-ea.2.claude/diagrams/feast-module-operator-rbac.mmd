@@ -1,0 +1,133 @@
+graph TD
+    subgraph "Service Accounts"
+        SA_Main["opendatahub-feast-operator<br/>(primary operator SA)"]
+        SA_Generic["operator<br/>(generic SA)"]
+    end
+
+    subgraph "ClusterRole Bindings"
+        CRB_Manager["opendatahub-feast-<br/>manager-rolebinding"]
+        CRB_Metrics["opendatahub-feast-<br/>metrics-auth-rolebinding"]
+        CRB_GenManager["manager-rolebinding"]
+        CRB_GenMetrics["metrics-auth-rolebinding"]
+    end
+
+    subgraph "Role Bindings (Namespace)"
+        RB_Leader["opendatahub-feast-<br/>leader-election-rolebinding<br/>(ns: opendatahub-feast-system)"]
+        RB_GenLeader["leader-election-rolebinding<br/>(ns: system)"]
+    end
+
+    subgraph "ClusterRoles"
+        CR_Manager["opendatahub-feast-manager-role<br/>(27 rule entries)"]
+        CR_Metrics["opendatahub-feast-metrics-auth-role"]
+        CR_GenManager["manager-role"]
+        CR_GenMetrics["metrics-auth-role"]
+    end
+
+    subgraph "Roles (Namespace)"
+        R_Leader["opendatahub-feast-leader-election-role<br/>(ns: opendatahub-feast-system)"]
+        R_GenLeader["leader-election-role"]
+    end
+
+    subgraph "Aggregate Roles"
+        AGG_Admin["components-feastoperator-admin-role"]
+        AGG_Editor["components-feastoperator-editor-role"]
+        AGG_Viewer["components-feastoperator-viewer-role"]
+    end
+
+    %% Primary SA bindings
+    SA_Main -->|"bound via"| CRB_Manager
+    SA_Main -->|"bound via"| CRB_Metrics
+    SA_Main -->|"bound via"| RB_Leader
+
+    %% Generic SA bindings
+    SA_Generic -->|"bound via"| CRB_GenManager
+    SA_Generic -->|"bound via"| CRB_GenMetrics
+    SA_Generic -->|"bound via"| RB_GenLeader
+
+    %% ClusterRole grants
+    CRB_Manager -->|"grants"| CR_Manager
+    CRB_Metrics -->|"grants"| CR_Metrics
+    CRB_GenManager -->|"grants"| CR_GenManager
+    CRB_GenMetrics -->|"grants"| CR_GenMetrics
+
+    %% Role grants
+    RB_Leader -->|"grants"| R_Leader
+    RB_GenLeader -->|"grants"| R_GenLeader
+
+    subgraph "Manager Role Resources (opendatahub-feast-manager-role)"
+        direction TB
+        CoreResources["core/<br/>pods, pods/log, pods/exec,<br/>secrets, configmaps,<br/>services, serviceaccounts,<br/>namespaces, events, PVCs"]
+        AppsResources["apps/<br/>deployments"]
+        BatchResources["batch/<br/>jobs, cronjobs"]
+        AutoscaleResources["autoscaling/<br/>horizontalpodautoscalers"]
+        RBACResources["rbac.authorization.k8s.io/<br/>roles, rolebindings,<br/>clusterroles, clusterrolebindings"]
+        FeastResources["feast.dev/<br/>featurestores,<br/>featurestores/finalizers,<br/>featurestores/status"]
+        ComponentResources["components.platform.opendatahub.io/<br/>feastoperators,<br/>feastoperators/finalizers,<br/>feastoperators/status"]
+        MonitoringResources["monitoring.coreos.com/<br/>servicemonitors"]
+        RouteResources["route.openshift.io/<br/>routes"]
+        SparkResources["sparkoperator.k8s.io/<br/>sparkapplications"]
+        KubeflowResources["kubeflow.org/<br/>notebooks (read-only)"]
+        MLflowResources["mlflow.opendatahub.io/<br/>mlflows (read-only)"]
+        CRDResources["apiextensions.k8s.io/<br/>customresourcedefinitions"]
+        PolicyResources["policy/<br/>poddisruptionbudgets"]
+        AuthResources["authentication + authorization/<br/>tokenreviews,<br/>subjectaccessreviews"]
+        ConfigResources["config.openshift.io/<br/>apiservers (read-only)"]
+        CoordResources["coordination.k8s.io/<br/>leases"]
+    end
+
+    CR_Manager -->|"full CRUD"| CoreResources
+    CR_Manager -->|"full CRUD"| AppsResources
+    CR_Manager -->|"full CRUD"| BatchResources
+    CR_Manager -->|"full CRUD"| AutoscaleResources
+    CR_Manager -->|"full CRUD"| RBACResources
+    CR_Manager -->|"full CRUD"| FeastResources
+    CR_Manager -->|"full CRUD"| ComponentResources
+    CR_Manager -->|"full CRUD"| MonitoringResources
+    CR_Manager -->|"full CRUD"| RouteResources
+    CR_Manager -->|"create,delete,get"| SparkResources
+    CR_Manager -->|"get,list,watch"| KubeflowResources
+    CR_Manager -->|"get,list,watch"| MLflowResources
+    CR_Manager -->|"full CRUD"| CRDResources
+    CR_Manager -->|"full CRUD"| PolicyResources
+    CR_Manager -->|"create"| AuthResources
+    CR_Manager -->|"get,list,watch"| ConfigResources
+    CR_Manager -->|"full CRUD"| CoordResources
+
+    subgraph "Aggregate Role Resources"
+        FeastOpCR["feastoperators<br/>(components.platform.opendatahub.io)"]
+    end
+
+    AGG_Admin -->|"full CRUD + status read"| FeastOpCR
+    AGG_Editor -->|"full CRUD + status read"| FeastOpCR
+    AGG_Viewer -->|"get,list,watch + status read"| FeastOpCR
+
+    %% Styling
+    style SA_Main fill:#4a90e2,color:#fff
+    style SA_Generic fill:#4a90e2,color:#fff
+    style CR_Manager fill:#f5a623,color:#fff
+    style CR_Metrics fill:#f5a623,color:#fff
+    style CR_GenManager fill:#f5a623,color:#fff
+    style CR_GenMetrics fill:#f5a623,color:#fff
+    style R_Leader fill:#f5a623,color:#fff
+    style R_GenLeader fill:#f5a623,color:#fff
+    style AGG_Admin fill:#e8a0bf,color:#333
+    style AGG_Editor fill:#e8a0bf,color:#333
+    style AGG_Viewer fill:#e8a0bf,color:#333
+    style CoreResources fill:#7ed321,color:#fff
+    style AppsResources fill:#7ed321,color:#fff
+    style BatchResources fill:#7ed321,color:#fff
+    style AutoscaleResources fill:#7ed321,color:#fff
+    style RBACResources fill:#7ed321,color:#fff
+    style FeastResources fill:#7ed321,color:#fff
+    style ComponentResources fill:#7ed321,color:#fff
+    style MonitoringResources fill:#7ed321,color:#fff
+    style RouteResources fill:#7ed321,color:#fff
+    style SparkResources fill:#7ed321,color:#fff
+    style KubeflowResources fill:#7ed321,color:#fff
+    style MLflowResources fill:#7ed321,color:#fff
+    style CRDResources fill:#7ed321,color:#fff
+    style PolicyResources fill:#7ed321,color:#fff
+    style AuthResources fill:#7ed321,color:#fff
+    style ConfigResources fill:#7ed321,color:#fff
+    style CoordResources fill:#7ed321,color:#fff
+    style FeastOpCR fill:#7ed321,color:#fff

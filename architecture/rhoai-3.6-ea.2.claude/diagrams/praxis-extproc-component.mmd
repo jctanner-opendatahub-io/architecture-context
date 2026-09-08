@@ -1,0 +1,69 @@
+graph TB
+    subgraph "praxis-extproc Component"
+        direction TB
+        ExtProc["praxis-extproc<br/>(Rust Binary)"]
+
+        subgraph "Servers"
+            GRPCServer["ExtProc gRPC Server<br/>envoy.service.ext_proc.v3<br/>Port 9004/TCP, HTTP/2"]
+            HealthServer["Health gRPC Server<br/>grpc.health.v1.Health<br/>Port 50052/TCP, HTTP/2"]
+            MetricsServer["Prometheus Metrics<br/>HTTP /metrics<br/>Port 9090/TCP, HTTP/1.1"]
+        end
+
+        subgraph "Core Pipeline"
+            FilterPipeline["FilterPipeline<br/>(praxis-filter)"]
+            AIFilters["AI Filters<br/>(praxis-ai-filters)<br/>e.g. model_to_header"]
+            Config["YAML Config<br/>/etc/praxis/extproc.yaml"]
+        end
+
+        subgraph "TLS Layer"
+            TLS["OpenSSL TLS<br/>mozilla_intermediate<br/>ALPN h2"]
+        end
+
+        ExtProc --> GRPCServer
+        ExtProc --> HealthServer
+        ExtProc --> MetricsServer
+        Config -->|loads| FilterPipeline
+        AIFilters -->|registers into| FilterPipeline
+        GRPCServer -->|runs| FilterPipeline
+        TLS -->|secures| GRPCServer
+    end
+
+    subgraph "Deployment: payload-processing"
+        direction LR
+        Deploy["Deployment<br/>Namespace: openshift-ingress"]
+        SVC["Service: payload-processing<br/>ClusterIP 9004/TCP"]
+    end
+
+    Deploy -->|runs| ExtProc
+    SVC -->|routes to| GRPCServer
+
+    %% External interactions
+    EnvoyGW["Envoy Gateway<br/>(maas-default-gateway)"]
+    EnvoyFilter["EnvoyFilter<br/>Priority 10<br/>ipp-pre + ipp filters"]
+    Kuadrant["Kuadrant WasmPlugin"]
+    K8sAPI["Kubernetes API Server"]
+    Prometheus["Prometheus"]
+
+    EnvoyGW -->|ext_proc gRPC stream<br/>9004/TCP| SVC
+    EnvoyFilter -->|configures filter chain| EnvoyGW
+    EnvoyFilter -.->|positioned relative to| Kuadrant
+
+    ExtProc -->|reads ConfigMaps, Secrets<br/>ExternalProviders, ExternalModels| K8sAPI
+    Prometheus -->|scrapes /metrics<br/>9090/TCP| MetricsServer
+
+    %% Styling
+    style ExtProc fill:#4a90e2,stroke:#333,color:#fff
+    style GRPCServer fill:#4a90e2,stroke:#333,color:#fff
+    style HealthServer fill:#4a90e2,stroke:#333,color:#fff
+    style MetricsServer fill:#4a90e2,stroke:#333,color:#fff
+    style FilterPipeline fill:#6c5ce7,stroke:#333,color:#fff
+    style AIFilters fill:#6c5ce7,stroke:#333,color:#fff
+    style Config fill:#fdcb6e,stroke:#333,color:#333
+    style TLS fill:#00b894,stroke:#333,color:#fff
+    style Deploy fill:#dfe6e9,stroke:#333
+    style SVC fill:#dfe6e9,stroke:#333
+    style EnvoyGW fill:#e8e8e8,stroke:#333
+    style EnvoyFilter fill:#e8e8e8,stroke:#333
+    style Kuadrant fill:#e8e8e8,stroke:#333
+    style K8sAPI fill:#f5a623,stroke:#333,color:#fff
+    style Prometheus fill:#f5a623,stroke:#333,color:#fff
