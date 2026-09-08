@@ -115,7 +115,13 @@ EXPECTED_TABLE_HEADERS = {
         "Exposure",
     ],
     "Egress": ["Destination", "Port", "Protocol", "Encryption", "Auth", "Purpose"],
-    "RBAC - Cluster Roles": ["Role Name", "API Group", "Resources", "Verbs"],
+    "RBAC - Cluster Roles": [
+        "Role Name",
+        "API Group",
+        "Resources",
+        "Non-Resource URLs",
+        "Verbs",
+    ],
     "RBAC - Role Bindings": ["Binding Name", "Namespace", "Role", "Service Account"],
     "Secrets": ["Secret Name", "Type", "Purpose", "Provisioned By", "Auto-Rotate"],
     "Authentication & Authorization": [
@@ -370,7 +376,13 @@ def validate(path: str) -> tuple[list[str], list[str]]:
     for section_name, expected_cols in EXPECTED_TABLE_HEADERS.items():
         if section_name in tables:
             actual_cols = tables[section_name]
-            if actual_cols != expected_cols:
+            compatible_cols = [expected_cols]
+            if section_name == "RBAC - Cluster Roles":
+                # Four-column analyzer documents predate nonResourceURLs.
+                compatible_cols.append(
+                    ["Role Name", "API Group", "Resources", "Verbs"]
+                )
+            if actual_cols not in compatible_cols:
                 warnings.append(
                     f"Table columns mismatch in '{section_name}': "
                     f"expected {expected_cols}, got {actual_cols}"

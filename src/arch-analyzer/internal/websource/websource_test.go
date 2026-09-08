@@ -2,6 +2,21 @@ package websource
 
 import "testing"
 
+func TestTitleBFFModulePreservesDescriptionFormatting(t *testing.T) {
+	tests := map[string]string{
+		"gen-ai":         "Gen-Ai",
+		"model_registry": "Model_registry",
+		"api/v1":         "Api/V1",
+		"élan module":    "Élan Module",
+		"api—module":     "Api—module",
+	}
+	for input, expected := range tests {
+		if actual := titleBFFModule(input); actual != expected {
+			t.Errorf("titleBFFModule(%q) = %q, want %q", input, actual, expected)
+		}
+	}
+}
+
 func TestExtractWebWorkspaceFacts(t *testing.T) {
 	result, err := Extract("testdata/repository")
 	if err != nil {

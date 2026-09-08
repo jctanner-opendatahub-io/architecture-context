@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "component": "rhods-operator",
+  "reads": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "478-622",
+      "gap_category": ["authentication", "fips_compliance"],
+      "question": "How are metrics endpoint authentication filters enforced, how is the webhook server identity established, and what TLS lifecycle governs serving surfaces?",
+      "expected_signal": "controller-runtime metrics options with authentication filter, webhook server TLS configuration, health probe registration",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Security > Authentication & Authorization", "Security > FIPS Compliance", "Data Flows"],
+      "scope_reason": "Range covers metrics options (485-500), webhook server setup (501-504), controller registration (551-587), and health probes (612-618); narrower reads would miss the initialization sequence connecting TLS profile to both serving surfaces"
+    },
+    {
+      "path": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml",
+      "line_range": "1-127",
+      "gap_category": ["authentication"],
+      "question": "How does the OIDC auth proxy deployment configure authentication, what TLS settings are applied, and what credential references are used?",
+      "expected_signal": "oauth2-proxy container args with OIDC provider, TLS cert/key paths, OAuth client secret references, K8s token validation flag",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "internal/controller/services/auth/auth_controller.go",
+      "line_range": "48-87",
+      "gap_category": ["internal_dependencies"],
+      "question": "Which literal namespace names constrain the auth service controller watches, and what events do they route?",
+      "expected_signal": "Named-resource predicates with literal namespace names and event handler targets",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "cmd/manifest-tools/pkg/applier/olm.go",
+      "line_range": "25-74",
+      "gap_category": ["integration_points"],
+      "question": "How are outbound Kubernetes API clients configured, what credentials and TLS settings are used?",
+      "expected_signal": "Client configuration via kubeconfig loading rules, dynamic client and typed clientset creation",
+      "outcome": "resolved",
+      "sections": ["Data Flows"]
+    },
+    {
+      "path": "Dockerfiles/Dockerfile.konflux",
+      "line_range": "55-79",
+      "gap_category": ["fips_compliance"],
+      "question": "What build flags, GOEXPERIMENT settings, and base image establish or limit FIPS compliance?",
+      "expected_signal": "CGO_ENABLED, GOEXPERIMENT=strictfipsruntime, -tags strictfipsruntime, UBI base image",
+      "outcome": "resolved",
+      "sections": ["Security > FIPS Compliance"]
+    },
+    {
+      "path": "internal/controller/services/gateway/gateway_controller_actions.go",
+      "line_range": "275-394",
+      "gap_category": ["authentication"],
+      "question": "How does the gateway controller select between OIDC, external provider, and K8s token validation authentication modes?",
+      "expected_signal": "GatewayConfig spec field checks, conditional OIDC configuration, provider CA and token validation settings",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis"],
+      "scope_reason": "Range covers getTemplateData function which assembles all authentication-relevant template variables from GatewayConfig spec; narrower reads would miss the conditional OIDC, provider CA, and token validation logic"
+    }
+  ]
+}

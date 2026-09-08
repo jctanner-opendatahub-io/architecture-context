@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "component": "rhods-operator",
+  "reads": [
+    {
+      "path": "cmd/main.go",
+      "line_range": "280-325",
+      "gap_category": ["architecture_components"],
+      "question": "What configuration and ordering controls are registered before manager startup?",
+      "expected_signal": "entrypoint initialization and ordering setup",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis"]
+    },
+    {
+      "path": "cmd/main.go",
+      "line_range": "470-525",
+      "gap_category": ["authentication", "fips_compliance", "architecture_components"],
+      "question": "How are metrics and webhook TLS and metrics authorization configured?",
+      "expected_signal": "TLS options, secure-serving condition, authorization filter, and webhook server configuration",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Security > FIPS Compliance", "Data Flows"]
+    },
+    {
+      "path": "cmd/main.go",
+      "line_range": "590-625",
+      "gap_category": ["architecture_components"],
+      "question": "What initialization ordering and probe registration precede manager serving?",
+      "expected_signal": "leader initialization, health, and readiness registration",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "cmd/main.go",
+      "line_range": "620-660",
+      "gap_category": ["architecture_components", "fips_compliance"],
+      "question": "How are OpenShift TLS-profile changes applied during the manager lifecycle?",
+      "expected_signal": "profile watcher, restart, or live reload behavior",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "internal/controller/services/gateway/gateway_controller_actions.go",
+      "line_range": "95-195",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "How do integrated OAuth, external OIDC, and external authentication alter gateway reconciliation?",
+      "expected_signal": "mode branch, proxy selection, OAuthClient behavior, and no-proxy disposition",
+      "outcome": "resolved",
+      "sections": ["Purpose", "Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "internal/controller/services/gateway/gateway_controller_actions.go",
+      "line_range": "300-390",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "Which OIDC, certificate-validation, and token-validation settings reach gateway templates?",
+      "expected_signal": "template inputs and secure defaults",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis"]
+    },
+    {
+      "path": "internal/controller/services/auth/auth_controller.go",
+      "line_range": "55-82",
+      "gap_category": ["internal_dependencies"],
+      "question": "Which literal namespaces constrain Auth controller watches?",
+      "expected_signal": "named watch predicates and owning controller",
+      "outcome": "resolved",
+      "sections": ["Data Flows"]
+    },
+    {
+      "path": "cmd/manifest-tools/pkg/applier/olm.go",
+      "line_range": "30-78",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "How are Kubernetes clients configured and where are their failure boundaries?",
+      "expected_signal": "kubeconfig chain, client constructors, TLS configuration source, and error handling",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Data Flows"]
+    },
+    {
+      "path": "Dockerfiles/Dockerfile.konflux",
+      "line_range": "45-86",
+      "gap_category": ["fips_compliance"],
+      "question": "Which downstream build and packaging signals support or limit a FIPS claim?",
+      "expected_signal": "strict FIPS build settings and runtime base image",
+      "outcome": "partially-resolved",
+      "sections": ["Security > FIPS Compliance"]
+    },
+    {
+      "path": "internal/controller/services/gateway/gateway_controller_actions.go",
+      "line_range": "190-240",
+      "gap_category": ["authentication", "integration_points"],
+      "question": "Which common resources are created for proxy-backed gateway authentication?",
+      "expected_signal": "Service, route, identity, autoscaling, policy, and Envoy integration templates",
+      "outcome": "resolved",
+      "sections": ["Architectural Analysis", "Data Flows"]
+    }
+  ]
+}

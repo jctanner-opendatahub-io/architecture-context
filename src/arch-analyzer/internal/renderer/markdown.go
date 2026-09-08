@@ -3,12 +3,17 @@ package renderer
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	"github.com/jctanner/arch-analyzer/internal/model"
+	"github.com/jctanner/arch-analyzer/internal/structured"
 )
 
 func Markdown(writer io.Writer, document model.Document) error {
+	if err := structured.ValidateSections(document.StructuredSections); err != nil {
+		return fmt.Errorf("render structured sections: %w", err)
+	}
 	for _, row := range document.CRDs {
 		if strings.TrimSpace(row.Group) == "" || strings.TrimSpace(row.Version) == "" ||
 			strings.TrimSpace(row.Kind) == "" || strings.TrimSpace(row.Scope) == "" {
@@ -48,6 +53,7 @@ func Markdown(writer io.Writer, document model.Document) error {
 			return []string{row.Component, row.Type, row.Purpose}
 		}),
 	)
+	renderStructuredSections(markdown, document.StructuredSections, "aipcc-ecosystems-use", "sub-component-details")
 
 	markdown.heading(2, "APIs Exposed")
 	markdown.heading(3, "Custom Resource Definitions (CRDs)")
@@ -95,6 +101,7 @@ func Markdown(writer io.Writer, document model.Document) error {
 			return []string{row.Component, row.InteractionType, row.Role, row.Purpose}
 		}),
 	)
+	renderStructuredSections(markdown, document.StructuredSections, "deployment-manifests")
 
 	markdown.heading(2, "Network Architecture")
 	markdown.heading(3, "Services")
@@ -122,9 +129,9 @@ func Markdown(writer io.Writer, document model.Document) error {
 	markdown.heading(2, "Security")
 	markdown.heading(3, "RBAC - Cluster Roles")
 	markdown.table(
-		[]string{"Role Name", "API Group", "Resources", "Verbs"},
+		[]string{"Role Name", "API Group", "Resources", "Non-Resource URLs", "Verbs"},
 		mapRows(document.ClusterRoles, func(row model.ClusterRoleRow) []string {
-			return []string{row.Name, row.APIGroup, row.Resources, row.Verbs}
+			return []string{row.Name, row.APIGroup, row.Resources, row.NonResourceURLs, row.Verbs}
 		}),
 	)
 	markdown.heading(3, "RBAC - Role Bindings")
@@ -173,6 +180,8 @@ func Markdown(writer io.Writer, document model.Document) error {
 			return []string{row.Kind, row.Status, row.Identity, surface, condition, outcome, row.Source}
 		}),
 	)
+	renderStructuredSections(markdown, document.StructuredSections, "security.fips-compliance", "security.build-hermeticity")
+	renderStructuredSections(markdown, document.StructuredSections, "multi-tenancy")
 
 	if len(document.Webhooks) > 0 {
 		markdown.heading(2, "Admission Webhooks")
@@ -256,6 +265,137 @@ func renderArchitecturalAnalysis(markdown *markdownWriter, document model.Docume
 	markdown.heading(2, "Architectural Analysis")
 	markdown.line("Pending analyzer-assisted synthesis. Rewrite this section into concise architecture narrative using the analyzer facts, synthesis context, and any bounded source evidence. Do not retain analyzer coverage diagnostics or deterministic inventory bullets in the final Markdown.")
 	markdown.blank()
+}
+
+func renderStructuredSections(markdown *markdownWriter, sections []model.StructuredSection, ids ...string) {
+	wanted := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		wanted[id] = true
+	}
+	definitions := structured.SectionRegistry()
+	for _, section := range sections {
+		if !wanted[section.ID] {
+			continue
+		}
+		if section.Authority.ClaimClass == "planned" || section.Authority.ClaimClass == "support" {
+			continue
+		}
+		var definition structured.SectionDefinition
+		for _, candidate := range definitions {
+			if candidate.ID == section.ID {
+				definition = candidate
+				break
+			}
+		}
+		level := 2
+		if definition.ParentID != "" {
+			level = 3
+		}
+		markdown.heading(level, definition.Title)
+		if len(section.Blocks) == 0 || section.Status == "unresolved" {
+			markdown.line("**Status**: %s", cell(section.Status))
+			if section.Uncertainty != "" {
+				markdown.blank()
+				markdown.line("**Uncertainty**: %s", safeInline(section.Uncertainty))
+			}
+			markdown.blank()
+		}
+		for _, block := range section.Blocks {
+			switch block.Type {
+			case "paragraph":
+				markdown.line("%s", safeInline(block.Text))
+				markdown.blank()
+			case "list":
+				for _, item := range block.Items {
+					markdown.line("- %s", safeInline(item))
+				}
+				markdown.blank()
+			case "table":
+				renderStructuredTable(markdown, definition, block)
+			}
+		}
+		if len(section.Evidence) > 0 {
+			refs := make([]string, 0, len(section.Evidence))
+			for _, evidence := range section.Evidence {
+				refs = append(refs, structuredEvidenceRef(evidence))
+			}
+			markdown.line("**Evidence**: %s", safeEvidenceInline(strings.Join(refs, ", ")))
+			markdown.blank()
+		}
+	}
+}
+
+func renderStructuredTable(markdown *markdownWriter, section structured.SectionDefinition, block model.StructuredContentBlock) {
+	var definition structured.TableDefinition
+	for _, candidate := range structured.TableRegistry() {
+		if candidate.ID == block.TableID {
+			definition = candidate
+			break
+		}
+	}
+	if definition.Title != "" {
+		level := 3
+		if section.ParentID != "" {
+			level = 4
+		}
+		markdown.heading(level, definition.Title)
+	}
+	rows := make([][]string, 0, len(block.Rows))
+	evidence := make([]string, 0)
+	for _, row := range block.Rows {
+		cells := make([]string, len(row.Cells))
+		for index, value := range row.Cells {
+			cells[index] = safeInline(value)
+		}
+		rows = append(rows, cells)
+		for _, reference := range row.Evidence {
+			evidence = append(evidence, structuredEvidenceRef(reference))
+		}
+	}
+	markdown.table(definition.Headers, rows)
+	if len(evidence) > 0 {
+		markdown.line("**Table Evidence**: %s", safeEvidenceInline(strings.Join(evidence, ", ")))
+		markdown.blank()
+	}
+}
+
+func structuredEvidenceRef(evidence model.StructuredEvidenceRef) string {
+	ref := evidence.Path
+	if evidence.StartLine > 0 {
+		ref += ":" + strconv.Itoa(evidence.StartLine)
+		if evidence.EndLine > evidence.StartLine {
+			ref += "-" + strconv.Itoa(evidence.EndLine)
+		}
+	}
+	return ref + "@" + evidence.Revision
+}
+
+// safeInline is a second line of defense after structured validation. It keeps
+// deliberate emphasis and inline-code delimiters, while neutralizing characters
+// that can create HTML, links, tables, or escaped block markers.
+func safeInline(value string) string {
+	value = strings.TrimSpace(value)
+	value = strings.ReplaceAll(value, "\\", "\\\\")
+	value = strings.ReplaceAll(value, "<", "&lt;")
+	value = strings.ReplaceAll(value, ">", "&gt;")
+	value = strings.ReplaceAll(value, "|", "\\|")
+	value = strings.ReplaceAll(value, "[", "\\[")
+	value = strings.ReplaceAll(value, "]", "\\]")
+	return value
+}
+
+// safeEvidenceInline is a defensive rendering boundary in addition to accepted
+// document validation. It prevents a malformed citation from opening another
+// Markdown line or code span even if an upstream caller bypasses validation.
+func safeEvidenceInline(value string) string {
+	value = strings.Map(func(character rune) rune {
+		if character < 0x20 || character == 0x7f || (character >= 0x80 && character <= 0x9f) || character == '\u2028' || character == '\u2029' {
+			return ' '
+		}
+		return character
+	}, value)
+	value = safeInline(value)
+	return strings.ReplaceAll(value, "`", "\\`")
 }
 
 type markdownWriter struct {

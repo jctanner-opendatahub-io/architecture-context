@@ -99,7 +99,7 @@ Missing legacy sidecars are counted as unavailable disposition/read/merge teleme
 | authentication.gateway-modes | 38 | 20 | 38 | 37 |
 | authentication.metrics-enforcement | 76 | 41 | 42 | 32 |
 | authentication.service-endpoints | 34 | 18 | 34 | 26 |
-| compliance.runtime-fips | 149 | 80 | 97 | 92 |
+| compliance.runtime-fips | 97 | 54 | 97 | 92 |
 | controller.named-resource-watches | 9 | 4 | 9 | 7 |
 | dependencies.outbound-credentials | 96 | 51 | 96 | 85 |
 | lifecycle.configuration-tls | 76 | 41 | 76 | 75 |
@@ -107,6 +107,34 @@ Missing legacy sidecars are counted as unavailable disposition/read/merge teleme
 | security.credential-wiring | 6 | 3 | 6 | 4 |
 
 A document path signal only means that at least one exact analyzer candidate path appears in the Markdown. It is not semantic coverage.
+
+## Runtime FIPS applicability
+
+| Measure | Artifacts |
+|---|---:|
+| FIPS category records | 149 |
+| Category records with facts | 11 |
+| Category records without facts | 138 |
+| Nominated runtime-FIPS surfaces | 97 |
+| Nominated with category facts | 11 |
+| Nominated without category facts but with a source signal | 86 |
+| Nominated with uncertain applicability | 90 |
+| Nominated with applicable status | 7 |
+| Uncertain without nomination | 52 |
+
+Static build, packaging, provider, crypto, or TLS signals nominate an uncertain question; they do not establish runtime compliance. Source-backed explicit runtime, policy, or negative signals make the question applicable while claim support remains uncertain. Evidence-free category records remain explicit uncertain observations without required-surface nomination.
+
+## Same-input planning-rule delta
+
+| Measure | Before | After | Delta |
+|---|---:|---:|---:|
+| required_surface_occurrences | 314 | 262 | -52 |
+| runtime_fips_repository_occurrences | 80 | 54 | -26 |
+| runtime_fips_surface_occurrences | 149 | 97 | -52 |
+| runtime_fips_without_category_facts | 138 | 86 | -52 |
+| surface_occurrences | 526 | 474 | -52 |
+
+The delta isolates the FIPS planning-rule change on identical on-disk inputs. Fewer nominations do not demonstrate improved semantic recall.
 
 ## Representative review set
 
@@ -121,15 +149,15 @@ A document path signal only means that at least one exact analyzer candidate pat
 | manifest | `rhoai-3.6-ea.2.claude/distributed-workloads` | 2 | `https://github.com/red-hat-data-services/distributed-workloads.git` |
 | manifest | `rhoai-3.6-ea.2.claude/kube-auth-proxy` | 2 | `https://github.com/red-hat-data-services/kube-auth-proxy.git` |
 | manifest | `rhoai-3.6-ea.2.claude/rhoai-mcp` | 2 | `https://github.com/red-hat-data-services/rhoai-mcp.git` |
-| unknown | `rhoai-3.6-ea.2.claude/lm-evaluation-harness` | 1 | `https://github.com/red-hat-data-services/lm-evaluation-harness.git` |
 | unknown | `rhoai-3.6-ea.2.claude/odh-cli` | 1 | `https://github.com/red-hat-data-services/odh-cli.git` |
-| unknown | `rhoai-3.6-ea.2.claude/rhaii-cluster-validation` | 1 | `https://github.com/red-hat-data-services/rhaii-cluster-validation.git` |
+| unknown | `rhoai-3.6-ea.2.claude/llama-stack-provider-trustyai-garak` | 1 | `https://github.com/red-hat-data-services/llama-stack-provider-trustyai-garak.git` |
+| unknown | `rhoai-3.6-ea.2.claude/pipelines-components` | 1 | `https://github.com/red-hat-data-services/pipelines-components.git` |
 
 ## Prioritized follow-up
 
 1. **refresh-stored-behavioral-evidence** — 149 analyzer artifact(s) do not expose a usable behavioral_evidence field. Refresh stored analyzer artifacts before using this corpus to judge behavioral-extractor warning quality.
 
-2. **narrow-runtime-fips-applicability** — Runtime FIPS is nominated for 138 artifact(s) across 72 repository identity(s) whose analyzer category reports zero facts. Review the role rule and applicability basis so generic category coverage does not create required-surface warning noise.
+2. **refresh-runtime-fips-applicability-evidence** — 90 concrete analyzer signal(s) nominate an uncertain runtime-FIPS question; 52 empty category record(s) retain uncertainty without nomination. Refresh analyzer evidence before judging runtime-FIPS warning quality or drawing runtime-compliance conclusions.
 
 3. **improve-role-classification** — 27 eligible artifact(s) retain the unknown role. Add deterministic role signals before expanding role-specific surface rules.
 
@@ -143,3 +171,4 @@ A document path signal only means that at least one exact analyzer candidate pat
 - Stored analyzer artifacts without behavioral_evidence cannot be used to estimate the new extractor's recall or false-positive rate.
 - Repeated platform copies are counted as artifact occurrences and also collapsed by repository identity for recurrence estimates.
 - The audit reads no source checkout, pipeline log, agent transcript, or external service and does not modify generated architecture.
+- A decrease in nominated surfaces after narrowing applicability does not demonstrate better semantic recall. It only measures a planning-rule change.

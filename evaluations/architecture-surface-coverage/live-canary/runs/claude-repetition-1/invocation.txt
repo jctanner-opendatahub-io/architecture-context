@@ -1,0 +1,5 @@
+Agent: rhods-operator
+Model: claude-opus-4-6
+Working directory: .
+============================================================
+

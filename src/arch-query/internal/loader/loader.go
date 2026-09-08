@@ -2,10 +2,12 @@ package loader
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"strings"
 
+	"github.com/jctanner/arch-query/internal/documentdata"
 	"github.com/jctanner/arch-query/internal/jsondata"
 	"github.com/jctanner/arch-query/internal/markdown"
 	"github.com/jctanner/arch-query/internal/overlay"
@@ -24,6 +26,39 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 	}
 
 	components := make(map[string]*types.ComponentDoc)
+	accepted := make(map[string]bool)
+
+	// A supported document.json is authoritative for its component. Validate
+	// every published accepted document before considering legacy siblings so a
+	// malformed or mismatched document can never fall back to Markdown.
+	for _, entry := range entries {
+		if !entry.IsDir() || isExcludedDirectory(entry.Name()) {
+			continue
+		}
+		key := entry.Name()
+		documentPath := resolved + "/" + key + "/document.json"
+		if _, err := fs.Stat(fsys, documentPath); err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				continue
+			}
+			return nil, fmt.Errorf("checking accepted document %s: %w", documentPath, err)
+		}
+		doc, err := documentdata.Parse(fsys, documentPath, key, resolved)
+		if err != nil {
+			return nil, err
+		}
+		doc.FileName = key + ".md"
+		rawPath := resolved + "/" + doc.FileName
+		rawSections, rawErr := markdown.ReadRawSections(fsys, rawPath)
+		if rawErr == nil {
+			doc.RawSections = rawSections
+		} else if !errors.Is(rawErr, fs.ErrNotExist) {
+			return nil, fmt.Errorf("reading rendered Markdown sections %s: %w", rawPath, rawErr)
+		}
+		components[key] = doc
+		accepted[key] = true
+	}
+
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
@@ -33,6 +68,9 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 			continue
 		}
 		key := strings.TrimSuffix(name, ".md")
+		if accepted[key] {
+			continue
+		}
 		path := resolved + "/" + name
 		doc, err := markdown.ParseComponentDoc(fsys, path)
 		if err != nil {
@@ -51,6 +89,9 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 			continue
 		}
 		key := strings.TrimSuffix(name, ".json")
+		if accepted[key] {
+			continue
+		}
 		jsonPath := resolved + "/" + name
 		jsonDoc, err := jsondata.ParseComponentJSON(fsys, jsonPath)
 		if err != nil {
@@ -65,10 +106,13 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 		}
 	}
 	for _, entry := range entries {
-		if !entry.IsDir() {
+		if !entry.IsDir() || isExcludedDirectory(entry.Name()) {
 			continue
 		}
 		key := entry.Name()
+		if accepted[key] {
+			continue
+		}
 		jsonPath := resolved + "/" + key + "/.analyzer/component-architecture.json"
 		jsonDoc, err := jsondata.ParseComponentJSON(fsys, jsonPath)
 		if err != nil {

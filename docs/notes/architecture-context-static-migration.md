@@ -94,7 +94,7 @@ agent phase.
 - [Analyzer ownership migration v1 milestone](../milestones/analyzer-ownership-migration-v1.md)
 - [Architecture context static migration plan](../plans/architecture-context-static-migration.md)
 - [Open partial-route runtime bug](../bugs/open/partial-route-component-runtime-remains-high.md)
-- [Pending JSON patch follow-up](../tasks/pending/replace-markdown-change-record-with-json-patch.md)
+- [JSON patch follow-up](../tasks/done/replace-markdown-change-record-with-json-patch.md)
 - [Blocked external rollout gates](../tasks/blocked/resolve-external-analyzer-assisted-rollout-gates.md)
 
 ## Status

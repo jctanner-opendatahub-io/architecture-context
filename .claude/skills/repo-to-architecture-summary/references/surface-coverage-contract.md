@@ -15,6 +15,10 @@ The sidecar uses `architecture-surface-coverage/v1` and retains these top-level
 fields from the inventory:
 
 - `component`, `inventory_id`, and `component_roles`.
+- `applicability_observations`, including any uncertain surface that was not
+  nominated because the analyzer supplied no concrete applicability signal.
+  These records are planning context; do not turn them into documented,
+  unresolved, or not-applicable surface dispositions without new evidence.
 - Every seeded record in `surfaces`, with its original stable `id`, parent
   category, component role, applicability basis, question, priority, and
   candidate locations. Newly discovered important surfaces may be appended.
@@ -52,7 +56,7 @@ seeded applicability basis unchanged. If applicability remains uncertain,
 retain an unresolved record.
 
 The orchestrator preserves the inventory identity, component roles, and seeded
-surface fields. Do not change a seeded parent category, component role,
+applicability observations and surface fields. Do not change a seeded parent category, component role,
 applicability basis, question, priority, or candidate location. Agent-written
 source-read justifications describe evidence use; only harness telemetry becomes
 `observed_reads`. When telemetry is unavailable, the validator reports that

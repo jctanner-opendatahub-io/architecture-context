@@ -3,6 +3,8 @@
 BINARY    := arch-query
 BUILD_DIR := ../../bin
 ARCH_DIR  := ../../architecture
+GOLANGCI_LINT_VERSION := v1.64.8
+GOLANGCI_LINT ?= go run github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 build:
 	mkdir -p $(BUILD_DIR)
@@ -11,24 +13,10 @@ build:
 build-embedded:
 	rm -rf _embedded/architecture
 	mkdir -p _embedded/architecture
-	@# Copy .md and .json files from real version directories (skip symlinks and diagrams)
-	@for d in $(ARCH_DIR)/*/; do \
-		name=$$(basename "$$d"); \
-		if [ ! -L "$(ARCH_DIR)/$$name" ]; then \
-			mkdir -p "_embedded/architecture/$$name"; \
-			find "$$d" -maxdepth 1 \( -name '*.md' -o -name '*.json' \) -exec cp {} "_embedded/architecture/$$name/" \; ; \
-			if [ -d "$$d/contracts" ]; then \
-				cp -r "$$d/contracts" "_embedded/architecture/$$name/contracts"; \
-			fi; \
-		fi; \
-	done
-	@python3 -c "import os,json; d='$(ARCH_DIR)'; \
-		print(json.dumps({e:os.readlink(os.path.join(d,e)) \
-		for e in sorted(os.listdir(d)) if os.path.islink(os.path.join(d,e))}))" \
-		> _embedded/architecture/symlinks.json
-	@if [ -d "$(ARCH_DIR)/../overlays" ]; then \
-		cp -r "$(ARCH_DIR)/../overlays" _embedded/architecture/overlays; \
-	fi
+	go run ./internal/embeddeddata/cmd \
+		-source "$(ARCH_DIR)" \
+		-destination _embedded/architecture \
+		-overlays "$(ARCH_DIR)/../overlays"
 	mkdir -p $(BUILD_DIR)
 	go build -tags embedded -o $(BUILD_DIR)/$(BINARY) .
 	rm -rf _embedded
@@ -77,7 +65,7 @@ smoke-embedded: build-embedded
 	cd /tmp && $(CURDIR)/$(BUILD_DIR)/$(BINARY) images | head -5
 
 lint:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run ./...
+	$(GOLANGCI_LINT) run ./...
 
 lint-fix:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@latest run --fix ./...
+	$(GOLANGCI_LINT) run --fix ./...

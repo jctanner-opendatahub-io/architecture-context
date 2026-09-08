@@ -163,14 +163,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -259,14 +259,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -355,14 +355,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -458,14 +458,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -561,14 +561,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -669,14 +669,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -777,14 +777,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {
@@ -885,14 +885,14 @@
         }
       },
       "provenance": {
-        "analyzer_revision": "working-tree@28728163dde09c1007e0c2cb6d9e794cd3c06539+behavioral-evidence-v1",
+        "analyzer_revision": "working-tree@39209078846f15f1909373c106d2d665a907a509+explicit-empty-behavioral-evidence",
         "analyzer_schema_sha256": "2770b4de934aaf95c9e85dddbae6358a83888066fe363971d932a949285abcca",
-        "analyzer_source_sha256": "e86b61edfec7e2f00c21a748052e0613d08bf0d839865834686745d0aef85757",
+        "analyzer_source_sha256": "545b6fb9b7af8da37da54dec67092b1ed0ec4ca1f8a7d103cf3cf069ba07aaa4",
         "harness": "deterministic-fixture-replay",
         "mode": "deterministic-fixture-replay",
         "model": "source-reviewed-expected-outcomes",
         "review": "source-verified fixture expectations from tests/fixtures/architecture_surface_coverage",
-        "skill_sha256": "10c1f27dd42c349f75c6f30d25e37931f85809d25c2fd26aba4250b9cd30a946",
+        "skill_sha256": "136e1667902065addc29bc700c28de786ec5cd931ee812aa042c3d5e4d1f1576",
         "source_revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
       },
       "reads": {

@@ -435,13 +435,16 @@ func TestInternalDependencyCoverageCompleteWhenBoundedAliasScanIsEmpty(t *testin
 	mustWriteCoverageFile(t, root, "src/main.py", "print('standalone')\n")
 	mustWriteCoverageFile(t, root, "tests/test_main.py", "opendatahub.io\n")
 
-	got := internalDependencyCoverage(root, model.Input{})
+	got, statistics := internalDependencyCoverageWithStatistics(root, model.Input{})
 
 	if got.Status != "complete" || got.FactCount != 0 || len(got.Limitations) != 0 {
 		t.Fatalf("internal coverage = %#v, want complete empty", got)
 	}
-	if len(got.Evidence) == 0 || !strings.Contains(got.Evidence[0], "scanned 1") {
-		t.Fatalf("evidence = %#v, want bounded scan summary", got.Evidence)
+	if len(got.Evidence) != 0 {
+		t.Fatalf("evidence = %#v, want scan counts separated from facts", got.Evidence)
+	}
+	if len(statistics) != 2 || statistics[0].Metric != "files_scanned" || statistics[0].Value != 1 {
+		t.Fatalf("scan statistics = %#v, want one scanned runtime file", statistics)
 	}
 }
 
@@ -470,8 +473,32 @@ func TestInternalDependencyCoveragePartialWhenPlatformAliasIsUnaccounted(t *test
 	if got.Status != "partial" || len(got.Limitations) == 0 {
 		t.Fatalf("internal coverage = %#v, want partial alias limitation", got)
 	}
-	if len(got.Evidence) < 2 || !strings.Contains(got.Evidence[1], "src/client.go") {
+	if len(got.Evidence) != 1 || !strings.Contains(got.Evidence[0], "src/client.go") {
 		t.Fatalf("evidence = %#v, want matching source", got.Evidence)
+	}
+}
+
+func TestCategoryCoverageSeparatesAuthenticationScanStatistics(t *testing.T) {
+	root := t.TempDir()
+	mustWriteCoverageFile(t, root, "src/app.py", "print('standalone')\n")
+	input := model.Input{DataCoverage: map[string]string{
+		"manifests": "complete", "kustomize": "not_used", "source": "not_applicable",
+		"python": "complete", "rust": "not_applicable", "web_workspace": "not_applicable",
+	}}
+
+	coverage, statistics := categoryCoverageWithStatistics(root, input)
+	joined := strings.Join(coverage["authentication"].Evidence, "; ")
+	if strings.Contains(joined, "summary:scanned") {
+		t.Fatalf("authentication evidence retained volatile scan count: %q", joined)
+	}
+	found := false
+	for _, statistic := range statistics {
+		if statistic.Category == "authentication" && statistic.Metric == "files_scanned" && statistic.Value == 1 {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("scan statistics = %#v, want authentication file count", statistics)
 	}
 }
 

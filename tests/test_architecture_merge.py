@@ -8,13 +8,18 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from lib.architecture_baseline import (  # noqa: E402
+    _TABLE_SPECS,
+    NON_ARCHITECTURE_CATEGORIES,
     compare_component_documents,
     parse_component_markdown_text,
 )
 from lib.architecture_merge import (  # noqa: E402
+    PATCH_SCHEMA_PATH,
     load_rejected_additions,
     merge_architecture_documents,
+    merge_architecture_files,
     parse_change_records,
+    parse_patch_records,
 )
 
 
@@ -152,6 +157,42 @@ def change_record(*rows: tuple[str, ...]) -> str:
 """
 
 
+def patch_artifact(*operations: dict[str, object]) -> str:
+    return json.dumps({"schema_version": 1, "operations": list(operations)})
+
+
+def test_patch_schema_covers_every_authoritative_architecture_category():
+    schema = json.loads(PATCH_SCHEMA_PATH.read_text())
+    schema_categories = set(
+        schema["$defs"]["operation"]["properties"]["category"]["enum"]
+    )
+    merge_categories = {
+        spec.category
+        for spec in _TABLE_SPECS
+        if spec.category not in NON_ARCHITECTURE_CATEGORIES
+    }
+
+    assert schema_categories == merge_categories
+
+
+def add_operation(
+    *,
+    category: str = "architecture_components",
+    key: list[str] | None = None,
+    evidence: list[str] | None = None,
+) -> dict[str, object]:
+    return {
+        "action": "add",
+        "category": category,
+        "key": key or ["worker"],
+        "column": "*",
+        "analyzer_value": None,
+        "candidate_value": None,
+        "reason": "Worker entry point is deployed",
+        "evidence": evidence or ["worker.py:10-20"],
+    }
+
+
 def comparison(analyzer: str, merged: str):
     return compare_component_documents(
         parse_component_markdown_text(analyzer, path="analyzer.md"),
@@ -240,6 +281,192 @@ def test_evidence_backed_row_addition_is_applied():
     assert "| worker | Service | Jobs |" in result.text
     assert result.counts["applied"] == 1
     assert comparison(analyzer, result.text).structured_row_recall == 1.0
+
+
+def test_json_patch_row_addition_is_applied():
+    analyzer = document([("api", "Service", "API")])
+    candidate = document([("api", "Service", "API"), ("worker", "Service", "Jobs")])
+
+    result = merge_architecture_documents(
+        analyzer,
+        candidate,
+        patch_text=patch_artifact(add_operation()),
+    )
+
+    assert "| worker | Service | Jobs |" in result.text
+    assert result.counts["applied"] == 1
+    assert result.parse_errors == []
+    assert result.change_artifact_format == "architecture-table-patch/v1"
+
+
+def test_json_patch_cell_update_requires_exact_values():
+    analyzer = document([("api", "Service", "API")])
+    candidate = document([("api", "Library", "API")])
+    operation = {
+        "action": "update",
+        "category": "architecture_components",
+        "key": ["api"],
+        "column": "type",
+        "analyzer_value": "Service",
+        "candidate_value": "Library",
+        "reason": "The entry point is imported rather than deployed",
+        "evidence": ["src/api.py:4-18"],
+    }
+
+    result = merge_architecture_documents(
+        analyzer,
+        candidate,
+        patch_text=patch_artifact(operation),
+    )
+
+    assert "| api | Library | API |" in result.text
+    assert result.counts["applied"] == 1
+    assert result.counts["restored"] == 0
+
+
+def test_json_patch_mismatched_cell_values_are_validation_errors():
+    analyzer = document([("api", "Service", "API")])
+    candidate = document([("api", "Library", "API")])
+    operation = {
+        "action": "update",
+        "category": "architecture_components",
+        "key": ["api"],
+        "column": "type",
+        "analyzer_value": "Wrong old value",
+        "candidate_value": "Library",
+        "reason": "The entry point is imported rather than deployed",
+        "evidence": ["src/api.py:4-18"],
+    }
+
+    result = merge_architecture_documents(
+        analyzer,
+        candidate,
+        patch_text=patch_artifact(operation),
+    )
+
+    assert "| api | Service | API |" in result.text
+    assert result.counts["restored"] == 1
+    assert any(
+        "no exact candidate/analyzer change" in error
+        for error in result.parse_errors
+    )
+
+
+@pytest.mark.parametrize(
+    ("operation", "message"),
+    [
+        (
+            add_operation(category="metadata"),
+            "is not one of",
+        ),
+        (
+            add_operation(category="authentication", key=["HTTP API"]),
+            "is too short",
+        ),
+        (
+            add_operation(evidence=["src/api.py"]),
+            "does not match",
+        ),
+    ],
+)
+def test_json_patch_schema_errors_are_actionable(
+    operation: dict[str, object], message: str
+):
+    records, errors = parse_patch_records(patch_artifact(operation))
+
+    assert records == []
+    assert any("$.operations[0]" in error and message in error for error in errors)
+
+
+def test_json_patch_rejects_duplicate_operation_identity():
+    operation = add_operation()
+
+    records, errors = parse_patch_records(patch_artifact(operation, operation))
+
+    assert len(records) == 1
+    assert any("duplicate operation identity" in error for error in errors)
+
+
+def test_json_patch_rejects_placeholder_reason_and_reversed_evidence_range():
+    operation = add_operation(evidence=["worker.py:20-10"])
+    operation["reason"] = "N/A"
+
+    records, errors = parse_patch_records(patch_artifact(operation))
+
+    assert records == []
+    assert any("reason must explain" in error for error in errors)
+    assert any("evidence range is reversed" in error for error in errors)
+
+
+def test_json_patch_add_requires_null_cell_values():
+    operation = add_operation()
+    operation["candidate_value"] = "Service row"
+
+    records, errors = parse_patch_records(patch_artifact(operation))
+
+    assert records == []
+    assert any("$.operations[0].candidate_value" in error for error in errors)
+    assert any("is not of type 'null'" in error for error in errors)
+
+
+def test_json_patch_rejects_category_outside_readiness_budget():
+    analyzer = document([("api", "Service", "API")])
+    candidate = document([("api", "Service", "API"), ("worker", "Service", "Jobs")])
+
+    result = merge_architecture_documents(
+        analyzer,
+        candidate,
+        patch_text=patch_artifact(add_operation()),
+        allowed_change_categories=("authentication",),
+    )
+
+    assert "| worker | Service | Jobs |" not in result.text
+    assert any(
+        "outside the readiness gap budget" in error
+        for error in result.parse_errors
+    )
+
+
+def test_json_patch_and_legacy_change_record_cannot_be_combined():
+    analyzer = document([("api", "Service", "API")])
+    candidate = document([("api", "Service", "API")])
+
+    result = merge_architecture_documents(
+        analyzer,
+        candidate,
+        patch_text=patch_artifact(),
+        changes_text=change_record(),
+    )
+
+    assert result.change_artifact_format == "conflicting"
+    assert result.parse_errors == [
+        "provide one structured-change artifact: JSON patch or legacy Markdown"
+    ]
+
+
+def test_invalid_json_patch_fails_before_writing_final_merge(tmp_path: Path):
+    analyzer = tmp_path / "analyzer.md"
+    candidate = tmp_path / "candidate.md"
+    patch = tmp_path / "patch.json"
+    output = tmp_path / "merged.md"
+    report = tmp_path / "merge.json"
+    analyzer.write_text(document([("api", "Service", "API")]))
+    candidate.write_text(
+        document([("api", "Service", "API"), ("worker", "Service", "Jobs")])
+    )
+    patch.write_text(patch_artifact(add_operation(evidence=["worker.py"])))
+
+    with pytest.raises(ValueError, match="architecture patch validation failed"):
+        merge_architecture_files(
+            analyzer,
+            candidate,
+            output,
+            patch=patch,
+            report_json=report,
+        )
+
+    assert not output.exists()
+    assert "$.operations[0]" in report.read_text()
 
 
 def test_source_adjudicated_addition_is_rejected():
@@ -752,3 +979,36 @@ def test_pilot_change_records_remain_parseable(component: str, expected: int):
 
     assert errors == []
     assert len(records) == expected
+
+
+def test_odh_gitops_json_patch_replay_preserves_valid_candidate_rows(
+    tmp_path: Path,
+):
+    fixture = (
+        PROJECT_ROOT / "tests/fixtures/architecture_patch/odh_gitops"
+    )
+    output = tmp_path / "merged.md"
+
+    result = merge_architecture_files(
+        fixture / "analyzer.md",
+        fixture / "candidate.md",
+        output,
+        patch=fixture / "patch.json",
+        component="odh-gitops",
+        allowed_change_categories=(
+            "architecture_components",
+            "internal_dependencies",
+            "authentication",
+            "integration_points",
+        ),
+    )
+
+    assert result.parse_errors == []
+    assert result.counts["applied"] == 5
+    assert result.counts["rejected"] == 0
+    assert result.counts["restored"] == 0
+    merged = output.read_text()
+    assert "| rhai-on-openshift-chart | Helm Chart |" in merged
+    assert "| Kueue Operator | OLM Subscription / Helm |" in merged
+    assert "| Platform Services | All | Authorino |" in merged
+    assert "| Authorino | CRD Configuration |" in merged

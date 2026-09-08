@@ -206,9 +206,9 @@ _How the component is deployed via kustomize. Analyze the `manifests/` or `confi
 
 ### RBAC - Cluster Roles
 
-| Role Name | API Group | Resources | Verbs |
-|-----------|-----------|-----------|-------|
-| [role] | [group or ""] | [resources] | [get, list, watch] |
+| Role Name | API Group | Resources | Non-Resource URLs | Verbs |
+|-----------|-----------|-----------|-------------------|-------|
+| [role] | [group or ""] | [resources] | [URLs or empty] | [get, list, watch] |
 
 ### RBAC - Role Bindings
 

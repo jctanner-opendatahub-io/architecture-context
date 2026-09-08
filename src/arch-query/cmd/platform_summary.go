@@ -121,11 +121,12 @@ Examples:
 			Purpose    string `json:"purpose,omitempty"`
 		}
 		type rbacEntry struct {
-			Component string `json:"component"`
-			RoleName  string `json:"role_name"`
-			APIGroup  string `json:"api_group"`
-			Resources string `json:"resources"`
-			Verbs     string `json:"verbs"`
+			Component       string `json:"component"`
+			RoleName        string `json:"role_name"`
+			APIGroup        string `json:"api_group"`
+			Resources       string `json:"resources"`
+			NonResourceURLs string `json:"non_resource_urls,omitempty"`
+			Verbs           string `json:"verbs"`
 		}
 		type watchEntry struct {
 			Component  string `json:"component"`
@@ -259,7 +260,7 @@ Examples:
 				externalDeps = append(externalDeps, extDepEntry{k, d.Component, d.Version, d.Required, d.Purpose})
 			}
 			for _, r := range doc.RBACRoles {
-				rbacRoles = append(rbacRoles, rbacEntry{k, r.RoleName, r.APIGroup, r.Resources, r.Verbs})
+				rbacRoles = append(rbacRoles, rbacEntry{k, r.RoleName, r.APIGroup, r.Resources, r.NonResourceURLs, r.Verbs})
 			}
 			for _, w := range doc.ControllerWatches {
 				watches = append(watches, watchEntry{k, w.Type, w.GVK, w.Controller, w.Source})

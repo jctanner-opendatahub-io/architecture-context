@@ -6,12 +6,18 @@ import json
 import re
 from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass, field
+from functools import lru_cache
+from hashlib import sha256
 from pathlib import Path
 from typing import Callable, Literal
 
+from jsonschema import Draft202012Validator
+
 from lib.architecture_baseline import (
     _TABLE_SPECS,
+    NON_ARCHITECTURE_CATEGORIES,
     MarkdownTable,
+    _canonical_row_key,
     _normalize_header,
     _normalize_key_value,
     _normalize_row_key,
@@ -41,6 +47,11 @@ CHANGE_RECORD_HEADERS = (
     "Candidate Value",
     "Reason",
     "Evidence",
+)
+PATCH_SCHEMA_VERSION = 1
+PATCH_SCHEMA_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "schemas/architecture-table-patch-v1.schema.json"
 )
 EMPTY_VALUE = "<empty>"
 NON_FACT_KEY_VALUES = frozenset(
@@ -108,6 +119,11 @@ class MergeResult:
     unchanged_by_category: dict[str, int] = field(default_factory=dict)
     parse_errors: list[str] = field(default_factory=list)
     component: str = ""
+    change_artifact_format: str = "none"
+    assembly_status: str = "not-run"
+    section_decisions: list[dict[str, object]] = field(default_factory=list)
+    assembly_diagnostics: list[dict[str, object]] = field(default_factory=list)
+    preservation: dict[str, object] = field(default_factory=dict)
 
     @property
     def counts(self) -> dict[str, int]:
@@ -165,9 +181,14 @@ class MergeResult:
             "counts": self.counts,
             "unchanged_by_category": self.unchanged_by_category,
             "parse_errors": self.parse_errors,
+            "change_artifact_format": self.change_artifact_format,
             "decisions": [asdict(decision) for decision in self.decisions],
             "accepted_conflicts": self.accepted_conflicts,
             "accepted_deletions": self.accepted_deletions,
+            "assembly_status": self.assembly_status,
+            "section_decisions": self.section_decisions,
+            "assembly_diagnostics": self.assembly_diagnostics,
+            "preservation": self.preservation,
         }
 
     def to_json(self) -> str:
@@ -205,6 +226,20 @@ class MergeResult:
         if self.parse_errors:
             lines.extend(["", "## Change Record Errors", ""])
             lines.extend(f"- {_escape_cell(error)}" for error in self.parse_errors)
+
+        if self.assembly_diagnostics:
+            lines.extend(["", "## Assembly Diagnostics", ""])
+            lines.extend(
+                f"- {_escape_cell(str(item.get('message') or item))}"
+                for item in self.assembly_diagnostics
+            )
+
+        if self.preservation:
+            lines.extend(["", "## Analyzer Row Preservation", ""])
+            lines.extend(
+                f"- **{_escape_cell(str(key))}**: {_escape_cell(str(value))}"
+                for key, value in sorted(self.preservation.items())
+            )
 
         for status in ("applied", "rejected", "restored"):
             decisions = [item for item in self.decisions if item.status == status]
@@ -253,6 +288,7 @@ class _Row:
     key: tuple[str, ...]
     raw: tuple[str, ...]
     headers: tuple[str, ...]
+    opaque: bool = False
 
     @property
     def cells(self) -> dict[str, str]:
@@ -262,12 +298,31 @@ class _Row:
             if index < len(self.raw)
         }
 
+    @property
+    def identity(self) -> tuple[str, ...]:
+        """Internal identity; v1 patch keys remain compatibility-stable."""
+
+        if self.category != "rbac_cluster_roles":
+            return self.key
+        verbs = _normalize_key_value(
+            self.category, "verbs", self.cells.get("verbs", "")
+        )
+        return (*self.key, "<verbs>", verbs)
+
 
 @dataclass
 class _TableRows:
     table: MarkdownTable
     category: str
     rows: list[_Row]
+
+
+class ArchitectureMergeError(ValueError):
+    """Fatal promotion failure carrying the report that must be persisted."""
+
+    def __init__(self, message: str, result: MergeResult):
+        super().__init__(message)
+        self.result = result
 
 
 def split_h2_sections(text: str) -> tuple[str, dict[str, str], list[str]]:
@@ -422,6 +477,118 @@ def parse_change_records(text: str) -> tuple[list[ChangeRecord], list[str]]:
     return records, errors
 
 
+@lru_cache(maxsize=1)
+def _patch_validator() -> Draft202012Validator:
+    """Load the checked-in JSON Schema used at the merge trust boundary."""
+
+    schema = json.loads(PATCH_SCHEMA_PATH.read_text())
+    Draft202012Validator.check_schema(schema)
+    return Draft202012Validator(schema)
+
+
+def _json_path(parts: object) -> str:
+    """Render a jsonschema path as an actionable JSON expression."""
+
+    result = "$"
+    for part in parts:
+        if isinstance(part, int):
+            result += f"[{part}]"
+        else:
+            result += f".{part}"
+    return result
+
+
+def parse_patch_records(text: str) -> tuple[list[ChangeRecord], list[str]]:
+    """Parse and validate a versioned architecture table patch artifact."""
+
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as error:
+        return [], [
+            "architecture patch is not valid JSON: "
+            f"line {error.lineno}, column {error.colno}: {error.msg}"
+        ]
+
+    schema_errors = sorted(
+        _patch_validator().iter_errors(payload),
+        key=lambda error: tuple(str(part) for part in error.absolute_path),
+    )
+    if schema_errors:
+        return [], [
+            f"architecture patch {_json_path(error.absolute_path)}: {error.message}"
+            for error in schema_errors
+        ]
+
+    specs = {
+        spec.category: spec
+        for spec in _TABLE_SPECS
+        if spec.category not in NON_ARCHITECTURE_CATEGORIES
+    }
+    records: list[ChangeRecord] = []
+    errors: list[str] = []
+    seen: set[tuple[str, str, tuple[str, ...], str]] = set()
+    for index, operation in enumerate(payload["operations"]):
+        location = f"architecture patch $.operations[{index}]"
+        action = operation["action"]
+        category = operation["category"]
+        spec = specs[category]
+        key = tuple(
+            _normalize_key_value(category, key_column, value)
+            for key_column, value in zip(
+                spec.keys, operation["key"], strict=True
+            )
+        )
+        column = operation["column"]
+        reason = operation["reason"].strip()
+        evidence = tuple(operation["evidence"])
+        record_errors: list[str] = []
+        if any(value in NON_FACT_KEY_VALUES for value in key):
+            record_errors.append("key must identify a concrete architecture fact")
+        if _normalize_text(reason) in {"-", "none", "n/a"}:
+            record_errors.append("reason must explain the source-backed change")
+        for reference in evidence:
+            match = _EVIDENCE_RE.fullmatch(reference)
+            if match is None:
+                # The schema reports ordinary syntax errors. Keep this guard so
+                # later schema changes cannot weaken repository-path semantics.
+                record_errors.append(
+                    f"invalid numeric repository-relative evidence {reference!r}"
+                )
+                continue
+            evidence_path = Path(match.group(1))
+            if evidence_path.is_absolute() or ".." in evidence_path.parts:
+                record_errors.append(
+                    f"evidence path must be repository-relative: {match.group(1)!r}"
+                )
+            if match.group(3) and int(match.group(3)) < int(match.group(2)):
+                record_errors.append(f"evidence range is reversed: {reference!r}")
+
+        analyzer_value = operation["analyzer_value"] or ""
+        candidate_value = operation["candidate_value"] or ""
+        record = ChangeRecord(
+            action=action,
+            category=category,
+            key=key,
+            column=column,
+            analyzer_value=analyzer_value,
+            candidate_value=candidate_value,
+            reason=reason,
+            evidence=evidence,
+            source_row=index + 1,
+        )
+        if record.identity in seen:
+            record_errors.append(
+                "duplicate operation identity "
+                f"{(action, category, key, column)!r}"
+            )
+        seen.add(record.identity)
+        if record_errors:
+            errors.extend(f"{location}: {error}" for error in record_errors)
+        else:
+            records.append(record)
+    return records, errors
+
+
 def _expand_evidence_shorthand(evidence_text: str) -> str:
     """Expand ``path:10-20,25`` into two complete evidence references."""
 
@@ -447,6 +614,7 @@ def merge_architecture_documents(
     analyzer_text: str,
     candidate_text: str,
     *,
+    patch_text: str | None = None,
     changes_text: str | None = None,
     generated_by: str | None = None,
     component: str = "",
@@ -463,16 +631,35 @@ def merge_architecture_documents(
     candidate_document = parse_component_markdown_text(
         candidate_text, path="<candidate>"
     )
-    records, parse_errors = (
-        parse_change_records(changes_text) if changes_text is not None else ([], [])
-    )
+    if patch_text is not None and changes_text is not None:
+        records: list[ChangeRecord] = []
+        parse_errors = [
+            "provide one structured-change artifact: JSON patch or legacy Markdown"
+        ]
+        change_artifact_format = "conflicting"
+    elif patch_text is not None:
+        records, parse_errors = parse_patch_records(patch_text)
+        change_artifact_format = (
+            f"architecture-table-patch/v{PATCH_SCHEMA_VERSION}"
+        )
+    elif changes_text is not None:
+        records, parse_errors = parse_change_records(changes_text)
+        change_artifact_format = "legacy-markdown-change-record"
+    else:
+        records, parse_errors = [], []
+        change_artifact_format = "none"
     if allowed_change_categories is not None:
         allowed = set(allowed_change_categories)
         disallowed = [record for record in records if record.category not in allowed]
         records = [record for record in records if record.category in allowed]
+        record_label = (
+            "architecture patch operation"
+            if patch_text is not None
+            else "change table row"
+        )
         parse_errors.extend(
             (
-                f"change table row {record.source_row}: category {record.category!r} "
+                f"{record_label} {record.source_row}: category {record.category!r} "
                 "is outside the readiness gap budget"
             )
             for record in disallowed
@@ -485,24 +672,32 @@ def merge_architecture_documents(
 
     analyzer_tables = _document_table_rows(analyzer_document.tables)
     candidate_tables = _document_table_rows(candidate_document.tables)
-    candidate_by_category = _rows_by_category(candidate_tables)
+    candidate_by_category = _row_lists_by_category(candidate_tables)
     candidate_row_groups = _row_groups_by_category(candidate_tables)
+    candidate_patch_groups = _row_groups_by_patch_key(candidate_tables)
     decisions: list[MergeDecision] = []
     unchanged: Counter[str] = Counter()
     used_records: set[ChangeRecord] = set()
     replacements: list[tuple[int, int, list[str]]] = []
+    protected_rows: Counter[tuple[object, ...]] = Counter()
+    matched_candidate_rows: set[int] = set()
 
     first_table_by_category: dict[str, _TableRows] = {}
     for item in analyzer_tables:
         first_table_by_category.setdefault(item.category, item)
 
-    analyzer_by_category = _rows_by_category(analyzer_tables)
+    analyzer_patch_groups = _row_groups_by_patch_key(analyzer_tables)
     for table_rows in analyzer_tables:
-        candidate_rows = candidate_by_category.get(table_rows.category, {})
+        candidate_rows = candidate_by_category.get(table_rows.category, [])
         candidate_groups = candidate_row_groups.get(table_rows.category, {})
+        output_headers = _merge_output_headers(table_rows, candidate_tables)
         output_rows: list[tuple[str, ...]] = []
         for analyzer_row in table_rows.rows:
-            candidates = candidate_groups.get(analyzer_row.key, [])
+            candidates = [
+                row
+                for row in candidate_groups.get(analyzer_row.identity, [])
+                if id(row) not in matched_candidate_rows
+            ]
             exact_index = next(
                 (
                     index
@@ -519,18 +714,44 @@ def merge_architecture_documents(
                 else None
             )
             if candidate_row is None:
+                analyzer_variants = analyzer_patch_groups.get(
+                    table_rows.category, {}
+                ).get(analyzer_row.key, [])
+                patch_candidates = [
+                    row
+                    for row in candidate_patch_groups.get(
+                        table_rows.category, {}
+                    ).get(analyzer_row.key, [])
+                    if id(row) not in matched_candidate_rows
+                ]
+                if len(analyzer_variants) == 1 and len(patch_candidates) == 1:
+                    candidate_row = patch_candidates[0]
+            if candidate_row is None:
                 record = _select_record(
                     records_by_identity,
                     "delete",
                     table_rows.category,
                     analyzer_row.key,
                     "*",
+                    used_records,
                 )
+                if len(
+                    analyzer_patch_groups.get(table_rows.category, {}).get(
+                        analyzer_row.key, []
+                    )
+                ) > 1:
+                    record = None
                 if record and _row_record_matches(record, analyzer_row, None):
                     used_records.add(record)
                     decisions.append(_decision_from_record("applied", record))
                     continue
-                output_rows.append(analyzer_row.raw)
+                retained_raw = _translate_row(analyzer_row, output_headers)
+                output_rows.append(retained_raw)
+                protected_rows[
+                    _row_occurrence_identity(
+                        table_rows, retained_raw, headers=output_headers
+                    )
+                ] += 1
                 decisions.append(
                     MergeDecision(
                         status="restored",
@@ -543,6 +764,8 @@ def merge_architecture_documents(
                     )
                 )
                 continue
+
+            matched_candidate_rows.add(id(candidate_row))
 
             if table_rows.category in {"source_files", "source_searches"}:
                 merged_raw = _merge_evidence_row(analyzer_row, candidate_row)
@@ -559,27 +782,48 @@ def merge_architecture_documents(
                     analyzer_row,
                     candidate_row,
                     records_by_identity,
+                    used_records,
+                    ambiguous_key=(
+                        len(
+                            analyzer_patch_groups.get(
+                                table_rows.category, {}
+                            ).get(analyzer_row.key, [])
+                        )
+                        > 1
+                    ),
                 )
-            output_rows.append(merged_raw)
+            merged_row = _Row(
+                analyzer_row.category,
+                analyzer_row.key,
+                merged_raw,
+                analyzer_row.headers,
+                opaque=analyzer_row.opaque,
+            )
+            translated_raw = _translate_row(merged_row, output_headers)
+            output_rows.append(translated_raw)
+            protected_rows[
+                _row_occurrence_identity(
+                    table_rows, translated_raw, headers=output_headers
+                )
+            ] += 1
             decisions.extend(row_decisions)
             unchanged[table_rows.category] += row_unchanged
             used_records.update(row_records)
 
         if table_rows is first_table_by_category[table_rows.category]:
-            analyzer_rows = analyzer_by_category.get(table_rows.category, {})
-            for key, candidate_row in candidate_rows.items():
-                if key in analyzer_rows:
+            for candidate_row in candidate_rows:
+                if id(candidate_row) in matched_candidate_rows:
                     continue
                 if table_rows.category in {"source_files", "source_searches"}:
                     output_rows.append(
-                        _translate_row(candidate_row, table_rows.table.headers)
+                        _translate_row(candidate_row, output_headers)
                     )
                     decisions.append(
                         MergeDecision(
                             status="applied",
                             action="add",
                             category=table_rows.category,
-                            key=key,
+                            key=candidate_row.key,
                             candidate_value=_row_display(candidate_row),
                             detail="merged agent source evidence",
                         )
@@ -589,12 +833,19 @@ def merge_architecture_documents(
                     records_by_identity,
                     "add",
                     table_rows.category,
-                    key,
+                    candidate_row.key,
                     "*",
+                    used_records,
                 )
+                if len(
+                    candidate_patch_groups.get(table_rows.category, {}).get(
+                        candidate_row.key, []
+                    )
+                ) > 1:
+                    record = None
                 adjudication = (
                     (rejected_additions or {}).get(
-                        (table_rows.category, key)
+                        (table_rows.category, candidate_row.key)
                     )
                     if record
                     else None
@@ -611,7 +862,7 @@ def merge_architecture_documents(
                             status="rejected",
                             action="add",
                             category=table_rows.category,
-                            key=key,
+                            key=candidate_row.key,
                             candidate_value=_row_display(candidate_row),
                             reason=reason,
                             evidence=evidence,
@@ -621,7 +872,7 @@ def merge_architecture_documents(
                 elif record and _row_record_matches(record, None, candidate_row):
                     used_records.add(record)
                     output_rows.append(
-                        _translate_row(candidate_row, table_rows.table.headers)
+                        _translate_row(candidate_row, output_headers)
                     )
                     decisions.append(_decision_from_record("applied", record))
                 else:
@@ -630,7 +881,7 @@ def merge_architecture_documents(
                             status="rejected",
                             action="add",
                             category=table_rows.category,
-                            key=key,
+                            key=candidate_row.key,
                             candidate_value=_row_display(candidate_row),
                             detail="candidate-only row has no exact evidence record",
                         )
@@ -642,14 +893,14 @@ def merge_architecture_documents(
             (
                 start,
                 end,
-                _render_table(table_rows.table.headers, output_rows),
+                _render_table(output_headers, output_rows),
             )
         )
 
     for category, candidate_rows in candidate_by_category.items():
         if category in first_table_by_category:
             continue
-        for row in candidate_rows.values():
+        for row in candidate_rows:
             decisions.append(
                 MergeDecision(
                     status="rejected",
@@ -663,6 +914,12 @@ def merge_architecture_documents(
 
     for record in records:
         if record not in used_records:
+            if patch_text is not None:
+                parse_errors.append(
+                    "architecture patch operation "
+                    f"{record.source_row}: no exact candidate/analyzer change "
+                    "matches the operation identity and values"
+                )
             decisions.append(
                 MergeDecision(
                     status="rejected",
@@ -675,27 +932,160 @@ def merge_architecture_documents(
                     reason=record.reason,
                     evidence=record.evidence,
                     detail=(
-                        "stale or mismatched change record from row "
+                        "stale or mismatched structured change at source position "
                         f"{record.source_row}"
                     ),
                 )
             )
 
     structured_analyzer = _apply_line_replacements(analyzer_text, replacements)
-    if section_assembler is None:
-        text = _merge_owned_sections(structured_analyzer, candidate_text)
-    else:
-        text = section_assembler(structured_analyzer, candidate_text)
-    text = _append_applied_evidence_sources(text, decisions)
-    if generated_by:
-        text = _replace_generated_by(text, generated_by)
-    return MergeResult(
-        text=text,
+    expected_reference = _append_applied_evidence_sources(
+        structured_analyzer, decisions
+    )
+    expected_rows = _mapped_row_multiset(expected_reference)
+    expected_all_rows = _all_table_row_multiset(expected_reference)
+    original_all_rows = _all_table_row_multiset(analyzer_text)
+    original_mapped_rows = _mapped_row_multiset(analyzer_text)
+    protected_all_rows = protected_rows + (original_all_rows - original_mapped_rows)
+    analyzer_row_count = sum(
+        len(table.rows) for table in analyzer_tables
+    )
+    approved_deletes = sum(
+        1
+        for decision in decisions
+        if decision.status == "applied" and decision.action == "delete"
+    )
+    preservation: dict[str, object] = {
+        "expected": analyzer_row_count,
+        "all_expected": sum(original_all_rows.values()),
+        "authorized_deletes": approved_deletes,
+        "adjudicated_expected": sum(expected_rows.values()),
+        "all_adjudicated_expected": sum(expected_all_rows.values()),
+        "unchanged": sum(unchanged.values()),
+        "restored": sum(
+            1
+            for decision in decisions
+            if decision.status == "restored" and decision.action == "delete"
+        ),
+        "opaque": sum(
+            1 for table in analyzer_tables for row in table.rows if row.opaque
+        ),
+        "preserved": sum(protected_rows.values()),
+        "all_preserved": sum(protected_all_rows.values()),
+        "adjudicated_preserved": sum(expected_rows.values()),
+        "all_adjudicated_preserved": sum(expected_all_rows.values()),
+        "missing": 0,
+        "mapped_missing": 0,
+        "all_missing": 0,
+        "adjudicated_missing": 0,
+        "all_adjudicated_missing": 0,
+        "stage": "table-merge-complete",
+    }
+    result = MergeResult(
+        text="",
         decisions=decisions,
         unchanged_by_category=dict(sorted(unchanged.items())),
         parse_errors=parse_errors,
         component=component,
+        change_artifact_format=change_artifact_format,
+        preservation=preservation,
     )
+    try:
+        if section_assembler is None:
+            assembled = _merge_owned_sections(structured_analyzer, candidate_text)
+            assembly_report: dict[str, object] = {"status": "success"}
+        else:
+            assembled = section_assembler(structured_analyzer, candidate_text)
+            assembly_report = getattr(assembled, "report", {}) or {}
+    except Exception as error:
+        assembly_report = getattr(error, "report", {}) or {}
+        diagnostics = assembly_report.get("diagnostics", [])
+        if not isinstance(diagnostics, list):
+            diagnostics = []
+        if not diagnostics:
+            diagnostics = [
+                {
+                    "code": "section_assembly_failed",
+                    "message": str(error),
+                }
+            ]
+        result.assembly_status = "failed"
+        result.section_decisions = list(
+            assembly_report.get("section_decisions", []) or []
+        )
+        result.assembly_diagnostics = diagnostics
+        result.preservation["stage"] = "assembly-rejected"
+        raise ArchitectureMergeError(str(error), result) from error
+
+    text = str(assembled)
+    text = _append_applied_evidence_sources(text, decisions)
+    if generated_by:
+        text = _replace_generated_by(text, generated_by)
+    final_rows = _mapped_row_multiset(text)
+    final_all_rows = _all_table_row_multiset(text)
+    missing_rows = expected_rows - final_rows
+    missing_expected_all_rows = expected_all_rows - final_all_rows
+    missing_protected_rows = protected_rows - final_rows
+    missing_protected_all_rows = protected_all_rows - final_all_rows
+    result.preservation.update(
+        {
+            "preserved": sum((protected_rows & final_rows).values()),
+            "all_preserved": sum(
+                (protected_all_rows & final_all_rows).values()
+            ),
+            "adjudicated_preserved": sum(
+                (expected_rows & final_rows).values()
+            ),
+            "all_adjudicated_preserved": sum(
+                (expected_all_rows & final_all_rows).values()
+            ),
+            "missing": sum(missing_protected_all_rows.values()),
+            "mapped_missing": sum(missing_protected_rows.values()),
+            "all_missing": sum(missing_protected_all_rows.values()),
+            "adjudicated_missing": sum(missing_rows.values()),
+            "all_adjudicated_missing": sum(
+                missing_expected_all_rows.values()
+            ),
+            "stage": "assembly-complete",
+        }
+    )
+    result.assembly_status = str(assembly_report.get("status") or "success")
+    result.section_decisions = list(
+        assembly_report.get("section_decisions", []) or []
+    )
+    result.assembly_diagnostics = list(
+        assembly_report.get("diagnostics", []) or []
+    )
+    if missing_expected_all_rows:
+        missing_details = [
+            {
+                "category": identity[0],
+                "section": " / ".join(identity[1]),
+                "row": list(identity[3]),
+                "occurrences": count,
+            }
+            for identity, count in sorted(missing_expected_all_rows.items())
+        ]
+        result.assembly_status = "failed"
+        result.assembly_diagnostics.append(
+            {
+                "code": "analyzer_row_lost_during_assembly",
+                "message": (
+                    "section assembly omitted analyzer-owned table rows: "
+                    + "; ".join(
+                        f"{item['category']} {item['row']}"
+                        for item in missing_details
+                    )
+                ),
+                "missing_rows": missing_details,
+            }
+        )
+        raise ArchitectureMergeError(
+            str(result.assembly_diagnostics[-1]["message"]), result
+        )
+
+    result.text = text
+    return result
 
 
 def merge_architecture_files(
@@ -703,6 +1093,7 @@ def merge_architecture_files(
     candidate: Path,
     output: Path,
     *,
+    patch: Path | None = None,
     changes: Path | None = None,
     report_json: Path | None = None,
     report_markdown: Path | None = None,
@@ -713,27 +1104,58 @@ def merge_architecture_files(
 ) -> MergeResult:
     """Merge files and write optional audit artifacts."""
 
+    if patch is not None and not patch.is_file():
+        raise FileNotFoundError(f"missing architecture patch: {patch}")
     resolved_component = component or candidate.parent.name
-    result = merge_architecture_documents(
-        analyzer.read_text(),
-        candidate.read_text(),
-        changes_text=changes.read_text() if changes and changes.exists() else None,
-        generated_by=generated_by,
-        component=resolved_component,
-        allowed_change_categories=allowed_change_categories,
-        rejected_additions=load_rejected_additions(resolved_component),
-        section_assembler=section_assembler,
+    try:
+        result = merge_architecture_documents(
+            analyzer.read_text(),
+            candidate.read_text(),
+            patch_text=patch.read_text() if patch and patch.exists() else None,
+            changes_text=changes.read_text() if changes and changes.exists() else None,
+            generated_by=generated_by,
+            component=resolved_component,
+            allowed_change_categories=allowed_change_categories,
+            rejected_additions=load_rejected_additions(resolved_component),
+            section_assembler=section_assembler,
+        )
+    except ArchitectureMergeError as error:
+        result = error.result
+        _write_merge_reports(
+            result,
+            report_json=report_json,
+            report_markdown=report_markdown,
+            component=component or candidate.parent.name,
+        )
+        raise
+    _write_merge_reports(
+        result,
+        report_json=report_json,
+        report_markdown=report_markdown,
+        component=component or candidate.parent.name,
     )
+    if patch is not None and result.parse_errors:
+        raise ValueError(
+            "architecture patch validation failed: "
+            + "; ".join(result.parse_errors)
+        )
     output.write_text(result.text)
+    return result
+
+
+def _write_merge_reports(
+    result: MergeResult,
+    *,
+    report_json: Path | None,
+    report_markdown: Path | None,
+    component: str,
+) -> None:
     if report_json:
         report_json.parent.mkdir(parents=True, exist_ok=True)
         report_json.write_text(result.to_json())
     if report_markdown:
         report_markdown.parent.mkdir(parents=True, exist_ok=True)
-        report_markdown.write_text(
-            result.to_markdown(component=component or candidate.parent.name)
-        )
-    return result
+        report_markdown.write_text(result.to_markdown(component=component))
 
 
 def load_rejected_additions(
@@ -784,16 +1206,73 @@ def _document_table_rows(tables: list[MarkdownTable]) -> list[_TableRows]:
                 for index, mapped in enumerate(mapped_headers)
                 if mapped and index < len(raw)
             }
-            key = tuple(
-                _normalize_key_value(spec.category, column, values.get(column, ""))
-                for column in spec.keys
-            )
-            if all(key) and not any(
+            key = _canonical_row_key(spec, values)
+            opaque = not all(key) or any(
                 value in NON_FACT_KEY_VALUES for value in key
-            ):
-                rows.append(_Row(spec.category, key, raw, table.headers))
+            )
+            if opaque:
+                fingerprint = sha256(
+                    json.dumps(
+                        [table.section_path, table.headers, raw],
+                        ensure_ascii=False,
+                    ).encode()
+                ).hexdigest()
+                key = ("<opaque-row>", fingerprint)
+            rows.append(
+                _Row(spec.category, key, raw, table.headers, opaque=opaque)
+            )
         result.append(_TableRows(table=table, category=spec.category, rows=rows))
     return result
+
+
+def _mapped_row_multiset(text: str) -> Counter[tuple[object, ...]]:
+    """Return every mapped Markdown row, including rows without a typed key."""
+
+    document = parse_component_markdown_text(text, path="<preservation-check>")
+    rows: Counter[tuple[object, ...]] = Counter()
+    for table_rows in _document_table_rows(document.tables):
+        for row in table_rows.rows:
+            rows[
+                (
+                    table_rows.category,
+                    table_rows.table.section_path,
+                    table_rows.table.headers,
+                    row.raw,
+                )
+            ] += 1
+    return rows
+
+
+def _all_table_row_multiset(text: str) -> Counter[tuple[object, ...]]:
+    """Return every Markdown table row, whether or not it has a table spec."""
+
+    document = parse_component_markdown_text(text, path="<preservation-check>")
+    mapped_categories = {
+        (item.table.section_path, item.table.headers): item.category
+        for item in _document_table_rows(document.tables)
+    }
+    rows: Counter[tuple[object, ...]] = Counter()
+    for table in document.tables:
+        category = mapped_categories.get(
+            (table.section_path, table.headers), "<unmapped>"
+        )
+        for raw in table.rows:
+            rows[(category, table.section_path, table.headers, raw)] += 1
+    return rows
+
+
+def _row_occurrence_identity(
+    table_rows: _TableRows,
+    raw: tuple[str, ...],
+    *,
+    headers: tuple[str, ...] | None = None,
+) -> tuple[object, ...]:
+    return (
+        table_rows.category,
+        table_rows.table.section_path,
+        headers or table_rows.table.headers,
+        raw,
+    )
 
 
 def _rows_by_category(
@@ -816,16 +1295,74 @@ def _row_groups_by_category(
     )
     for table in tables:
         for row in table.rows:
+            result[table.category][row.identity].append(row)
+    return {
+        category: dict(rows_by_key) for category, rows_by_key in result.items()
+    }
+
+
+def _row_groups_by_patch_key(
+    tables: list[_TableRows],
+) -> dict[str, dict[tuple[str, ...], list[_Row]]]:
+    """Group rows by the compatibility-stable v1 patch identity."""
+
+    result: dict[str, dict[tuple[str, ...], list[_Row]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    for table in tables:
+        for row in table.rows:
             result[table.category][row.key].append(row)
     return {
         category: dict(rows_by_key) for category, rows_by_key in result.items()
     }
 
 
+def _row_lists_by_category(tables: list[_TableRows]) -> dict[str, list[_Row]]:
+    """Retain every candidate occurrence for addition and rejection accounting."""
+
+    result: dict[str, list[_Row]] = defaultdict(list)
+    for table in tables:
+        result[table.category].extend(table.rows)
+    return dict(result)
+
+
+def _merge_output_headers(
+    analyzer_table: _TableRows, candidate_tables: list[_TableRows]
+) -> tuple[str, ...]:
+    """Upgrade legacy RBAC tables when a candidate carries the URL column."""
+
+    headers = analyzer_table.table.headers
+    if analyzer_table.category != "rbac_cluster_roles":
+        return headers
+    normalized = tuple(_normalize_header(header) for header in headers)
+    if "non_resource_urls" in normalized:
+        return headers
+    candidate_has_urls = any(
+        table.category == analyzer_table.category
+        and "non_resource_urls"
+        in tuple(_normalize_header(header) for header in table.table.headers)
+        for table in candidate_tables
+    )
+    if not candidate_has_urls:
+        return headers
+    try:
+        verbs_index = normalized.index("verbs")
+    except ValueError:
+        return (*headers, "Non-Resource URLs")
+    return (
+        *headers[:verbs_index],
+        "Non-Resource URLs",
+        *headers[verbs_index:],
+    )
+
+
 def _merge_shared_row(
     analyzer: _Row,
     candidate: _Row,
     records: dict[tuple[str, str, tuple[str, ...], str], list[ChangeRecord]],
+    used_records: set[ChangeRecord],
+    *,
+    ambiguous_key: bool,
 ) -> tuple[tuple[str, ...], list[MergeDecision], int, set[ChangeRecord]]:
     output = list(analyzer.raw)
     candidate_cells = candidate.cells
@@ -839,9 +1376,16 @@ def _merge_shared_row(
         right = candidate_cells[column].strip()
         if left == right:
             continue
-        record = _select_record(
-            records, "update", analyzer.category, analyzer.key, column
-        )
+        record = None
+        if not ambiguous_key:
+            record = _select_record(
+                records,
+                "update",
+                analyzer.category,
+                analyzer.key,
+                column,
+                used_records | used,
+            )
         if record and record.analyzer_value == left and record.candidate_value == right:
             output[index] = candidate_cells[column]
             used.add(record)
@@ -969,8 +1513,14 @@ def _select_record(
     category: str,
     key: tuple[str, ...],
     column: str,
+    used_records: set[ChangeRecord] | None = None,
 ) -> ChangeRecord | None:
-    matches = records.get((action, category, key, column), [])
+    used_records = used_records or set()
+    matches = [
+        record
+        for record in records.get((action, category, key, column), [])
+        if record not in used_records
+    ]
     return matches[0] if len(matches) == 1 else None
 
 

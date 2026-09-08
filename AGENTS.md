@@ -19,6 +19,7 @@ Key rules:
 3. Record architectural decisions as ADRs in `docs/decisions/`.
 4. File bugs immediately in `docs/bugs/open/`.
 5. Append session activity to `docs/notes/session-log.md`.
+6. Follow [Implementation and Independent Review Framework](docs/notes/implementation-framework.md) for implementation roles, requirement-level evidence, and proportionate review gates.
 
 ## Languages and Tools
 

@@ -327,12 +327,20 @@ _TABLE_SPECS = (
         "rbac_cluster_roles",
         frozenset({"rbac cluster roles", "cluster roles"}),
         ("role_name", "api_group", "resources"),
-        ("role_name", "api_group", "resources", "verbs"),
+        (
+            "role_name",
+            "api_group",
+            "resources",
+            "non_resource_urls",
+            "verbs",
+        ),
         _aliases(
             role_name="role_name",
             name="role_name",
             api_group="api_group",
             resources="resources",
+            non_resource_urls="non_resource_urls",
+            nonresourceurls="non_resource_urls",
             verbs="verbs",
         ),
     ),
@@ -714,10 +722,7 @@ def _canonical_rows(
                 for index, mapped in enumerate(mapped_headers)
                 if mapped and index < len(raw_row)
             }
-            key = tuple(
-                _normalize_key_value(spec.category, column, row.get(column, ""))
-                for column in spec.keys
-            )
+            key = _canonical_row_key(spec, row)
             if (
                 not all(key)
                 or not all(_meaningful(value) for value in key)
@@ -772,10 +777,55 @@ def _normalize_key_value(category: str, column: str, value: str) -> str:
     if category == "rbac_cluster_roles" and column == "api_group":
         if normalized in {"", '""'}:
             return "<core>"
-    if category == "rbac_cluster_roles" and column in {"api_group", "resources"}:
+    if category == "rbac_cluster_roles" and column in {
+        "api_group",
+        "resources",
+        "non_resource_urls",
+        "verbs",
+    }:
         items = sorted(item.strip() for item in normalized.split(",") if item.strip())
         return ", ".join(items)
     return _KEY_ALIASES.get((category, column, normalized), normalized)
+
+
+def _canonical_row_key(
+    spec: _TableSpec, row: dict[str, str]
+) -> tuple[str, ...]:
+    """Build a stable row identity, including Kubernetes non-resource rules."""
+
+    if spec.category != "rbac_cluster_roles":
+        return tuple(
+            _normalize_key_value(spec.category, column, row.get(column, ""))
+            for column in spec.keys
+        )
+
+    role = _normalize_key_value(spec.category, "role_name", row.get("role_name", ""))
+    api_group = _normalize_key_value(
+        spec.category, "api_group", row.get("api_group", "")
+    )
+    resources = _normalize_key_value(
+        spec.category, "resources", row.get("resources", "")
+    )
+    urls = _normalize_key_value(
+        spec.category, "non_resource_urls", row.get("non_resource_urls", "")
+    )
+    verbs = _normalize_key_value(spec.category, "verbs", row.get("verbs", ""))
+    if urls and resources:
+        return (
+            role,
+            "<mixed-resource-target>",
+            " :: ".join((api_group, resources, urls)),
+        )
+    if urls:
+        return role, "<non-resource>", urls
+    if resources:
+        return role, api_group, resources
+    # Older analyzer Markdown did not render nonResourceURLs. Its blank target
+    # is retained as unknown and keyed only by facts actually present.
+    legacy_scope = verbs
+    if api_group != "<core>":
+        legacy_scope = " :: ".join((api_group, verbs))
+    return role, "<legacy-target-unknown>", legacy_scope
 
 
 def _normalize_row_key(category: str, values: Iterable[str]) -> tuple[str, ...]:
@@ -784,6 +834,34 @@ def _normalize_row_key(category: str, values: Iterable[str]) -> tuple[str, ...]:
     spec = next((item for item in _TABLE_SPECS if item.category == category), None)
     if spec is None or len(key) != len(spec.keys):
         return key
+    if category == "rbac_cluster_roles":
+        role = _normalize_key_value(category, "role_name", key[0])
+        target_kind = _normalize_text(key[1])
+        if target_kind == "<non-resource>":
+            return (
+                role,
+                "<non-resource>",
+                _normalize_key_value(category, "non_resource_urls", key[2]),
+            )
+        if target_kind == "<legacy-target-unknown>":
+            scope = key[2]
+            if " :: " in scope:
+                api_group, verbs = scope.split(" :: ", 1)
+                scope = " :: ".join(
+                    (
+                        _normalize_key_value(category, "api_group", api_group),
+                        _normalize_key_value(category, "verbs", verbs),
+                    )
+                )
+            else:
+                scope = _normalize_key_value(category, "verbs", scope)
+            return (
+                role,
+                "<legacy-target-unknown>",
+                scope,
+            )
+        if target_kind == "<mixed-resource-target>":
+            return role, "<mixed-resource-target>", _normalize_text(key[2])
     return tuple(
         _normalize_key_value(category, column, value)
         for column, value in zip(spec.keys, key, strict=True)

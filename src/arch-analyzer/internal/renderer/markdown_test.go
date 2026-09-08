@@ -20,6 +20,28 @@ func TestMarkdownRejectsIncompleteCRDIdentity(t *testing.T) {
 	}
 }
 
+func TestMarkdownRendersResourceAndNonResourceRBACWithoutCollision(t *testing.T) {
+	document := model.Document{ClusterRoles: []model.ClusterRoleRow{
+		{Name: "reader", APIGroup: "", Resources: "pods", Verbs: "get"},
+		{Name: "reader", NonResourceURLs: "/metrics", Verbs: "get"},
+	}}
+
+	var output bytes.Buffer
+	if err := Markdown(&output, document); err != nil {
+		t.Fatal(err)
+	}
+	text := output.String()
+	for _, want := range []string{
+		"| Role Name | API Group | Resources | Non-Resource URLs | Verbs |",
+		"| reader |  | pods |  | get |",
+		"| reader |  |  | /metrics | get |",
+	} {
+		if !strings.Contains(text, want) {
+			t.Errorf("Markdown() missing %q:\n%s", want, text)
+		}
+	}
+}
+
 func TestMarkdownRendersCRDCountScopeAndAPIRole(t *testing.T) {
 	document := model.Document{
 		Component: "kueue",

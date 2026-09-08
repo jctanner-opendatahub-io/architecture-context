@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "component": "rhods-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "rhods-operator-pattern-001",
+      "claim": "The gateway authentication architecture supports three simultaneous auth modes (OpenShift OAuth, external OIDC, and Kubernetes TokenReview), with the auth proxy detecting the active mode from the GatewayConfig CR and reconciling the appropriate proxy configuration.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "api/services/v1alpha1/gateway_types.go:52-131",
+          "excerpt": ""
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/services/gateway/gateway_support.go:46-50",
+          "excerpt": ""
+        }
+      ],
+      "reasoning": "The GatewayConfigSpec defines an optional OIDC block (lines 59-61) alongside the implicit OpenShift OAuth path (using OAuthClient 'data-science'). The EnableK8sTokenValidation field (default true) adds a third auth layer for service account tokens. This multi-mode design allows the same gateway infrastructure to serve clusters with different identity providers.",
+      "applicability": "component",
+      "confidence": "high",
+      "unknowns": [],
+      "counterevidence": [],
+      "suggested_validation": "",
+      "validation_status": "pending"
+    },
+    {
+      "id": "rhods-operator-pattern-002",
+      "claim": "The auth service controller uses literal namespace watches for 'models-as-a-service' and 'kuadrant-system' to detect optional platform capabilities and conditionally reconcile RBAC permissions.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/services/auth/auth_controller.go:63-76",
+          "excerpt": ""
+        }
+      ],
+      "reasoning": "The auth controller watches for namespace creation/update/deletion events filtered to exactly 'models-as-a-service' and 'kuadrant-system'. When either namespace appears or is modified, the controller re-reconciles the Auth singleton, allowing it to provision Kuadrant-specific roles or MaaS-specific RBAC. This pattern enables feature discovery without CRD dependencies.",
+      "applicability": "cross-component",
+      "confidence": "high",
+      "unknowns": [],
+      "counterevidence": [],
+      "suggested_validation": "",
+      "validation_status": "pending"
+    },
+    {
+      "id": "rhods-operator-risk-001",
+      "claim": "The cloudmanager binary's CGO_ENABLED is parameterized via a build argument rather than hardcoded to 1, creating a potential FIPS compliance gap if the build argument defaults to 0.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfiles/Dockerfile.konflux:61",
+          "excerpt": ""
+        }
+      ],
+      "reasoning": "Line 58 hardcodes CGO_ENABLED=1 for the manager binary ensuring dynamic linking with system OpenSSL, but line 61 uses CGO_ENABLED=${CGO_ENABLED} for cloudmanager. If the build arg is not set or defaults to 0, the cloudmanager binary would statically link Go's pure crypto implementation, bypassing FIPS-validated OpenSSL.",
+      "applicability": "component",
+      "confidence": "medium",
+      "unknowns": [],
+      "counterevidence": [],
+      "suggested_validation": "",
+      "validation_status": "pending"
+    }
+  ],
+  "metadata": {}
+}

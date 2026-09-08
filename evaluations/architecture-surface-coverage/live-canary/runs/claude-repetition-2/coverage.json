@@ -1,0 +1,434 @@
+{
+  "applicability_observations": [],
+  "component": "rhods-operator",
+  "component_roles": [
+    "operator",
+    "service"
+  ],
+  "inventory_id": "0c76c94c9c8965db8a320de7dae839d50d5d1351dd86971677e03b15f8334ca1",
+  "observed_reads": [
+    {
+      "line_range": "478-622",
+      "outcome": "observed-by-harness",
+      "path": "cmd/main.go"
+    },
+    {
+      "line_range": "1-unknown",
+      "outcome": "observed-by-harness",
+      "path": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml"
+    },
+    {
+      "line_range": "48-87",
+      "outcome": "observed-by-harness",
+      "path": "internal/controller/services/auth/auth_controller.go"
+    },
+    {
+      "line_range": "25-74",
+      "outcome": "observed-by-harness",
+      "path": "cmd/manifest-tools/pkg/applier/olm.go"
+    },
+    {
+      "line_range": "55-79",
+      "outcome": "observed-by-harness",
+      "path": "Dockerfiles/Dockerfile.konflux"
+    },
+    {
+      "line_range": "275-394",
+      "outcome": "observed-by-harness",
+      "path": "internal/controller/services/gateway/gateway_controller_actions.go"
+    }
+  ],
+  "read_observation": {
+    "source": "harness-telemetry",
+    "status": "available"
+  },
+  "schema_version": "architecture-surface-coverage/v1",
+  "summary": {
+    "documented": 2,
+    "not_applicable": 0,
+    "seeded": 7,
+    "unresolved": 5
+  },
+  "surfaces": [
+    {
+      "applicability": {
+        "basis": "Analyzer webhook or admission authentication evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "501",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "config/default/manager_webhook_patch.yaml"
+        },
+        {
+          "line_range": "22",
+          "origin": "analyzer",
+          "path": "internal/webhook/dashboard/validating_acceleratorprofile.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "authentication.admission-serving-identity",
+      "parent_category": "authentication",
+      "priority": "high",
+      "question": "What admission behavior is served, and what establishes the webhook server identity?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "What admission behavior is served, and what establishes the webhook server identity?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer gateway, OAuth, OIDC, or auth-proxy signal.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml"
+        },
+        {
+          "line_range": "68",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "line_range": "72",
+          "origin": "analyzer",
+          "path": "internal/controller/datasciencecluster/datasciencecluster_controller.go"
+        },
+        {
+          "line_range": "60",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "line_range": "77",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml"
+        },
+        {
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "fact_identity": "gateway service layer implements OIDC authentication through oauth2-proxy with configurable K8s token validation and optional external provider CA",
+        "kind": "section",
+        "section": "Architectural Analysis"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml:1-127"
+        },
+        {
+          "kind": "source-read",
+          "reference": "internal/controller/services/gateway/gateway_controller_actions.go:276-394"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "authentication.gateway-modes",
+      "parent_category": "authentication",
+      "priority": "required",
+      "question": "How do integrated OAuth, external OIDC, and externally managed authentication change gateway behavior?",
+      "reason": "The GatewayConfig CR drives authentication mode selection. When Spec.OIDC is set, the kube-auth-proxy uses the specified OIDC issuer URL via oauth2-proxy. K8s service account token validation is enabled by default (EnableK8sTokenValidation). External OIDC providers are supported through ProviderCASecretName and VerifyProviderCertificate fields. The proxy passes authorization headers to upstream, operates with TLS termination using configurable min version and cipher suites, and supports TokenReview rate limiting.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer identifies an operator-manager metrics serving surface.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "485-500",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "line_range": "3",
+          "origin": "analyzer",
+          "path": "config/default/metrics_service_patch.yaml"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "config/default/manager_webhook_patch.yaml"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "authentication.metrics-enforcement",
+      "parent_category": "authentication",
+      "priority": "required",
+      "question": "When and where are the operator metrics endpoint's authentication and authorization filters enforced?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "When and where are the operator metrics endpoint's authentication and authorization filters enforced?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer source evidence contains a build, packaging, crypto, provider, or TLS signal. Static presence makes applicability uncertain and does not establish runtime FIPS compliance.",
+        "evidence": [],
+        "status": "uncertain"
+      },
+      "candidate_locations": [
+        {
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "fact_identity": "manager uses GOEXPERIMENT=strictfipsruntime with CGO_ENABLED=1 on UBI9-minimal-pqc; cloudmanager CGO_ENABLED is parameterized",
+        "kind": "section",
+        "section": "Security > FIPS Compliance"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "Dockerfiles/Dockerfile.konflux:58"
+        },
+        {
+          "kind": "source-read",
+          "reference": "Dockerfiles/Dockerfile.konflux:61"
+        },
+        {
+          "kind": "source-read",
+          "reference": "Dockerfiles/Dockerfile.konflux:63"
+        },
+        {
+          "kind": "source-read",
+          "reference": "cmd/main.go:478"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "compliance.runtime-fips",
+      "parent_category": "fips_compliance",
+      "priority": "required",
+      "question": "Which build or packaging signals exist, and what source evidence establishes or limits runtime FIPS claims?",
+      "reason": "Manager binary built with CGO_ENABLED=1, GOEXPERIMENT=strictfipsruntime, -tags rhoai on UBI9-minimal-pqc base (OpenSSL present). Cloudmanager uses -tags strictfipsruntime but CGO_ENABLED is parameterized via build arg rather than hardcoded. Application-level TLS uses crypto/tls with OpenShift APIServer TLS profile. FIPS limitation documented for cloudmanager's conditional CGO_ENABLED and unverified kube-auth-proxy image.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer records one or more Namespace watch candidates.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "63-69",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "70-76",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "140-150",
+          "origin": "analyzer",
+          "path": "internal/controller/components/kueue/kueue_controller.go"
+        },
+        {
+          "line_range": "140",
+          "origin": "analyzer",
+          "path": "internal/controller/components/kueue/kueue_controller.go"
+        },
+        {
+          "line_range": "63",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "70",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "controller.named-resource-watches",
+      "parent_category": "internal_dependencies",
+      "priority": "required",
+      "question": "Which literal resource or namespace names constrain each controller watch, and which controller owns the watch?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "Which literal resource or namespace names constrain each controller watch, and which controller owns the watch?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer runtime-client or external-connection evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "58",
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/pkg/applier/olm.go"
+        },
+        {
+          "line_range": "63",
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/pkg/applier/olm.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/go.mod"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "dependencies.outbound-credentials",
+      "parent_category": "integration_points",
+      "priority": "high",
+      "question": "Which outbound clients are used, and how are their target, credentials, TLS, and failure boundaries configured?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "Which outbound clients are used, and how are their target, credentials, TLS, and failure boundaries configured?"
+    },
+    {
+      "applicability": {
+        "basis": "Operator entrypoint or TLS configuration evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "95",
+          "origin": "analyzer",
+          "path": "Dockerfiles/Dockerfile"
+        },
+        {
+          "line_range": "79",
+          "origin": "analyzer",
+          "path": "Dockerfiles/Dockerfile.konflux"
+        },
+        {
+          "line_range": "301",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "lifecycle.configuration-tls",
+      "parent_category": "architecture_components",
+      "priority": "high",
+      "question": "What initialization ordering and TLS-profile lifecycle govern the operator's serving surfaces?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "What initialization ordering and TLS-profile lifecycle govern the operator's serving surfaces?"
+    }
+  ],
+  "validation": {
+    "coverage_accounting": {
+      "duplicates": [],
+      "missing": [],
+      "returned": 7,
+      "seeded": 7,
+      "valid": 2
+    },
+    "status": "warning",
+    "structural_errors": [
+      "surface[0] authentication.admission-serving-identity: analyzer evidence JSON pointer does not exist",
+      "surface[0] authentication.admission-serving-identity: table document reference has unknown expected columns: enforcement_point",
+      "surface[2] authentication.metrics-enforcement: analyzer evidence JSON pointer does not exist",
+      "surface[2] authentication.metrics-enforcement: table document reference has unknown expected columns: enforcement_point",
+      "surface[4] controller.named-resource-watches: analyzer evidence JSON pointer does not exist",
+      "surface[4] controller.named-resource-watches: analyzer evidence JSON pointer does not exist",
+      "surface[5] dependencies.outbound-credentials: analyzer evidence JSON pointer does not exist",
+      "surface[5] dependencies.outbound-credentials: table document reference has unknown expected columns: enforcement_point",
+      "surface[6] lifecycle.configuration-tls: analyzer evidence JSON pointer does not exist"
+    ],
+    "structural_valid": false,
+    "unresolved_safety_critical_surfaces": [
+      "authentication.admission-serving-identity",
+      "authentication.metrics-enforcement",
+      "controller.named-resource-watches"
+    ]
+  },
+  "validator_findings": [
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "seeded surface record failed coverage-contract validation",
+      "surface_id": "authentication.admission-serving-identity"
+    },
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "seeded surface record failed coverage-contract validation",
+      "surface_id": "authentication.metrics-enforcement"
+    },
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "seeded surface record failed coverage-contract validation",
+      "surface_id": "controller.named-resource-watches"
+    },
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "seeded surface record failed coverage-contract validation",
+      "surface_id": "dependencies.outbound-credentials"
+    },
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "seeded surface record failed coverage-contract validation",
+      "surface_id": "lifecycle.configuration-tls"
+    },
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "document reference is absent from the promoted document",
+      "surface_id": "authentication.gateway-modes"
+    },
+    {
+      "classification": "unverifiable_coverage_claim",
+      "message": "document reference is absent from the promoted document",
+      "surface_id": "compliance.runtime-fips"
+    }
+  ]
+}

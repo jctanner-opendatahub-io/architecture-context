@@ -136,40 +136,6 @@ func deterministicIntegrationPoints(document model.Document) []string {
 	return points
 }
 
-func deterministicArchitecturalAnalysis(document model.Document) []string {
-	analysis := []string{
-		fmt.Sprintf(
-			"**Deployment shape:** The normalized deployment type is %s, represented by %s and %s.",
-			proseFallback(document.Metadata.DeploymentType, "Unknown"),
-			countPhrase(len(document.ArchitectureComponents), "architecture component"),
-			countPhrase(len(document.Services), "service identity"),
-		) + sourceCitation(document, "Architecture Components", "Network Architecture"),
-	}
-	if len(document.CRDs)+len(document.ClusterRoles)+len(document.RoleBindings) > 0 {
-		analysis = append(analysis, fmt.Sprintf(
-			"**Control-plane surface:** The document contains %s, %s, and %s, exposing the extracted Kubernetes API and authorization footprint without inferring permissions beyond listed rules.",
-			countPhrase(len(document.CRDs), "CRD identity"),
-			countPhrase(len(document.ClusterRoles), "RBAC rule"),
-			countPhrase(len(document.RoleBindings), "role binding"),
-		)+sourceCitation(document, "APIs Exposed", "Security"))
-	}
-	if len(document.Authentication)+len(document.Secrets)+len(document.Ingress)+len(document.Egress) > 0 {
-		analysis = append(analysis, fmt.Sprintf(
-			"**Security and network evidence:** %s, %s, %s, and %s capture the known enforcement, credential, exposure, and outbound boundaries. Empty or Unknown cells are not promoted into claims.",
-			countPhrase(len(document.Authentication), "authentication rule"),
-			countPhrase(len(document.Secrets), "secret reference"),
-			countPhrase(len(document.Ingress), "ingress identity"),
-			countPhrase(len(document.Egress), "egress identity"),
-		)+sourceCitation(document, "Security", "Network Architecture"))
-	}
-	if partial := partialCoverageNames(document.DataCoverage); len(partial) > 0 {
-		analysis = append(analysis, "**Evidence boundary:** Analyzer coverage is partial for "+joinedList(partial)+". Dynamic behavior outside the extracted literal and manifest evidence is not asserted."+sourceCitation(document, "Architecture Components", "APIs Exposed", "Network Architecture", "Integration Points", "Security"))
-	} else {
-		analysis = append(analysis, "**Evidence boundary:** The analysis is constrained to structured facts and inline source citations in this document; behavior not represented there is not asserted."+sourceCitation(document, "Architecture Components", "APIs Exposed", "Network Architecture", "Integration Points", "Security"))
-	}
-	return analysis
-}
-
 // sourceCitation turns the normalized section-to-source index into a small,
 // deterministic provenance marker for narrative claims. It intentionally
 // limits the number of files so generated prose remains useful to a synthesis
@@ -289,20 +255,6 @@ func integrationNames(document model.Document) []string {
 	}
 	if len(document.InternalDependencies)+len(document.IntegrationPoints)+len(document.Egress) > len(names) {
 		names = append(names, "additional destinations listed in the tables")
-	}
-	return names
-}
-
-func partialCoverageNames(coverage map[string]string) []string {
-	var names []string
-	for name, detail := range coverage {
-		if strings.HasPrefix(strings.ToLower(strings.TrimSpace(detail)), "partial:") {
-			names = append(names, proseValue(name))
-		}
-	}
-	sort.Strings(names)
-	if len(names) > synthesisListLimit {
-		names = append(names[:synthesisListLimit], countPhrase(len(names)-synthesisListLimit, "additional surface"))
 	}
 	return names
 }

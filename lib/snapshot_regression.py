@@ -22,7 +22,7 @@ from lib.architecture_baseline import (
     parse_component_markdown,
 )
 
-_SKIP_FILES = frozenset({"PLATFORM.md", "README.md"})
+_SKIP_FILES = frozenset({"INDEX.md", "PLATFORM.md", "README.md"})
 
 DEFAULT_BASELINE = "architecture/rhoai.next.bak"
 DEFAULT_CANDIDATE = "architecture/rhoai.next"

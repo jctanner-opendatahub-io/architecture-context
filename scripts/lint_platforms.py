@@ -7,6 +7,7 @@ from pathlib import Path
 import yaml
 
 PLATFORMS_FILE = Path(__file__).resolve().parent.parent / "platforms.yaml"
+INTEGRATION_STATUSES = {"current", "planned", "not-integrated", "unknown"}
 
 KNOWN_KEYS = {
     "suffix",
@@ -19,9 +20,33 @@ KNOWN_KEYS = {
     "exclude_components",
     "include_components",
     "component_overrides",
+    "integration_status",
     "post_checkout",
     "sync_config",
+    "reuse_from",
 }
+
+
+def _check_integration_status(value, label, errors):
+    if not isinstance(value, str) or value not in INTEGRATION_STATUSES:
+        expected = ", ".join(sorted(INTEGRATION_STATUSES))
+        errors.append(f"'{label}' must be one of: {expected}")
+
+
+def _check_integration_status_map(value, errors):
+    if not isinstance(value, dict):
+        errors.append(
+            "'integration_status' must be a mapping,"
+            f" got {type(value).__name__}"
+        )
+        return
+    for alias, status in value.items():
+        if not isinstance(alias, str) or not alias.strip():
+            errors.append("'integration_status' keys must be non-empty strings")
+            continue
+        _check_integration_status(
+            status, f"integration_status.{alias}", errors
+        )
 
 
 def _check_str(value, label, errors):
@@ -178,6 +203,12 @@ def _check_include_components(value, errors):
                     f"'include_components[{i}].{req}'"
                     " must be a string"
                 )
+        if "integration_status" in entry:
+            _check_integration_status(
+                entry["integration_status"],
+                f"include_components[{i}].integration_status",
+                errors,
+            )
 
 
 def _check_post_checkout(value, errors):
@@ -274,9 +305,14 @@ def validate_platform(name: str, config: dict) -> list[str]:
             f"unrecognized keys: {', '.join(sorted(unknown))}"
         )
 
-    for key in ("suffix", "branch", "version"):
+    for key in ("suffix", "branch", "version", "reuse_from"):
         if key in config:
             _check_str(config[key], key, errors)
+
+    if config.get("reuse_from") == name:
+        errors.append("'reuse_from' must not reference the same platform")
+    if isinstance(config.get("reuse_from"), str) and not config["reuse_from"].strip():
+        errors.append("'reuse_from' must be a non-empty platform name")
 
     for key in ("orgs", "exclude_repos", "exclude_components"):
         if key in config:
@@ -290,6 +326,9 @@ def validate_platform(name: str, config: dict) -> list[str]:
 
     if "include_components" in config:
         _check_include_components(config["include_components"], errors)
+
+    if "integration_status" in config:
+        _check_integration_status_map(config["integration_status"], errors)
 
     if "component_overrides" in config:
         co = config["component_overrides"]
@@ -305,6 +344,12 @@ def validate_platform(name: str, config: dict) -> list[str]:
                         f"'component_overrides.{k}'"
                         " must be a mapping"
                     )
+                elif "integration_status" in v:
+                    _check_integration_status(
+                        v["integration_status"],
+                        f"component_overrides.{k}.integration_status",
+                        errors,
+                    )
 
     if "post_checkout" in config:
         _check_post_checkout(config["post_checkout"], errors)
@@ -312,6 +357,52 @@ def validate_platform(name: str, config: dict) -> list[str]:
     if "sync_config" in config:
         _check_sync_config(config["sync_config"], errors)
 
+    return errors
+
+
+def validate_reuse_graph(configurations: dict) -> list[str]:
+    """Validate explicit predecessor references without changing live config."""
+
+    errors: list[str] = []
+    platforms = {
+        name: config
+        for name, config in configurations.items()
+        if isinstance(name, str) and not name.startswith("_")
+    }
+    for name, config in platforms.items():
+        if not isinstance(config, dict):
+            continue
+        predecessor = config.get("reuse_from")
+        if predecessor is None or not isinstance(predecessor, str):
+            continue
+        predecessor = predecessor.strip()
+        if not predecessor:
+            continue
+        if predecessor not in platforms:
+            errors.append(
+                f"{name}: 'reuse_from' references missing platform {predecessor!r}"
+            )
+
+    visited: set[str] = set()
+    for start in sorted(platforms):
+        if start in visited:
+            continue
+        chain: list[str] = []
+        current = start
+        while current in platforms and current not in visited:
+            if current in chain:
+                cycle = chain[chain.index(current):] + [current]
+                errors.append("reuse_from cycle detected: " + " -> ".join(cycle))
+                break
+            chain.append(current)
+            config = platforms[current]
+            if not isinstance(config, dict):
+                break
+            predecessor = config.get("reuse_from")
+            if not isinstance(predecessor, str) or not predecessor.strip():
+                break
+            current = predecessor.strip()
+        visited.update(chain)
     return errors
 
 
@@ -343,6 +434,11 @@ def main() -> int:
             for e in errors:
                 print(f"  - {e}")
             total_errors += len(errors)
+
+    graph_errors = validate_reuse_graph(data)
+    for error in graph_errors:
+        print(f"reuse graph: {error}")
+    total_errors += len(graph_errors)
 
     if total_errors:
         print(

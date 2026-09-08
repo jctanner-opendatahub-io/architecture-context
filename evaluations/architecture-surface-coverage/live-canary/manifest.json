@@ -1,0 +1,368 @@
+{
+  "canary_id": "rhods-operator-repeated-live-surface-canary-v1",
+  "expected_claims": {
+    "claim_count": 7,
+    "manifest": "experiment.json",
+    "manifest_sha256": "ecd99e39f230c2ba1e3df5d3ced97ae0368e68a61add72bb5e001ff13f3af1a1",
+    "surface_count": 4
+  },
+  "historical_comparison": {
+    "comparison_only": true,
+    "matched_live_baseline": false,
+    "report": "report.json",
+    "report_sha256": "50cb1d83301c429d0fc609d00d65196118810ce250a7728f63faaef2bc048135"
+  },
+  "inputs": {
+    "analyzer_architecture": {
+      "path": "live-canary/inputs/analyzer-architecture.md",
+      "sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30"
+    },
+    "analyzer_binary_sha256": "d13d83d5229a6a708507a8932353ce10fb281b1af8c4fe125a94d2a8d34106b8",
+    "analyzer_synthesis_context": {
+      "path": "live-canary/inputs/analyzer-synthesis-context.md",
+      "sha256": "4984de857f3dccad9b2541f7f7ae90010b19a5fae750e5a1b286bf9b0cde7dae"
+    },
+    "component_architecture": {
+      "path": "live-canary/inputs/component-architecture.json",
+      "sha256": "e3f697d7f7e38ed5a93e50df4919158f8a566ebfe8cd79ac0d618dccfb72285e"
+    },
+    "component_map": {
+      "path": "live-canary/inputs/component-map.json",
+      "sha256": "8094468a14cb01b447d01b7d215f834b172e7532a5f5e114a0aeb5c95d7d2b73"
+    }
+  },
+  "recorded_date": "2026-09-05",
+  "runs": [
+    {
+      "artifacts": {
+        "candidate.md": {
+          "path": "live-canary/runs/claude-repetition-1/candidate.md",
+          "sha256": "a5284d76b38209a76665908556f01bbb0ce35d05bc2f4a2fad48c76ab90787e1"
+        },
+        "coverage-invalid.json": {
+          "path": "live-canary/runs/claude-repetition-1/coverage-invalid.json",
+          "sha256": "1f0266250252133e37018efaf4bf419a77f30b7b17e37f8423a2818d570eff5a"
+        },
+        "coverage.json": {
+          "path": "live-canary/runs/claude-repetition-1/coverage.json",
+          "sha256": "6acd2f1626605a7493feb161a4e0d34ece058b2512a68f58b37ebf8336ee924b"
+        },
+        "input-manifest.json": {
+          "path": "live-canary/runs/claude-repetition-1/input-manifest.json",
+          "sha256": "97c083aafe50f7e127cc1add177133a28e09ae19823be5d859613a02dd12c1c4"
+        },
+        "insights.json": {
+          "path": "live-canary/runs/claude-repetition-1/insights.json",
+          "sha256": "4ddf1eee2e6da50c98da7be77db96761cbe30a41b8cba21be4c5a0d19f768db5"
+        },
+        "invocation.txt": {
+          "path": "live-canary/runs/claude-repetition-1/invocation.txt",
+          "sha256": "b35a3421a45562f1b5308ff4c178739beaefdaefe3ede70058636551c5e6601b"
+        },
+        "merge.json": {
+          "path": "live-canary/runs/claude-repetition-1/merge.json",
+          "sha256": "561c570ea0eb111ba83145908bbd149851f92c5655434691023059f3b0199f7a"
+        },
+        "patch.json": {
+          "path": "live-canary/runs/claude-repetition-1/patch.json",
+          "sha256": "3baacef544a12d1b9d9d1c4b7814154a8093deeddcd7a7eef4551395f00ee85d"
+        },
+        "preseed.md": {
+          "path": "live-canary/runs/claude-repetition-1/preseed.md",
+          "sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30"
+        },
+        "promoted.md": {
+          "path": "live-canary/runs/claude-repetition-1/promoted.md",
+          "sha256": "9ce6f21a96cae0f4d7603eedb26e8b1ca553c9171f64bcb90c9735a422898b0f"
+        },
+        "run.json": {
+          "path": "live-canary/runs/claude-repetition-1/run.json",
+          "sha256": "b42486876aedd88ce3d4f45c6d53e7102edd363b23fc482ee90f1514b0870c1c"
+        },
+        "source-read-justifications.json": {
+          "path": "live-canary/runs/claude-repetition-1/source-read-justifications.json",
+          "sha256": "c0665ccadf491b334d8f3fb197e14df9716764a39aa4d52217cccd9c17e7ff23"
+        },
+        "surface-inventory.json": {
+          "path": "live-canary/runs/claude-repetition-1/surface-inventory.json",
+          "sha256": "805bfeeac357e55e6f3f681bdde7913e5389c668b88cd348f1d1f24d4c47f18e"
+        }
+      },
+      "harness": "claude",
+      "limits": {
+        "max_budget_usd": 20,
+        "single_turn": false,
+        "wall_clock_seconds": 1800
+      },
+      "model": "claude-opus-4-6",
+      "observed_input_hashes": {
+        "analyzer_architecture_sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30",
+        "analyzer_binary_sha256": "d13d83d5229a6a708507a8932353ce10fb281b1af8c4fe125a94d2a8d34106b8",
+        "analyzer_synthesis_context_sha256": "4984de857f3dccad9b2541f7f7ae90010b19a5fae750e5a1b286bf9b0cde7dae",
+        "component_architecture_sha256": "e3f697d7f7e38ed5a93e50df4919158f8a566ebfe8cd79ac0d618dccfb72285e",
+        "component_map_sha256": "8094468a14cb01b447d01b7d215f834b172e7532a5f5e114a0aeb5c95d7d2b73"
+      },
+      "repetition": 1,
+      "run_id": "claude-repetition-1",
+      "source_checkout": {
+        "clean": true,
+        "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+      }
+    },
+    {
+      "artifacts": {
+        "candidate.md": {
+          "path": "live-canary/runs/claude-repetition-2/candidate.md",
+          "sha256": "14f3ce565d091b6ece6491061cdc33aa5b273ce5e8cf87efa8c17dd71ab9dedb"
+        },
+        "coverage-invalid.json": {
+          "path": "live-canary/runs/claude-repetition-2/coverage-invalid.json",
+          "sha256": "4c45b0d976771984388d98a5d4df121cc459d6a0450462e310e895fa48da1997"
+        },
+        "coverage.json": {
+          "path": "live-canary/runs/claude-repetition-2/coverage.json",
+          "sha256": "e168f8dd837ec5ae5c24861b8b659593deb25df90e3cee429b72415849a8fbf7"
+        },
+        "input-manifest.json": {
+          "path": "live-canary/runs/claude-repetition-2/input-manifest.json",
+          "sha256": "1325355080edd58679c9b46ddb2d15787f4dabb433c4b52c4605920ff173609f"
+        },
+        "insights.json": {
+          "path": "live-canary/runs/claude-repetition-2/insights.json",
+          "sha256": "cf1edd25f73934e746c1f2d149956362069752d72788df27a39f8bec284e79a1"
+        },
+        "invocation.txt": {
+          "path": "live-canary/runs/claude-repetition-2/invocation.txt",
+          "sha256": "b35a3421a45562f1b5308ff4c178739beaefdaefe3ede70058636551c5e6601b"
+        },
+        "merge.json": {
+          "path": "live-canary/runs/claude-repetition-2/merge.json",
+          "sha256": "1fe1981c0abe93c799c54212270c4a7d8fdda97f979836b864bc0902f077dcab"
+        },
+        "patch.json": {
+          "path": "live-canary/runs/claude-repetition-2/patch.json",
+          "sha256": "f28ffa9ac79c323d0639ee09837999c2f34788fcb33cb29122affa69d5b98514"
+        },
+        "preseed.md": {
+          "path": "live-canary/runs/claude-repetition-2/preseed.md",
+          "sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30"
+        },
+        "promoted.md": {
+          "path": "live-canary/runs/claude-repetition-2/promoted.md",
+          "sha256": "82456df98afeddbcd5a5d0e3240cdd6f8d23641fd3989ad156996d3c4435b9fd"
+        },
+        "run.json": {
+          "path": "live-canary/runs/claude-repetition-2/run.json",
+          "sha256": "b82f38a8a3bb712aad2d5a050843d8a2253d6fe170f908e9502363d6b5fda19a"
+        },
+        "source-read-justifications.json": {
+          "path": "live-canary/runs/claude-repetition-2/source-read-justifications.json",
+          "sha256": "2cae5056950c2a115ee59b28c975e0640612580903ebc941e1eb505bb688cb02"
+        },
+        "surface-inventory.json": {
+          "path": "live-canary/runs/claude-repetition-2/surface-inventory.json",
+          "sha256": "805bfeeac357e55e6f3f681bdde7913e5389c668b88cd348f1d1f24d4c47f18e"
+        }
+      },
+      "harness": "claude",
+      "limits": {
+        "max_budget_usd": 20,
+        "single_turn": false,
+        "wall_clock_seconds": 1800
+      },
+      "model": "claude-opus-4-6",
+      "observed_input_hashes": {
+        "analyzer_architecture_sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30",
+        "analyzer_binary_sha256": "d13d83d5229a6a708507a8932353ce10fb281b1af8c4fe125a94d2a8d34106b8",
+        "analyzer_synthesis_context_sha256": "4984de857f3dccad9b2541f7f7ae90010b19a5fae750e5a1b286bf9b0cde7dae",
+        "component_architecture_sha256": "e3f697d7f7e38ed5a93e50df4919158f8a566ebfe8cd79ac0d618dccfb72285e",
+        "component_map_sha256": "8094468a14cb01b447d01b7d215f834b172e7532a5f5e114a0aeb5c95d7d2b73"
+      },
+      "repetition": 2,
+      "run_id": "claude-repetition-2",
+      "source_checkout": {
+        "clean": true,
+        "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+      }
+    },
+    {
+      "artifacts": {
+        "candidate.md": {
+          "path": "live-canary/runs/codex-repetition-1/candidate.md",
+          "sha256": "6c9abc42697c4f46d7ff74af7be2ac8c8d7be0c170217b20684475295f26a083"
+        },
+        "coverage.json": {
+          "path": "live-canary/runs/codex-repetition-1/coverage.json",
+          "sha256": "e9a2c00a70743361daba7bbd919147f24587484f019167073afb49e82354ca17"
+        },
+        "input-manifest.json": {
+          "path": "live-canary/runs/codex-repetition-1/input-manifest.json",
+          "sha256": "ec1a7e3b4b3f2cab8c58ec7ed35e4021af29955067ca05a1276f4d030185db4a"
+        },
+        "insights.json": {
+          "path": "live-canary/runs/codex-repetition-1/insights.json",
+          "sha256": "0d6b93cc4cc7d6463537a748dc49b410b25ea0006400c6907c21234701254e7e"
+        },
+        "invocation.txt": {
+          "path": "live-canary/runs/codex-repetition-1/invocation.txt",
+          "sha256": "00f5d108bf32a9d041f2702ad816eca9ab41af403a0b71a36b1f8410d268d357"
+        },
+        "merge.json": {
+          "path": "live-canary/runs/codex-repetition-1/merge.json",
+          "sha256": "38499c6900c32f9c201ffa2efe2b2ca99cd6c5c0e6e68d65b80e3164fe074e1b"
+        },
+        "patch.json": {
+          "path": "live-canary/runs/codex-repetition-1/patch.json",
+          "sha256": "07a499605cf09f4209357e36bd36fd41953daa8403a8fc718ad987db714f711d"
+        },
+        "preseed.md": {
+          "path": "live-canary/runs/codex-repetition-1/preseed.md",
+          "sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30"
+        },
+        "promoted.md": {
+          "path": "live-canary/runs/codex-repetition-1/promoted.md",
+          "sha256": "4b20effa674d2a3b76abd66d5335e0b9fb9308925fff4a7e4db59eea5b457e33"
+        },
+        "run.json": {
+          "path": "live-canary/runs/codex-repetition-1/run.json",
+          "sha256": "a16ef2d9522ff83d6f94dfab60d6d49d2e6689e266cac83e3602b492d551af13"
+        },
+        "source-read-justifications.json": {
+          "path": "live-canary/runs/codex-repetition-1/source-read-justifications.json",
+          "sha256": "178270f3b531bfb7f6fa7d65bfb3224cf744ddb83b78f621eccdbb3d008ca49f"
+        },
+        "surface-inventory.json": {
+          "path": "live-canary/runs/codex-repetition-1/surface-inventory.json",
+          "sha256": "805bfeeac357e55e6f3f681bdde7913e5389c668b88cd348f1d1f24d4c47f18e"
+        }
+      },
+      "harness": "codex",
+      "limits": {
+        "max_budget_usd": null,
+        "single_turn": true,
+        "wall_clock_seconds": 1800
+      },
+      "model": "gpt-5.6-sol",
+      "observed_input_hashes": {
+        "analyzer_architecture_sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30",
+        "analyzer_binary_sha256": "d13d83d5229a6a708507a8932353ce10fb281b1af8c4fe125a94d2a8d34106b8",
+        "analyzer_synthesis_context_sha256": "4984de857f3dccad9b2541f7f7ae90010b19a5fae750e5a1b286bf9b0cde7dae",
+        "component_architecture_sha256": "e3f697d7f7e38ed5a93e50df4919158f8a566ebfe8cd79ac0d618dccfb72285e",
+        "component_map_sha256": "8094468a14cb01b447d01b7d215f834b172e7532a5f5e114a0aeb5c95d7d2b73"
+      },
+      "repetition": 1,
+      "run_id": "codex-repetition-1",
+      "source_checkout": {
+        "clean": true,
+        "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+      }
+    },
+    {
+      "artifacts": {
+        "candidate.md": {
+          "path": "live-canary/runs/codex-repetition-2/candidate.md",
+          "sha256": "98f3f0762e1e4d0a249d63715982d2ffd3c4b9e239508b968f213aa5d52860c4"
+        },
+        "coverage-invalid.json": {
+          "path": "live-canary/runs/codex-repetition-2/coverage-invalid.json",
+          "sha256": "c684d03ae6a56722d0e5a2e433c73937945b51b4b5e02f8a64bb4836cbb10f12"
+        },
+        "coverage.json": {
+          "path": "live-canary/runs/codex-repetition-2/coverage.json",
+          "sha256": "6fc8cdb542dddc9aa48cc0c81fb7e79397bfb73e2887df373776e9949f0fb3a6"
+        },
+        "input-manifest.json": {
+          "path": "live-canary/runs/codex-repetition-2/input-manifest.json",
+          "sha256": "a6a640437f93863a051d2344a5e42de4b86c798867909f914756179deea8f601"
+        },
+        "insights.json": {
+          "path": "live-canary/runs/codex-repetition-2/insights.json",
+          "sha256": "146def1cc1158507b235bbf0b848c2a67dc193c98c5ef6703e1f6c0713031c87"
+        },
+        "invocation.txt": {
+          "path": "live-canary/runs/codex-repetition-2/invocation.txt",
+          "sha256": "00f5d108bf32a9d041f2702ad816eca9ab41af403a0b71a36b1f8410d268d357"
+        },
+        "merge.json": {
+          "path": "live-canary/runs/codex-repetition-2/merge.json",
+          "sha256": "38499c6900c32f9c201ffa2efe2b2ca99cd6c5c0e6e68d65b80e3164fe074e1b"
+        },
+        "patch.json": {
+          "path": "live-canary/runs/codex-repetition-2/patch.json",
+          "sha256": "07a499605cf09f4209357e36bd36fd41953daa8403a8fc718ad987db714f711d"
+        },
+        "preseed.md": {
+          "path": "live-canary/runs/codex-repetition-2/preseed.md",
+          "sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30"
+        },
+        "promoted.md": {
+          "path": "live-canary/runs/codex-repetition-2/promoted.md",
+          "sha256": "09cb776c2d1730db9f4526c499f7a4ce6c063337c9f73d2d5c4403f733301d94"
+        },
+        "run.json": {
+          "path": "live-canary/runs/codex-repetition-2/run.json",
+          "sha256": "34ec29d909246fb203b7b2fb2af1b85d3ad6d90fbc09330ba6d7762e5cfb8642"
+        },
+        "source-read-justifications.json": {
+          "path": "live-canary/runs/codex-repetition-2/source-read-justifications.json",
+          "sha256": "704c552e3e9264bec5d1cb665c0c52ec02c0cd992b75791ea756d3435797ef97"
+        },
+        "surface-inventory.json": {
+          "path": "live-canary/runs/codex-repetition-2/surface-inventory.json",
+          "sha256": "805bfeeac357e55e6f3f681bdde7913e5389c668b88cd348f1d1f24d4c47f18e"
+        }
+      },
+      "harness": "codex",
+      "limits": {
+        "max_budget_usd": null,
+        "single_turn": true,
+        "wall_clock_seconds": 1800
+      },
+      "model": "gpt-5.6-sol",
+      "observed_input_hashes": {
+        "analyzer_architecture_sha256": "ac0568f59f109da17f7fe7dc87a776bb21e60b8a7a1ca78351cd7dcc91ba6d30",
+        "analyzer_binary_sha256": "d13d83d5229a6a708507a8932353ce10fb281b1af8c4fe125a94d2a8d34106b8",
+        "analyzer_synthesis_context_sha256": "4984de857f3dccad9b2541f7f7ae90010b19a5fae750e5a1b286bf9b0cde7dae",
+        "component_architecture_sha256": "e3f697d7f7e38ed5a93e50df4919158f8a566ebfe8cd79ac0d618dccfb72285e",
+        "component_map_sha256": "8094468a14cb01b447d01b7d215f834b172e7532a5f5e114a0aeb5c95d7d2b73"
+      },
+      "repetition": 2,
+      "run_id": "codex-repetition-2",
+      "source_checkout": {
+        "clean": true,
+        "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+      }
+    }
+  ],
+  "schema_version": "architecture-surface-live-canary/v1",
+  "settings": {
+    "claude_auth": {
+      "api_provider": "firstParty",
+      "auth_method": "claude.ai",
+      "logged_in": true,
+      "vertex_environment_removed": [
+        "CLAUDE_CODE_USE_VERTEX",
+        "ANTHROPIC_VERTEX_PROJECT_ID",
+        "CLOUD_ML_REGION"
+      ]
+    },
+    "coverage_enforcement": "warning-only",
+    "file_budget": 6,
+    "historical_summary_synthesis_input": false,
+    "models": {
+      "claude": "claude-opus-4-6",
+      "codex": "gpt-5.6-sol"
+    },
+    "repetitions_per_model": 2,
+    "route": "partial",
+    "workers_enabled": false
+  },
+  "source_review": {
+    "path": "live-canary/source-review.json",
+    "sha256": "eea9d8ecf69c02142df635e4c3df40d58f330d079ed5194fb41ecf18447f1ae8"
+  },
+  "source": {
+    "repository": "https://github.com/red-hat-data-services/rhods-operator.git",
+    "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+  }
+}

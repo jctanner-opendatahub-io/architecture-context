@@ -2,13 +2,16 @@
 
 ## Status and objective
 
-Implementation and the architecture-only audit are complete and locally
-validated as of 2026-09-05. Rollout remains intentionally paused. The
-corrected offline canary passed review. Live-agent comparison was cancelled by
-user direction, so phase 5 uses deterministic source-fixture replays and a
-separate source review of two pinned, comparison-only files under
-`architecture/`. The resulting selection remains provisional; pipeline workers
-and global enforcement remain disabled pending a separate rollout decision.
+Implementation, the architecture-only audit, the analyzer refresh, and the
+version index are complete as of 2026-09-05. The approved repeated live canary
+ran, but its first independent review found a promotion failure and rejected
+the initial report. Independent re-review accepted the corrected report on
+2026-09-06; the canary result itself remains rejected.
+Rollout remains intentionally paused. The corrected offline canary remains a
+deterministic contract fixture and its two on-disk files remain comparison-only.
+The separate live canary used refreshed inputs and measured repeated behavior,
+cost, token use, reads, preservation, merge outcomes, and warning quality.
+Pipeline workers and global enforcement remain disabled under ADR-0023.
 
 The read-only rollout audit of the existing `architecture/` tree completed on
 2026-09-05. It measured the warning surface and recurring evidence gaps without
@@ -67,8 +70,9 @@ or authorized synthesis inputs.
 - Do not initially increase pipeline context limits, globally raise file budgets,
   or enable subagents inside component generation. Evaluate those changes only
   after measuring coverage. Implementation-time delegation below is separate.
-- Keep this independent of the pending JSON patch migration. Coverage evidence
-  may reference accepted changes through either supported patch format.
+- Keep this independent of the completed JSON Patch migration. Coverage
+  evidence may reference accepted changes through either supported patch
+  format.
 
 ## Implementation execution: Sol-led, multi-model
 
@@ -319,10 +323,11 @@ availability, nominated required surfaces, analyzer evidence capability, and a
 small prioritized follow-up list. Coverage remains warning-only and workers
 remain disabled.
 
-## Remaining work: checkpoint and rollout preparation
+## Follow-up work: checkpoint and rollout preparation
 
-The completed implementation and audit tasks remain done. The following work
-is pending, not evidence that rollout has been approved. Continue the Sol-led
+The completed implementation and audit tasks remain done. The remaining live
+gate is explicitly blocked; none of this work is evidence that rollout has been
+approved. Continue the Sol-led
 implementation/review protocol for code changes. This plan update authorizes
 neither commits nor live model runs, artifact regeneration, or policy changes.
 
@@ -349,6 +354,26 @@ independently review the change. Rerun the reproducible audit and report the
 nomination delta, without claiming that fewer nominations demonstrate better
 semantic recall. Close the FIPS bug only after its acceptance tests pass.
 
+Implementation and independent review completed on 2026-09-05. On the identical
+architecture fingerprint, source-linked runtime-FIPS nominations changed from
+149 to 97 and 52 evidence-free category records became explicit uncertain
+observations without nomination. The four required regression classes, audit
+aggregation, fingerprint guard, and byte reproduction pass.
+
+A pre-review edge-case pass subsequently split the 97 nominations into 90
+uncertain static-signal questions and seven applicable source-backed limitation
+questions. All retain uncertain claim support. It also covers category-level
+explicit negatives and common negative wording while refusing to seed an
+evidence-free negative category record.
+
+The fresh independent Sol review initially rejected three boundary classes:
+unsafe URI/drive sources and suppressed zero-fact negatives, cross-record
+provenance borrowing, and generic structured statuses becoming FIPS claims.
+After corrections and regressions, the final 64-test boundary matrix and
+byte-identical audit reproduction passed. The reviewer accepted the change with
+no blocking defects, so the task and bug are closed. The nomination delta remains
+planning-rule evidence rather than semantic-recall evidence.
+
 ### 2. Restore the repository-wide validation baseline
 
 Investigate the reported 12 pytest collection errors caused by absent legacy
@@ -362,6 +387,15 @@ The last handoff reported 65 latest focused tests, 137 earlier phase tests, and
 132 preservation tests with 3 skips, plus passing Go tests/lint and report
 reproduction. These are separate checkpoints, not additive totals or a claim
 that repository-wide validation is already clean.
+
+Completed on 2026-09-05. Commit `f8a6f6ff` had intentionally removed the two
+legacy benchmark trees, so their benchmark-only tests and launchers were
+explicitly retired rather than skipped or restored. Active telemetry and
+failure-proposal schemas moved to `schemas/`; surviving stale assertions were
+updated to current repository contracts. Full pytest now passes 829 tests with
+nine skips, full Ruff passes, and the repository test/lint targets pass across
+Python, all Go modules, overlays, platforms, and 901 architecture documents.
+ADR-0018 records the decision.
 
 ### 3. Refresh eligible analyzer artifacts and repeat the audit
 
@@ -379,13 +413,56 @@ documents unclassified until actual provenance supports reassignment. Refreshing
 analyzer JSON alone does not create agent coverage sidecars or establish
 generated-document quality.
 
+The architecture-only preflight completed on 2026-09-05. A deterministic
+[refresh input manifest](../../evaluations/architecture-surface-coverage/refresh-input-plan.md)
+pins nine artifacts (three each for operator, service, and manifest roles), puts
+`rhods-operator` first, and hashes every stored analyzer output plus comparison
+document. All nine artifacts pin an exact source commit and analyzer version
+`0.1.0-dev`, but none contains its source checkout, exact analyzer revision, or
+analyzer configuration; all also predate `behavioral_evidence`. Regeneration is
+recorded as not run under the current architecture-only constraint. No branch,
+tag, release, or other revision was substituted, and generated architecture was
+not modified. That record remains the before-state.
+
+The exact local checkouts were subsequently identified and authorized for use.
+All nine had the manifest origin, a clean worktree, and the exact pinned HEAD.
+The completed isolated refresh pins analyzer base
+`39209078846f15f1909373c106d2d665a907a509`, source-diff SHA-256
+`6376b9ffdf60420986f5d34b5f55ed145cf55eb85587a9028fe52fefa6a38c84`,
+full source-tree SHA-256
+`a6a9cb810949c275f7650074fe02b6adefe2495123a24348e70e015ba93bb6a7`,
+and binary SHA-256
+`d13d83d5229a6a708507a8932353ce10fb281b1af8c4fe125a94d2a8d34106b8`.
+All extraction, render, and schema stages completed for nine artifacts and 157
+schemas. The refreshed cohort has three source-observed records and 40 precise
+unresolved records; its six zero-record artifacts now explicitly encode an
+empty behavioral-evidence list. The JSON and Markdown audit artifacts reproduce
+byte-for-byte from retained structured outputs, and generated architecture was
+not modified.
+
+Independent review accepted the refresh and the empty-evidence encoder fix with
+no blocking findings. The reviewer independently verified the nine checkouts,
+recomputed provenance, rebuilt a byte-identical analyzer binary, reviewed the
+source facts and unresolved records, reproduced both audit files, and passed
+focused Python plus full arch-analyzer Go tests. An optional full independent
+`rhods-operator` static-analysis rerun was stopped after several quiet minutes,
+so the reviewer did not separately regenerate the 130-schema bundle or render
+hashes; the retained outputs and their provenance were independently verified.
+
 ### 4. Run the deferred repeated live canary
 
 Model access returning is necessary but not authorization: obtain explicit
 approval to lift the no-live-agent constraint, including models, repetition
-count, and run/cost limits. Use identical pinned source and refreshed analyzer
-inputs for Claude and Codex/Sol, separate output directories, and no historical
-summary as synthesis input. Start with rhods-operator before expanding the set.
+count, and run/cost limits. Use exactly `claude-opus-4-6` and `gpt-5.6-sol`
+against identical pinned source and refreshed analyzer inputs, separate output
+directories, and no historical summary as synthesis input. Do not use model
+aliases, defaults, fallbacks, or substitutions. Start with rhods-operator before
+expanding the set.
+
+The Claude arm must use first-party authentication. Explicitly remove
+`CLAUDE_CODE_USE_VERTEX`, `ANTHROPIC_VERTEX_PROJECT_ID`, and `CLOUD_ML_REGION`
+from the launch environment, leave the commented Vertex settings in `.env`
+untouched, and abort if the provider preflight is not first-party.
 
 Check promoted documents for conditional metrics enforcement, MaaS/Kuadrant
 watch behavior, OAuth/OIDC/external-auth distinctions, and accurate FIPS
@@ -394,6 +471,73 @@ warning quality, preservation, merge outcomes, source reads, latency, and token
 usage. Compare with historical observations without presenting them as a matched
 live baseline. Require independent review of the canary report. Retain the
 offline report's provisional status until new evidence supports an update.
+
+On 2026-09-05 the operator approved and the pipeline completed two sequential
+`rhods-operator` repetitions per model, 30 minutes per run, Claude capped at
+$20 per run/$40 aggregate, and two single-turn Codex runs with recorded usage.
+All four run records preserve the pinned input hashes and record a clean source
+checkout. The operator-run preflight recorded first-party `claude.ai`
+authentication, and each Claude launch removed the Vertex selectors. The
+durable set lacks a hashed provider-preflight transcript, so it cannot
+independently re-attest the provider after execution. Claude cost $3.768565 in
+aggregate; Codex reported 2,410,593 cumulative tokens.
+
+The corrected reproducible source-reviewed report records 1.00 required-surface
+recall in both Codex repetitions, but Codex repetition 1 also contains an
+unsupported initialization-ordering claim and therefore only repetition 2
+passes the zero-unsupported-claim gate. Both Claude repetitions scored 0.50
+required-surface recall: metrics and the named watches were stable, gateway
+modes were partial, and runtime FIPS was unsupported once and omitted once.
+Claude repetition 1 contains six unsupported claims after adding a missed
+gateway-proxy flow claim.
+
+All four promoted documents silently lost two analyzer-rendered non-resource
+RBAC rows even though the rows were present in each preseed and candidate. The
+merge reports continued to claim 274 unchanged rows and zero restorations.
+Claude repetition 2 also lost a candidate FIPS section, three coverage sidecars
+were structurally invalid, and 12 of 44 warning messages were false positives.
+The analyzer-row loss is a promotion failure under the approved stop condition;
+the canary is rejected and cannot support enforcement or a worker experiment.
+Independent re-review accepted the corrected report on 2026-09-06 after one
+additional dependency-provenance correction. The source review now cites the
+pinned controller-runtime `v0.24.1`, and the evaluator rejects stale
+dependency-qualified review references. The review independently verified all
+retained hashes, source findings, measurements, losses, computed gates,
+provenance limits, byte reproduction, validation results, clean checkout, and
+absence of tracked architecture changes.
+
+#### Promotion repair after the rejected canary
+
+Completed and independently accepted on 2026-09-06. The analyzer now retains
+Kubernetes non-resource URLs and renders a dedicated RBAC column. Promotion
+uses disjoint resource, non-resource, mixed, and conservative legacy target
+identities; verb-aware internal matching prevents collisions while preserving
+the v1 three-cell patch contract. Ambiguous v1 operations fail conservatively,
+and legacy rows never acquire URL facts that were not present or source-backed.
+
+Merge reconstruction retains opaque rows and final assembly checks every
+Markdown table row, including tables with no configured parser. Any lost row
+fails promotion with a durable `analyzer_row_lost_during_assembly` diagnostic.
+Arch-doc separately validates every configured synthesis subsection's actual
+H2 parent. Misplaced content is neither moved nor accepted: it produces a
+structured `synthesis_subsection_parent_mismatch` report that propagates through
+merge and the durable architecture run report.
+
+The isolated [promotion repair replay](../../evaluations/architecture-surface-coverage/promotion-repair-replay/report.md)
+uses the four retained preseed, candidate, and patch sets without modifying the
+original evidence. Three candidates promote with 276/276 mapped and 310/310
+total analyzer table rows preserved. Claude repetition 2 is rejected with no
+promoted output because FIPS Compliance is under Admission Webhooks instead of
+Security. The original canary remains rejected; warning-only coverage and
+disabled component workers are unchanged.
+
+A fresh exact `gpt-5.6-sol` reviewer drove fixes for unmapped-table checking,
+ambiguous RBAC v1 identities, operation reuse, and legacy table schema upgrade,
+then accepted the corrected code and replay with no remaining correctness
+findings. Repository-wide pytest passed 948 tests with 10 skips; `make test`,
+Ruff, all Go tests and lint/vet, overlay/platform validation, and validation of
+901 tracked architecture documents passed. No tracked architecture document
+changed and no live generation agent ran for the repair.
 
 ### 5. Make separate enforcement and worker decisions
 
@@ -404,13 +548,105 @@ whether remaining gaps justify a bounded worker experiment; approval for
 enforcement does not authorize workers or vice versa. Warning-only enforcement
 and disabled component workers remain the defaults unless explicitly changed.
 
+Decision completed on 2026-09-05. [ADR-0023](../decisions/ADR-0023-keep-surface-coverage-warning-only.md)
+records two separate no-rollout decisions. Coverage stays warning-only for all
+components, and subsection workers stay disabled. The decision defines
+source-reviewed recall, unsupported-claim, false-positive warning,
+preservation, merge, scope, and rollback gates for any future proposal. The
+current evidence does not meet those gates, so no component or policy changed.
+
 ### 6. Continue JSON Patch contract work
 
-Continue the existing pending JSON Patch task as the next merge-hardening
-implementation after this evidence-quality checkpoint. Do not make patch work
-implicitly contingent on approving rollout; a decision to retain warning-only
-coverage is a valid outcome. If live evaluation remains unavailable, record the
-deferment and request reprioritization rather than enabling policies by default.
+Completed on 2026-09-05. New evidence-gated runs emit a versioned
+`ARCHITECTURE_PATCH.json`; JSON Schema, route-budget, evidence, duplicate, key,
+and exact candidate/analyzer validation run at the merge boundary. Invalid or
+unmatched operations prevent final output and promotion. Historical Markdown
+remains a replay-only compatibility reader. A durable sanitized `odh-gitops`
+fixture applies five representative rows with zero rejection or restoration.
+ADR-0019 records the contract. Repository-wide pytest passes 843 tests with
+nine skips, and the repository test and lint gates pass.
+
+### 7. Generate a deterministic version index before diagrams
+
+Status: completed 2026-09-05. The non-agent `generate-index` pipeline phase renders
+`architecture/<version>/INDEX.md` from existing local artifacts. No LLM calls,
+source-checkout inspection, network fetches, or new synthesis are required.
+This is a low-cost Markdown navigation interface for current RFE/STRAT consumers,
+not a replacement for `arch-query` or another retrieval benchmark.
+
+**Ordering:** in the default full pipeline, run after component architecture and
+platform architecture generation, immediately before diagrams. The index links
+to available component documents and `PLATFORM.md`; it explains where to look,
+while `PLATFORM.md` explains the platform. Diagram generation may use the index
+for navigation but must use the linked evidence for substantive claims. Index
+generation must not invoke diagrams or any other agent phase.
+
+Expose an independently runnable `generate-index` phase for an existing version
+directory. Preserve explicitly selected pipeline phases rather than silently
+adding agent work. For targeted component runs, rebuild the version-wide index
+from the complete map and available artifacts, not just the selected component.
+An index can be generated after discovery with pending-document entries, but
+the required full-pipeline refresh uses the final promoted artifacts.
+
+**Inputs and content:**
+
+- Use `component-map.json`, platform configuration, available analyzer metadata,
+  and promoted document metadata/headings. Define deterministic precedence and
+  safe fallbacks; a missing description stays unavailable instead of triggering
+  a model call. Do not read arbitrary source files to fill gaps.
+- List canonical component aliases, including prefixes such as `praxis-`, a
+  short existing description when available, component type, and relative links
+  to documents that actually exist. Clearly distinguish available from pending
+  documentation and stale/mismatched metadata where detectable.
+- Keep inventory inclusion separate from current platform integration. Preserve
+  included-but-not-integrated components such as Praxis. Report integration as
+  unknown unless explicit version-scoped evidence establishes it; `extra_repos`
+  or inclusion alone does not establish shipped integration.
+- Show planned integration only from explicit configuration or active,
+  release-applicable human overlays, with attribution. Never turn a future
+  relationship into a current edge. Link relevant corrections rather than
+  attempting LLM interpretation of free-form overlay prose.
+- Add concise topic navigation from existing categories and actual document
+  sections (authentication, serving, training, pipelines, lifecycle). Where those
+  are insufficient, use a small explicit maintained mapping; do not infer
+  capabilities or relationships from repository names. Mark mappings as
+  navigation hints, not proof of behavior.
+- Link available coverage/limitations artifacts with their status. Missing
+  legacy sidecars mean unavailable telemetry, not missing behavior.
+
+**Implementation and validation:**
+
+- Render with stable ordering, proper Markdown escaping and relative-link
+  encoding, atomic replacement, and unchanged-input byte stability. Avoid
+  volatile timestamps and write only the requested index.
+- Treat `INDEX.md` as reserved version metadata: exclude it from component
+  enumeration, platform aggregation inputs, audits, lint rules that expect
+  component schemas, and component-diagram job discovery. Inventory components
+  must never include the index itself.
+- Do not create broken document/section links for pending outputs. Missing
+  optional artifacts remain explicit; malformed required inputs produce
+  actionable errors without replacing a valid existing index.
+- Test prefixes, non-integrated repositories, planned/unknown relationships,
+  missing documents/analyzers, legacy versions, overlay applicability, escaped
+  names, deterministic reruns, targeted/full phase ordering, and index exclusion.
+  Prove offline generation makes zero agent invocations.
+
+Acceptance: a useful, reproducible inventory/topic directory generated at
+negligible computation cost, without new claims or duplicated platform prose.
+The index primarily reduces consumer navigation overhead; it does not by itself
+reduce component synthesis cost. Existing rollout pauses and regeneration
+constraints remain in force; this planning addition does not authorize a live
+run or edits to generated architecture.
+
+Implementation completed without live generation. The standalone and selectable
+pipeline paths use only local structured artifacts; the full pipeline places the
+phase after platform generation and before diagrams, while targeted runs execute
+it once version-wide. Deterministic atomic rendering, relationship precedence,
+pending and legacy inputs, overlay applicability, aliases and escaping, metadata
+mismatches, reserved-file exclusions, and zero-agent execution have regression
+coverage. ADR-0024 records the contract. Repository-wide Python and Go tests,
+Ruff, Go lint/vet, lock validation, and repository data linters pass. Tracked
+generated architecture remains unchanged.
 
 ## Acceptance criteria
 
@@ -421,15 +657,15 @@ deferment and request reprioritization rather than enabling policies by default.
   from documented and not-applicable is evidence-backed.
 - Missing applicable surfaces and facts lost during merge produce actionable
   diagnostics even when architecture structure validation succeeds.
-- Tests run without live agents. Under the later user-directed no-live-agent
-  constraint, both harnesses are represented only by SHA-256-pinned on-disk
-  architecture files and the comparison explicitly records its measurement
-  limits.
+- Offline fixture tests run without live agents. The separately authorized live
+  canary retains SHA-256-pinned inputs and outputs for both exact-model arms and
+  records its provider, budget, telemetry, and cohort limits.
 - Existing table ownership, provenance, source-read justification, and promotion
   tests remain passing. Prior architecture documents are never synthesis inputs.
-- The completed offline canary records its measurement limits. Preservation,
-  cost, latency, and repeat reliability require the separately authorized live
-  follow-up; they are not established by deterministic fixture replay.
+- The completed offline canary records its measurement limits. The repeated
+  live follow-up separately measures preservation, cost or token use, latency,
+  reads, merge behavior, warning quality, and repeat reliability for the single
+  `rhods-operator` cohort.
 - Global enforcement and worker adoption require separate rollout decisions.
 
 ## Tracking
@@ -437,13 +673,18 @@ deferment and request reprioritization rather than enabling policies by default.
 - [Implementation task](../tasks/done/improve-architecture-surface-coverage.md).
 - [Resolved coverage bug](../bugs/fixed/architecture-synthesis-omits-behavioral-surfaces.md).
 - [Read-only rollout audit](../tasks/done/audit-architecture-surface-rollout.md).
-- [Open FIPS applicability bug](../bugs/open/surface-inventory-nominates-empty-fips-category.md).
-- [Checkpoint and validation baseline](../tasks/current/checkpoint-surface-work-and-restore-validation.md).
-- [Fix FIPS applicability](../tasks/pending/fix-surface-fips-applicability.md).
-- [Refresh analyzer evidence and audit](../tasks/pending/refresh-surface-analyzer-evidence.md).
-- [Deferred repeated live canary](../tasks/pending/run-surface-coverage-live-canary.md).
-- [Separate rollout decisions](../tasks/pending/decide-surface-coverage-rollout.md).
-- [JSON Patch contract](../tasks/pending/replace-markdown-change-record-with-json-patch.md).
+- [Resolved FIPS applicability bug](../bugs/fixed/surface-inventory-nominates-empty-fips-category.md).
+- [Checkpoint and validation baseline](../tasks/done/checkpoint-surface-work-and-restore-validation.md).
+- [Completed FIPS applicability review](../tasks/done/fix-surface-fips-applicability.md).
+- [Completed analyzer evidence refresh](../tasks/done/refresh-surface-analyzer-evidence.md).
+- [Completed repeated live canary](../tasks/done/run-surface-coverage-live-canary.md).
+- [Completed promotion repair](../tasks/done/repair-live-canary-promotion-defects.md).
+- [Fixed non-resource RBAC promotion](../bugs/fixed/promotion-drops-analyzer-non-resource-rbac-rows.md).
+- [Fixed synthesis-section loss reporting](../bugs/fixed/merge-report-omits-candidate-section-loss.md).
+- [Completed separate rollout decisions](../tasks/done/decide-surface-coverage-rollout.md).
+- [JSON Patch contract](../tasks/done/replace-markdown-change-record-with-json-patch.md).
+- [Deterministic version index](../tasks/done/generate-deterministic-version-index.md).
+- [Completion audit and remaining external gate](../notes/architecture-surface-coverage-completion-audit.md).
 
 Likely implementation areas are the summary skill and references,
 `lib/phases/architecture.py`, routing/context construction, `src/arch-analyzer`,

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "component": "rhods-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [
+    {
+      "id": "rhods-operator-auth-namespace-watches-003",
+      "claim": "The auth service controller uses targeted namespace watches for models-as-a-service and kuadrant-system rather than broad cluster-wide namespace watches, limiting reconciliation scope.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/services/auth/auth_controller.go:63-76",
+          "excerpt": ""
+        }
+      ],
+      "reasoning": "The auth controller watches only two specific namespaces using CreatedOrUpdatedOrDeletedNamed predicates. This design limits the blast radius of namespace events and ensures RBAC reconciliation is only triggered when the MaaS or Kuadrant namespaces change, rather than on any cluster namespace event.",
+      "applicability": "component",
+      "confidence": "high",
+      "unknowns": [],
+      "counterevidence": [],
+      "suggested_validation": "",
+      "validation_status": "pending"
+    },
+    {
+      "id": "rhods-operator-gateway-auth-modes-002",
+      "claim": "The gateway authentication architecture supports three configurable modes through the GatewayConfig CR: OIDC-based authentication, Kubernetes service account token validation, and optional external provider CA trust.",
+      "category": "pattern",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/services/gateway/gateway_controller_actions.go:356-394",
+          "excerpt": ""
+        },
+        {
+          "kind": "source-excerpt",
+          "location": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml:100-120",
+          "excerpt": ""
+        }
+      ],
+      "reasoning": "The GatewayConfig CR's OIDC, EnableK8sTokenValidation, ProviderCASecretName, and VerifyProviderCertificate fields create a composable authentication surface. The OIDC issuer URL is conditionally injected, K8s token validation defaults to enabled, and external provider CA support allows integration with enterprise identity providers. These are not mutually exclusive modes but layered capabilities.",
+      "applicability": "cross-component",
+      "confidence": "high",
+      "unknowns": [],
+      "counterevidence": [],
+      "suggested_validation": "",
+      "validation_status": "pending"
+    },
+    {
+      "id": "rhods-operator-fips-cloudmanager-gap-001",
+      "claim": "The cloudmanager binary's FIPS compliance is conditional on the CGO_ENABLED build argument rather than hardcoded, creating a build-pipeline-dependent FIPS boundary.",
+      "category": "risk",
+      "provenance": [
+        {
+          "kind": "source-excerpt",
+          "location": "Dockerfiles/Dockerfile.konflux:61",
+          "excerpt": ""
+        }
+      ],
+      "reasoning": "The manager binary explicitly sets CGO_ENABLED=1, but the cloudmanager build uses CGO_ENABLED=${CGO_ENABLED} which defaults to a build argument. If the pipeline does not set this to 1, the cloudmanager binary would be statically linked and use pure-Go crypto, failing FIPS validation despite having -tags strictfipsruntime.",
+      "applicability": "component",
+      "confidence": "high",
+      "unknowns": [],
+      "counterevidence": [],
+      "suggested_validation": "",
+      "validation_status": "pending"
+    }
+  ],
+  "metadata": {}
+}

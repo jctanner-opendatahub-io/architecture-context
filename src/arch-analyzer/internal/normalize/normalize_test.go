@@ -23,6 +23,28 @@ func TestInputMergesCRDVersionsIntoCanonicalRow(t *testing.T) {
 	}
 }
 
+func TestInputKeepsResourceAndNonResourceRBACRulesDistinct(t *testing.T) {
+	document := Input(model.Input{
+		RBAC: model.RBAC{ClusterRoles: []model.Role{{
+			Name: "reader",
+			Rules: []model.RoleRule{
+				{APIGroups: []string{""}, Resources: []string{"pods"}, Verbs: []string{"get"}},
+				{NonResourceURLs: []string{"/metrics"}, Verbs: []string{"get"}},
+			},
+		}}},
+	}, Options{})
+
+	if len(document.ClusterRoles) != 2 {
+		t.Fatalf("cluster roles = %#v, want distinct resource and non-resource rows", document.ClusterRoles)
+	}
+	if document.ClusterRoles[0].Resources != "pods" || document.ClusterRoles[0].NonResourceURLs != "" {
+		t.Fatalf("resource row = %#v", document.ClusterRoles[0])
+	}
+	if document.ClusterRoles[1].Resources != "" || document.ClusterRoles[1].NonResourceURLs != "/metrics" {
+		t.Fatalf("non-resource row = %#v", document.ClusterRoles[1])
+	}
+}
+
 func TestInputClassifiesCRDAPIRoles(t *testing.T) {
 	document := Input(model.Input{
 		Component: "kueue",

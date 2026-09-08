@@ -14,6 +14,7 @@ overlays/                             # Architecture updates between regeneratio
   NNNN-short-description.md
 architecture/
   rhoai-{version}/                  # One directory per analyzed version
+    INDEX.md                        # Deterministic inventory and topic navigation
     {component}.md                  # Component architecture document (structured markdown)
     PLATFORM.md                     # Aggregated platform-level architecture document
     diagrams/
@@ -68,6 +69,25 @@ Each component `.md` file follows a standardized structure with these sections. 
 - **To trace a request through the system**: read the `Data Flows` tables for step-by-step source→destination chains with ports and auth.
 - **To find what a component depends on**: read the `Dependencies` tables (both external and internal RHOAI).
 - **To find secrets a component uses or creates**: read the `Security > Secrets` table.
+
+## Version Navigation Index (`INDEX.md`)
+
+Newly indexed version directories contain an `INDEX.md` generated from local,
+structured artifacts. Start there to find canonical component aliases, available
+and pending component documents, topic headings, analyzer and coverage metadata,
+and release-applicable overlays.
+
+The index is a navigation document. Topic links point to headings that exist,
+but do not prove that a component has a capability or relationship. Inventory
+presence and `shipped` metadata are shown separately from integration status.
+Current, planned, and not-integrated labels require structured version-scoped
+metadata; absent evidence remains `unknown`. Planned status comes only from
+platform configuration or structured active overlay frontmatter. Follow the
+linked component document, `PLATFORM.md`, analyzer metadata, or overlay before
+using a substantive claim.
+
+Legacy version directories may not contain an index. In that case, use the
+component map and the individual Markdown files directly.
 
 ## Platform Architecture File (`PLATFORM.md`)
 
@@ -157,8 +177,11 @@ The number of components grows across versions (e.g., `rhoai-2.6` has ~10 compon
 ### "What components exist in version X?"
 
 ```
-ls architecture/rhoai-X/*.md
+cat architecture/rhoai-X/INDEX.md
 ```
+
+If that version predates index generation, inspect `component-map.json`; avoid
+counting `INDEX.md`, `PLATFORM.md`, or `README.md` as components.
 
 ### "What are the network ports for component Y in version X?"
 

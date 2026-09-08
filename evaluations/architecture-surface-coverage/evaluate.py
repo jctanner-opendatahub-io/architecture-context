@@ -124,7 +124,9 @@ def _validate_read_range(reference: object, label: str) -> str:
     return _validate_source_ref(value, label)
 
 
-def validate_manifest(manifest: dict[str, Any]) -> None:
+def validate_manifest(
+    manifest: dict[str, Any], *, verify_current_fingerprints: bool = True
+) -> None:
     if manifest.get("schema_version") != SCHEMA_VERSION:
         raise CanaryError(f"schema_version must be {SCHEMA_VERSION}")
     source = manifest.get("source")
@@ -158,22 +160,34 @@ def validate_manifest(manifest: dict[str, Any]) -> None:
         or not all(isinstance(path, str) and path for path in analyzer_sources)
     ):
         raise CanaryError("settings.analyzer_sources must be a nonempty path array")
-    if source_bundle_sha256(analyzer_sources) != settings["analyzer_source_sha256"]:
-        raise CanaryError("settings.analyzer_source_sha256 does not match the checkout")
-    if (
-        file_sha256(
-            PROJECT_ROOT / "src/arch-analyzer/schema/component-architecture.schema.json"
-        )
-        != settings["analyzer_schema_sha256"]
-    ):
-        raise CanaryError("settings.analyzer_schema_sha256 does not match the checkout")
-    if (
-        file_sha256(
-            PROJECT_ROOT / ".claude/skills/repo-to-architecture-summary/SKILL.md"
-        )
-        != settings["skill_sha256"]
-    ):
-        raise CanaryError("settings.skill_sha256 does not match the checkout")
+    if verify_current_fingerprints:
+        if (
+            source_bundle_sha256(analyzer_sources)
+            != settings["analyzer_source_sha256"]
+        ):
+            raise CanaryError(
+                "settings.analyzer_source_sha256 does not match the checkout"
+            )
+        if (
+            file_sha256(
+                PROJECT_ROOT
+                / "src/arch-analyzer/schema/component-architecture.schema.json"
+            )
+            != settings["analyzer_schema_sha256"]
+        ):
+            raise CanaryError(
+                "settings.analyzer_schema_sha256 does not match the checkout"
+            )
+        if (
+            file_sha256(
+                PROJECT_ROOT
+                / ".claude/skills/repo-to-architecture-summary/SKILL.md"
+            )
+            != settings["skill_sha256"]
+        ):
+            raise CanaryError(
+                "settings.skill_sha256 does not match the checkout"
+            )
 
     surfaces = manifest.get("surfaces")
     if not isinstance(surfaces, list) or not surfaces:
@@ -689,8 +703,15 @@ def _observed_summary_clause(
     return f"the single on-disk output recalls are {recalls}"
 
 
-def evaluate(manifest: dict[str, Any], results: dict[str, Any]) -> dict[str, Any]:
-    validate_manifest(manifest)
+def evaluate(
+    manifest: dict[str, Any],
+    results: dict[str, Any],
+    *,
+    verify_current_fingerprints: bool = True,
+) -> dict[str, Any]:
+    validate_manifest(
+        manifest, verify_current_fingerprints=verify_current_fingerprints
+    )
     if results.get("schema_version") != SCHEMA_VERSION:
         raise CanaryError(f"results.schema_version must be {SCHEMA_VERSION}")
     runs = results.get("runs")
@@ -1047,9 +1068,21 @@ def main() -> int:
     parser.add_argument("--results", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-markdown", type=Path, required=True)
+    parser.add_argument(
+        "--archived-inputs",
+        action="store_true",
+        help=(
+            "replay immutable historical inputs without comparing them to "
+            "current source"
+        ),
+    )
     args = parser.parse_args()
     try:
-        report = evaluate(load_json(args.manifest), load_json(args.results))
+        report = evaluate(
+            load_json(args.manifest),
+            load_json(args.results),
+            verify_current_fingerprints=not args.archived_inputs,
+        )
     except (OSError, json.JSONDecodeError, CanaryError) as error:
         parser.error(str(error))
     args.output_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")

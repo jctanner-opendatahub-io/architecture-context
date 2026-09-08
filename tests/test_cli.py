@@ -21,6 +21,44 @@ def test_generate_architecture_defaults_to_evidence_gated_merge(monkeypatch):
     args = parse_args()
 
     assert args.evidence_gated_merge is True
+    assert args.structured_synthesis is False
+    assert args.structured_inputs is None
+    assert args.structured_total_calls == 3
+    assert args.structured_evidence_followups == 1
+    assert args.structured_repairs == 1
+    assert args.structured_refresh is False
+
+
+def test_generate_architecture_accepts_bounded_structured_opt_in(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "main.py",
+            "generate-architecture",
+            "--platform",
+            "rhoai.next",
+            "--structured-synthesis",
+            "--structured-inputs",
+            "parent.json",
+            "--structured-total-calls",
+            "5",
+            "--structured-evidence-followups",
+            "2",
+            "--structured-repairs",
+            "2",
+            "--structured-refresh",
+        ],
+    )
+
+    args = parse_args()
+
+    assert args.structured_synthesis is True
+    assert args.structured_inputs == "parent.json"
+    assert args.structured_total_calls == 5
+    assert args.structured_evidence_followups == 2
+    assert args.structured_repairs == 2
+    assert args.structured_refresh is True
 
 
 def test_generate_architecture_allows_legacy_merge_opt_out(monkeypatch):
@@ -107,6 +145,45 @@ def test_pipeline_accepts_repeated_phases_components_and_repos(monkeypatch):
     assert args.evidence_gated_merge is True
 
 
+def test_generate_index_has_offline_local_defaults(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["main.py", "generate-index", "--platform", "rhoai.next"],
+    )
+
+    args = parse_args()
+
+    assert args.command == "generate-index"
+    assert args.architecture_dir == "architecture"
+    assert args.platforms_file == "platforms.yaml"
+    assert args.overlays_dir == "overlays"
+    assert not hasattr(args, "harness")
+
+
+def test_pipeline_accepts_generate_index_as_explicit_phase(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "main.py",
+            "pipeline",
+            "--platform",
+            "rhoai.next",
+            "--phase",
+            "generate-architecture",
+            "--phase",
+            "generate-index",
+            "--component",
+            "example",
+        ],
+    )
+
+    args = parse_args()
+
+    assert args.phase == ["generate-architecture", "generate-index"]
+
+
 def test_pipeline_accepts_codex_harness_and_codex_model(monkeypatch):
     monkeypatch.setattr(
         sys,
@@ -151,6 +228,33 @@ def test_codex_harness_uses_configured_model_by_default(monkeypatch):
 
     assert args.harness == "codex"
     assert args.model is None
+
+
+def test_generate_architecture_accepts_claude_run_limits(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "main.py",
+            "generate-architecture",
+            "--platform",
+            "rhoai-3.6-ea.2",
+            "--harness",
+            "claude",
+            "--model",
+            "claude-opus-4-6",
+            "--max-agent-turns",
+            "50",
+            "--max-budget-usd",
+            "20",
+        ],
+    )
+
+    args = parse_args()
+
+    assert args.model == "claude-opus-4-6"
+    assert args.max_agent_turns == 50
+    assert args.max_budget_usd == 20.0
 
 
 def test_pipeline_allows_evidence_gated_merge_opt_out(monkeypatch):
@@ -230,7 +334,9 @@ components:
       sourcePath: config
 """)
     components = process_manifest_script(
-        str(config), platform="rhoai", checkouts_dir=str(tmp_path),
+        str(config),
+        platform="rhoai",
+        checkouts_dir=str(tmp_path),
     )
     assert "kserve" in components
     assert components["kserve"].checkout_path == checkout
@@ -246,7 +352,9 @@ declare -A RHOAI_COMPONENT_MANIFESTS=(
 )
 """)
     components = process_manifest_script(
-        str(script), platform="rhoai", checkouts_dir=str(tmp_path),
+        str(script),
+        platform="rhoai",
+        checkouts_dir=str(tmp_path),
     )
     assert "kserve" in components
 
@@ -257,7 +365,9 @@ def test_resolve_script_path_prefers_shell_script(tmp_path: Path):
     (operator_dir / "get_all_manifests.sh").write_text("#!/bin/bash\n")
     (operator_dir / "manifests-config.yaml").write_text("components: {}\n")
     result = resolve_script_path(
-        platform="rhoai", org="org", suffix="platform",
+        platform="rhoai",
+        org="org",
+        suffix="platform",
         checkouts_dir=str(tmp_path / "checkouts"),
     )
     assert result.endswith("get_all_manifests.sh")
@@ -268,7 +378,9 @@ def test_resolve_script_path_falls_back_to_yaml(tmp_path: Path):
     operator_dir.mkdir(parents=True)
     (operator_dir / "manifests-config.yaml").write_text("components: {}\n")
     result = resolve_script_path(
-        platform="rhoai", org="org", suffix="platform",
+        platform="rhoai",
+        org="org",
+        suffix="platform",
         checkouts_dir=str(tmp_path / "checkouts"),
     )
     assert result.endswith("manifests-config.yaml")

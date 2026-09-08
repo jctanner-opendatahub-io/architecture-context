@@ -3,7 +3,6 @@ package gosource
 import (
 	"go/ast"
 	"go/token"
-	"sort"
 	"strings"
 	"unicode"
 
@@ -1005,10 +1004,4 @@ func splitIdentifierWords(value string) []string {
 		}
 	}
 	return words
-}
-
-func sortRepositoryRoutes(routes []repositoryRoute) {
-	sort.Slice(routes, func(i, j int) bool {
-		return routes[i].path+routes[i].method < routes[j].path+routes[j].method
-	})
 }

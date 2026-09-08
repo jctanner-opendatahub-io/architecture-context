@@ -28,7 +28,7 @@ func TestExtractRenderMVP(t *testing.T) {
 		"| /readyz | GET | metrics | HTTP |",
 		"| /v1/widgets | GET |  | HTTP |",
 		"| rhoai-controller | ClusterIP | 8443/TCP | metrics | TCP |",
-		"| rhoai-manager | example.io | widgets | get, list, watch |",
+		"| rhoai-manager | example.io | widgets |  | get, list, watch |",
 		"| rhoai-manager | system | rhoai-manager (ClusterRole) | rhoai-controller |",
 		"| database-credentials | referenced |",
 		"| controller.example.test |",

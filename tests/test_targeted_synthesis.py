@@ -235,7 +235,7 @@ class TestAuditableGapReasons:
         )
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "synthesis"
+        assert policy.route == "partial"
         assert "authentication" in policy.gap_categories
         assert len(policy.gap_reasons) == len(policy.gap_categories)
         for reason in policy.gap_reasons:
@@ -259,11 +259,17 @@ class TestAuditableGapReasons:
 
     def test_no_gaps_produces_no_gap_reasons(self, tmp_path: Path):
         checkout = tmp_path / "no-gaps"
+        complete_prose = "x" * (NARRATIVE_MIN_PROSE_LENGTH + 10)
         write_analyzer(
             checkout,
             "sufficient",
             source_files=["src/main.py"],
             populate_high_value=True,
+            narrative_prose={
+                "purpose": complete_prose,
+                "data_flows": complete_prose,
+                "architectural_analysis": complete_prose,
+            },
         )
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
@@ -324,34 +330,34 @@ class TestAuditableGapReasons:
         ]
 
 
-# ── Sufficient Route Source-Free Tests ──
+# ── Sufficient Readiness Bounded Partial Tests ──
 
 
 @pytest.mark.usefixtures("_open_allowlist")
-class TestSufficientRouteSourceFree:
-    """Sufficient routes must never perform source reads or discovery."""
+class TestSufficientReadinessUsesBoundedPartialRoute:
+    """Valid sufficient analyzers retain bounded partial discovery."""
 
-    def test_sufficient_route_has_no_file_budget(self, tmp_path: Path):
+    def test_sufficient_route_has_soft_file_budget(self, tmp_path: Path):
         checkout = tmp_path / "sufficient-budget"
         write_analyzer(checkout, "sufficient", source_files=["src/app.py"])
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "synthesis"
-        assert policy.file_budget is None
+        assert policy.route == "partial"
+        assert policy.file_budget is not None
 
-    def test_sufficient_route_has_no_source_files(self, tmp_path: Path):
+    def test_sufficient_route_retains_source_candidates(self, tmp_path: Path):
         checkout = tmp_path / "sufficient-sources"
         write_analyzer(checkout, "sufficient", source_files=["src/app.py"])
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.source_files == ()
+        assert policy.source_files == ("src/app.py",)
 
-    def test_sufficient_route_has_no_discovery_tools(self, tmp_path: Path):
+    def test_sufficient_route_has_bounded_discovery_tools(self, tmp_path: Path):
         checkout = tmp_path / "sufficient-tools"
         write_analyzer(checkout, "sufficient", source_files=["src/app.py"])
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.discovery_tools == ()
+        assert policy.discovery_tools == ("Glob", "Grep")
 
     @pytest.mark.asyncio
     async def test_sufficient_guard_denies_all_source_reads(self, tmp_path: Path):
@@ -494,15 +500,15 @@ class TestCleanRunIsolation:
         )
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "synthesis"
+        assert policy.route == "partial"
         assert policy.output_preseeded is True
 
-    def test_synthesis_route_is_output_preseeded(self, tmp_path: Path):
-        checkout = tmp_path / "clean-synthesis"
+    def test_sufficient_partial_route_is_output_preseeded(self, tmp_path: Path):
+        checkout = tmp_path / "clean-sufficient-partial"
         write_analyzer(checkout, "sufficient", source_files=["src/app.py"])
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "synthesis"
+        assert policy.route == "partial"
         assert policy.output_preseeded is True
 
     def test_partial_route_is_output_preseeded(self, tmp_path: Path):
@@ -513,13 +519,13 @@ class TestCleanRunIsolation:
         assert policy.route == "partial"
         assert policy.output_preseeded is True
 
-    def test_legacy_route_is_not_output_preseeded(self, tmp_path: Path):
-        checkout = tmp_path / "clean-legacy"
+    def test_insufficient_analyzer_is_output_preseeded(self, tmp_path: Path):
+        checkout = tmp_path / "clean-insufficient"
         write_analyzer(checkout, "insufficient")
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "legacy"
-        assert policy.output_preseeded is False
+        assert policy.route == "partial"
+        assert policy.output_preseeded is True
 
 
 # ── Provenance Preservation Tests ──
@@ -684,10 +690,10 @@ class TestNarrativeGapPartialRoute:
         assert telemetry["source_read_operations"] == 2
 
     @pytest.mark.asyncio
-    async def test_partial_narrative_gap_denies_over_budget(
+    async def test_partial_narrative_gap_records_soft_budget_overage(
         self, tmp_path: Path,
     ):
-        """Partial guard denies reads exceeding file budget."""
+        """Partial guard allows and records reads exceeding the soft budget."""
         checkout = tmp_path / "narrative-budget"
         extra_files = [f"src/f{i}.py" for i in range(12)]
         write_analyzer(
@@ -713,8 +719,14 @@ class TestNarrativeGapPartialRoute:
             }},
             None, {},
         )
-        assert result["hookSpecificOutput"]["permissionDecision"] == "deny"
-        assert "budget" in result["hookSpecificOutput"]["permissionDecisionReason"]
+        assert result.get("hookSpecificOutput", {}).get(
+            "permissionDecision"
+        ) != "deny"
+        telemetry = guard.telemetry()
+        assert telemetry["source_read_budget_exceeded"] == 1
+        assert telemetry["source_read_budget_exceeded_files"] == [
+            f"src/f{budget}.py"
+        ]
 
     def test_populated_narrative_sections_not_nominated(self, tmp_path: Path):
         """Baseline with substantial prose in narrative sections omits those gaps."""
@@ -767,11 +779,11 @@ class TestNarrativeGapPartialRoute:
 
 
 @pytest.mark.usefixtures("_open_allowlist")
-class TestNarrativeGapSufficientDenial:
-    """Sufficient routes must exclude narrative gaps and deny source reads."""
+class TestNarrativeGapSufficientReadiness:
+    """Sufficient readiness still uses bounded partial gap discovery."""
 
-    def test_sufficient_route_excludes_narrative_gaps(self, tmp_path: Path):
-        """Sufficient routes do not nominate narrative gaps."""
+    def test_sufficient_route_includes_narrative_gaps(self, tmp_path: Path):
+        """Thin narratives remain explicit gaps for sufficient analyzers."""
         checkout = tmp_path / "no-narrative"
         write_analyzer(
             checkout, "sufficient",
@@ -780,11 +792,11 @@ class TestNarrativeGapSufficientDenial:
         )
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "synthesis"
+        assert policy.route == "partial"
         narrative_in_gaps = [
             g for g in policy.gap_categories if g in NARRATIVE_SECTIONS
         ]
-        assert len(narrative_in_gaps) == 0
+        assert set(narrative_in_gaps) == NARRATIVE_SECTIONS
 
     @pytest.mark.asyncio
     async def test_sufficient_guard_denies_reads_for_narrative_content(
@@ -814,8 +826,8 @@ class TestNarrativeGapSufficientDenial:
         assert result["hookSpecificOutput"]["permissionDecision"] == "deny"
         assert guard.telemetry()["source_files_read"] == []
 
-    def test_sufficient_no_file_budget_for_narrative(self, tmp_path: Path):
-        """Sufficient route has no file budget even when narrative is thin."""
+    def test_sufficient_has_soft_file_budget_for_narrative(self, tmp_path: Path):
+        """Thin narratives receive the partial route's soft file budget."""
         checkout = tmp_path / "no-budget-narrative"
         write_analyzer(
             checkout, "sufficient",
@@ -824,9 +836,9 @@ class TestNarrativeGapSufficientDenial:
         )
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
-        assert policy.route == "synthesis"
-        assert policy.file_budget is None
-        assert policy.discovery_tools == ()
+        assert policy.route == "partial"
+        assert policy.file_budget is not None
+        assert policy.discovery_tools == ("Glob", "Grep")
 
 
 # ── Bounded Component Validation Fixtures ──
@@ -837,7 +849,7 @@ class TestBoundedComponentFixtures:
     """Fixtures for bounded rhods-operator/dashboard validation."""
 
     def test_rhods_operator_sufficient_fixture(self, tmp_path: Path):
-        """rhods-operator with sufficient readiness routes to synthesis."""
+        """rhods-operator with sufficient readiness routes to partial."""
         checkout = tmp_path / "rhods-operator"
         write_analyzer(
             checkout,
@@ -858,11 +870,14 @@ class TestBoundedComponentFixtures:
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
 
         assert policy.readiness == "sufficient"
-        assert policy.route == "synthesis"
+        assert policy.route == "partial"
         assert policy.output_preseeded is True
-        assert policy.file_budget is None
-        assert policy.discovery_tools == ()
-        assert policy.source_files == ()
+        assert policy.file_budget is not None
+        assert policy.discovery_tools == ("Glob", "Grep")
+        assert policy.source_files == (
+            "internal/controller/services/gateway/gateway.go",
+            "internal/controller/services/dashboard/dashboard.go",
+        )
 
     def test_dashboard_partial_fixture(self, tmp_path: Path):
         """dashboard with partial readiness routes to partial with budget."""
@@ -1048,7 +1063,7 @@ class TestBoundedComponentValidation:
     """
 
     def test_rhods_operator_full_validation_pipeline(self, tmp_path: Path):
-        """rhods-operator: sufficient → synthesis → zero source reads."""
+        """rhods-operator: sufficient → bounded partial → zero initial reads."""
         checkout = tmp_path / "rhods-operator"
         write_analyzer(
             checkout,
@@ -1067,7 +1082,7 @@ class TestBoundedComponentValidation:
         )
 
         policy = load_architecture_agent_policy(checkout, readiness_routing=True)
-        assert policy.route == "synthesis"
+        assert policy.route == "partial"
 
         guard = _AgentExecutionGuard(policy.to_dict(), checkout)
         telemetry = guard.telemetry()
@@ -1076,7 +1091,7 @@ class TestBoundedComponentValidation:
 
         config = TrackingConfig(dry_run=True)
         result = _make_validation_result(
-            "rhods-operator", "synthesis", telemetry,
+            "rhods-operator", "partial", telemetry,
             gap_reasons=list(policy.gap_reasons),
         )
         tracking = track_result(result, config)
@@ -1084,7 +1099,7 @@ class TestBoundedComponentValidation:
         assert tracking.success is True
         assert tracking.dry_run is True
         assert "tracking_contract_version" in tracking.tags_logged
-        assert tracking.tags_logged["condition_id"] == "synthesis-route"
+        assert tracking.tags_logged["condition_id"] == "partial-route"
 
     def test_dashboard_full_validation_pipeline(self, tmp_path: Path):
         """dashboard: partial → bounded discovery with file budget."""
@@ -1146,7 +1161,7 @@ class TestBoundedComponentValidation:
 
         config = TrackingConfig(dry_run=True)
         result_record = _make_validation_result(
-            "test-component", "synthesis", telemetry,
+            "test-component", policy.route, telemetry,
         )
         tracking = track_result(result_record, config)
 
@@ -1259,7 +1274,7 @@ class TestBoundedComponentValidation:
         assert len(data["components"]) == 2
         op = data["components"][0]
         assert op["component"] == "rhods-operator"
-        assert op["route"] == "synthesis"
+        assert op["route"] == "partial"
         assert op["source_reads"] == 0
         db = data["components"][1]
         assert db["component"] == "odh-dashboard"
@@ -1268,9 +1283,9 @@ class TestBoundedComponentValidation:
         assert db["file_budget"] > 0
 
     @pytest.mark.asyncio
-    async def test_synthesis_guard_denies_source_reads(self, tmp_path: Path):
-        """Synthesis guard blocks source reads (zero budget)."""
-        checkout = tmp_path / "guard-deny"
+    async def test_sufficient_partial_guard_allows_source_reads(self, tmp_path: Path):
+        """Sufficient analyzers allow bounded reads through the partial route."""
+        checkout = tmp_path / "guard-allow"
         write_analyzer(
             checkout,
             "sufficient",
@@ -1287,7 +1302,10 @@ class TestBoundedComponentValidation:
             }},
             None, {},
         )
-        assert result["hookSpecificOutput"]["permissionDecision"] == "deny"
+        assert result.get("hookSpecificOutput", {}).get(
+            "permissionDecision"
+        ) != "deny"
+        assert guard.source_reads == ["src/main.go"]
 
     @pytest.mark.asyncio
     async def test_partial_guard_allows_budgeted_reads(self, tmp_path: Path):

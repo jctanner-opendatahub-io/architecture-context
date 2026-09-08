@@ -263,7 +263,7 @@ Summary:
 
 If `arch-query` is not available (command not found), fall back to reading component files:
 
-1. List `.md` files: `find {platform_dir} -maxdepth 1 -name "*.md" -type f ! -name "README.md" ! -name "PLATFORM.md" | sort`
+1. List `.md` files: `find {platform_dir} -maxdepth 1 -name "*.md" -type f ! -name "INDEX.md" ! -name "README.md" ! -name "PLATFORM.md" | sort`
 2. Read component files using parallel Read calls
 3. Extract structured data from markdown tables
 4. Continue from Step 2

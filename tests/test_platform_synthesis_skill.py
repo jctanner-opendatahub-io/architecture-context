@@ -4,7 +4,7 @@ SKILL_PATH = (
     Path(__file__).resolve().parent.parent
     / ".claude/skills/aggregate-platform-architecture/SKILL.md"
 )
-TEMPLATE_PATH = SKILL_PATH.parent / "references/platform-template.md"
+TEMPLATE_PATH = SKILL_PATH.parent / "templates/platform-template.md"
 
 
 def test_platform_skill_requires_evidence_derived_serving_path_matrix():

@@ -106,7 +106,7 @@ func TestRenderFirstMVP(t *testing.T) {
 		"| example | ClusterIP | 8443/TCP | 8080 | TCP |",
 		"| example.test |",
 		"| s3://models | 443 | HTTPS |",
-		"| manager | example.io | widgets | get, list |",
+		"| manager | example.io | widgets |  | get, list |",
 		"| server-cert | kubernetes.io/tls | deployment/example | cert-manager |",
 		"| platform-api | REST |",
 		"| example.io/v1/Widget | Controller watch (For) |",

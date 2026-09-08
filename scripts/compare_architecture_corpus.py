@@ -33,7 +33,7 @@ from lib.component_discovery import (  # noqa: E402
     read_component_map,
 )
 
-SKIP_DOCUMENTS = frozenset({"PLATFORM.md", "README.md"})
+SKIP_DOCUMENTS = frozenset({"INDEX.md", "PLATFORM.md", "README.md"})
 READINESS_LEVELS = frozenset({"sufficient", "partial", "insufficient"})
 VERSION_RE = re.compile(r"^- \*\*Version\*\*:\s*(.+?)\s*$", re.MULTILINE)
 VERSION_SHA_RE = re.compile(r"(?:-g|@)([0-9a-f]{7,40})\b", re.IGNORECASE)

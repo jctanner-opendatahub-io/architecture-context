@@ -23,6 +23,47 @@ bin/arch-analyzer render \
 
 Omit `--output` to write Markdown to stdout.
 
+## Phase-one structured document
+
+The offline structured route keeps construction in JSON and renders only after
+acceptance:
+
+```bash
+bin/arch-analyzer normalize \
+  --input /tmp/component-architecture.json \
+  --output /tmp/document.json \
+  --version-scope rhoai-3.6-ea.2 \
+  --integration-status unknown
+
+bin/arch-analyzer render-document \
+  --input /tmp/document.json \
+  --output /tmp/component.md
+```
+
+`--component-map` and typed `--sections` inputs are optional. Non-empty section
+content requires separate trusted `--section-origin-kind`,
+`--section-origin-id`, and `--section-claim-class` flags; authority fields in
+the section JSON are rejected. A repeatable
+`--patch` is an untrusted proposal only; every non-empty proposal also requires
+a separately supplied, repeatable `--assembly-policy` containing trusted
+attribution, allowed fact types, and explicit human decisions bound to the
+proposal and analyzer-input fingerprints. The CLI does not infer policy fields
+from proposal content. Accepted documents retain canonical proposal/operation
+input records and require a disposition for every operation. Use a concrete
+`--version-scope` for any correction;
+`unknown` cannot authorize operations.
+
+The accepted document retains the complete `components`/`provenance` projection
+consumed from the parent-supplied component map, its canonical content
+fingerprint, and its orchestrator attribution separately from analyzer fact
+accounting. Unrelated component-map metadata is not a phase-one rendering input.
+Validation recomputes canonical identity and repo lineage from the retained
+projection. This route performs no model call and
+implements no publication or reuse protocol. See
+[STRUCTURED_COMPONENT_PHASE1.md](STRUCTURED_COMPONENT_PHASE1.md) for the fact
+inventory, patch/policy trust boundary, section and table registries, and phase
+boundary.
+
 ## Extract A Repository
 
 ```bash

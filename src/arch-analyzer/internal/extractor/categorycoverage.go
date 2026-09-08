@@ -40,16 +40,23 @@ var pythonAuthenticationSignal = regexp.MustCompile(`(?i)(["'](?:authorization|p
 var internalPlatformAliases = platformfacts.InternalDependencyDiscoveryAliases()
 
 func categoryCoverage(root string, input model.Input) map[string]model.CategoryCoverage {
+	coverage, _ := categoryCoverageWithStatistics(root, input)
+	return coverage
+}
+
+func categoryCoverageWithStatistics(root string, input model.Input) (map[string]model.CategoryCoverage, []model.ScanStatistic) {
+	authentication, authenticationStatistics := authenticationCoverageWithStatistics(root, input)
+	internalDependencies, internalStatistics := internalDependencyCoverageWithStatistics(root, input)
 	return map[string]model.CategoryCoverage{
 		"architecture_components": architectureComponentsCoverage(input),
-		"authentication":          authenticationCoverage(root, input),
+		"authentication":          authentication,
 		"fips_compliance":         fipsComplianceCoverage(input),
 		"grpc_services":           grpcServicesCoverage(input),
 		"http_endpoints":          transportCoverage("http_endpoints", httpEndpointsContract, len(input.HTTPEndpoints), input),
-		"internal_dependencies":   internalDependencyCoverage(root, input),
+		"internal_dependencies":   internalDependencies,
 		"integration_points":      integrationPointsCoverage(root, input),
 		"services":                transportCoverage("services", servicesContract, len(input.Services), input),
-	}
+	}, append(authenticationStatistics, internalStatistics...)
 }
 
 const grpcRegistrationScanMarker = "literal grpc server registration scan: no runtime registration detected"
@@ -142,6 +149,12 @@ func transportCoverage(name, contract string, count int, input model.Input) mode
 }
 
 func authenticationCoverage(root string, input model.Input) model.CategoryCoverage {
+	coverage, _ := authenticationCoverageWithStatistics(root, input)
+	return coverage
+}
+
+func authenticationCoverageWithStatistics(root string, input model.Input) (model.CategoryCoverage, []model.ScanStatistic) {
+	statistics := []model.ScanStatistic{}
 	coverage := model.CategoryCoverage{
 		Status: "partial", FactCount: len(input.Authentication) + len(input.SecurityEvidence),
 		DiscoveryContract: authenticationContract,
@@ -171,7 +184,7 @@ func authenticationCoverage(root string, input model.Input) model.CategoryCovera
 		if len(coverage.Evidence) == 0 {
 			coverage.Evidence = []string{fmt.Sprintf("summary:%d analyzer-discovered inbound runtime surfaces", inbound)}
 		}
-		return coverage
+		return coverage, statistics
 	}
 	coverage.CompletedChecks = append(coverage.CompletedChecks, "no-inbound-runtime-surfaces")
 	coverage.Evidence = append(coverage.Evidence, "summary:no analyzer-discovered inbound runtime surfaces")
@@ -201,8 +214,10 @@ func authenticationCoverage(root string, input model.Input) model.CategoryCovera
 	if applicableCoverage(input.DataCoverage["python"]) {
 		files, matches, limitations := scanPythonAuthenticationSignals(root)
 		coverage.CompletedChecks = append(coverage.CompletedChecks, "python-authentication-signal-scan")
-		coverage.Evidence = append(coverage.Evidence,
-			fmt.Sprintf("summary:scanned %d Python source files for authentication constructions", files))
+		statistics = append(statistics, model.ScanStatistic{
+			Category: "authentication", Metric: "files_scanned", Value: files,
+			Unit: "files", Scope: "Python source files for authentication constructions",
+		})
 		coverage.Evidence = append(coverage.Evidence, matches...)
 		coverage.Limitations = append(coverage.Limitations, limitations...)
 		unaccounted := filterUnaccountedAuthSignals(matches, input.Authentication)
@@ -215,7 +230,7 @@ func authenticationCoverage(root string, input model.Input) model.CategoryCovera
 	if len(coverage.Limitations) == 0 {
 		coverage.Status = "complete"
 	}
-	return coverage
+	return coverage, statistics
 }
 
 func filterUnaccountedAuthSignals(matches []string, facts []model.AuthenticationFact) []string {
@@ -697,6 +712,11 @@ func dependencyRelevantKustomizeWarning(warning string) bool {
 }
 
 func internalDependencyCoverage(root string, input model.Input) model.CategoryCoverage {
+	coverage, _ := internalDependencyCoverageWithStatistics(root, input)
+	return coverage
+}
+
+func internalDependencyCoverageWithStatistics(root string, input model.Input) (model.CategoryCoverage, []model.ScanStatistic) {
 	coverage := model.CategoryCoverage{
 		Status: "partial", FactCount: len(input.Dependencies.Internal),
 		DiscoveryContract: internalDependenciesContract,
@@ -706,8 +726,6 @@ func internalDependencyCoverage(root string, input model.Input) model.CategoryCo
 	}
 	files, matches, limitations := scanInternalPlatformAliases(root, input)
 	coverage.CompletedChecks = append(coverage.CompletedChecks, "runtime-source-config-platform-alias-scan")
-	coverage.Evidence = append(coverage.Evidence,
-		fmt.Sprintf("summary:scanned %d runtime source/config files against %d platform aliases", files, len(internalPlatformAliases)))
 	coverage.Evidence = append(coverage.Evidence, matches...)
 	coverage.Limitations = append(coverage.Limitations, limitations...)
 	manifestLimitations := relevantInternalDependencyManifestLimitations(input.DataCoverage)
@@ -727,7 +745,11 @@ func internalDependencyCoverage(root string, input model.Input) model.CategoryCo
 		coverage.Status = "complete"
 	}
 	coverage.Evidence = capCoverageEvidence(coverage.Evidence, 12)
-	return coverage
+	statistics := []model.ScanStatistic{
+		{Category: "internal_dependencies", Metric: "files_scanned", Value: files, Unit: "files", Scope: "runtime source/config platform-alias scan"},
+		{Category: "internal_dependencies", Metric: "aliases_checked", Value: len(internalPlatformAliases), Unit: "aliases", Scope: "runtime source/config platform-alias scan"},
+	}
+	return coverage, statistics
 }
 
 func integrationPointsCoverage(root string, input model.Input) model.CategoryCoverage {
@@ -1377,8 +1399,5 @@ func isRuntimeManifestPath(path string) bool {
 			return true
 		}
 	}
-	if len(parts) == 1 {
-		return true
-	}
-	return false
+	return len(parts) == 1
 }

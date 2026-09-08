@@ -29,12 +29,10 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 RUN pip install --no-cache-dir --user claude-agent-sdk jsonschema mlflow==2.22.0
 
 COPY --chown=evaluator:evaluator lib/ /home/evaluator/app/lib/
-COPY --chown=evaluator:evaluator benchmark/consumer-v1/*.py /home/evaluator/app/benchmark/consumer-v1/
-COPY --chown=evaluator:evaluator benchmark/consumer-v1/*.json /home/evaluator/app/benchmark/consumer-v1/
 
 RUN rm -rf /home/evaluator/.claude \
     && find /home/evaluator -name "CLAUDE.md" -delete 2>/dev/null; true
 
 WORKDIR /home/evaluator/app
 
-ENTRYPOINT ["python3", "benchmark/consumer-v1/run_evaluation.py"]
+ENTRYPOINT ["claude"]

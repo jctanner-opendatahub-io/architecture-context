@@ -191,7 +191,8 @@ func TestCollectRoleRetainsAuthorizationMetadata(t *testing.T) {
 		},
 		"rules": []any{map[string]any{
 			"apiGroups": []any{""}, "resources": []any{"secrets"},
-			"resourceNames": []any{"named-secret"}, "verbs": []any{"get"},
+			"nonResourceURLs": []any{"/metrics"},
+			"resourceNames":   []any{"named-secret"}, "verbs": []any{"get"},
 		}},
 	}})
 
@@ -200,6 +201,9 @@ func TestCollectRoleRetainsAuthorizationMetadata(t *testing.T) {
 	}
 	if len(role.Rules) != 1 || len(role.Rules[0].ResourceNames) != 1 || role.Rules[0].ResourceNames[0] != "named-secret" {
 		t.Fatalf("rules = %#v, want resourceNames restriction", role.Rules)
+	}
+	if len(role.Rules[0].NonResourceURLs) != 1 || role.Rules[0].NonResourceURLs[0] != "/metrics" {
+		t.Fatalf("rules = %#v, want nonResourceURLs", role.Rules)
 	}
 }
 

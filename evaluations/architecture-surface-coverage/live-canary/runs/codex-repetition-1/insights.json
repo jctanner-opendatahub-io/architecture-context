@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "component": "rhods-operator",
+  "platform": "rhoai",
+  "version": "rhoai-3.6-ea.2",
+  "insights": [],
+  "metadata": {}
+}

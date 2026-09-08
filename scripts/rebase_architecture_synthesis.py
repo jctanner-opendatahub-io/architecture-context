@@ -25,7 +25,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("analyzer", type=Path)
     parser.add_argument("synthesis", type=Path)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--changes", type=Path)
+    change_artifacts = parser.add_mutually_exclusive_group()
+    change_artifacts.add_argument(
+        "--patch",
+        type=Path,
+        help="Versioned JSON architecture table patch",
+    )
+    change_artifacts.add_argument(
+        "--changes",
+        type=Path,
+        help="Legacy Markdown change record",
+    )
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
     parser.add_argument("--component")
@@ -45,6 +55,7 @@ def main() -> int:
             args.analyzer,
             args.synthesis,
             args.output,
+            patch=args.patch,
             changes=args.changes,
             report_json=args.report_json,
             report_markdown=args.report_markdown,

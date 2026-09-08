@@ -2,7 +2,7 @@
 
 Records reads, navigation, denials, query invocations, and context-quality
 signals during agent execution.  Aggregates into the ``context_metrics``
-shape defined by ``benchmark/analyzer-assisted-v1/result_schema.json``.
+shape defined by ``schemas/context-metrics-v1.schema.json``.
 
 The exporter interface is OTel-compatible but uses a no-op fallback when the
 OpenTelemetry SDK is not installed, so telemetry collection never blocks
@@ -15,16 +15,220 @@ ingestion.  It is never activated by default.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Protocol, runtime_checkable
+from typing import Any, Protocol, Sequence, runtime_checkable
 
 CONTRACT_VERSION = "1.0.0"
 EXPORT_VERSION = "1.0.0"
+DEPENDENCY_OBSERVATION_VERSION = "structured-component-dependency-observations/v1"
+
+_RG_VALUE_OPTIONS = frozenset(
+    {
+        "-A", "-B", "-C", "-g", "-m", "-t", "--color",
+        "--after-context", "--before-context", "--context", "--encoding",
+        "--glob", "--max-count", "--max-depth", "--sort", "--sortr",
+        "--type", "--type-add",
+    }
+)
+_RG_BOOLEAN_OPTIONS = frozenset(
+    {
+        "-0", "-F", "-H", "-I", "-L", "-S", "-U", "-c", "-i", "-l",
+        "-n", "-q", "-s", "-w", "-x", "--case-sensitive", "--count",
+        "--count-matches", "--crlf", "--debug", "--fixed-strings", "--follow",
+        "--heading", "--ignore-case", "--json", "--line-number",
+        "--line-regexp", "--messages", "--multiline", "--no-heading",
+        "--no-config", "--no-ignore-global", "--no-messages", "--no-unicode",
+        "--null", "--pcre2", "--pretty", "--smart-case", "--stats",
+        "--text", "--trim", "--unicode", "--vimgrep", "--with-filename",
+        "--word-regexp",
+    }
+)
+_RG_SHORT_BOOLEAN_CHARACTERS = frozenset("0FHILSUcilnqswx")
+_RG_UNTRACKED_SCOPE_OPTIONS = frozenset(
+    {"-L", "--follow", "--hidden", "--no-ignore", "--no-ignore-vcs"}
+)
+_RG_REQUIRED_REPLAY_OPTIONS = {
+    "--color": "never",
+    "--no-config": True,
+    "--no-ignore-global": True,
+    "--sort": "path",
+}
+_SHELL_OPERATOR_TOKENS = frozenset({"&", "&&", "|", "||", ";"})
+
+
+def _argv_has_shell_expansion_or_composition(argv: Sequence[str]) -> bool:
+    """Reject argv that still describes shell behavior rather than direct rg."""
+
+    return any(
+        not token
+        or "\0" in token
+        or "\n" in token
+        or "\r" in token
+        or token in _SHELL_OPERATOR_TOKENS
+        or any(
+            marker in token for marker in ("`", "$", "<", ">", "|", ";", "&")
+        )
+        or token.startswith("~")
+        for token in argv
+    )
+
+
+def parse_bounded_rg_invocation(
+    argv: Sequence[str],
+    *,
+    execution_cwd: str | Path,
+    checkout_root: str | Path,
+) -> dict[str, Any] | None:
+    """Parse the supported direct, bounded, read-only ripgrep subset.
+
+    This parser is shared by harness observation and persisted replay. It does
+    no process execution and returns ``None`` for wrappers, external/escaping
+    roots, pattern files, expanding flags, unknown flags, or missing replay
+    isolation. ``argv`` includes the executable name; the returned ``argv``
+    option deliberately excludes it for persisted execution records.
+    """
+
+    if (
+        not isinstance(argv, (list, tuple))
+        or not argv
+        or not all(isinstance(item, str) for item in argv)
+        or argv[0] != "rg"
+        or _argv_has_shell_expansion_or_composition(argv)
+    ):
+        return None
+    checkout = Path(checkout_root).resolve()
+    raw_cwd = Path(execution_cwd)
+    cwd = raw_cwd.resolve() if raw_cwd.is_absolute() else (checkout / raw_cwd).resolve()
+    try:
+        relative_cwd = cwd.relative_to(checkout).as_posix()
+    except ValueError:
+        return None
+    if not cwd.is_dir():
+        return None
+
+    options: dict[str, Any] = {}
+    positionals: list[str] = []
+    index = 1
+    while index < len(argv):
+        word = argv[index]
+        if word == "--":
+            positionals.extend(argv[index + 1 :])
+            break
+        if word.startswith("--") and "=" in word:
+            name, value = word.split("=", 1)
+            if name not in _RG_VALUE_OPTIONS or not value:
+                return None
+            previous = options.get(name)
+            options[name] = (
+                [*previous, value]
+                if isinstance(previous, list)
+                else [previous, value]
+                if previous is not None
+                else value
+            )
+        elif word in _RG_VALUE_OPTIONS:
+            if index + 1 >= len(argv):
+                return None
+            value = argv[index + 1]
+            previous = options.get(word)
+            options[word] = (
+                [*previous, value]
+                if isinstance(previous, list)
+                else [previous, value]
+                if previous is not None
+                else value
+            )
+            index += 1
+        elif word in _RG_UNTRACKED_SCOPE_OPTIONS:
+            return None
+        elif word in _RG_BOOLEAN_OPTIONS:
+            options[word] = True
+        elif (
+            word.startswith("-")
+            and not word.startswith("--")
+            and len(word) > 2
+            and set(word[1:]) <= _RG_SHORT_BOOLEAN_CHARACTERS
+        ):
+            if "L" in word[1:]:
+                return None
+            options[word] = True
+        elif word.startswith("-"):
+            return None
+        else:
+            positionals.append(word)
+        index += 1
+    if not positionals or any(
+        options.get(name) != value
+        for name, value in _RG_REQUIRED_REPLAY_OPTIONS.items()
+    ):
+        return None
+
+    pattern, *raw_roots = positionals
+    if not pattern:
+        return None
+    raw_roots = raw_roots or ["."]
+    resolved_roots: list[str] = []
+    for raw_root in raw_roots:
+        path = Path(raw_root)
+        if path.is_absolute():
+            return None
+        resolved = (cwd / path).resolve()
+        try:
+            resolved.relative_to(checkout)
+        except ValueError:
+            return None
+        resolved_roots.append(str(resolved))
+
+    options["argv"] = list(argv[1:])
+    return {
+        "pattern": pattern,
+        "raw_roots": raw_roots,
+        "resolved_roots": resolved_roots,
+        "options": options,
+        "execution_cwd": str(cwd),
+        "relative_cwd": relative_cwd,
+    }
+
+
+def search_result_identity(exit_code: int, output: bytes | str) -> str:
+    """Identify an observed or independently replayed search result."""
+
+    raw_output = output.encode("utf-8") if isinstance(output, str) else output
+    digest = hashlib.sha256()
+    digest.update(str(exit_code).encode("ascii"))
+    digest.update(b"\0")
+    digest.update(raw_output)
+    return "sha256:" + digest.hexdigest()
+
+
+def dependency_observations(
+    *,
+    harness: str,
+    reads: list[dict[str, object]],
+    searches: list[dict[str, object]],
+    complete: bool,
+    unclassified_source_commands: list[str],
+) -> dict[str, object]:
+    """Build the additive, versioned observations consumed by reuse gates.
+
+    These records contain only independently observed harness activity. They
+    intentionally do not infer evidence or dependencies from model output.
+    """
+
+    return {
+        "schema_version": DEPENDENCY_OBSERVATION_VERSION,
+        "harness": harness,
+        "complete": complete,
+        "reads": [dict(item) for item in reads],
+        "searches": [dict(item) for item in searches],
+        "unclassified_source_commands": list(unclassified_source_commands),
+    }
 
 
 class EventKind(str, Enum):
@@ -53,7 +257,7 @@ class ContextEvent:
 
 @dataclass
 class ContextMetricsAggregate:
-    """Deterministic aggregate matching the result_schema context_metrics."""
+    """Deterministic aggregate matching the context-metrics schema."""
 
     context_fetches: int = 0
     useful_reads: int = 0
@@ -173,7 +377,7 @@ class ContextTelemetryCollector:
         )
 
     def context_metrics(self) -> dict[str, int | bool | None]:
-        """Return context_metrics compatible with result_schema.json."""
+        """Return context_metrics compatible with the stable project schema."""
         agg = self.aggregate()
         return {
             "context_fetches": agg.context_fetches,

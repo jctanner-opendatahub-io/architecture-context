@@ -6,7 +6,7 @@ from pathlib import Path
 
 ARCHITECTURE_DIR = Path(__file__).resolve().parent.parent / "architecture"
 
-SKIP_NAMES = {"PLATFORM.md", "README.md"}
+SKIP_NAMES = {"INDEX.md", "PLATFORM.md", "README.md"}
 
 REQUIRED_SECTIONS = [
     "Metadata",

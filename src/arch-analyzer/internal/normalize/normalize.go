@@ -226,7 +226,9 @@ func Input(input model.Input, options Options) model.Document {
 		for _, rule := range role.Rules {
 			document.ClusterRoles = append(document.ClusterRoles, model.ClusterRoleRow{
 				Name: canonicalDashboardResource(role.Name), APIGroup: strings.Join(unique(rule.APIGroups), ", "),
-				Resources: strings.Join(unique(rule.Resources), ", "), Verbs: strings.Join(unique(rule.Verbs), ", "),
+				Resources:       strings.Join(unique(rule.Resources), ", "),
+				NonResourceURLs: strings.Join(unique(rule.NonResourceURLs), ", "),
+				Verbs:           strings.Join(unique(rule.Verbs), ", "),
 			})
 		}
 		sources.add(role.Source, "Security")
@@ -600,7 +602,7 @@ func sortDocument(document *model.Document) {
 	})
 	document.ClusterRoles = mergeClusterRoleRows(document.ClusterRoles)
 	document.ClusterRoles = dedupe(document.ClusterRoles, func(row model.ClusterRoleRow) string {
-		return row.Name + "\x00" + row.APIGroup + "\x00" + row.Resources + "\x00" + row.Verbs
+		return row.Name + "\x00" + row.APIGroup + "\x00" + row.Resources + "\x00" + row.NonResourceURLs + "\x00" + row.Verbs
 	})
 	document.RoleBindings = dedupe(document.RoleBindings, func(row model.RoleBindingRow) string {
 		return row.Name + "\x00" + row.Namespace + "\x00" + row.Role + "\x00" + row.ServiceAccount
@@ -736,7 +738,15 @@ func mergeClusterRoleRows(items []model.ClusterRoleRow) []model.ClusterRoleRow {
 	positions := map[string]int{}
 	result := make([]model.ClusterRoleRow, 0, len(items))
 	for _, item := range items {
-		key := item.Name + "\x00" + item.APIGroup + "\x00" + item.Verbs
+		kind := "legacy"
+		if item.Resources != "" && item.NonResourceURLs != "" {
+			kind = "mixed"
+		} else if item.Resources != "" {
+			kind = "resource"
+		} else if item.NonResourceURLs != "" {
+			kind = "non-resource"
+		}
+		key := item.Name + "\x00" + kind + "\x00" + item.APIGroup + "\x00" + item.Verbs
 		position, exists := positions[key]
 		if !exists {
 			positions[key] = len(result)
@@ -748,6 +758,11 @@ func mergeClusterRoleRows(items []model.ClusterRoleRow) []model.ClusterRoleRow {
 			strings.Split(item.Resources, ", ")...,
 		)
 		result[position].Resources = strings.Join(unique(resources), ", ")
+		urls := append(
+			strings.Split(result[position].NonResourceURLs, ", "),
+			strings.Split(item.NonResourceURLs, ", ")...,
+		)
+		result[position].NonResourceURLs = strings.Join(unique(urls), ", ")
 	}
 	return result
 }

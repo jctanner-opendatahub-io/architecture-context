@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"unicode"
 
 	"github.com/jctanner/arch-analyzer/internal/model"
 	"gopkg.in/yaml.v3"
@@ -328,8 +329,29 @@ func moduleServicePortName(name string) string {
 func bffEndpoint(path string, port int, moduleName, source string) model.HTTPEndpoint {
 	return model.HTTPEndpoint{
 		Path: path, Method: "ALL", Port: port, Protocol: "HTTPS", Encryption: "TLS", Auth: "user_token",
-		Description: strings.Title(moduleName) + " BFF API", Source: source,
+		Description: titleBFFModule(moduleName) + " BFF API", Source: source,
 	}
+}
+
+// titleBFFModule preserves the existing identifier-title formatting without
+// relying on the deprecated strings.Title API.
+func titleBFFModule(value string) string {
+	previous := ' '
+	return strings.Map(func(current rune) rune {
+		if isBFFTitleSeparator(previous) {
+			previous = current
+			return unicode.ToTitle(current)
+		}
+		previous = current
+		return current
+	}, value)
+}
+
+func isBFFTitleSeparator(value rune) bool {
+	if value <= unicode.MaxASCII {
+		return !unicode.IsLetter(value) && !unicode.IsDigit(value) && value != '_'
+	}
+	return unicode.IsSpace(value)
 }
 
 func federationModuleName(name string) string {

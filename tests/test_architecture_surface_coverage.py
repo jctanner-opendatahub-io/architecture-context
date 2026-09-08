@@ -226,6 +226,475 @@ def test_operator_inventory_uses_specific_evidence_nominated_surfaces() -> None:
     assert all(
         surface["candidate_locations"] for surface in inventory["surfaces"]
     )
+    fips = next(
+        surface
+        for surface in inventory["surfaces"]
+        if surface["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "uncertain"
+    assert "does not establish runtime FIPS compliance" in fips[
+        "applicability"
+    ]["basis"]
+
+
+def test_runtime_fips_signal_nominates_applicable_surface() -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "fips-runtime",
+                    "status": "observed",
+                    "detail": "Runtime provider selection is checked",
+                    "source": "internal/security/fips.go:42-48",
+                }
+            ]
+        },
+        component="runtime-aware-service",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "applicable"
+    assert fips["candidate_locations"] == [
+        {
+            "path": "internal/security/fips.go",
+            "line_range": "42-48",
+            "origin": "analyzer",
+        }
+    ]
+    assert fips["claim_support"] == "uncertain"
+
+
+def test_empty_fips_category_retains_uncertainty_without_surface() -> None:
+    inventory = build_surface_inventory(
+        {
+            "category_coverage": {
+                "fips_compliance": {
+                    "status": "partial",
+                    "fact_count": 0,
+                    "completed_checks": [
+                        "crypto-and-build-signal-inventory"
+                    ],
+                    "limitations": ["FIPS posture is not verified"],
+                    "evidence": ["coverage:fips_compliance"],
+                }
+            }
+        },
+        component="no-fips-signal",
+    )
+
+    assert "compliance.runtime-fips" not in {
+        item["id"] for item in inventory["surfaces"]
+    }
+    assert inventory["applicability_observations"] == [
+        {
+            "surface_id": "compliance.runtime-fips",
+            "status": "uncertain",
+            "nominated": False,
+            "basis": (
+                "The analyzer completed FIPS category discovery but supplied "
+                "no concrete build, packaging, crypto, runtime, or policy "
+                "source signal. Runtime applicability remains unsettled."
+            ),
+            "evidence": [
+                "component-architecture.json#/category_coverage/fips_compliance"
+            ],
+        }
+    ]
+
+    mutated = copy.deepcopy(inventory)
+    mutated["applicability_observations"][0]["status"] = "not-applicable"
+    report = validate_surface_coverage(
+        inventory=inventory,
+        sidecar=mutated,
+        promoted_document=None,
+    )
+    assert report["structural_valid"] is False
+    assert "applicability_observations must match the seeded inventory" in report[
+        "structural_errors"
+    ]
+    repaired = finalized_sidecar(mutated, report, inventory=inventory)
+    assert repaired["applicability_observations"] == inventory[
+        "applicability_observations"
+    ]
+
+
+def test_crypto_provider_signal_keeps_runtime_fips_applicability_uncertain() -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "crypto-provider",
+                    "status": "dependency-signal",
+                    "target": "openssl",
+                    "detail": (
+                        "Provider presence depends on build and runtime "
+                        "configuration"
+                    ),
+                    "source": "Cargo.lock:750",
+                }
+            ]
+        },
+        component="static-provider-signal",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "uncertain"
+    assert "Static presence" in fips["applicability"]["basis"]
+    assert fips["disposition"] == "unresolved"
+
+
+def test_explicit_negative_fips_signal_nominates_limitation_surface() -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "packaging-annotation",
+                    "status": "literal",
+                    "detail": (
+                        "features.operators.openshift.io/fips-compliant is false"
+                    ),
+                    "source": "bundle/manifests/operator.clusterserviceversion.yaml:14",
+                }
+            ]
+        },
+        component="explicitly-noncompliant-package",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "applicable"
+    assert "explicit negative" in fips["applicability"]["basis"]
+    assert fips["claim_support"] == "uncertain"
+    assert fips["disposition"] == "unresolved"
+
+
+def test_source_backed_negative_fips_category_is_applicable() -> None:
+    inventory = build_surface_inventory(
+        {
+            "category_coverage": {
+                "fips_compliance": {
+                    "status": "complete",
+                    "fact_count": 1,
+                    "compliant": False,
+                    "evidence": [
+                        "bundle/manifests/operator.clusterserviceversion.yaml:14"
+                    ],
+                }
+            }
+        },
+        component="negative-category-fact",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "applicable"
+    assert "explicit negative" in fips["applicability"]["basis"]
+    assert fips["claim_support"] == "uncertain"
+
+
+def test_zero_fact_source_backed_negative_fips_category_is_applicable() -> None:
+    inventory = build_surface_inventory(
+        {
+            "category_coverage": {
+                "fips_compliance": {
+                    "status": "not-supported",
+                    "fact_count": 0,
+                    "compliant": False,
+                    "evidence": [
+                        "bundle/manifests/operator.clusterserviceversion.yaml:14"
+                    ],
+                }
+            }
+        },
+        component="zero-fact-negative-category",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "applicable"
+    assert fips["candidate_locations"] == [
+        {
+            "path": "bundle/manifests/operator.clusterserviceversion.yaml",
+            "line_range": "14",
+            "origin": "analyzer",
+        }
+    ]
+    assert fips["claim_support"] == "uncertain"
+    assert fips["disposition"] == "unresolved"
+
+
+def test_zero_fact_source_backed_runtime_fips_category_is_applicable() -> None:
+    inventory = build_surface_inventory(
+        {
+            "category_coverage": {
+                "fips_compliance": {
+                    "kind": "fips-runtime",
+                    "fact_count": 0,
+                    "evidence": ["internal/security/fips.go:42"],
+                }
+            }
+        },
+        component="zero-fact-runtime-category",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "applicable"
+    assert fips["candidate_locations"] == [
+        {
+            "path": "internal/security/fips.go",
+            "line_range": "42",
+            "origin": "analyzer",
+        }
+    ]
+    assert fips["claim_support"] == "uncertain"
+
+
+@pytest.mark.parametrize(
+    "category_record",
+    (
+        {
+            "status": "not-supported",
+            "compliant": False,
+            "fact_count": 0,
+            "evidence": ["coverage:fips_compliance"],
+        },
+        {
+            "status": "not-supported",
+            "compliant": False,
+            "fact_count": 0,
+            "evidence": ["https://example.invalid/fips.yaml:8"],
+        },
+        {
+            "kind": "fips-runtime",
+            "fact_count": 0,
+            "evidence": ["coverage:fips_compliance"],
+        },
+        {
+            "required": True,
+            "fact_count": 0,
+            "evidence": ["coverage:fips_compliance"],
+        },
+    ),
+)
+def test_category_status_cannot_borrow_static_provider_source(
+    category_record: dict,
+) -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "crypto-provider",
+                    "status": "dependency-signal",
+                    "source": "Cargo.lock:750",
+                }
+            ],
+            "category_coverage": {"fips_compliance": category_record},
+        },
+        component="unattributed-category-status",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "uncertain"
+    assert fips["candidate_locations"] == [
+        {
+            "path": "Cargo.lock",
+            "line_range": "750",
+            "origin": "analyzer",
+        }
+    ]
+    assert fips["claim_support"] == "uncertain"
+    assert fips["disposition"] == "unresolved"
+
+
+@pytest.mark.parametrize(
+    "security_record",
+    (
+        {
+            "kind": "crypto-provider",
+            "status": "disabled",
+            "detail": "Provider is disabled",
+            "source": "Cargo.lock:750",
+        },
+        {
+            "kind": "tls-config",
+            "value": False,
+            "detail": "Client certificate option is false",
+            "source": "config/tls.yaml:8",
+        },
+        {
+            "kind": "packaging-annotation",
+            "status": "not-supported",
+            "detail": "Optional feature is not supported",
+            "source": "bundle/metadata/annotations.yaml:5",
+        },
+        {
+            "kind": "crypto-provider",
+            "required": True,
+            "detail": "The provider dependency is required",
+            "source": "go.mod:17",
+        },
+        {
+            "kind": "policy-requirement",
+            "required": True,
+            "detail": "Backups are required by platform policy",
+            "source": "config/backup-policy.yaml:3",
+        },
+    ),
+)
+def test_generic_static_status_does_not_become_fips_determinate(
+    security_record: dict,
+) -> None:
+    inventory = build_surface_inventory(
+        {"security_evidence": [security_record]},
+        component="generic-static-status",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "uncertain"
+    assert fips["claim_support"] == "uncertain"
+    assert fips["disposition"] == "unresolved"
+
+
+@pytest.mark.parametrize(
+    "source",
+    (
+        "https://example.invalid/fips.go:42",
+        "file:///tmp/fips.go:42",
+        "C:/work/fips.go:42",
+        r"C:\\work\\fips.go:42",
+    ),
+)
+def test_non_repository_fips_sources_do_not_nominate_surface(source: str) -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "fips-runtime",
+                    "status": "observed",
+                    "source": source,
+                }
+            ]
+        },
+        component="invalid-source",
+    )
+
+    assert "compliance.runtime-fips" not in {
+        item["id"] for item in inventory["surfaces"]
+    }
+
+
+def test_candidate_location_validator_rejects_uri_paths() -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "fips-runtime",
+                    "status": "observed",
+                    "source": "security/fips.go:42",
+                }
+            ]
+        },
+        component="candidate-validation",
+    )
+    mutated = copy.deepcopy(inventory)
+    mutated["surfaces"][0]["candidate_locations"][0] = {
+        "path": "https://example.invalid/fips.go"
+    }
+
+    report = validate_surface_coverage(
+        inventory=inventory,
+        sidecar=mutated,
+        promoted_document=None,
+    )
+
+    assert report["structural_valid"] is False
+    assert any(
+        "candidate location path must be repository-relative" in error
+        for error in report["structural_errors"]
+    )
+
+
+@pytest.mark.parametrize(
+    "detail",
+    (
+        "FIPS mode is not enabled for this build",
+        "FIPS compliance is unsupported",
+        "This is not a FIPS-validated provider",
+    ),
+)
+def test_common_explicit_negative_phrases_are_applicable(detail: str) -> None:
+    inventory = build_surface_inventory(
+        {
+            "security_evidence": [
+                {
+                    "kind": "fips-posture",
+                    "status": "literal",
+                    "detail": detail,
+                    "source": "security/fips.yaml:8",
+                }
+            ]
+        },
+        component="negative-fips-phrase",
+    )
+
+    fips = next(
+        item
+        for item in inventory["surfaces"]
+        if item["id"] == "compliance.runtime-fips"
+    )
+    assert fips["applicability"]["status"] == "applicable"
+    assert fips["claim_support"] == "uncertain"
+
+
+def test_evidence_free_negative_category_remains_unseeded_uncertainty() -> None:
+    inventory = build_surface_inventory(
+        {
+            "category_coverage": {
+                "fips_compliance": {
+                    "status": "not-supported",
+                    "fact_count": 0,
+                    "compliant": False,
+                    "evidence": ["coverage:fips_compliance"],
+                }
+            }
+        },
+        component="unsupported-without-source",
+    )
+
+    assert "compliance.runtime-fips" not in {
+        item["id"] for item in inventory["surfaces"]
+    }
+    assert inventory["applicability_observations"][0]["status"] == "uncertain"
+    assert inventory["applicability_observations"][0]["nominated"] is False
 
 
 def test_metrics_surface_is_uncertain_and_excludes_gateway_proxy() -> None:

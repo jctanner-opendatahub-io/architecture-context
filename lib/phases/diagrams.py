@@ -45,7 +45,7 @@ async def run_generate_diagrams_phase(args) -> None:
         # Find all .md files (excluding README.md)
         md_files = [
             f for f in platform_dir.glob("*.md")
-            if f.name != "README.md"
+            if f.name not in ("INDEX.md", "README.md")
         ]
 
         # Filter to a single component if --component was provided
@@ -114,7 +114,7 @@ async def run_generate_diagrams_phase(args) -> None:
             for d in scan_dirs:
                 available.extend(
                     f.stem for f in d.glob("*.md")
-                    if f.name != "README.md"
+                    if f.name not in ("INDEX.md", "README.md")
                 )
             if available:
                 print(f"Available components: {', '.join(sorted(available))}")

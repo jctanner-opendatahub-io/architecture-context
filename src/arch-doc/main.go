@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -27,15 +28,43 @@ type manifest struct {
 }
 
 type section struct {
-	Name  string `json:"name"`
-	Owner string `json:"owner"`
-	Text  string `json:"-"`
+	Name      string `json:"name"`
+	Owner     string `json:"owner"`
+	Text      string `json:"-"`
+	StartLine int    `json:"-"`
 }
 
 type document struct {
 	Preamble  string
 	Sections  []section
 	Duplicate []string
+}
+
+type sectionDecision struct {
+	Status         string `json:"status"`
+	Subsection     string `json:"subsection"`
+	ExpectedParent string `json:"expected_parent"`
+	ActualParent   string `json:"actual_parent"`
+	Line           int    `json:"line"`
+	Detail         string `json:"detail"`
+}
+
+type assemblyDiagnostic struct {
+	Code           string `json:"code"`
+	Severity       string `json:"severity"`
+	Document       string `json:"document"`
+	Subsection     string `json:"subsection,omitempty"`
+	ExpectedParent string `json:"expected_parent,omitempty"`
+	ActualParent   string `json:"actual_parent,omitempty"`
+	Line           int    `json:"line,omitempty"`
+	Message        string `json:"message"`
+}
+
+type assemblyReport struct {
+	SchemaVersion    int                  `json:"schema_version"`
+	Status           string               `json:"status"`
+	SectionDecisions []sectionDecision    `json:"section_decisions"`
+	Diagnostics      []assemblyDiagnostic `json:"diagnostics"`
 }
 
 var config manifest
@@ -189,6 +218,7 @@ func runAssemble(args []string) error {
 	basePath := flags.String("base", "", "table-merged analyzer base")
 	candidatePath := flags.String("candidate", "", "agent candidate")
 	outputPath := flags.String("output", "", "assembled output")
+	reportPath := flags.String("report", "", "machine-readable assembly report")
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
@@ -209,14 +239,36 @@ func runAssemble(args []string) error {
 	if validation := validateSynthesisInput(candidate, "candidate"); len(validation) > 0 {
 		return errors.New(strings.Join(validation, "; "))
 	}
-	assembled, err := assembleDocuments(base, candidate)
+	assembled, decisions, diagnostics, err := assembleDocumentsWithReport(base, candidate)
 	if err != nil {
+		if reportErr := writeAssemblyReport(*reportPath, assemblyReport{
+			SchemaVersion: 1, Status: "failed", SectionDecisions: decisions,
+			Diagnostics: diagnostics,
+		}); reportErr != nil {
+			return fmt.Errorf("%v; write assembly report: %w", err, reportErr)
+		}
 		return err
 	}
 	if validation := validateDocument(assembled); len(validation) > 0 {
-		return errors.New(strings.Join(validation, "; "))
+		err := errors.New(strings.Join(validation, "; "))
+		if reportErr := writeAssemblyReport(*reportPath, assemblyReport{
+			SchemaVersion: 1, Status: "failed", SectionDecisions: decisions,
+			Diagnostics: []assemblyDiagnostic{{
+				Code: "assembled_document_invalid", Severity: "error",
+				Document: "assembled", Message: err.Error(),
+			}},
+		}); reportErr != nil {
+			return fmt.Errorf("%v; write assembly report: %w", err, reportErr)
+		}
+		return err
 	}
-	return atomicWrite(*outputPath, renderDocument(assembled))
+	if err := atomicWrite(*outputPath, renderDocument(assembled)); err != nil {
+		return err
+	}
+	return writeAssemblyReport(*reportPath, assemblyReport{
+		SchemaVersion: 1, Status: "success", SectionDecisions: decisions,
+		Diagnostics: []assemblyDiagnostic{},
+	})
 }
 
 func readDocument(path string) (document, error) {
@@ -234,14 +286,14 @@ func parseDocument(text string) document {
 	var sections []section
 	seen := map[string]bool{}
 	duplicates := []string{}
-	for _, line := range lines {
+	for lineIndex, line := range lines {
 		if strings.HasPrefix(line, "## ") {
 			name := strings.TrimSpace(strings.TrimSuffix(strings.TrimSuffix(line[3:], "\n"), "\r"))
 			if seen[name] {
 				duplicates = appendUnique(duplicates, name)
 			}
 			seen[name] = true
-			sections = append(sections, section{Name: name, Owner: ownerFor(name)})
+			sections = append(sections, section{Name: name, Owner: ownerFor(name), StartLine: lineIndex + 1})
 			current = &sections[len(sections)-1]
 			current.Text = line
 			continue
@@ -305,19 +357,33 @@ func validateSynthesisInput(doc document, label string) []string {
 }
 
 func assembleDocuments(base, candidate document) (document, error) {
+	assembled, _, _, err := assembleDocumentsWithReport(base, candidate)
+	return assembled, err
+}
+
+func assembleDocumentsWithReport(base, candidate document) (document, []sectionDecision, []assemblyDiagnostic, error) {
+	diagnostics := validateSynthesisSubsectionPlacement(candidate)
+	if len(diagnostics) > 0 {
+		messages := make([]string, 0, len(diagnostics))
+		for _, diagnostic := range diagnostics {
+			messages = append(messages, diagnostic.Message)
+		}
+		return document{}, nil, diagnostics, errors.New(strings.Join(messages, "; "))
+	}
 	result := base
 	candidateByName := sectionMap(candidate.Sections)
 	for _, name := range config.SynthesisSections {
 		candidateSection, ok := candidateByName[name]
 		if !ok {
-			return document{}, fmt.Errorf("candidate missing synthesis section: %s", name)
+			return document{}, nil, nil, fmt.Errorf("candidate missing synthesis section: %s", name)
 		}
 		if _, ok := sectionMap(result.Sections)[name]; !ok {
-			return document{}, fmt.Errorf("base missing synthesis section: %s", name)
+			return document{}, nil, nil, fmt.Errorf("base missing synthesis section: %s", name)
 		}
 		result, _ = replaceSection(result, name, candidateSection.Text, false)
 	}
-	result = mergeSecuritySubsections(result, candidateByName)
+	var decisions []sectionDecision
+	result, decisions = mergeSynthesisSubsections(result, candidateByName)
 	for _, name := range config.ConditionalSynthesis {
 		candidateSection, ok := candidateByName[name]
 		if !ok || hasSection(result, name) {
@@ -328,34 +394,66 @@ func assembleDocuments(base, candidate document) (document, error) {
 	if generated := generatedBy(candidate); generated != "" {
 		result = replaceGeneratedBy(result, generated)
 	}
-	return result, nil
+	return result, decisions, nil, nil
 }
 
-func mergeSecuritySubsections(base document, candidate map[string]section) document {
-	baseSecurity, ok := findSection(base, "Security")
-	if !ok {
-		return base
+func mergeSynthesisSubsections(base document, candidate map[string]section) (document, []sectionDecision) {
+	parents := make([]string, 0, len(config.SynthesisSubsections))
+	for parent := range config.SynthesisSubsections {
+		parents = append(parents, parent)
 	}
-	securityText := baseSecurity.Text
-	candidateSecurity, ok := candidate["Security"]
-	if !ok {
-		return base
-	}
-	for _, subsection := range config.SynthesisSubsections["Security"] {
-		if block := extractSubsection(candidateSecurity.Text, subsection); block != "" && extractSubsection(securityText, subsection) == "" {
-			securityText = strings.TrimRight(securityText, "\r\n") + "\n\n" + strings.TrimRight(block, "\r\n") + "\n"
+	sort.Strings(parents)
+	decisions := []sectionDecision{}
+	for _, parent := range parents {
+		baseParent, baseOK := findSection(base, parent)
+		candidateParent, candidateOK := candidate[parent]
+		if !baseOK || !candidateOK {
+			continue
 		}
+		parentText := baseParent.Text
+		for _, subsection := range config.SynthesisSubsections[parent] {
+			block, line := extractSubsection(candidateParent, subsection)
+			if block == "" {
+				continue
+			}
+			decision := sectionDecision{
+				Subsection: subsection, ExpectedParent: parent,
+				ActualParent: parent, Line: line,
+			}
+			if existing, _ := extractSubsection(baseParent, subsection); existing != "" {
+				decision.Status = "discarded"
+				decision.Detail = "base subsection retained; candidate subsection was not promoted"
+			} else {
+				parentText = strings.TrimRight(parentText, "\r\n") + "\n\n" + strings.TrimRight(block, "\r\n") + "\n"
+				decision.Status = "applied"
+				decision.Detail = "candidate subsection added under its configured parent"
+			}
+			decisions = append(decisions, decision)
+		}
+		updated, _ := replaceSection(base, parent, parentText, false)
+		base = updated
 	}
-	updated, _ := replaceSection(base, "Security", securityText, false)
-	return updated
+	return base, decisions
 }
 
-func extractSubsection(text, name string) string {
-	lines := strings.SplitAfter(text, "\n")
+func extractSubsection(parent section, name string) (string, int) {
+	lines := strings.SplitAfter(parent.Text, "\n")
 	needle := "### " + name
 	start, end := -1, len(lines)
+	fence := ""
 	for index, line := range lines {
-		trimmed := strings.TrimRight(strings.TrimSuffix(line, "\n"), "\r")
+		trimmed := strings.TrimSpace(strings.TrimRight(strings.TrimSuffix(line, "\n"), "\r"))
+		if marker := fenceMarker(trimmed); marker != "" {
+			if fence == "" {
+				fence = marker
+			} else if strings.HasPrefix(marker, fence) {
+				fence = ""
+			}
+			continue
+		}
+		if fence != "" {
+			continue
+		}
 		if strings.HasPrefix(trimmed, "### ") {
 			if start >= 0 {
 				end = index
@@ -367,9 +465,79 @@ func extractSubsection(text, name string) string {
 		}
 	}
 	if start < 0 {
+		return "", 0
+	}
+	return strings.Join(lines[start:end], ""), parent.StartLine + start
+}
+
+func validateSynthesisSubsectionPlacement(candidate document) []assemblyDiagnostic {
+	expected := map[string]string{}
+	for parent, subsections := range config.SynthesisSubsections {
+		for _, subsection := range subsections {
+			expected[subsection] = parent
+		}
+	}
+	diagnostics := []assemblyDiagnostic{}
+	check := func(parent section) {
+		for subsection, expectedParent := range expected {
+			if _, line := extractSubsection(parent, subsection); line != 0 && parent.Name != expectedParent {
+				message := fmt.Sprintf(
+					"candidate synthesis subsection %q is under %q at line %d; expected parent %q",
+					subsection, parent.Name, line, expectedParent,
+				)
+				diagnostics = append(diagnostics, assemblyDiagnostic{
+					Code: "synthesis_subsection_parent_mismatch", Severity: "error",
+					Document: "candidate", Subsection: subsection,
+					ExpectedParent: expectedParent, ActualParent: parent.Name,
+					Line: line, Message: message,
+				})
+			}
+		}
+	}
+	if candidate.Preamble != "" {
+		check(section{Name: "<document root>", Text: candidate.Preamble, StartLine: 1})
+	}
+	for _, parent := range candidate.Sections {
+		check(parent)
+	}
+	sort.Slice(diagnostics, func(i, j int) bool {
+		if diagnostics[i].Line != diagnostics[j].Line {
+			return diagnostics[i].Line < diagnostics[j].Line
+		}
+		return diagnostics[i].Subsection < diagnostics[j].Subsection
+	})
+	return diagnostics
+}
+
+func fenceMarker(line string) string {
+	if len(line) < 3 || (line[0] != '`' && line[0] != '~') {
 		return ""
 	}
-	return strings.Join(lines[start:end], "")
+	length := 0
+	for length < len(line) && line[length] == line[0] {
+		length++
+	}
+	if length < 3 {
+		return ""
+	}
+	return line[:length]
+}
+
+func writeAssemblyReport(path string, report assemblyReport) error {
+	if path == "" {
+		return nil
+	}
+	if report.SectionDecisions == nil {
+		report.SectionDecisions = []sectionDecision{}
+	}
+	if report.Diagnostics == nil {
+		report.Diagnostics = []assemblyDiagnostic{}
+	}
+	encoded, err := json.MarshalIndent(report, "", "  ")
+	if err != nil {
+		return err
+	}
+	return atomicWrite(path, string(encoded)+"\n")
 }
 
 func replaceSection(doc document, name, replacement string, allowAppend bool) (document, error) {

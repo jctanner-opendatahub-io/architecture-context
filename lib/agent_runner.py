@@ -3,22 +3,28 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import os
 import re
 import shutil
+import subprocess
 import tempfile
 import time
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from claude_agent_sdk import (
+    AssistantMessage,
     ClaudeAgentOptions,
     ClaudeSDKClient,
     HookMatcher,
+    RateLimitEvent,
     ResultMessage,
 )
 
-from lib.context_telemetry import ContextTelemetryCollector
+from lib.context_telemetry import ContextTelemetryCollector, dependency_observations
 from lib.strace_transport import StracedTransport, empty_async_iter
 
 if TYPE_CHECKING:
@@ -29,6 +35,7 @@ _NAVIGATION_FILES = frozenset({
     "analyzer_architecture.md",
     "GENERATED_ARCHITECTURE.md",
     "ARCHITECTURE_CHANGES.md",
+    "ARCHITECTURE_PATCH.json",
     "component-architecture.json",
     "analyzer_synthesis_context.md",
 })
@@ -36,6 +43,7 @@ _NAVIGATION_FILES = frozenset({
 _AGENT_OUTPUT_FILES = frozenset({
     "GENERATED_ARCHITECTURE.md",
     "ARCHITECTURE_CHANGES.md",
+    "ARCHITECTURE_PATCH.json",
     "INSIGHTS_ARTIFACT.json",
     "SOURCE_READ_JUSTIFICATIONS.json",
 })
@@ -52,6 +60,25 @@ _PARTIAL_TARGETED_GLOB_HINT = (
     "charts/**/templates/**/*.yaml, components/**/kustomization.yaml, "
     "or configurations/**/kustomization.yaml."
 )
+_CLAUDE_AUTH_CONFIG_ENV = "CLAUDE_AUTH_CONFIG_DIR"
+_CLAUDE_CREDENTIALS_FILE = ".credentials.json"
+
+
+def _stage_claude_credentials(config_dir: Path) -> bool:
+    """Copy only explicitly selected first-party credentials into config_dir."""
+    source_config = os.environ.get(_CLAUDE_AUTH_CONFIG_ENV)
+    if not source_config:
+        return False
+    source = Path(source_config).expanduser() / _CLAUDE_CREDENTIALS_FILE
+    if not source.is_file():
+        return False
+    destination = config_dir / _CLAUDE_CREDENTIALS_FILE
+    if source.resolve() == destination.resolve():
+        destination.chmod(0o600)
+        return True
+    shutil.copyfile(source, destination)
+    destination.chmod(0o600)
+    return True
 
 
 class _AgentExecutionGuard:
@@ -101,6 +128,8 @@ class _AgentExecutionGuard:
         self.source_read_operations = 0
         self.source_reads: list[str] = []
         self.source_read_ranges: list[dict[str, object]] = []
+        self.search_observations: list[dict[str, object]] = []
+        self.unclassified_source_commands: list[str] = []
         self._source_read_set: set[str] = set()
         self._discovery_calls: Counter[str] = Counter()
         self.source_read_budget_exceeded = 0
@@ -132,6 +161,20 @@ class _AgentExecutionGuard:
                 return self._check_write(tool_name, tool_input)
             if tool_name == "Read":
                 self._track_unrestricted_read(tool_input)
+            elif tool_name in {"Glob", "Grep"}:
+                self._record_search_observation(tool_name, tool_input)
+            elif tool_name in {"Write", "Edit"}:
+                # These mutate state but do not return source content. Checkout
+                # mutations are independently caught by SourceRunState.
+                pass
+            else:
+                # Unrestricted Claude tools may read source, delegate further
+                # reads, or import external evidence. Unless a tool is handled
+                # above, there is no complete dependency observation for it.
+                command = str(tool_input.get("command") or "").strip()
+                self.unclassified_source_commands.append(
+                    command or tool_name or "unknown-Claude-tool"
+                )
             return {}
 
         if tool_name == "Task":
@@ -177,6 +220,14 @@ class _AgentExecutionGuard:
             return self._check_read(tool_name, tool_input)
         if tool_name in {"Write", "Edit"}:
             return self._check_write(tool_name, tool_input)
+        if tool_name == "Skill":
+            return {}
+        # A policy may explicitly permit a future discovery tool. Until its
+        # read/search semantics are implemented above, that execution cannot
+        # support a complete dependency record.
+        self.unclassified_source_commands.append(
+            tool_name or "unknown-Claude-tool"
+        )
         return {}
 
     def _check_discovery(self, tool_name: str, tool_input: dict):
@@ -214,6 +265,7 @@ class _AgentExecutionGuard:
                 ),
             )
             self._record_tool_activity("targeted_discovery")
+            self._record_search_observation(tool_name, tool_input)
             return self._allow_with_input(tool_input)
         pattern = str(tool_input.get("pattern", "")).strip()
         if pattern in {"*", "**", "**/*", "./*", "./**/*"}:
@@ -224,7 +276,42 @@ class _AgentExecutionGuard:
                 category="broad-discovery",
             )
         self._record_tool_activity("targeted_discovery")
+        self._record_search_observation(tool_name, tool_input)
         return self._allow_with_input(tool_input)
+
+    def _record_search_observation(self, tool_name: str, tool_input: dict) -> None:
+        """Record the resolved scope and every effective search option."""
+
+        if self.checkout is None:
+            self.unclassified_source_commands.append(tool_name)
+            return
+        raw_path = tool_input.get("path") or str(self.checkout)
+        path = self._resolve_tool_path(Path(str(raw_path)))
+        pattern = str(tool_input.get("pattern") or "")
+        if path is None or not self._within_checkout(path) or not pattern:
+            self.unclassified_source_commands.append(tool_name)
+            return
+        self.search_observations.append(
+            {
+                "tool": tool_name,
+                "resolved_root": str(path),
+                "pattern": pattern,
+                "options": {
+                    str(key): value
+                    for key, value in tool_input.items()
+                    if key not in {"path", "pattern"}
+                },
+                "outcome": "observed-pre-tool-use",
+            }
+        )
+        # Claude's hook observes the request before execution but supplies no
+        # authoritative result bytes. Subtree hashing cannot account for local
+        # or ancestor ignore configuration, so preserve the real scope while
+        # making this prospective dependency explicitly ineligible for reuse.
+        relative = path.relative_to(self.checkout).as_posix()
+        self.unclassified_source_commands.append(
+            f"{tool_name}-search-result-unverified:{relative}"
+        )
 
     def _check_read(self, tool_name: str, tool_input: dict):
         raw_path = tool_input.get("file_path") or tool_input.get("path")
@@ -414,9 +501,11 @@ class _AgentExecutionGuard:
         self.read_calls += 1
         raw_path = tool_input.get("file_path") or tool_input.get("path")
         if not raw_path or self.checkout is None:
+            self.unclassified_source_commands.append("Read")
             return
         path = self._resolve_tool_path(Path(str(raw_path)))
         if path is None or not self._within_checkout(path):
+            self.unclassified_source_commands.append("Read")
             return
         relative = path.relative_to(self.checkout).as_posix()
         if path.name in _NAVIGATION_FILES:
@@ -427,6 +516,13 @@ class _AgentExecutionGuard:
             self._source_read_set.add(relative)
             self.source_reads.append(relative)
         self.source_read_operations += 1
+        self.source_read_ranges.append(
+            {
+                "path": relative,
+                "offset": tool_input.get("offset", 1),
+                "limit": tool_input.get("limit"),
+            }
+        )
         self._record_tool_activity("targeted_source_read")
         self.ctx_telemetry.record_useful_read(relative)
 
@@ -541,6 +637,18 @@ class _AgentExecutionGuard:
             "source_files_read": self.source_reads,
             "source_file_count": len(self.source_reads),
             "source_read_ranges": self.source_read_ranges,
+            "dependency_observations": dependency_observations(
+                harness="claude",
+                reads=[
+                    {**record, "outcome": "observed-pre-tool-use"}
+                    for record in self.source_read_ranges
+                ],
+                searches=self.search_observations,
+                complete=not self.unclassified_source_commands,
+                unclassified_source_commands=list(
+                    dict.fromkeys(self.unclassified_source_commands)
+                ),
+            ),
             "context_metrics": self.ctx_telemetry.context_metrics(),
         }
         gap_reasons = self.policy.get("gap_reasons", ())
@@ -593,6 +701,66 @@ def get_model_id(model_shorthand: str) -> str:
     return model_mapping.get(model_shorthand, model_shorthand)
 
 
+@lru_cache(maxsize=8)
+def _inspect_claude_cli(
+    path: str,
+    stat_identity: tuple[int, int, int, int, int],
+) -> dict[str, str | int]:
+    """Identify one resolved Claude CLI without starting an SDK session."""
+
+    del stat_identity  # Cache key: invalidates an in-place executable change.
+    digest = hashlib.sha256()
+    with open(path, "rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(block)
+    try:
+        completed = subprocess.run(
+            [path, "--version"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.SubprocessError) as error:
+        raise RuntimeError(f"cannot identify Claude CLI {path}: {error}") from error
+    version_output = completed.stdout.strip()
+    if not version_output:
+        raise RuntimeError(f"Claude CLI {path} returned an empty version identity")
+    return {
+        "implementation": "claude-code-cli",
+        "version_output": version_output,
+        "binary_sha256": f"sha256:{digest.hexdigest()}",
+    }
+
+
+def resolve_claude_cli_identity(
+    cli_path: str | Path | None = None,
+) -> tuple[str, dict[str, str | int]]:
+    """Resolve and bind the exact CLI implementation used by the Claude SDK."""
+
+    if cli_path is None:
+        from claude_agent_sdk._internal.transport.subprocess_cli import (
+            SubprocessCLITransport,
+        )
+
+        resolver = SubprocessCLITransport(
+            prompt=empty_async_iter(), options=ClaudeAgentOptions()
+        )
+        candidate = resolver._find_cli()
+    else:
+        candidate = str(cli_path)
+    resolved = Path(candidate).expanduser().resolve(strict=True)
+    status = resolved.stat()
+    stat_identity = (
+        status.st_dev,
+        status.st_ino,
+        status.st_size,
+        status.st_mtime_ns,
+        status.st_ctime_ns,
+    )
+    return str(resolved), dict(_inspect_claude_cli(str(resolved), stat_identity))
+
+
 def format_duration(seconds: float) -> str:
     """Format seconds into a human-readable duration string."""
     total = int(seconds)
@@ -605,6 +773,44 @@ def format_duration(seconds: float) -> str:
         parts.append(f"{m}m")
     parts.append(f"{s}s")
     return " ".join(parts)
+
+
+def _provider_exception_details(error: BaseException) -> dict:
+    """Retain structured transport status without serializing opaque objects."""
+
+    response = getattr(error, "response", None)
+    status_code = getattr(error, "status_code", None)
+    if status_code is None and response is not None:
+        status_code = getattr(response, "status_code", None)
+    code = getattr(error, "code", None)
+    return {
+        "kind": "claude-exception",
+        "error_type": type(error).__name__,
+        "message": str(error),
+        "status_code": status_code if isinstance(status_code, int) else None,
+        "code": str(code) if code is not None else None,
+    }
+
+
+def _exception_is_rate_limit(error: BaseException) -> bool:
+    details = _provider_exception_details(error)
+    code = str(details.get("code") or "").casefold().replace("-", "_")
+    return details.get("status_code") == 429 or code in {
+        "rate_limit",
+        "rate_limit_error",
+        "usage_limit",
+        "usage_limit_exceeded",
+    }
+
+
+def _result_text_is_session_limit(result: object) -> bool:
+    if not isinstance(result, str):
+        return False
+    normalized = " ".join(result.casefold().replace("_", " ").split())
+    return (
+        "you've hit your session limit" in normalized
+        or "you have hit your session limit" in normalized
+    )
 
 
 async def run_agent(
@@ -622,6 +828,12 @@ async def run_agent(
     input_paths: tuple[str | Path, ...] = (),
     output_paths: tuple[str | Path, ...] = (),
     harness: str = "claude",
+    max_turns: int | None = None,
+    max_budget_usd: float | None = None,
+    tool_free: bool = False,
+    response_schema: dict | None = None,
+    claude_cli_path: str | Path | None = None,
+    codex_structured_context: dict | None = None,
 ) -> dict:
     """
     Launch one independent agent session through the selected harness.
@@ -638,6 +850,10 @@ async def run_agent(
         dict with 'name', 'success', 'log_file', and optional 'error' keys
     """
     if harness == "codex":
+        if max_turns is not None or max_budget_usd is not None:
+            raise ValueError(
+                "Claude turn and dollar limits are unsupported by the Codex harness"
+            )
         from lib.codex_agent import run_codex_agent
 
         return await run_codex_agent(
@@ -652,11 +868,29 @@ async def run_agent(
             checkout_path=checkout_path,
             input_paths=input_paths,
             output_paths=output_paths,
+            tool_free=tool_free,
+            response_schema=response_schema,
+            expected_structured_context=codex_structured_context,
         )
     if harness != "claude":
         raise ValueError(f"Unsupported agent harness: {harness!r}")
 
     model = model or "opus"
+    if max_turns is not None and max_turns < 1:
+        raise ValueError("max_turns must be at least 1")
+    if max_budget_usd is not None and max_budget_usd <= 0:
+        raise ValueError("max_budget_usd must be greater than zero")
+    if tool_free and max_turns not in {None, 1}:
+        raise ValueError("tool-free structured calls require max_turns=1")
+    if tool_free:
+        max_turns = 1
+
+    resolved_claude_cli_path: str | None = None
+    claude_cli_identity: dict[str, str | int] | None = None
+    if tool_free:
+        resolved_claude_cli_path, claude_cli_identity = (
+            resolve_claude_cli_identity(claude_cli_path)
+        )
 
     # Create log file for this agent
     log_file = log_dir / f"{name.replace('/', '_')}.log"
@@ -679,18 +913,35 @@ async def run_agent(
     if guard.restricted:
         allowed_tools = ["Read", "Write", "Edit", "Skill"]
         allowed_tools.extend(policy.get("discovery_tools", ()))
+    if tool_free:
+        allowed_tools = []
 
     # Claude Code writes project/session state to its config directory even
     # when permission checks are bypassed. Give every concurrent agent a
     # private disposable directory so runs cannot mutate ~/.claude or race on
     # a shared config file.
     config_dir = Path(tempfile.mkdtemp(prefix="architecture-claude-config-"))
+    credentials_staged = _stage_claude_credentials(config_dir)
     options = ClaudeAgentOptions(
+        tools=[] if tool_free else None,
         cwd=cwd,
         allowed_tools=allowed_tools,
         permission_mode="bypassPermissions",
         model=model_id,
-        setting_sources=["project"] if enable_skills else None,
+        max_turns=max_turns,
+        max_budget_usd=max_budget_usd,
+        setting_sources=([] if tool_free else ["project"] if enable_skills else None),
+        disallowed_tools=(
+            ["Bash", "Read", "Write", "Edit", "Glob", "Grep", "Task", "Skill"]
+            if tool_free
+            else []
+        ),
+        cli_path=resolved_claude_cli_path,
+        output_format=(
+            {"type": "json_schema", "schema": response_schema}
+            if response_schema is not None and not tool_free
+            else None
+        ),
         env={"CLAUDE_CONFIG_DIR": str(config_dir)},
         hooks={
             "PreToolUse": [
@@ -759,6 +1010,9 @@ async def run_agent(
 
     try:
         result_message = None
+        response_models: list[str] = []
+        assistant_errors: list[str] = []
+        rate_limit_events: list[dict] = []
         with open(log_file, "a") as log:
             async with ClaudeSDKClient(options=options, transport=transport) as client:
                 await client.query(prompt)
@@ -774,25 +1028,105 @@ async def run_agent(
                     log.flush()
                     if isinstance(msg, ResultMessage):
                         result_message = msg
+                    elif isinstance(msg, AssistantMessage):
+                        if msg.model and msg.model not in response_models:
+                            response_models.append(msg.model)
+                        if msg.error:
+                            assistant_errors.append(str(msg.error))
+                    elif isinstance(msg, RateLimitEvent):
+                        rate_limit_events.append(
+                            {
+                                "status": msg.rate_limit_info.status,
+                                "resets_at": msg.rate_limit_info.resets_at,
+                                "rate_limit_type": (
+                                    msg.rate_limit_info.rate_limit_type
+                                ),
+                                "utilization": msg.rate_limit_info.utilization,
+                                "overage_status": (
+                                    msg.rate_limit_info.overage_status
+                                ),
+                                "overage_resets_at": (
+                                    msg.rate_limit_info.overage_resets_at
+                                ),
+                                "overage_disabled_reason": (
+                                    msg.rate_limit_info.overage_disabled_reason
+                                ),
+                                "raw": msg.rate_limit_info.raw,
+                            }
+                        )
 
         elapsed = time.monotonic() - start_time
 
         _log(f"Completed: {name} ({format_duration(elapsed)})")
 
-        if result_message is not None and result_message.is_error:
+        rejected_rate_limit = any(
+            event.get("status") == "rejected" for event in rate_limit_events
+        )
+        result_is_error = bool(
+            result_message is not None and result_message.is_error
+        )
+        assistant_rate_limit = "rate_limit" in assistant_errors
+        result_text = getattr(result_message, "result", None)
+        session_limit_denied = result_is_error and _result_text_is_session_limit(
+            result_text
+        )
+        if result_is_error or rejected_rate_limit or assistant_rate_limit:
             errors = getattr(result_message, "errors", None) or []
-            error_text = "; ".join(str(error) for error in errors) or (
-                "Claude execution failed"
-            )
+            error_text = "; ".join(str(error) for error in errors)
+            if not error_text and isinstance(result_text, str) and result_text:
+                error_text = result_text
+            if not error_text and rejected_rate_limit:
+                error_text = "Claude rate limit rejected the request"
+            if not error_text and assistant_errors:
+                error_text = "; ".join(assistant_errors)
+            if not error_text:
+                error_text = "Claude execution failed"
+            provider_error = {
+                "kind": "claude-result",
+                "is_error": result_is_error,
+                "subtype": getattr(result_message, "subtype", None),
+                "result": result_text,
+                "errors": list(errors),
+                "stop_reason": getattr(result_message, "stop_reason", None),
+                "assistant_errors": assistant_errors,
+                "rate_limit_events": rate_limit_events,
+            }
             if progress:
                 progress.agent_completed(name, success=False)
             return {
                 "name": name,
                 "success": False,
                 "error": error_text,
+                "provider_error": provider_error,
+                "rate_limit_denied": (
+                    rejected_rate_limit
+                    or assistant_rate_limit
+                    or session_limit_denied
+                ),
                 "log_file": str(log_file),
                 "duration_seconds": elapsed,
-                "telemetry": guard.telemetry(),
+                "telemetry": {
+                    **guard.telemetry(),
+                    "claude_credentials_staged": credentials_staged,
+                    "requested_model_identity": model_id,
+                    **(
+                        {"claude_cli_identity": claude_cli_identity}
+                        if claude_cli_identity is not None
+                        else {}
+                    ),
+                    "applied_model_settings": {
+                        **(
+                            {"max_budget_usd": max_budget_usd}
+                            if max_budget_usd is not None
+                            else {}
+                        )
+                    },
+                    "response_models": response_models,
+                    "model_usage": (
+                        getattr(result_message, "model_usage", None) or {}
+                    ),
+                    "rate_limit_events": rate_limit_events,
+                },
             }
 
         if progress:
@@ -803,9 +1137,28 @@ async def run_agent(
             "success": True,
             "log_file": str(log_file),
             "duration_seconds": elapsed,
-            "telemetry": guard.telemetry(),
+            "telemetry": {
+                **guard.telemetry(),
+                "claude_credentials_staged": credentials_staged,
+                "requested_model_identity": model_id,
+                **(
+                    {"claude_cli_identity": claude_cli_identity}
+                    if claude_cli_identity is not None
+                    else {}
+                ),
+                "applied_model_settings": {
+                    **(
+                        {"max_budget_usd": max_budget_usd}
+                        if max_budget_usd is not None
+                        else {}
+                    )
+                },
+                "response_models": response_models,
+                "rate_limit_events": rate_limit_events,
+            },
         }
         if result_message is not None:
+            result["raw_response"] = result_message.result
             result["telemetry"].update(
                 {
                     "duration_api_ms": result_message.duration_api_ms,
@@ -841,9 +1194,27 @@ async def run_agent(
             "name": name,
             "success": False,
             "error": str(e),
+            "provider_error": _provider_exception_details(e),
+            "rate_limit_denied": _exception_is_rate_limit(e),
             "log_file": str(log_file),
             "duration_seconds": elapsed,
-            "telemetry": guard.telemetry(),
+            "telemetry": {
+                **guard.telemetry(),
+                "claude_credentials_staged": credentials_staged,
+                "requested_model_identity": model_id,
+                **(
+                    {"claude_cli_identity": claude_cli_identity}
+                    if claude_cli_identity is not None
+                    else {}
+                ),
+                "applied_model_settings": {
+                    **(
+                        {"max_budget_usd": max_budget_usd}
+                        if max_budget_usd is not None
+                        else {}
+                    )
+                },
+            },
         }
 
     finally:
@@ -866,6 +1237,8 @@ async def run_agents_concurrently(
     phase_label: str = "",
     on_result=None,
     harness: str = "claude",
+    max_turns: int | None = None,
+    max_budget_usd: float | None = None,
 ) -> list:
     """
     Run multiple agent jobs with a concurrency limit.
@@ -932,6 +1305,8 @@ async def run_agents_concurrently(
                 input_paths=tuple(job.get("input_paths", ())),
                 output_paths=tuple(job.get("output_paths", ())),
                 harness=harness,
+                max_turns=max_turns,
+                max_budget_usd=max_budget_usd,
             )
         except BaseException as e:
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
@@ -972,6 +1347,8 @@ async def run_agents_concurrently(
                     input_paths=tuple(job.get("input_paths", ())),
                     output_paths=tuple(job.get("output_paths", ())),
                     harness=harness,
+                    max_turns=max_turns,
+                    max_budget_usd=max_budget_usd,
                 )
             return await _finalize_result(index, job, result)
         except BaseException as e:

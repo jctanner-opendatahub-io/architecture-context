@@ -1,8 +1,14 @@
+import stat
 import sys
 from pathlib import Path
 
 import pytest
-from claude_agent_sdk import ResultMessage
+from claude_agent_sdk import (
+    AssistantMessage,
+    RateLimitEvent,
+    RateLimitInfo,
+    ResultMessage,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
@@ -62,6 +68,164 @@ class FakeResultClient(FakeClient):
         )
 
 
+class FakeStructuredResultClient(FakeClient):
+    async def receive_response(self):
+        yield ResultMessage(
+            subtype="success",
+            duration_ms=10,
+            duration_api_ms=9,
+            is_error=False,
+            num_turns=1,
+            session_id="structured-session",
+            result='{"completion_status":"complete"}',
+            model_usage={"test-model": {}},
+            permission_denials=[],
+        )
+
+
+def _result_message(*, is_error: bool, result: str, errors=None):
+    return ResultMessage(
+        subtype="error" if is_error else "success",
+        duration_ms=10,
+        duration_api_ms=9,
+        is_error=is_error,
+        num_turns=1,
+        session_id="structured-session",
+        result=result,
+        model_usage={"claude-opus-4-6": {}, "claude-haiku-4-5": {}},
+        permission_denials=[],
+        errors=errors,
+    )
+
+
+@pytest.mark.asyncio
+async def test_claude_result_error_retains_result_when_errors_are_absent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    class SessionLimitClient(FakeClient):
+        async def receive_response(self):
+            yield AssistantMessage(content=[], model="claude-opus-4-6")
+            yield _result_message(
+                is_error=True,
+                result="You've hit your session limit · resets 2am",
+                errors=None,
+            )
+
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", SessionLimitClient)
+    result = await agent_runner.run_agent(
+        "structured", str(tmp_path), "return JSON", tmp_path, tool_free=True
+    )
+
+    assert result["success"] is False
+    assert result["provider_error"]["is_error"] is True
+    assert result["provider_error"]["errors"] == []
+    assert result["provider_error"]["result"].startswith("You've hit")
+    assert result["error"].startswith("You've hit")
+    assert result["rate_limit_denied"] is True
+    assert result["telemetry"]["response_models"] == ["claude-opus-4-6"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("status", "overage_status", "denied"),
+    [
+        ("allowed", "rejected", False),
+        ("allowed_warning", "rejected", False),
+        ("rejected", "allowed", True),
+    ],
+)
+async def test_claude_rate_limit_events_only_deny_top_level_rejection(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    status: str,
+    overage_status: str,
+    denied: bool,
+):
+    class RateEventClient(FakeClient):
+        async def receive_response(self):
+            yield RateLimitEvent(
+                rate_limit_info=RateLimitInfo(
+                    status=status,
+                    overage_status=overage_status,
+                    overage_disabled_reason="org policy",
+                    raw={"status": status, "overageStatus": overage_status},
+                ),
+                uuid="event",
+                session_id="session",
+            )
+            yield _result_message(
+                is_error=denied,
+                result="request rejected" if denied else '{"ok":true}',
+            )
+
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", RateEventClient)
+    result = await agent_runner.run_agent(
+        "structured", str(tmp_path), "return JSON", tmp_path, tool_free=True
+    )
+
+    assert result["success"] is (not denied)
+    assert result.get("rate_limit_denied", False) is denied
+    events = (
+        result["provider_error"]["rate_limit_events"]
+        if denied
+        else result["telemetry"]["rate_limit_events"]
+    )
+    assert events[0]["status"] == status
+    assert events[0]["overage_status"] == overage_status
+
+
+@pytest.mark.asyncio
+async def test_claude_transport_http_429_is_retained_as_structured_denial(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    class HTTP429Error(RuntimeError):
+        status_code = 429
+        code = "rate_limit_error"
+
+    class HTTP429Client(FakeClient):
+        async def receive_response(self):
+            raise HTTP429Error("quota exhausted")
+            yield  # pragma: no cover - keep this an async generator
+
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", HTTP429Client)
+    result = await agent_runner.run_agent(
+        "structured", str(tmp_path), "return JSON", tmp_path, tool_free=True
+    )
+
+    assert result["success"] is False
+    assert result["rate_limit_denied"] is True
+    assert result["provider_error"]["status_code"] == 429
+    assert result["provider_error"]["code"] == "rate_limit_error"
+
+
+def test_stage_claude_credentials_copies_only_explicit_credentials(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    source = tmp_path / "source"
+    destination = tmp_path / "destination"
+    source.mkdir()
+    destination.mkdir()
+    (source / ".credentials.json").write_text('{"token":"secret"}\n')
+    (source / "settings.json").write_text('{"provider":"vertex"}\n')
+    monkeypatch.setenv("CLAUDE_AUTH_CONFIG_DIR", str(source))
+
+    assert agent_runner._stage_claude_credentials(destination) is True
+
+    credential = destination / ".credentials.json"
+    assert credential.read_text() == '{"token":"secret"}\n'
+    assert stat.S_IMODE(credential.stat().st_mode) == 0o600
+    assert not (destination / "settings.json").exists()
+
+
+def test_stage_claude_credentials_requires_explicit_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.delenv("CLAUDE_AUTH_CONFIG_DIR", raising=False)
+
+    assert agent_runner._stage_claude_credentials(tmp_path) is False
+    assert list(tmp_path.iterdir()) == []
+
+
 @pytest.mark.asyncio
 async def test_concurrent_agent_keeps_sdk_payload_out_of_progress_console(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
@@ -113,6 +277,201 @@ async def test_agent_result_captures_sdk_usage_and_cost(
     assert telemetry["num_turns"] == 3
     assert telemetry["total_cost_usd"] == 0.125
     assert telemetry["usage"] == {"input_tokens": 100, "output_tokens": 250}
+
+
+@pytest.mark.asyncio
+async def test_claude_primary_model_is_observed_separately_from_auxiliary_usage(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    class PrimaryAndAuxiliaryClient(FakeClient):
+        async def receive_response(self):
+            yield AssistantMessage(content=[], model="claude-opus-4-6")
+            yield _result_message(is_error=False, result='{ "ok": true }')
+
+    monkeypatch.setattr(
+        agent_runner, "ClaudeSDKClient", PrimaryAndAuxiliaryClient
+    )
+    result = await agent_runner.run_agent(
+        "structured",
+        str(tmp_path),
+        "return JSON",
+        tmp_path,
+        model="opus",
+        max_budget_usd=2.0,
+        tool_free=True,
+    )
+
+    telemetry = result["telemetry"]
+    assert telemetry["requested_model_identity"] == "claude-opus-4-6"
+    assert telemetry["response_models"] == ["claude-opus-4-6"]
+    assert set(telemetry["model_usage"]) == {
+        "claude-opus-4-6",
+        "claude-haiku-4-5",
+    }
+    assert telemetry["applied_model_settings"] == {"max_budget_usd": 2.0}
+
+
+@pytest.mark.asyncio
+async def test_tool_free_claude_call_enforces_one_response_without_project_context(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", FakeStructuredResultClient)
+
+    result = await agent_runner.run_agent(
+        "structured",
+        str(tmp_path),
+        "return JSON",
+        tmp_path,
+        tool_free=True,
+        max_turns=1,
+        response_schema={"type": "object", "required": ["completion_status"]},
+    )
+
+    options = FakeClient.last_options
+    assert result["success"] is True
+    assert result["raw_response"] == '{"completion_status":"complete"}'
+    assert options.max_turns == 1
+    assert options.tools == []
+    assert options.allowed_tools == []
+    assert options.setting_sources == []
+    assert options.output_format is None
+    assert options.cli_path is not None
+    assert result["telemetry"]["claude_cli_identity"]["version_output"]
+    assert set(options.disallowed_tools) == {
+        "Bash", "Read", "Write", "Edit", "Glob", "Grep", "Task", "Skill",
+    }
+
+
+@pytest.mark.asyncio
+async def test_tool_free_claude_real_serializer_omits_json_schema_and_keeps_bounds(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    """Exercise the installed SDK command builder without connecting transport."""
+
+    from claude_agent_sdk._internal.transport.subprocess_cli import (
+        SubprocessCLITransport,
+    )
+
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", FakeStructuredResultClient)
+    await agent_runner.run_agent(
+        "structured",
+        str(tmp_path),
+        "return JSON",
+        tmp_path,
+        model="opus",
+        tool_free=True,
+        response_schema={"type": "object"},
+    )
+
+    options = FakeClient.last_options
+    transport = SubprocessCLITransport("transport-blocked", options)
+    transport._cli_path = str(options.cli_path)
+    command = transport._build_command()
+
+    assert "--json-schema" not in command
+    assert command[command.index("--tools") + 1] == ""
+    assert command[command.index("--max-turns") + 1] == "1"
+    assert command[command.index("--model") + 1] == "claude-opus-4-6"
+    assert "--setting-sources=" in command
+    disallowed = command[command.index("--disallowedTools") + 1].split(",")
+    assert set(disallowed) == {
+        "Bash", "Read", "Write", "Edit", "Glob", "Grep", "Task", "Skill",
+    }
+    assert options.env["CLAUDE_CONFIG_DIR"].startswith(
+        "/tmp/architecture-claude-config-"
+    )
+    assert transport._process is None
+
+
+@pytest.mark.asyncio
+async def test_non_tool_free_claude_keeps_legacy_output_format_behavior(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", FakeStructuredResultClient)
+    schema = {"type": "object"}
+
+    await agent_runner.run_agent(
+        "legacy-schema",
+        str(tmp_path),
+        "return JSON",
+        tmp_path,
+        response_schema=schema,
+    )
+
+    assert FakeClient.last_options.output_format == {
+        "type": "json_schema",
+        "schema": schema,
+    }
+    assert FakeClient.last_options.cli_path is None
+
+
+def test_claude_cli_identity_uses_the_sdk_resolved_executable():
+    path, identity = agent_runner.resolve_claude_cli_identity()
+
+    assert Path(path).is_file()
+    assert identity["implementation"] == "claude-code-cli"
+    assert identity["version_output"].endswith("(Claude Code)")
+    assert identity["binary_sha256"].startswith("sha256:")
+    assert len(identity["binary_sha256"]) == len("sha256:") + 64
+
+
+@pytest.mark.asyncio
+async def test_tool_free_claude_rejects_multiple_turns_before_sdk_call(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    called = False
+
+    class MustNotStart(FakeClient):
+        def __init__(self, *args, **kwargs):
+            nonlocal called
+            called = True
+            super().__init__(*args, **kwargs)
+
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", MustNotStart)
+
+    with pytest.raises(ValueError, match="max_turns=1"):
+        await agent_runner.run_agent(
+            "structured",
+            str(tmp_path),
+            "return JSON",
+            tmp_path,
+            tool_free=True,
+            max_turns=2,
+        )
+    assert called is False
+
+
+@pytest.mark.asyncio
+async def test_run_agent_passes_claude_turn_and_budget_limits(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+):
+    monkeypatch.setattr(agent_runner, "ClaudeSDKClient", FakeClient)
+
+    result = await agent_runner.run_agent(
+        "example",
+        str(tmp_path),
+        "test prompt",
+        tmp_path,
+        max_turns=12,
+        max_budget_usd=20.0,
+    )
+
+    assert result["success"] is True
+    assert FakeClient.last_options.max_turns == 12
+    assert FakeClient.last_options.max_budget_usd == 20.0
+
+
+@pytest.mark.asyncio
+async def test_codex_rejects_claude_only_limits(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsupported by the Codex harness"):
+        await agent_runner.run_agent(
+            "example",
+            str(tmp_path),
+            "test prompt",
+            tmp_path,
+            harness="codex",
+            max_budget_usd=1.0,
+        )
 
 
 @pytest.mark.asyncio
@@ -558,7 +917,7 @@ async def test_guard_reports_runtime_activity_categories(
     analyzer_file = analyzer_root / "analyzer_synthesis_context.md"
     analyzer_file.write_text("# analyzer context\n")
     output_file = tmp_path / "architecture" / "rhoai.next" / "example.md"
-    change_file = generation_dir / "ARCHITECTURE_CHANGES.md"
+    change_file = generation_dir / "ARCHITECTURE_PATCH.json"
 
     guard = agent_runner._AgentExecutionGuard(
         {
@@ -641,6 +1000,120 @@ async def test_synthesis_route_still_blocks_unlisted_source_reads(
         {},
     )
     assert result["hookSpecificOutput"]["permissionDecision"] == "deny"
+
+
+@pytest.mark.asyncio
+async def test_claude_guard_records_resolved_reads_and_search_scopes(tmp_path: Path):
+    checkout = tmp_path / "checkout"
+    source = checkout / "src" / "server.go"
+    source.parent.mkdir(parents=True)
+    source.write_text("package server\n")
+    guard = agent_runner._AgentExecutionGuard(
+        {
+            "route": "partial",
+            "readiness": "partial",
+            "file_budget": 1,
+            "source_files": (),
+            "discovery_tools": ("Grep",),
+            "gap_categories": ("authorization",),
+        },
+        checkout,
+    )
+
+    await guard.pre_tool_use(
+        {
+            "tool_name": "Read",
+            "tool_input": {"file_path": "src/server.go", "offset": 1, "limit": 5},
+        },
+        None,
+        {},
+    )
+    await guard.pre_tool_use(
+        {
+            "tool_name": "Grep",
+            "tool_input": {
+                "path": "src",
+                "pattern": "Authorize",
+                "glob": "*.go",
+            },
+        },
+        None,
+        {},
+    )
+
+    observed = guard.telemetry()["dependency_observations"]
+    assert observed["complete"] is False
+    assert observed["reads"] == [
+        {
+            "path": "src/server.go",
+            "offset": 1,
+            "limit": 5,
+            "outcome": "observed-pre-tool-use",
+        }
+    ]
+    assert observed["searches"] == [
+        {
+            "tool": "Grep",
+            "resolved_root": str(source.parent),
+            "pattern": "Authorize",
+            "options": {
+                "glob": "*.go",
+                "output_mode": "files_with_matches",
+                "head_limit": 1,
+            },
+            "outcome": "observed-pre-tool-use",
+        }
+    ]
+    assert observed["unclassified_source_commands"] == [
+        "Grep-search-result-unverified:src"
+    ]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("tool_name", ["Grep", "Glob"])
+async def test_claude_pre_tool_searches_cannot_claim_complete_results(
+    tmp_path: Path, tool_name: str
+):
+    checkout = tmp_path / "checkout"
+    source = checkout / "src"
+    source.mkdir(parents=True)
+    guard = agent_runner._AgentExecutionGuard({}, checkout)
+    tool_input = {
+        "path": "src",
+        "pattern": "Marker" if tool_name == "Grep" else "**/*.go",
+    }
+
+    await guard.pre_tool_use(
+        {"tool_name": tool_name, "tool_input": tool_input},
+        None,
+        {},
+    )
+
+    observed = guard.telemetry()["dependency_observations"]
+    assert observed["complete"] is False
+    assert observed["searches"][0]["resolved_root"] == str(source)
+    assert observed["unclassified_source_commands"] == [
+        f"{tool_name}-search-result-unverified:src"
+    ]
+
+
+@pytest.mark.asyncio
+async def test_unrestricted_claude_bash_marks_dependency_observation_incomplete(
+    tmp_path: Path,
+):
+    checkout = tmp_path / "checkout"
+    checkout.mkdir()
+    guard = agent_runner._AgentExecutionGuard({}, checkout)
+
+    await guard.pre_tool_use(
+        {"tool_name": "Bash", "tool_input": {"command": "rg TODO src | head"}},
+        None,
+        {},
+    )
+
+    observed = guard.telemetry()["dependency_observations"]
+    assert observed["complete"] is False
+    assert observed["unclassified_source_commands"] == ["rg TODO src | head"]
 
 
 @pytest.mark.asyncio

@@ -21,14 +21,14 @@ const (
 )
 
 type DiffResult struct {
-	FormatVersion string          `json:"format_version"`
-	FromVersion   string          `json:"from_version"`
-	ToVersion     string          `json:"to_version"`
-	Status        string          `json:"status"`
-	Added         []string        `json:"added"`
-	Removed       []string        `json:"removed"`
-	Changed       []ComponentDiff `json:"changed"`
-	UnchangedCount int            `json:"unchanged_count"`
+	FormatVersion  string          `json:"format_version"`
+	FromVersion    string          `json:"from_version"`
+	ToVersion      string          `json:"to_version"`
+	Status         string          `json:"status"`
+	Added          []string        `json:"added"`
+	Removed        []string        `json:"removed"`
+	Changed        []ComponentDiff `json:"changed"`
+	UnchangedCount int             `json:"unchanged_count"`
 }
 
 type ComponentDiff struct {
@@ -330,7 +330,7 @@ func egressSet(egresses []types.Egress) map[string]bool {
 func rbacSet(roles []types.RBACRole) map[string]bool {
 	s := make(map[string]bool)
 	for _, r := range roles {
-		s[r.RoleName+" "+r.APIGroup+" "+r.Resources] = true
+		s[r.RoleName+" "+r.APIGroup+" "+r.Resources+" "+r.NonResourceURLs] = true
 	}
 	return s
 }

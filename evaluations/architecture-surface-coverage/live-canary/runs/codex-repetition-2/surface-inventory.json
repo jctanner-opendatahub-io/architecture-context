@@ -1,0 +1,302 @@
+{
+  "applicability_observations": [],
+  "component": "rhods-operator",
+  "component_roles": [
+    "operator",
+    "service"
+  ],
+  "inventory_id": "0c76c94c9c8965db8a320de7dae839d50d5d1351dd86971677e03b15f8334ca1",
+  "observed_reads": [],
+  "schema_version": "architecture-surface-coverage/v1",
+  "summary": {
+    "documented": 0,
+    "not_applicable": 0,
+    "seeded": 7,
+    "unresolved": 7
+  },
+  "surfaces": [
+    {
+      "applicability": {
+        "basis": "Analyzer webhook or admission authentication evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "501",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "config/default/manager_webhook_patch.yaml"
+        },
+        {
+          "line_range": "22",
+          "origin": "analyzer",
+          "path": "internal/webhook/dashboard/validating_acceleratorprofile.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "authentication.admission-serving-identity",
+      "parent_category": "authentication",
+      "priority": "high",
+      "question": "What admission behavior is served, and what establishes the webhook server identity?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "What admission behavior is served, and what establishes the webhook server identity?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer gateway, OAuth, OIDC, or auth-proxy signal.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml"
+        },
+        {
+          "line_range": "68",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "line_range": "72",
+          "origin": "analyzer",
+          "path": "internal/controller/datasciencecluster/datasciencecluster_controller.go"
+        },
+        {
+          "line_range": "60",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "line_range": "77",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml"
+        },
+        {
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "authentication.gateway-modes",
+      "parent_category": "authentication",
+      "priority": "required",
+      "question": "How do integrated OAuth, external OIDC, and externally managed authentication change gateway behavior?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "How do integrated OAuth, external OIDC, and externally managed authentication change gateway behavior?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer identifies an operator-manager metrics serving surface.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "485-500",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "line_range": "3",
+          "origin": "analyzer",
+          "path": "config/default/metrics_service_patch.yaml"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "config/default/manager_webhook_patch.yaml"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "authentication.metrics-enforcement",
+      "parent_category": "authentication",
+      "priority": "required",
+      "question": "When and where are the operator metrics endpoint's authentication and authorization filters enforced?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "When and where are the operator metrics endpoint's authentication and authorization filters enforced?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer source evidence contains a build, packaging, crypto, provider, or TLS signal. Static presence makes applicability uncertain and does not establish runtime FIPS compliance.",
+        "evidence": [],
+        "status": "uncertain"
+      },
+      "candidate_locations": [
+        {
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "compliance.runtime-fips",
+      "parent_category": "fips_compliance",
+      "priority": "required",
+      "question": "Which build or packaging signals exist, and what source evidence establishes or limits runtime FIPS claims?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "Which build or packaging signals exist, and what source evidence establishes or limits runtime FIPS claims?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer records one or more Namespace watch candidates.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "63-69",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "70-76",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "140-150",
+          "origin": "analyzer",
+          "path": "internal/controller/components/kueue/kueue_controller.go"
+        },
+        {
+          "line_range": "140",
+          "origin": "analyzer",
+          "path": "internal/controller/components/kueue/kueue_controller.go"
+        },
+        {
+          "line_range": "63",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "70",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "controller.named-resource-watches",
+      "parent_category": "internal_dependencies",
+      "priority": "required",
+      "question": "Which literal resource or namespace names constrain each controller watch, and which controller owns the watch?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "Which literal resource or namespace names constrain each controller watch, and which controller owns the watch?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer runtime-client or external-connection evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "58",
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/pkg/applier/olm.go"
+        },
+        {
+          "line_range": "63",
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/pkg/applier/olm.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/go.mod"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "dependencies.outbound-credentials",
+      "parent_category": "integration_points",
+      "priority": "high",
+      "question": "Which outbound clients are used, and how are their target, credentials, TLS, and failure boundaries configured?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "Which outbound clients are used, and how are their target, credentials, TLS, and failure boundaries configured?"
+    },
+    {
+      "applicability": {
+        "basis": "Operator entrypoint or TLS configuration evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "95",
+          "origin": "analyzer",
+          "path": "Dockerfiles/Dockerfile"
+        },
+        {
+          "line_range": "79",
+          "origin": "analyzer",
+          "path": "Dockerfiles/Dockerfile.konflux"
+        },
+        {
+          "line_range": "301",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [],
+      "evidence_status": "unresolved",
+      "id": "lifecycle.configuration-tls",
+      "parent_category": "architecture_components",
+      "priority": "high",
+      "question": "What initialization ordering and TLS-profile lifecycle govern the operator's serving surfaces?",
+      "reason": "Pending evidence-to-output review.",
+      "remaining_question": "What initialization ordering and TLS-profile lifecycle govern the operator's serving surfaces?"
+    }
+  ],
+  "validator_findings": []
+}

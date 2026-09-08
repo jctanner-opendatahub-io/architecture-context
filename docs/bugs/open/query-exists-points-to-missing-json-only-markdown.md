@@ -1,0 +1,12 @@
+# Query exists points to missing JSON-only Markdown
+
+Status: open. Found by independent SC-18 review cycle 1 on 2026-09-07.
+
+Severity/scope: Low; SC-18 compatibility.
+
+F5: exists prints Doc: <version>/<component>.md for a valid JSON-only accepted component even when that derivative is absent. In P4 select an existing authoritative/derivative path and add a JSON-only command regression without changing CLI flags.
+
+Evidence: `logs/structured-component-assembly/20260907-resume/sc18-review-report.md`,
+reviewer `a7b596b1-a251-4e25-8e3b-323dd6f7da0d`, Fable 5.1/high.
+The bounded SC18 verdict is PASS subject to dependency recheck; this finding is
+non-blocking for that slice and remains tracked independently.

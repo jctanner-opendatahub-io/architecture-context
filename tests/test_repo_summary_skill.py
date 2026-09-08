@@ -6,24 +6,22 @@ SKILL_PATH = (
 )
 
 
-def test_change_output_contract_is_explicit_in_summary_skill():
+def test_patch_output_contract_is_explicit_in_summary_skill():
     skill = SKILL_PATH.read_text()
 
-    assert (
-        "Action | Category | Row Key | Column | Analyzer Value | Candidate Value | "
-        "Reason | Evidence"
-    ) in skill
-    assert "literal value `<empty>` in both value columns" in skill
-    assert "numeric repository-relative" in skill
-    assert "bare file paths, directory paths, and glob patterns are invalid" in skill
-    assert "comma-separated evidence item" in skill
-    assert "Do not replace" in skill
-    assert "prose change summary" in skill
+    assert "--patch-output=FILENAME" in skill
+    assert '"schema_version": 1' in skill
+    assert '"operations": [' in skill
+    assert '"action": "add"' in skill
+    assert '"analyzer_value": null' in skill
+    assert "repository-relative path followed by a numeric line" in skill
+    assert "bare paths, directory paths, glob patterns" in skill
+    assert "Do not add prose or Markdown around" in skill
     assert "never `metadata`" in skill
-    assert "`endpoint :: methods`" in skill
-    assert "`component :: interaction_type`" in skill
-    assert "at most one change record" in skill
-    assert "Tracking Server API :: All" in skill
+    assert "`[endpoint, methods]`" in skill
+    assert "`[component, interaction_type]`" in skill
+    assert "at most one operation" in skill
+    assert '["Tracking Server API", "All"]' in skill
     assert "mechanism is a cell value" in skill
     assert "one bounded search plan" in skill
     assert "Do not repeat equivalent searches" in skill
@@ -31,13 +29,14 @@ def test_change_output_contract_is_explicit_in_summary_skill():
     assert "not an invitation to continue searching" in skill
     assert "not permission to stop early" not in skill
     assert "not permission to repeat" in skill
-    assert "| add | architecture_components |" in skill
-    assert "do not copy the candidate row contents" in skill
-    assert "row-key migration" in skill
-    assert "Never emit an `update` whose candidate value changes a key column" in skill
-    assert "requires a delete for the former key" in skill
-    assert "an add\nfor the latter key" in skill
-    assert "Do not emit bare pipe-separated lines" in skill
+    assert '"category": "architecture_components"' in skill
+    assert "do not copy the candidate row into `candidate_value`" in skill
+    assert "Never use `update` to\nchange a key column" in skill
+    assert (
+        "requires a delete for the former key and an add\nfor the latter key"
+        in skill
+    )
+    assert "Always write the artifact" in skill
 
 
 def test_surface_planning_and_final_review_contract_is_explicit():

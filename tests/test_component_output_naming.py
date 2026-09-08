@@ -1,12 +1,11 @@
 import json
-from pathlib import Path
 
+from lib.manifest_parser import ComponentInfo
 from lib.phases.architecture import (
     _promote_component_output,
     _remove_legacy_component_outputs,
 )
 from lib.phases.discover import _apply_map_overrides
-from lib.manifest_parser import ComponentInfo
 
 
 def test_legacy_component_outputs_are_removed_for_prefixed_alias(tmp_path):

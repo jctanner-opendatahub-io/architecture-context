@@ -642,12 +642,12 @@ class TestDisabledDefaults:
                     f"Line {i}: CLAUDE_CODE_ENABLE_TELEMETRY outside OTel block"
                 )
 
-    def test_env_sourcing_with_caller_precedence(self):
-        """Launcher sources .env but caller-exported variables take precedence."""
+    def test_env_file_is_passed_without_shell_sourcing(self):
+        """Launcher passes .env to Podman without executing its contents."""
         content = (PROJECT_ROOT / "scripts" / "run_claude_container.sh").read_text()
-        assert 'source "$ROOT_DIR/.env"' in content
-        assert "_SAVED_ENV" in content, "must save caller env before sourcing"
-        assert "export" in content, "must restore caller env after sourcing"
+        assert 'source "$ROOT_DIR/.env"' not in content
+        assert 'ENV_FILE_ARGS+=(--env-file "$ROOT_DIR/.env")' in content
+        assert 'ENV_ARGS+=(--env "${var}=${!var}")' in content
 
 
 class TestLauncherShellSyntax:

@@ -20,6 +20,7 @@ KNOWN_ARTIFACTS = {
     "analyzer_architecture.md",
     "GENERATED_ARCHITECTURE.md",
     "ARCHITECTURE_CHANGES.md",
+    "ARCHITECTURE_PATCH.json",
     "INSIGHTS_ARTIFACT.json",
 }
 SECTIONS = (

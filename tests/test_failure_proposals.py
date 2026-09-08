@@ -539,7 +539,7 @@ class TestSchemaValidation:
             pytest.skip("jsonschema not installed")
 
         schema_path = (
-            PROJECT_ROOT / "benchmark" / "analyzer-assisted-v1" / "proposal_schema.json"
+            PROJECT_ROOT / "schemas" / "failure-proposal-v1.schema.json"
         )
         with open(schema_path) as f:
             schema = json.load(f)

@@ -187,7 +187,7 @@ func Extract(root string, options Options) (model.Input, error) {
 	classifyDependencyRoles(&input)
 	input.Authentication = append(input.Authentication, expandSupplementalAuth(input.GRPCServices, options.SupplementalAuth)...)
 	input.SecurityEvidence = dedupeSecurityEvidence(input.SecurityEvidence)
-	input.CategoryCoverage = categoryCoverage(absoluteRoot, input)
+	input.CategoryCoverage, input.ScanStatistics = categoryCoverageWithStatistics(absoluteRoot, input)
 	input.CrossReferences = crossReferences(input)
 	input.CoverageFindings = coverageFindings(input)
 	input.SynthesisEvidence = synthesisEvidence(input)

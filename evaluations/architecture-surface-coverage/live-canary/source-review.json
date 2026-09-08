@@ -1,0 +1,608 @@
+{
+  "schema_version": "architecture-surface-live-source-review/v1",
+  "review_date": "2026-09-05",
+  "review_scope": "Every model-authored claim in the promoted Purpose, Architectural Analysis, FIPS, and Data Flows sections; every required surface representation; every accepted table patch; candidate-to-promoted loss; and warning accuracy. Unchanged analyzer-owned rows were checked through merge counts and hashes rather than re-adjudicated as model claims.",
+  "source": {
+    "repository": "https://github.com/red-hat-data-services/rhods-operator.git",
+    "revision": "4ada791819c522a4cda54f9029ab3e4056ed31ed"
+  },
+  "runs": [
+    {
+      "run_id": "claude-repetition-1",
+      "claim_results": [
+        {
+          "claim_id": "metrics.secure-conditional-filter",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:24",
+            "promoted.md:300",
+            "promoted.md:378"
+          ],
+          "review_basis": [
+            "cmd/main.go:485-500"
+          ]
+        },
+        {
+          "claim_id": "watch.models-as-a-service",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:22",
+            "promoted.md:327"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:63-69"
+          ]
+        },
+        {
+          "claim_id": "watch.kuadrant-system",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:22",
+            "promoted.md:328"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ]
+        },
+        {
+          "claim_id": "gateway.integrated-oauth",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:22"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-oidc",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:22"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:100-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-auth",
+          "status": "omitted",
+          "document_locations": [],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:149-157"
+          ]
+        },
+        {
+          "claim_id": "fips.runtime-not-established",
+          "status": "unsupported",
+          "document_locations": [
+            "promoted.md:334-357"
+          ],
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        }
+      ],
+      "unsupported_claims": [
+        {
+          "surface_id": "authentication.gateway-modes",
+          "document_locations": [
+            "promoted.md:22"
+          ],
+          "claim": "Kubernetes TokenReview is presented as the third gateway authentication mode while externally managed authentication is omitted.",
+          "source_reason": "The switch has three modes: external OIDC, integrated OAuth, and AuthModeNone; TokenReview is a configurable capability within proxy-backed behavior.",
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:123-160"
+          ]
+        },
+        {
+          "surface_id": "compliance.runtime-fips",
+          "document_locations": [
+            "promoted.md:24",
+            "promoted.md:345",
+            "promoted.md:353",
+            "promoted.md:357"
+          ],
+          "claim": "CGO_ENABLED=1 and strictfipsruntime establish dynamic OpenSSL linkage and route Go crypto/tls through OpenSSL.",
+          "source_reason": "The Dockerfile records build settings but no binary linkage or provider inspection; the selected CSV marks FIPS compliance false.",
+          "review_basis": [
+            "Dockerfiles/Dockerfile.konflux:58-61",
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        },
+        {
+          "surface_id": "compliance.runtime-fips",
+          "document_locations": [
+            "promoted.md:346"
+          ],
+          "claim": "The UBI PQC base reference proves OpenSSL is present in the produced image.",
+          "source_reason": "A base image reference is not a retained package or binary inventory.",
+          "review_basis": [
+            "Dockerfiles/Dockerfile.konflux:63"
+          ]
+        },
+        {
+          "surface_id": "compliance.runtime-fips",
+          "document_locations": [
+            "promoted.md:357"
+          ],
+          "claim": "strictfipsruntime guarantees a startup panic when FIPS mode is unavailable.",
+          "source_reason": "The inspected repository records only the build flag and contains no source or runtime result establishing that behavior.",
+          "review_basis": [
+            "Dockerfiles/Dockerfile.konflux:58"
+          ]
+        },
+        {
+          "surface_id": "compliance.runtime-fips",
+          "document_locations": [
+            "promoted.md:24",
+            "promoted.md:336",
+            "promoted.md:357"
+          ],
+          "claim": "Runtime FIPS compliance is reduced to host-node FIPS activation and the cloudmanager CGO build argument.",
+          "source_reason": "The CSV declares the operator non-FIPS-compliant, and the bounded evidence does not verify the image, binaries, providers, dependencies, or deployed runtime.",
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        },
+        {
+          "surface_id": "authentication.gateway-proxy-flow",
+          "document_locations": [
+            "promoted.md:376"
+          ],
+          "claim": "kube-auth-proxy forwards authenticated gateway traffic to backend services.",
+          "source_reason": "The OIDC proxy uses static://200, the HTTPRoute sends only the OAuth2 path to that proxy, and Envoy calls the proxy through ext_authz; the proxy is an authorization service rather than the backend traffic forwarder.",
+          "review_basis": [
+            "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml:89-100",
+            "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml:8-23",
+            "internal/controller/services/gateway/resources/envoyfilter-authn.tmpl.yaml:28-37"
+          ]
+        }
+      ],
+      "candidate_to_promoted_losses": [],
+      "warning_review": {
+        "emitted": 12,
+        "artifact_contract": 8,
+        "semantic_signal": 2,
+        "false_positive": 2,
+        "false_positive_details": [
+          "compliance.runtime-fips was present in the promoted document, although source review found it unsupported rather than absent.",
+          "lifecycle.configuration-tls was present in the promoted Architectural Analysis."
+        ],
+        "semantic_signal_details": [
+          "authentication.gateway-modes lacked externally managed authentication.",
+          "dependencies.outbound-credentials lacked the sidecar's concrete manifest-tools client behavior."
+        ]
+      },
+      "analyzer_row_losses": [
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "opendatahub-operator-metrics-reader",
+          "row": "| opendatahub-operator-metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:203"
+          ],
+          "candidate_locations": [
+            "candidate.md:207"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        },
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "metrics-reader",
+          "row": "| metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:204"
+          ],
+          "candidate_locations": [
+            "candidate.md:208"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "claude-repetition-2",
+      "claim_results": [
+        {
+          "claim_id": "metrics.secure-conditional-filter",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:28",
+            "promoted.md:304"
+          ],
+          "review_basis": [
+            "cmd/main.go:485-500"
+          ]
+        },
+        {
+          "claim_id": "watch.models-as-a-service",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:24",
+            "promoted.md:331"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:63-69"
+          ]
+        },
+        {
+          "claim_id": "watch.kuadrant-system",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:24",
+            "promoted.md:332"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ]
+        },
+        {
+          "claim_id": "gateway.integrated-oauth",
+          "status": "omitted",
+          "document_locations": [],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:146-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-oidc",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:22"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:123-145"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-auth",
+          "status": "omitted",
+          "document_locations": [],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:149-157"
+          ]
+        },
+        {
+          "claim_id": "fips.runtime-not-established",
+          "status": "omitted",
+          "document_locations": [],
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        }
+      ],
+      "unsupported_claims": [],
+      "candidate_to_promoted_losses": [
+        {
+          "surface_id": "compliance.runtime-fips",
+          "candidate_locations": [
+            "candidate.md:355-375"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "coverage_validator_detected": true
+        }
+      ],
+      "warning_review": {
+        "emitted": 16,
+        "artifact_contract": 14,
+        "semantic_signal": 2,
+        "false_positive": 0,
+        "false_positive_details": [],
+        "semantic_signal_details": [
+          "authentication.gateway-modes documented only external OIDC.",
+          "compliance.runtime-fips was absent after candidate-to-promoted assembly."
+        ]
+      },
+      "analyzer_row_losses": [
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "opendatahub-operator-metrics-reader",
+          "row": "| opendatahub-operator-metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:203"
+          ],
+          "candidate_locations": [
+            "candidate.md:211"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        },
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "metrics-reader",
+          "row": "| metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:204"
+          ],
+          "candidate_locations": [
+            "candidate.md:212"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "codex-repetition-1",
+      "claim_results": [
+        {
+          "claim_id": "metrics.secure-conditional-filter",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:22",
+            "promoted.md:313"
+          ],
+          "review_basis": [
+            "cmd/main.go:485-500"
+          ]
+        },
+        {
+          "claim_id": "watch.models-as-a-service",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:328",
+            "promoted.md:355"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:63-69"
+          ]
+        },
+        {
+          "claim_id": "watch.kuadrant-system",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:329",
+            "promoted.md:355"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ]
+        },
+        {
+          "claim_id": "gateway.integrated-oauth",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:24"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:146-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-oidc",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:24"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:123-145"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-auth",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:24"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:149-157"
+          ]
+        },
+        {
+          "claim_id": "fips.runtime-not-established",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:337"
+          ],
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        }
+      ],
+      "unsupported_claims": [
+        {
+          "surface_id": "lifecycle.initialization-ordering",
+          "document_locations": [
+            "promoted.md:16",
+            "promoted.md:358"
+          ],
+          "claim": "Leader initialization completes before health, metrics, admission endpoints, or normal reconciliation are served.",
+          "source_reason": "The operator adds initialization and controllers as manager runnables. controller-runtime starts HTTP servers before leader-election runnables and starts runnables in a group concurrently, so the cited sources do not establish completion of initialization before serving or reconciliation.",
+          "review_basis": [
+            "cmd/main.go:591-610",
+            "cmd/main.go:647-668",
+            "sigs.k8s.io/controller-runtime@v0.24.1/pkg/manager/internal.go:426-442",
+            "sigs.k8s.io/controller-runtime@v0.24.1/pkg/manager/runnable_group.go:243-260"
+          ]
+        }
+      ],
+      "candidate_to_promoted_losses": [],
+      "warning_review": {
+        "emitted": 6,
+        "artifact_contract": 0,
+        "semantic_signal": 0,
+        "false_positive": 6,
+        "false_positive_details": [
+          "All six document-reference warnings pointed to content present in the promoted document: gateway modes, metrics enforcement, FIPS limitation, named watches, outbound credentials, and TLS lifecycle."
+        ],
+        "semantic_signal_details": []
+      },
+      "analyzer_row_losses": [
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "opendatahub-operator-metrics-reader",
+          "row": "| opendatahub-operator-metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:203"
+          ],
+          "candidate_locations": [
+            "candidate.md:209"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        },
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "metrics-reader",
+          "row": "| metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:204"
+          ],
+          "candidate_locations": [
+            "candidate.md:210"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        }
+      ]
+    },
+    {
+      "run_id": "codex-repetition-2",
+      "claim_results": [
+        {
+          "claim_id": "metrics.secure-conditional-filter",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:317"
+          ],
+          "review_basis": [
+            "cmd/main.go:485-500"
+          ]
+        },
+        {
+          "claim_id": "watch.models-as-a-service",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:26",
+            "promoted.md:332"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:63-69"
+          ]
+        },
+        {
+          "claim_id": "watch.kuadrant-system",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:26",
+            "promoted.md:333"
+          ],
+          "review_basis": [
+            "internal/controller/services/auth/auth_controller.go:70-76"
+          ]
+        },
+        {
+          "claim_id": "gateway.integrated-oauth",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:16",
+            "promoted.md:30"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:146-188"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-oidc",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:16",
+            "promoted.md:30"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:123-145"
+          ]
+        },
+        {
+          "claim_id": "gateway.external-auth",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:16",
+            "promoted.md:30"
+          ],
+          "review_basis": [
+            "internal/controller/services/gateway/gateway_controller_actions.go:149-157"
+          ]
+        },
+        {
+          "claim_id": "fips.runtime-not-established",
+          "status": "supported",
+          "document_locations": [
+            "promoted.md:341"
+          ],
+          "review_basis": [
+            "config/rhoai/manifests/bases/rhods-operator.clusterserviceversion.yaml:16"
+          ]
+        }
+      ],
+      "unsupported_claims": [],
+      "candidate_to_promoted_losses": [],
+      "warning_review": {
+        "emitted": 10,
+        "artifact_contract": 6,
+        "semantic_signal": 0,
+        "false_positive": 4,
+        "false_positive_details": [
+          "Gateway modes, metrics enforcement, named watches, and outbound credentials were present despite their document-reference or synthesis-omission warnings."
+        ],
+        "semantic_signal_details": []
+      },
+      "analyzer_row_losses": [
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "opendatahub-operator-metrics-reader",
+          "row": "| opendatahub-operator-metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:203"
+          ],
+          "candidate_locations": [
+            "candidate.md:213"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        },
+        {
+          "category": "rbac_cluster_roles",
+          "row_identity": "metrics-reader",
+          "row": "| metrics-reader |  |  | get |",
+          "preseed_locations": [
+            "preseed.md:204"
+          ],
+          "candidate_locations": [
+            "candidate.md:214"
+          ],
+          "promoted_absent": true,
+          "merge_reported_loss": false,
+          "source_basis": [
+            "config/rbac/auth_proxy_client_clusterrole.yaml:1-9"
+          ]
+        }
+      ]
+    }
+  ]
+}

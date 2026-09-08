@@ -34,7 +34,8 @@ from lib.phases.static_analysis import analyzer_output_dir
 from lib.repo_naming import extra_repo_checkout_name
 from lib.source_read_justifications import validate_source_read_justifications
 
-CHANGE_RECORD_FILENAME = "ARCHITECTURE_CHANGES.md"
+PATCH_ARTIFACT_FILENAME = "ARCHITECTURE_PATCH.json"
+LEGACY_CHANGE_RECORD_FILENAME = "ARCHITECTURE_CHANGES.md"
 INSIGHT_ARTIFACT_FILENAME = "INSIGHTS_ARTIFACT.json"
 SOURCE_READ_JUSTIFICATIONS_FILENAME = "SOURCE_READ_JUSTIFICATIONS.json"
 SURFACE_INVENTORY_FILENAME = "SURFACE_INVENTORY.json"
@@ -135,7 +136,9 @@ async def run_generate_architecture_phase(args) -> None:
         return
 
     # Apply platform overrides (exclude_components, include_components, etc.)
-    platform_config = load_platform_config(args.platform)
+    platform_config = load_platform_config(
+        args.platform, getattr(args, "platforms_file", "platforms.yaml")
+    )
     if platform_config:
         checkouts_dir = getattr(args, "checkouts_dir", "checkouts")
         components = apply_platform_overrides(
@@ -195,6 +198,17 @@ async def run_generate_architecture_phase(args) -> None:
             architecture_dir, args.platform, component.key,
         )
         component.has_architecture = arch_file.exists()
+
+    if getattr(args, "structured_synthesis", False):
+        from lib.structured_component_synthesis import run_pipeline_seam
+
+        await run_pipeline_seam(
+            args,
+            components,
+            architecture_dir=Path(architecture_dir),
+            distribution=distribution,
+        )
+        return
 
     # Handle --force: delete existing architecture documents
     if args.force:
@@ -261,7 +275,8 @@ async def run_generate_architecture_phase(args) -> None:
         preseed_path = generation_dir / PRESEED_FILENAME
         candidate_path = generation_dir / CANDIDATE_FILENAME
         merged_path = generation_dir / MERGED_FILENAME
-        change_path = generation_dir / CHANGE_RECORD_FILENAME
+        patch_path = generation_dir / PATCH_ARTIFACT_FILENAME
+        legacy_change_path = generation_dir / LEGACY_CHANGE_RECORD_FILENAME
         insight_path = generation_dir / INSIGHT_ARTIFACT_FILENAME
         justification_path = generation_dir / SOURCE_READ_JUSTIFICATIONS_FILENAME
         surface_inventory_path = generation_dir / SURFACE_INVENTORY_FILENAME
@@ -292,14 +307,14 @@ async def run_generate_architecture_phase(args) -> None:
             f" --read-justifications-output={justification_path}"
         )
         if policy.evidence_gated:
-            prompt += f" --change-output={change_path}"
+            prompt += f" --patch-output={patch_path}"
             prompt += f" --insights-output={insight_path}"
             prompt += f" --surface-inventory={surface_inventory_path}"
             prompt += f" --surface-coverage-output={surface_coverage_path}"
 
         output_paths = [
             candidate_path,
-            change_path,
+            patch_path,
             insight_path,
             justification_path,
         ]
@@ -322,7 +337,8 @@ async def run_generate_architecture_phase(args) -> None:
             "input_paths": (
                 (surface_inventory_path,) if policy.evidence_gated else ()
             ),
-            "change_path": change_path,
+            "patch_path": patch_path,
+            "legacy_change_path": legacy_change_path,
             "insight_path": insight_path,
             "justification_path": justification_path,
             "surface_inventory_path": surface_inventory_path,
@@ -356,7 +372,8 @@ async def run_generate_architecture_phase(args) -> None:
             preseed_file,
             output_file,
             merged_file,
-            Path(item["change_path"]),
+            Path(item["patch_path"]),
+            Path(item["legacy_change_path"]),
             Path(item["insight_path"]),
             Path(item["justification_path"]),
             Path(item["surface_inventory_path"]),
@@ -427,6 +444,8 @@ async def run_generate_architecture_phase(args) -> None:
                 version=insight_version,
             ),
             harness=harness,
+            max_turns=getattr(args, "max_agent_turns", None),
+            max_budget_usd=getattr(args, "max_budget_usd", None),
         )
 
     # Test doubles and older callers may not invoke the per-job callback.
@@ -718,9 +737,13 @@ def _merge_agent_outputs(
         candidate = Path(job.get("candidate_path", job["output_path"]))
         merged = Path(job.get("merged_path", job["output_path"]))
         final_output = Path(job.get("final_output_path", job["output_path"]))
-        changes = Path(job["change_path"])
+        patch_value = job.get("patch_path")
+        patch = Path(patch_value) if patch_value else None
+        changes_value = job.get("change_path")
+        changes = Path(changes_value) if changes_value else None
         name = str(job["name"]).replace("/", "_")
         raw_candidate = log_dir / f"{name}.candidate.md"
+        archived_patch = log_dir / f"{name}.patch.json"
         archived_changes = log_dir / f"{name}.changes.md"
         report_json = log_dir / f"{name}.merge.json"
         report_markdown = log_dir / f"{name}.merge.md"
@@ -730,6 +753,8 @@ def _merge_agent_outputs(
                 raise FileNotFoundError(f"missing analyzer baseline: {analyzer}")
             if not candidate.is_file():
                 raise FileNotFoundError(f"missing agent candidate: {candidate}")
+            if patch is not None and not patch.is_file():
+                raise FileNotFoundError(f"missing architecture patch: {patch}")
             if job.get("preseed_path"):
                 has_agent_delta, no_delta_reason = _candidate_has_substantive_delta(
                     candidate, Path(job["preseed_path"])
@@ -737,13 +762,19 @@ def _merge_agent_outputs(
                 if not has_agent_delta:
                     raise ValueError(no_delta_reason)
             shutil.copy2(candidate, raw_candidate)
-            if changes.is_file():
+            for stale_artifact in (archived_patch, archived_changes):
+                if stale_artifact.exists():
+                    stale_artifact.unlink()
+            if patch is not None:
+                shutil.copy2(patch, archived_patch)
+            if changes is not None and changes.is_file():
                 shutil.copy2(changes, archived_changes)
             merge_apply_started = time.monotonic()
             merge_result = merge_architecture_files(
                 analyzer,
                 raw_candidate,
                 merged,
+                patch=archived_patch if archived_patch.is_file() else None,
                 changes=archived_changes if archived_changes.is_file() else None,
                 report_json=report_json,
                 report_markdown=report_markdown,
@@ -773,12 +804,25 @@ def _merge_agent_outputs(
                 "merged": str(merged),
                 "final": str(final_output),
                 "raw_candidate": str(raw_candidate),
+                "patch": (
+                    str(archived_patch) if archived_patch.is_file() else None
+                ),
                 "changes": (
                     str(archived_changes) if archived_changes.is_file() else None
                 ),
                 "report_json": str(report_json),
                 "report_markdown": str(report_markdown),
                 "counts": merge_result.counts,
+                "preservation": getattr(merge_result, "preservation", {}),
+                "assembly_status": getattr(
+                    merge_result, "assembly_status", "success"
+                ),
+                "section_decisions": getattr(
+                    merge_result, "section_decisions", []
+                ),
+                "assembly_diagnostics": getattr(
+                    merge_result, "assembly_diagnostics", []
+                ),
                 "duration_seconds": time.monotonic() - merge_started,
                 "merge_apply_seconds": merge_apply_seconds,
                 "validation_seconds": validation_seconds,
@@ -791,12 +835,39 @@ def _merge_agent_outputs(
             original_route = job.get("agent_policy", {}).get("route", "unknown")
             fallback_reason = f"restricted-route merge failed: {error}"
             shutil.copy2(analyzer, merged)
+            failure_result = getattr(error, "result", None)
+            failure_report = (
+                failure_result.to_dict()
+                if failure_result is not None
+                and callable(getattr(failure_result, "to_dict", None))
+                else {}
+            )
             result["success"] = False
             result["error"] = fallback_reason
             result["merge"] = {
                 "candidate": str(candidate),
                 "merged": str(merged),
                 "final": str(final_output),
+                "raw_candidate": str(raw_candidate),
+                "patch": (
+                    str(archived_patch) if archived_patch.is_file() else None
+                ),
+                "changes": (
+                    str(archived_changes) if archived_changes.is_file() else None
+                ),
+                "report_json": str(report_json),
+                "report_markdown": str(report_markdown),
+                "counts": failure_report.get("counts", {}),
+                "preservation": failure_report.get("preservation", {}),
+                "assembly_status": failure_report.get(
+                    "assembly_status", "failed"
+                ),
+                "section_decisions": failure_report.get(
+                    "section_decisions", []
+                ),
+                "assembly_diagnostics": failure_report.get(
+                    "assembly_diagnostics", []
+                ),
                 "duration_seconds": time.monotonic() - merge_started,
                 "error": str(error),
                 "fallback": "analyzer-baseline-not-promoted",

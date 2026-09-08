@@ -172,7 +172,7 @@ async def test_generation_uses_architecture_outputs_and_checkout_sources(
     assert job["justification_path"] in job["output_paths"]
     assert job["output_path"].is_file()
     assert final_output.is_file()
-    assert "# Component: Example" in final_output.read_text()
+    assert "# Component: example" in final_output.read_text()
     assert not (checkout / "GENERATED_ARCHITECTURE.md").exists()
 
 

@@ -13,6 +13,7 @@ from lib.phases.architecture import run_generate_architecture_phase
 from lib.phases.diagrams import run_generate_diagrams_phase
 from lib.phases.discover import run_discover_components_phase
 from lib.phases.fetch import run_fetch_phase
+from lib.phases.index import run_generate_index_phase
 from lib.phases.manifest import run_manifest_phase
 from lib.phases.platform import run_generate_platform_architecture_phase
 from lib.phases.static_analysis import run_static_analysis_phase
@@ -184,6 +185,16 @@ async def run_all_phases(args) -> None:
         harness=harness,
         tier=getattr(args, 'tier', 'all'),
         strace=strace,
+        structured_synthesis=getattr(args, "structured_synthesis", False),
+        structured_inputs=getattr(args, "structured_inputs", None),
+        structured_total_calls=getattr(args, "structured_total_calls", 3),
+        structured_evidence_followups=getattr(
+            args, "structured_evidence_followups", 1
+        ),
+        structured_repairs=getattr(args, "structured_repairs", 1),
+        structured_refresh=getattr(args, "structured_refresh", False),
+        platforms_file=getattr(args, "platforms_file", "platforms.yaml"),
+        max_budget_usd=None,
     )
     await run_generate_architecture_phase(generate_arch_args)
 
@@ -202,9 +213,18 @@ async def run_all_phases(args) -> None:
     )
     await run_generate_platform_architecture_phase(platform_arch_args)
 
-    # Phase 5: Generate diagrams
+    # Phase 5: Generate deterministic version index
+    index_args = Namespace(
+        architecture_dir="architecture",
+        platform=args.platform,
+        platforms_file="platforms.yaml",
+        overlays_dir="overlays",
+    )
+    await run_generate_index_phase(index_args)
+
+    # Phase 6: Generate diagrams
     if getattr(args, 'no_diagrams', False):
-        print("\nSkipping Phase 5 (diagram generation) — --no-diagrams\n")
+        print("\nSkipping Phase 6 (diagram generation) — --no-diagrams\n")
     else:
         diagrams_args = Namespace(
             architecture_dir="architecture",
@@ -228,6 +248,7 @@ async def run_all_phases(args) -> None:
     print(f"  - Component architectures: architecture/{args.platform}/*.md")
     print(f"  - Analyzer artifacts: architecture/{args.platform}/*/.analyzer/")
     print(f"  - Platform documents: architecture/{args.platform}/PLATFORM.md")
+    print(f"  - Version index: architecture/{args.platform}/INDEX.md")
     print(f"  - Diagrams: architecture/{args.platform}/diagrams/")
     print("=" * 80 + "\n")
 
@@ -365,12 +386,29 @@ def _pipeline_phase_args(args, phase: str, component: str | None):
             version=getattr(args, "version", None) or args.platform,
             evidence_gated_merge=getattr(args, "evidence_gated_merge", True),
             tier=getattr(args, "tier", "all"),
+            structured_synthesis=getattr(args, "structured_synthesis", False),
+            structured_inputs=getattr(args, "structured_inputs", None),
+            structured_total_calls=getattr(args, "structured_total_calls", 3),
+            structured_evidence_followups=getattr(
+                args, "structured_evidence_followups", 1
+            ),
+            structured_repairs=getattr(args, "structured_repairs", 1),
+            structured_refresh=getattr(args, "structured_refresh", False),
+            platforms_file=getattr(args, "platforms_file", "platforms.yaml"),
+            max_budget_usd=None,
         )
     if phase == "generate-platform-architecture":
         return Namespace(
             **common,
             version=getattr(args, "version", None),
             limit=getattr(args, "limit", None),
+        )
+    if phase == "generate-index":
+        return Namespace(
+            architecture_dir=common["architecture_dir"],
+            platform=args.platform,
+            platforms_file=getattr(args, "platforms_file", "platforms.yaml"),
+            overlays_dir=getattr(args, "overlays_dir", "overlays"),
         )
     if phase == "generate-diagrams":
         return Namespace(
@@ -435,6 +473,8 @@ async def _run_pipeline_phase(phase: str, phase_args) -> None:
         await run_generate_architecture_phase(phase_args)
     elif phase == "generate-platform-architecture":
         await run_generate_platform_architecture_phase(phase_args)
+    elif phase == "generate-index":
+        await run_generate_index_phase(phase_args)
     elif phase == "generate-diagrams":
         await run_generate_diagrams_phase(phase_args)
     else:
@@ -455,6 +495,8 @@ async def main(args) -> None:
         await run_generate_architecture_phase(args)
     elif args.command == "generate-platform-architecture":
         await run_generate_platform_architecture_phase(args)
+    elif args.command == "generate-index":
+        await run_generate_index_phase(args)
     elif args.command == "generate-diagrams":
         await run_generate_diagrams_phase(args)
     elif args.command == "check-eligibility":

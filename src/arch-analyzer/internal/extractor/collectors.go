@@ -454,10 +454,11 @@ func collectRole(item object) model.Role {
 			continue
 		}
 		role.Rules = append(role.Rules, model.RoleRule{
-			APIGroups:     stringsValue(rule["apiGroups"]),
-			Resources:     stringsValue(rule["resources"]),
-			ResourceNames: stringsValue(rule["resourceNames"]),
-			Verbs:         stringsValue(rule["verbs"]),
+			APIGroups:       stringsValue(rule["apiGroups"]),
+			Resources:       stringsValue(rule["resources"]),
+			NonResourceURLs: stringsValue(rule["nonResourceURLs"]),
+			ResourceNames:   stringsValue(rule["resourceNames"]),
+			Verbs:           stringsValue(rule["verbs"]),
 		})
 	}
 	return role

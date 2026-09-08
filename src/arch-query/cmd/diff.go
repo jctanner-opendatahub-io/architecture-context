@@ -589,7 +589,7 @@ func grpcSet(services []types.GRPCService) map[string]bool {
 func rbacSet(roles []types.RBACRole) map[string]bool {
 	s := make(map[string]bool)
 	for _, r := range roles {
-		s[r.RoleName+" "+r.APIGroup+" "+r.Resources] = true
+		s[r.RoleName+" "+r.APIGroup+" "+r.Resources+" "+r.NonResourceURLs] = true
 	}
 	return s
 }

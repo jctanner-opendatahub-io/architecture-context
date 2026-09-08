@@ -285,14 +285,11 @@ class TestProtocolCompliance:
     def test_context_metrics_keys_unchanged(self, tmp_path):
         schema_path = (
             PROJECT_ROOT
-            / "benchmark"
-            / "analyzer-assisted-v1"
-            / "result_schema.json"
+            / "schemas"
+            / "context-metrics-v1.schema.json"
         )
         schema = json.loads(schema_path.read_text())
-        expected_keys = set(
-            schema["properties"]["context_metrics"]["properties"].keys()
-        )
+        expected_keys = set(schema["properties"].keys())
         out = tmp_path / "schema-check.jsonl"
         exporter = JsonlFileExporter(out)
         collector = ContextTelemetryCollector(exporter=exporter)

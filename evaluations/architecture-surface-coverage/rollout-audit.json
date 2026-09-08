@@ -78,6 +78,42 @@
       "0.1.0-dev": 149
     }
   },
+  "comparison": {
+    "baseline": {
+      "input_fingerprint_sha256": "8a21066d05c68d202d07f02c5f43366c3debdd3b1935877f94b4b7928f0a1051",
+      "report_sha256": "09a81a345ca5dadf5d1d19a8664c676fc999081ef6cd60ee720c8bf23241a437",
+      "source_commit": "39209078846f15f1909373c106d2d665a907a509"
+    },
+    "interpretation": "The delta isolates the FIPS planning-rule change on identical on-disk inputs. Fewer nominations do not demonstrate improved semantic recall.",
+    "metrics": {
+      "required_surface_occurrences": {
+        "after": 262,
+        "before": 314,
+        "delta": -52
+      },
+      "runtime_fips_repository_occurrences": {
+        "after": 54,
+        "before": 80,
+        "delta": -26
+      },
+      "runtime_fips_surface_occurrences": {
+        "after": 97,
+        "before": 149,
+        "delta": -52
+      },
+      "runtime_fips_without_category_facts": {
+        "after": 86,
+        "before": 138,
+        "delta": -52
+      },
+      "surface_occurrences": {
+        "after": 474,
+        "before": 526,
+        "delta": -52
+      }
+    },
+    "schema_version": "architecture-surface-rollout-comparison/v1"
+  },
   "components": [
     {
       "analyzer": "rhoai-3.6-ea.1/MLServer/.analyzer/component-architecture.json",
@@ -98,7 +134,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/MLServer.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -106,7 +142,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -118,17 +154,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -179,9 +204,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -227,7 +250,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/ai-gateway-operator.git",
-      "required_surface_count": 3,
+      "required_surface_count": 2,
       "roles": [
         "operator"
       ],
@@ -235,7 +258,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 5,
+      "surface_count": 4,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -266,17 +289,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -327,7 +339,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/ai-gateway-payload-processing.git",
-      "required_surface_count": 3,
+      "required_surface_count": 2,
       "roles": [
         "operator"
       ],
@@ -335,7 +347,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 5,
+      "surface_count": 4,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -360,17 +372,6 @@
           "exact_candidate_paths": [],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -425,7 +426,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/IBM/ai4rag.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -433,20 +434,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/argo-workflows/.analyzer/component-architecture.json",
@@ -488,9 +477,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [],
           "document_reference_signal": "absent",
@@ -590,9 +577,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "internal/apiserver/server/server.go"
@@ -645,7 +630,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/project-codeflare/codeflare-sdk.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -653,7 +638,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -668,17 +653,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -735,9 +709,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "backend/src/apiserver/main.go"
@@ -837,9 +809,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "controllers/database.go"
@@ -917,9 +887,7 @@
       "surface_count": 4,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "manifest",
           "document_candidate_paths_mentioned": [
             "images/runtime/training/py312-cuda130-torch210-openmpi41/requirements.txt"
@@ -1029,9 +997,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "internal/otel/otel_sdk.go"
@@ -1124,9 +1090,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "go/internal/feast/onlinestore/redisonlinestore.go",
@@ -1208,7 +1172,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/feast-module-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator"
       ],
@@ -1216,7 +1180,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -1230,17 +1194,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -1315,9 +1268,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -1367,7 +1318,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/guardrails-detectors.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -1375,7 +1326,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -1393,17 +1344,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -1450,9 +1390,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Dockerfile"
@@ -1545,9 +1483,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/llmisvc/main.go",
@@ -1674,9 +1610,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/llmisvc/main.go"
@@ -1760,9 +1694,7 @@
       "surface_count": 4,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "manifest",
           "document_candidate_paths_mentioned": [
             "pkg/http/server.go"
@@ -1863,9 +1795,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "cmd/kube-rbac-proxy/app/kube-rbac-proxy.go"
@@ -1961,9 +1891,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "components/odh-notebook-controller/main.go"
@@ -2053,9 +1981,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -2152,9 +2078,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "ray-operator/pkg/tls/tls.go"
@@ -2226,7 +2150,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/openshift/kueue-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator"
       ],
@@ -2234,7 +2158,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 5,
+      "surface_count": 4,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -2261,17 +2185,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -2335,9 +2248,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "unknown",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -2370,7 +2281,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "manifest",
       "repository": "https://github.com/llm-d/llm-d.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "manifest"
       ],
@@ -2378,19 +2289,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "manifest",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        },
         {
           "candidate_path_patterns": [],
           "component_role": "manifest",
@@ -2459,9 +2359,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "pkg/server/runner.go"
@@ -2564,9 +2462,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tls/profile.go"
@@ -2652,9 +2548,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [],
           "document_reference_signal": "absent",
@@ -2726,7 +2620,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/llm-d-latency-predictor.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -2734,7 +2628,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -2750,17 +2644,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -2783,7 +2666,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/llm-d-incubation/llm-d-planner.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -2791,7 +2674,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -2806,17 +2689,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -2873,9 +2745,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tls/tls.go",
@@ -2980,9 +2850,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "internal/proxy/proxy.go"
@@ -3030,7 +2898,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/lm-evaluation-harness.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -3038,19 +2906,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        },
         {
           "candidate_path_patterns": [],
           "component_role": "service",
@@ -3085,7 +2942,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/mcp-lifecycle-module-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator",
         "service"
@@ -3094,7 +2951,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -3108,17 +2965,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -3199,9 +3045,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -3270,7 +3114,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/ml-metadata.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -3278,20 +3122,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/mlflow/.analyzer/component-architecture.json",
@@ -3340,9 +3172,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "pyproject.toml"
@@ -3432,9 +3262,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -3501,7 +3329,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/model-metadata-collection.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -3509,20 +3337,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/model-registry/.analyzer/component-architecture.json",
@@ -3571,9 +3387,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/platform/tls/config.go",
@@ -3707,9 +3521,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/setup/setup.go"
@@ -3829,9 +3641,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "maas-api/cmd/main.go"
@@ -3918,7 +3728,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/must-gather.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -3926,20 +3736,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/notebooks/.analyzer/component-architecture.json",
@@ -3982,9 +3780,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "codeserver/ubi9-python-3.12/requirements.cpu.txt"
@@ -4028,9 +3824,7 @@
       "surface_count": 2,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "unknown",
           "document_candidate_paths_mentioned": [
             "pkg/migrate/actions/trustyai/metrics/http.go"
@@ -4129,9 +3923,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "dashboard-operator/cmd/manager/main.go"
@@ -4208,7 +4000,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/odh-gitops.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -4216,20 +4008,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/odh-model-controller/.analyzer/component-architecture.json",
@@ -4301,9 +4081,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -4389,7 +4167,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/odh-observability.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator",
         "service"
@@ -4398,7 +4176,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -4408,17 +4186,6 @@
           "exact_candidate_paths": [],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -4473,7 +4240,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/ogx-distribution.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -4481,20 +4248,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/ogx-k8s-operator/.analyzer/component-architecture.json",
@@ -4553,9 +4308,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "main.go"
@@ -4625,7 +4378,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/openvino_model_server.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -4633,20 +4386,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/pipelines-components/.analyzer/component-architecture.json",
@@ -4678,9 +4419,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "unknown",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -4713,7 +4452,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/rhaii-cluster-validation.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -4721,19 +4460,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        },
         {
           "candidate_path_patterns": [],
           "component_role": "service",
@@ -4781,9 +4509,7 @@
       "surface_count": 3,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "manifest",
           "document_candidate_paths_mentioned": [
             "requirements-check.txt"
@@ -4900,9 +4626,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -5021,9 +4745,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/operator/controller/start.go"
@@ -5133,9 +4855,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/trainer-controller-manager/main.go"
@@ -5206,7 +4926,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/trainer-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator",
         "service"
@@ -5215,7 +4935,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -5232,17 +4952,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -5297,7 +5006,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/Red-Hat-AI-Innovation-Team/training_hub.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -5305,20 +5014,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/training-operator/.analyzer/component-architecture.json",
@@ -5371,9 +5068,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/training-operator.v1/main.go"
@@ -5451,7 +5146,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/trustyai-explainability.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -5459,7 +5154,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -5473,17 +5168,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -5534,9 +5218,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "pyproject.toml"
@@ -5590,9 +5272,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [],
           "document_reference_signal": "absent",
@@ -5680,7 +5360,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/vllm-cpu.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -5688,7 +5368,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -5705,17 +5385,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -5738,7 +5407,7 @@
       "platform": "rhoai-3.6-ea.1",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/vllm-gaudi.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -5746,20 +5415,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.1/vllm-orchestrator-gateway/.analyzer/component-architecture.json",
@@ -5791,9 +5448,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -5865,9 +5520,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tlsconfig/tlsconfig.go"
@@ -5974,9 +5627,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -6045,7 +5696,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/MLServer.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -6053,7 +5704,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -6065,17 +5716,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -6126,9 +5766,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -6174,7 +5812,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/ai-gateway-controller.git",
-      "required_surface_count": 3,
+      "required_surface_count": 2,
       "roles": [
         "operator",
         "service"
@@ -6183,7 +5821,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 5,
+      "surface_count": 4,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -6210,17 +5848,6 @@
           "exact_candidate_paths": [],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -6275,7 +5902,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/ai-gateway-operator.git",
-      "required_surface_count": 3,
+      "required_surface_count": 2,
       "roles": [
         "operator"
       ],
@@ -6283,7 +5910,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 5,
+      "surface_count": 4,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -6313,17 +5940,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -6408,9 +6024,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/runner.go"
@@ -6477,7 +6091,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/IBM/ai4rag.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -6485,20 +6099,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/argo-workflows/.analyzer/component-architecture.json",
@@ -6540,9 +6142,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "pkg/apiclient/argo-server-client.go"
@@ -6644,9 +6244,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "internal/apiserver/server/server.go"
@@ -6699,7 +6297,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/project-codeflare/codeflare-sdk.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -6707,7 +6305,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -6722,17 +6320,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -6795,9 +6382,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -6897,9 +6482,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "backend/src/apiserver/main.go"
@@ -6999,9 +6582,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "controllers/database.go"
@@ -7077,9 +6658,7 @@
       "surface_count": 4,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "manifest",
           "document_candidate_paths_mentioned": [
             "images/runtime/training/py312-cuda130-torch210-openmpi41/requirements.txt"
@@ -7188,9 +6767,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "internal/eval_hub/config/mlflow_config.go",
@@ -7284,9 +6861,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "go/internal/feast/onlinestore/redisonlinestore.go",
@@ -7369,7 +6944,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/feast-module-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator"
       ],
@@ -7377,7 +6952,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -7391,17 +6966,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -7476,9 +7040,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -7528,7 +7090,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/guardrails-detectors.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -7536,7 +7098,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -7554,17 +7116,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -7611,9 +7162,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Dockerfile"
@@ -7704,9 +7253,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "python/kserve/pyproject.toml"
@@ -7832,9 +7379,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/llmisvc/main.go"
@@ -7919,9 +7464,7 @@
       "surface_count": 4,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "manifest",
           "document_candidate_paths_mentioned": [
             "pkg/http/server.go"
@@ -8022,9 +7565,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "cmd/kube-rbac-proxy/app/kube-rbac-proxy.go"
@@ -8121,9 +7662,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "components/odh-notebook-controller/main.go"
@@ -8213,9 +7752,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -8310,9 +7847,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "ray-operator/pkg/tls/tls.go"
@@ -8384,7 +7919,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/openshift/kueue-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator"
       ],
@@ -8392,7 +7927,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 5,
+      "surface_count": 4,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -8419,17 +7954,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -8493,9 +8017,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "unknown",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -8528,7 +8050,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "manifest",
       "repository": "https://github.com/llm-d/llm-d.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "manifest"
       ],
@@ -8536,19 +8058,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "manifest",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        },
         {
           "candidate_path_patterns": [],
           "component_role": "manifest",
@@ -8617,9 +8128,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "pkg/server/runner.go"
@@ -8722,9 +8231,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tls/profile.go"
@@ -8810,9 +8317,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tls/tls.go",
@@ -8878,7 +8383,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/llm-d/llm-d-kv-cache.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator",
         "service"
@@ -8887,7 +8392,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -8897,17 +8402,6 @@
           "exact_candidate_paths": [],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -8968,7 +8462,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/llm-d-latency-predictor.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -8976,7 +8470,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -8992,17 +8486,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -9025,7 +8508,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/llm-d-incubation/llm-d-planner.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -9033,7 +8516,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -9050,17 +8533,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -9117,9 +8589,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tls/tls.go",
@@ -9197,7 +8667,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/lm-evaluation-harness.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -9205,19 +8675,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        },
         {
           "candidate_path_patterns": [],
           "component_role": "service",
@@ -9252,7 +8711,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/mcp-lifecycle-module-operator.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator",
         "service"
@@ -9261,7 +8720,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -9275,17 +8734,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -9366,9 +8814,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -9437,7 +8883,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/ml-metadata.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -9445,20 +8891,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/mlflow/.analyzer/component-architecture.json",
@@ -9507,9 +8941,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "pyproject.toml"
@@ -9599,9 +9031,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -9668,7 +9098,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/model-metadata-collection.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -9676,20 +9106,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/model-registry/.analyzer/component-architecture.json",
@@ -9737,9 +9155,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/platform/tls/config.go"
@@ -9873,9 +9289,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/setup/setup.go"
@@ -9997,9 +9411,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [],
           "document_reference_signal": "absent",
@@ -10101,9 +9513,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "codeserver/ubi9-python-3.12/requirements.cpu.txt"
@@ -10147,9 +9557,7 @@
       "surface_count": 2,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "unknown",
           "document_candidate_paths_mentioned": [
             "pkg/migrate/actions/trustyai/metrics/http.go"
@@ -10249,9 +9657,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "dashboard-operator/cmd/manager/main.go"
@@ -10330,7 +9736,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/odh-gitops.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -10338,20 +9744,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/component-architecture.json",
@@ -10422,9 +9816,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -10506,7 +9898,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "operator",
       "repository": "https://github.com/red-hat-data-services/odh-observability.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "operator",
         "service"
@@ -10515,7 +9907,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 4,
+      "surface_count": 3,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -10525,17 +9917,6 @@
           "exact_candidate_paths": [],
           "priority": "required",
           "surface_id": "authentication.metrics-enforcement"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "operator",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         },
         {
           "candidate_path_patterns": [],
@@ -10590,7 +9971,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/ogx-distribution.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -10598,20 +9979,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/ogx-k8s-operator/.analyzer/component-architecture.json",
@@ -10670,9 +10039,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "main.go"
@@ -10739,7 +10106,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/openvino_model_server.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -10747,20 +10114,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/pipelines-components/.analyzer/component-architecture.json",
@@ -10792,9 +10147,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "unknown",
           "document_candidate_paths_mentioned": [
             "requirements.txt"
@@ -10838,9 +10191,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -10899,9 +10250,7 @@
           "surface_id": "authentication.service-endpoints"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -10957,9 +10306,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -11018,9 +10365,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock"
@@ -11053,7 +10398,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/rhaii-cluster-validation.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -11061,19 +10406,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        },
         {
           "candidate_path_patterns": [],
           "component_role": "service",
@@ -11121,9 +10455,7 @@
       "surface_count": 3,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "manifest",
           "document_candidate_paths_mentioned": [
             "requirements-cpu.txt"
@@ -11240,9 +10572,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -11361,9 +10691,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/operator/controller/start.go"
@@ -11477,9 +10805,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/trainer-controller-manager/main.go"
@@ -11576,9 +10902,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tls/metrics.go"
@@ -11643,7 +10967,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/Red-Hat-AI-Innovation-Team/training_hub.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -11651,20 +10975,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/training-operator/.analyzer/component-architecture.json",
@@ -11719,9 +11031,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/training-operator.v1/main.go"
@@ -11799,7 +11109,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/trustyai-explainability.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -11807,7 +11117,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -11821,17 +11131,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -11854,7 +11153,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/trustyai-service.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -11862,7 +11161,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -11877,17 +11176,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -11931,9 +11219,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [],
           "document_reference_signal": "absent",
@@ -12024,7 +11310,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "service",
       "repository": "https://github.com/red-hat-data-services/vllm-cpu.git",
-      "required_surface_count": 2,
+      "required_surface_count": 1,
       "roles": [
         "service"
       ],
@@ -12032,7 +11318,7 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 2,
+      "surface_count": 1,
       "surfaces": [
         {
           "candidate_path_patterns": [],
@@ -12049,17 +11335,6 @@
           ],
           "priority": "required",
           "surface_id": "authentication.service-endpoints"
-        },
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "service",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
         }
       ]
     },
@@ -12082,7 +11357,7 @@
       "platform": "rhoai-3.6-ea.2.claude",
       "primary_role": "unknown",
       "repository": "https://github.com/red-hat-data-services/vllm-gaudi.git",
-      "required_surface_count": 1,
+      "required_surface_count": 0,
       "roles": [
         "unknown"
       ],
@@ -12090,20 +11365,8 @@
         "schema_version": null,
         "state": "missing-legacy-telemetry"
       },
-      "surface_count": 1,
-      "surfaces": [
-        {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
-          "component_role": "unknown",
-          "document_candidate_paths_mentioned": [],
-          "document_reference_signal": "unavailable",
-          "exact_candidate_paths": [],
-          "priority": "required",
-          "surface_id": "compliance.runtime-fips"
-        }
-      ]
+      "surface_count": 0,
+      "surfaces": []
     },
     {
       "analyzer": "rhoai-3.6-ea.2.claude/vllm-orchestrator-gateway/.analyzer/component-architecture.json",
@@ -12135,9 +11398,7 @@
       "surface_count": 1,
       "surfaces": [
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "service",
           "document_candidate_paths_mentioned": [
             "Cargo.lock",
@@ -12219,9 +11480,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "workspaces/backend/internal/server/server.go"
@@ -12333,9 +11592,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "internal/tlsconfig/tlsconfig.go"
@@ -12443,9 +11700,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -12571,9 +11826,7 @@
           "surface_id": "authentication.metrics-enforcement"
         },
         {
-          "candidate_path_patterns": [
-            "**/*clusterserviceversion*.yaml"
-          ],
+          "candidate_path_patterns": [],
           "component_role": "operator",
           "document_candidate_paths_mentioned": [
             "cmd/main.go"
@@ -12706,6 +11959,20 @@
     ],
     "project_arch_analyzers_without_document": []
   },
+  "fips_applicability": {
+    "category_records": 149,
+    "category_with_facts": 11,
+    "category_without_facts": 138,
+    "interpretation": "Static build, packaging, provider, crypto, or TLS signals nominate an uncertain question; they do not establish runtime compliance. Source-backed explicit runtime, policy, or negative signals make the question applicable while claim support remains uncertain. Evidence-free category records remain explicit uncertain observations without required-surface nomination.",
+    "nominated_applicable": 7,
+    "nominated_repository_occurrences": 54,
+    "nominated_surface_occurrences": 97,
+    "nominated_uncertain": 90,
+    "nominated_with_category_facts": 11,
+    "nominated_without_category_facts": 86,
+    "uncertain_without_nomination": 52,
+    "uncertain_without_nomination_repositories": 29
+  },
   "follow_up_priorities": [
     {
       "action": "Refresh stored analyzer artifacts before using this corpus to judge behavioral-extractor warning quality.",
@@ -12714,9 +11981,9 @@
       "rank": 1
     },
     {
-      "action": "Review the role rule and applicability basis so generic category coverage does not create required-surface warning noise.",
-      "evidence": "Runtime FIPS is nominated for 138 artifact(s) across 72 repository identity(s) whose analyzer category reports zero facts.",
-      "id": "narrow-runtime-fips-applicability",
+      "action": "Refresh analyzer evidence before judging runtime-FIPS warning quality or drawing runtime-compliance conclusions.",
+      "evidence": "90 concrete analyzer signal(s) nominate an uncertain runtime-FIPS question; 52 empty category record(s) retain uncertainty without nomination.",
+      "id": "refresh-runtime-fips-applicability-evidence",
       "rank": 2
     },
     {
@@ -12743,7 +12010,8 @@
     "A document mention of an analyzer candidate path is a structural signal only. It does not establish that the document expresses the behavior.",
     "Stored analyzer artifacts without behavioral_evidence cannot be used to estimate the new extractor's recall or false-positive rate.",
     "Repeated platform copies are counted as artifact occurrences and also collapsed by repository identity for recurrence estimates.",
-    "The audit reads no source checkout, pipeline log, agent transcript, or external service and does not modify generated architecture."
+    "The audit reads no source checkout, pipeline log, agent transcript, or external service and does not modify generated architecture.",
+    "A decrease in nominated surfaces after narrowing applicability does not demonstrate better semantic recall. It only measures a planning-rule change."
   ],
   "platforms": [
     {
@@ -13188,19 +12456,6 @@
       ]
     },
     {
-      "analyzer": "rhoai-3.6-ea.2.claude/lm-evaluation-harness/.analyzer/component-architecture.json",
-      "artifact_key": "rhoai-3.6-ea.2.claude/lm-evaluation-harness",
-      "commit_sha": "e363623b0d513e0f2a4aca42c1901f37f34b1a22",
-      "document": "rhoai-3.6-ea.2.claude/lm-evaluation-harness.md",
-      "primary_role": "unknown",
-      "repository": "https://github.com/red-hat-data-services/lm-evaluation-harness.git",
-      "required_surface_count": 1,
-      "surface_ids": [
-        "compliance.runtime-fips",
-        "dependencies.outbound-credentials"
-      ]
-    },
-    {
       "analyzer": "rhoai-3.6-ea.2.claude/odh-cli/.analyzer/component-architecture.json",
       "artifact_key": "rhoai-3.6-ea.2.claude/odh-cli",
       "commit_sha": "32fde163743948c731069b83496cb18bd540e08c",
@@ -13214,16 +12469,27 @@
       ]
     },
     {
-      "analyzer": "rhoai-3.6-ea.2.claude/rhaii-cluster-validation/.analyzer/component-architecture.json",
-      "artifact_key": "rhoai-3.6-ea.2.claude/rhaii-cluster-validation",
-      "commit_sha": "b9ed55f2dc742e668ebb87762507fde48cdbd554",
-      "document": "rhoai-3.6-ea.2.claude/rhaii-cluster-validation.md",
+      "analyzer": "rhoai-3.6-ea.2.claude/llama-stack-provider-trustyai-garak/.analyzer/component-architecture.json",
+      "artifact_key": "rhoai-3.6-ea.2.claude/llama-stack-provider-trustyai-garak",
+      "commit_sha": "e98a719e743701b400ec6e92ecc07f1b3efc976e",
+      "document": "rhoai-3.6-ea.2.claude/llama-stack-provider-trustyai-garak.md",
       "primary_role": "unknown",
-      "repository": "https://github.com/red-hat-data-services/rhaii-cluster-validation.git",
+      "repository": "https://github.com/red-hat-data-services/llama-stack-provider-trustyai-garak.git",
       "required_surface_count": 1,
       "surface_ids": [
-        "compliance.runtime-fips",
-        "dependencies.outbound-credentials"
+        "compliance.runtime-fips"
+      ]
+    },
+    {
+      "analyzer": "rhoai-3.6-ea.2.claude/pipelines-components/.analyzer/component-architecture.json",
+      "artifact_key": "rhoai-3.6-ea.2.claude/pipelines-components",
+      "commit_sha": "cb5c1ad458823ad63368d972fc7db9508ce24abc",
+      "document": "rhoai-3.6-ea.2.claude/pipelines-components.md",
+      "primary_role": "unknown",
+      "repository": "https://github.com/red-hat-data-services/pipelines-components.git",
+      "required_surface_count": 1,
+      "surface_ids": [
+        "compliance.runtime-fips"
       ]
     }
   ],
@@ -13258,7 +12524,7 @@
     },
     "priorities": {
       "high": 212,
-      "required": 314
+      "required": 262
     },
     "project_arch_analyzer_artifacts": 149,
     "project_arch_analyzers_without_document": 0,
@@ -13271,13 +12537,13 @@
     "sidecars": {
       "missing-legacy-telemetry": 149
     },
-    "surface_occurrences": 526,
+    "surface_occurrences": 474,
     "unique_repository_identities": 80
   },
   "surface_inventory": {
     "by_priority": {
       "high": 212,
-      "required": 314
+      "required": 262
     },
     "by_surface": [
       {
@@ -13356,21 +12622,21 @@
         "without_document_candidate_reference": 8
       },
       {
-        "artifact_occurrences": 149,
+        "artifact_occurrences": 97,
         "platforms": [
           "rhoai-3.6-ea.1",
           "rhoai-3.6-ea.2",
           "rhoai-3.6-ea.2.claude"
         ],
         "priorities": {
-          "required": 149
+          "required": 97
         },
-        "repository_occurrences": 80,
+        "repository_occurrences": 54,
         "roles": {
-          "manifest": 8,
-          "operator": 76,
-          "service": 38,
-          "unknown": 27
+          "manifest": 6,
+          "operator": 62,
+          "service": 23,
+          "unknown": 6
         },
         "surface_id": "compliance.runtime-fips",
         "with_document_candidate_reference": 92,
@@ -13473,6 +12739,6 @@
       }
     ],
     "structural_signal_only": true,
-    "total_occurrences": 526
+    "total_occurrences": 474
   }
 }

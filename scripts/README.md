@@ -2,6 +2,34 @@
 
 Utility scripts for analyzing repositories and generating ODH/RHOAI architecture documentation.
 
+## run_implementation_worker.py
+
+Runs one saved assignment through the local Codex CLI with an explicit model,
+reasoning effort, and workspace-write sandbox. Uses the existing CLI login.
+For independent reviews, `--harness claude` selects the local Claude CLI with
+Read, Glob, Grep, and Bash tools and `dontAsk` permission mode. Bash can run
+verification commands and can also write files; review ownership constraints
+belong in the assignment and reviewed source hashes must be checked afterward.
+
+```bash
+python3 scripts/run_implementation_worker.py \
+  --prompt logs/task/prompt.txt \
+  --output-dir logs/task/attempt-1 \
+  --model gpt-5.6-sol --effort high
+```
+
+For example, use `--harness claude --model claude-fable-5-1 --effort high`
+with a fresh review prompt and attempt directory. No fallback option is passed.
+
+Each attempt requires a new output directory and retains the prompt, its hash,
+invocation, stdout JSONL, stderr, final response when available, exit status,
+session IDs, and error events. There are no launcher retries or model fallbacks.
+Inspect failures before explicitly starting another attempt; a zero exit status
+does not constitute independent acceptance. `--cwd` selects the worker directory
+(default: current directory). Logs can contain repository content; keep attempt
+directories in ignored task storage. Hard termination may leave partial logs
+without a result file; inspect them before restarting.
+
 ## run_claude_container.sh
 
 Runs a supplied prompt through the Claude CLI in a Podman container. The current
@@ -207,12 +235,12 @@ The pipeline also archives these audit artifacts under `--log-dir`:
 
 ```text
 MLServer.candidate.md  # unmodified agent document
-MLServer.changes.md    # Markdown evidence records, when present
+MLServer.patch.json    # validated architecture table operations
 MLServer.merge.json    # machine-readable decisions and comparator adjudications
 MLServer.merge.md      # human-readable applied, rejected, and restored changes
 ```
 
-An existing analyzer baseline, candidate, and change record can be replayed without
+An existing analyzer baseline, candidate, and JSON patch can be replayed without
 another agent run:
 
 ```bash
@@ -221,10 +249,14 @@ uv run python scripts/rebase_architecture_synthesis.py \
   --evidence-gated \
   --generated-by='Claude Opus 4.6' \
   --component=MLServer \
-  --changes=ARCHITECTURE_CHANGES.md \
+  --patch=ARCHITECTURE_PATCH.json \
   --report-json=MLServer.merge.json \
   --report-markdown=MLServer.merge.md
 ```
+
+`--changes=ARCHITECTURE_CHANGES.md` remains available to replay historical
+Markdown change-record artifacts during the migration. New generation runs use
+the versioned JSON patch contract.
 
 ## get_git_changes.py
 

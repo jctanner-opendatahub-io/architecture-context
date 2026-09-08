@@ -114,6 +114,7 @@ def _audit_fixture(tmp_path: Path) -> Path:
     sidecar.write_text(json.dumps({"schema_version": audit.COVERAGE_SCHEMA_VERSION}))
 
     (platform / "without-analyzer.md").write_text("# Missing analyzer\n")
+    (platform / "INDEX.md").write_text("# Navigation metadata\n")
     orphan = platform / "without-document/.analyzer/component-architecture.json"
     orphan.parent.mkdir(parents=True)
     orphan.write_text("{}")
@@ -145,7 +146,7 @@ def test_audit_classifies_physical_corpus_without_alias_duplication(
         "project_arch_analyzers_without_document": 1,
         "invalid_analyzers": 1,
         "platform_aliases_excluded": 1,
-        "surface_occurrences": 6,
+        "surface_occurrences": 5,
         "roles": {
             "manifest": 1,
             "operator": 1,
@@ -158,7 +159,7 @@ def test_audit_classifies_physical_corpus_without_alias_duplication(
             "service": 1,
             "unknown": 1,
         },
-        "priorities": {"high": 1, "required": 5},
+        "priorities": {"high": 1, "required": 4},
         "sidecars": {
             "missing-legacy-telemetry": 3,
             "present-unvalidated": 1,
@@ -195,6 +196,27 @@ def test_audit_classifies_physical_corpus_without_alias_duplication(
         for platform in report["platforms"]
         if platform["platform"] == "rhoai-3.5"
     )["generation_cohort"] == "legacy-external-analyzer-full-llm"
+    assert report["fips_applicability"] == {
+        "category_records": 1,
+        "category_with_facts": 0,
+        "category_without_facts": 1,
+        "nominated_surface_occurrences": 0,
+        "nominated_repository_occurrences": 0,
+        "nominated_with_category_facts": 0,
+        "nominated_without_category_facts": 0,
+        "nominated_uncertain": 0,
+        "nominated_applicable": 0,
+        "uncertain_without_nomination": 1,
+        "uncertain_without_nomination_repositories": 1,
+        "interpretation": (
+            "Static build, packaging, provider, crypto, or TLS signals nominate "
+            "an uncertain question; they do not establish runtime compliance. "
+            "Source-backed explicit runtime, policy, or negative signals make "
+            "the question applicable while claim support remains uncertain. "
+            "Evidence-free category records remain explicit uncertain "
+            "observations without required-surface nomination."
+        ),
+    }
 
 
 def test_structural_document_signal_is_not_reported_as_coverage(
@@ -224,6 +246,34 @@ def test_structural_document_signal_is_not_reported_as_coverage(
     assert report["analyzer_evidence"]["behavioral_evidence"]["statuses"] == {
         "observed": 1,
         "unresolved": 1,
+    }
+
+
+def test_present_empty_behavioral_evidence_is_not_a_refresh_candidate(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "architecture"
+    platform = root / "rhoai-3.6"
+    platform.mkdir(parents=True)
+    _write_component(
+        platform,
+        "behavior-free",
+        {
+            "component": "behavior-free",
+            "repo": "https://example.test/behavior-free.git",
+            "commit_sha": "1" * 40,
+            "analyzer_version": "current",
+            "behavioral_evidence": [],
+        },
+    )
+
+    report = audit.audit_architecture_tree(root)
+
+    assert report["summary"]["behavioral_evidence"]["field_states"] == {
+        "present-empty": 1
+    }
+    assert "refresh-stored-behavioral-evidence" not in {
+        item["id"] for item in report["follow_up_priorities"]
     }
 
 
@@ -275,4 +325,43 @@ def test_markdown_renders_auditable_boundary(tmp_path: Path) -> None:
     assert "Missing legacy sidecars" in rendered
     assert "incomparable legacy cohort" in rendered
     assert "not semantic coverage" in rendered
+    assert "## Runtime FIPS applicability" in rendered
     assert "## Interpretation limits" in rendered
+
+
+def test_same_input_comparison_reports_planning_delta(tmp_path: Path) -> None:
+    report = audit.audit_architecture_tree(_audit_fixture(tmp_path))
+    current = audit._comparison_metrics(report)
+    baseline_metrics = {
+        key: value + 1 for key, value in current.items()
+    }
+    baseline = {
+        "schema_version": audit.BASELINE_SCHEMA_VERSION,
+        "source_commit": "before",
+        "report_sha256": "abc123",
+        "input_fingerprint_sha256": report["input"]["fingerprint_sha256"],
+        "metrics": baseline_metrics,
+    }
+
+    audit.attach_comparison(report, baseline)
+
+    assert all(
+        values["delta"] == -1
+        for values in report["comparison"]["metrics"].values()
+    )
+    assert "do not demonstrate improved semantic recall" in report[
+        "comparison"
+    ]["interpretation"]
+    assert "## Same-input planning-rule delta" in audit.render_markdown(report)
+
+
+def test_comparison_rejects_different_architecture_input(tmp_path: Path) -> None:
+    report = audit.audit_architecture_tree(_audit_fixture(tmp_path))
+    baseline = {
+        "schema_version": audit.BASELINE_SCHEMA_VERSION,
+        "input_fingerprint_sha256": "different",
+        "metrics": audit._comparison_metrics(report),
+    }
+
+    with pytest.raises(audit.AuditError, match="fingerprint"):
+        audit.attach_comparison(report, baseline)

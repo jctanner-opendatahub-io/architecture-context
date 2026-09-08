@@ -1,0 +1,1593 @@
+{
+  "boundary": {
+    "generated_architecture_modified": false,
+    "live_agents_run": false,
+    "network_accessed": false,
+    "pipeline_logs_read": false,
+    "revision_substitution_allowed": false,
+    "source": "stored-architecture-only",
+    "source_checkouts_read": false
+  },
+  "cohort": [
+    {
+      "artifact_key": "rhoai-3.6-ea.2/rhods-operator",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2/rhods-operator.md",
+        "sha256": "5cfbf54d76aca7fa8afdb0988eecdf90a36d679f7513498290241efa21df7ebc",
+        "size_bytes": 43020
+      },
+      "comparison_input_fingerprint_sha256": "732dfa9c4f46e0b920c37b470005c5222af33814de8dbeb1b32fc75585a727bb",
+      "component": "rhods-operator",
+      "platform": "rhoai-3.6-ea.2",
+      "primary_role": "operator",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 1,
+      "source_identity": {
+        "commit_sha": "4ada791819c522a4cda54f9029ab3e4056ed31ed",
+        "repository": "https://github.com/red-hat-data-services/rhods-operator.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "rhods-operator-first",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "fb80aa6ca2858ea71a5388aab7b88d707f8debf20bb93f136268014ee2b0a95f",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/.render_meta.json",
+          "sha256": "b33d92547d35098c2d354e9426f9af21419efba999e94353f7b42931d761cd44",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/analyzer_architecture.md",
+          "sha256": "4b353401bf8a0a0d7b441f3b6edf4b7bd91d8b54a5872d91e7a1d0128de27fcf",
+          "size_bytes": 38224
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "e8862d86509e8dba4977f255fbeb86c1f8b1dc79062eb208addd198d19b02a67",
+          "size_bytes": 52600
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/component-architecture.json",
+          "sha256": "b171a85ff30ecd60c107c6f330e61548d10aec9467e6860ce2b69c1a060c9c8d",
+          "size_bytes": 178497
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/aigateway.v1alpha1.json",
+          "sha256": "ae2b23648a614e89d662df8705776cf234171d8d19e467d77e1da740a7616725",
+          "size_bytes": 8017
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/aihub.v1alpha1.json",
+          "sha256": "0add9e4e178f1c1a3fcbde60f6604602b16cc9b46366a91983e9f6d994b7e919",
+          "size_bytes": 7206
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/aitenant.v1alpha1.json",
+          "sha256": "98a33848b66083ca5205b11985a1b2c594a5b75922cb7f973c92ef81417c2bac",
+          "size_bytes": 9561
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/apikey.v1alpha1.json",
+          "sha256": "30d31403150c10f00eb17ac1b4e598316d762b12c0f141d8517fae93e6ee3ea2",
+          "size_bytes": 13481
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/apiproduct.v1alpha1.json",
+          "sha256": "084345bf78b5a50732ae0055e8882b06fb056dc24632de494810f96660b5bbbb",
+          "size_bytes": 167630
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/application.v1beta1.json",
+          "sha256": "2977620c3b9d18609a44d0b83d484a6295f1d81f678dd98123efde5fcf219f8c",
+          "size_bytes": 25723
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/authconfig.v1beta2.json",
+          "sha256": "278a92047a8bc4e104cca52dfec6c625b242c5964f99eab434c101329be040ee",
+          "size_bytes": 142281
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/authconfig.v1beta3.json",
+          "sha256": "2a777c1fe265a18a50a5402e10c763c151ab51b50f004a10bdb7e9d859c33bb6",
+          "size_bytes": 163362
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/authorino.v1beta1.json",
+          "sha256": "09ce44db4513e061afd11167231d98958f7664568464b67e856b5c94a473e259",
+          "size_bytes": 10672
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/authorizationpolicy.v1.json",
+          "sha256": "cd6b5411a1c0228a14f88a12fa1af07fe4e3848200904db47ea15416aac04777",
+          "size_bytes": 17080
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/authorizationpolicy.v1beta1.json",
+          "sha256": "cd6b5411a1c0228a14f88a12fa1af07fe4e3848200904db47ea15416aac04777",
+          "size_bytes": 17080
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/authpolicy.v1.json",
+          "sha256": "90e8798fabd4c8ed0015d4922f51771ccb5131ba51a59e574d5127741c7f90f9",
+          "size_bytes": 504474
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/backendtlspolicy.v1.json",
+          "sha256": "78a7dc4d71042ab7bb5a29ddb3bccc8be01304dbfa595d19ca79653ccf47448e",
+          "size_bytes": 31172
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/backendtlspolicy.v1alpha3.json",
+          "sha256": "78a7dc4d71042ab7bb5a29ddb3bccc8be01304dbfa595d19ca79653ccf47448e",
+          "size_bytes": 31172
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/catalog.v1alpha1.json",
+          "sha256": "fc2b9d283d1ed1e4b4f5d376507d39eef698133534339a013e7ba677fd1d8d2c",
+          "size_bytes": 14565
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/certificate.v1.json",
+          "sha256": "702405d041878f5c47eb11ce5107636594359487f1c8a745c6adc5e595dd70c2",
+          "size_bytes": 33490
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/certificaterequest.v1.json",
+          "sha256": "dfae0e81bdbcd4eb1399af7c35ac9e768173b03ed09cc9ce98b419aa7d3f055d",
+          "size_bytes": 9936
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/certmanager.v1alpha1.json",
+          "sha256": "026619eeedd252b3f4bc15c61b9f3a056ea262f8a8f4b3244852dae5e13051f8",
+          "size_bytes": 65443
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/challenge.v1.json",
+          "sha256": "6445c5cb842442ddde8ff222f56b2a3afee89a50fca2afea3ec1cabb6f7b785f",
+          "size_bytes": 222701
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/clusterissuer.v1.json",
+          "sha256": "a4b1f6f8e872b475f0dbf583fa6fb5d877bf7d8fdd994e1d03d12551256ac318",
+          "size_bytes": 264614
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/clusterworkflowtemplate.v1alpha1.json",
+          "sha256": "6edc52a4d3d15507128c3ee4bdca70eb4fa8973f172069c1b289a73042b7890a",
+          "size_bytes": 372
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/config.v1alpha1.json",
+          "sha256": "f4acfca68df08f688c09ce98f628ddbb9de197b54b3c5b893ec4dfc514160194",
+          "size_bytes": 2477
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/cronworkflow.v1alpha1.json",
+          "sha256": "d09d616840f6e211d17009177aee9e7359ac07a8621ee3db9db38e8f03287b43",
+          "size_bytes": 511
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/dashboard.v1alpha1.json",
+          "sha256": "dfec458a56ab5211d6782ac873193920ae561a8f1c81a54ee07c812339279de5",
+          "size_bytes": 12703
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/datasciencepipelinesapplication.v1.json",
+          "sha256": "67a787f8cd827d6eae33aeb7a390ef4b91abef0a2c439e2d653efe8f9da559a9",
+          "size_bytes": 67184
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/destinationrule.v1.json",
+          "sha256": "48d849ed7cffe0780933cbfa5188bb2bb6dd2045e9e2f560d38905a937f33680",
+          "size_bytes": 120215
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/destinationrule.v1alpha3.json",
+          "sha256": "48d849ed7cffe0780933cbfa5188bb2bb6dd2045e9e2f560d38905a937f33680",
+          "size_bytes": 120215
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/destinationrule.v1beta1.json",
+          "sha256": "48d849ed7cffe0780933cbfa5188bb2bb6dd2045e9e2f560d38905a937f33680",
+          "size_bytes": 120215
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/dnshealthcheckprobe.v1alpha1.json",
+          "sha256": "abb4f7ba5b3a4d74899d9015368b030286d0d20da27890106cb6e107e17d00e9",
+          "size_bytes": 4631
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/dnspolicy.v1.json",
+          "sha256": "e3237ca79b8664ee7d0f8d40aad760817b16febb14d67dc15a365d04f7fa6858",
+          "size_bytes": 23421
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/dnsrecord.v1alpha1.json",
+          "sha256": "400d9377b46b31f99ebe2efee7bdedf8f47fba1fee7427676dcceacd50a519d9",
+          "size_bytes": 24131
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/envoyfilter.v1alpha3.json",
+          "sha256": "660bab5aed134abc6b43c135d343aaf9d4193083ef392dca0df90d7c73ab3d21",
+          "size_bytes": 18996
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/evalhub.v1.json",
+          "sha256": "8fbf801a3dc08762336400269f3362e2d95e561e0f13f29e52aa11aaaca1a31f",
+          "size_bytes": 37712
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/evalhub.v1alpha1.json",
+          "sha256": "007563c4b39d113763b0593d34c7881f8cf0f375d106a45bac596c1e511dde6f",
+          "size_bytes": 33747
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/externalmodel.v1alpha1.json",
+          "sha256": "d4234abf50cead07ec0aeabb1644c2366951f5e2dc8cc4b2cffa3229017a94fd",
+          "size_bytes": 10199
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/externalprovider.v1alpha1.json",
+          "sha256": "0aeb3a1fb309f084eab800e0d2d10d7db3c68bef825d37ab48e24def3a31ec08",
+          "size_bytes": 6973
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/feastoperator.v1alpha1.json",
+          "sha256": "2ca227f8c606afa204c62fca18a1ace5d5d359caf96ec36b575d1003ef10e4e5",
+          "size_bytes": 5746
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/gateway.v1.json",
+          "sha256": "2a87ce824c77f67e92c03c213d69255469f376a8525044c2481fb5bf4e06e140",
+          "size_bytes": 12669
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/gateway.v1alpha3.json",
+          "sha256": "2a87ce824c77f67e92c03c213d69255469f376a8525044c2481fb5bf4e06e140",
+          "size_bytes": 12669
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/gateway.v1beta1.json",
+          "sha256": "a0486fd161a9d87cc7abe53c53c138ecf8a9b180af786587277a381031ca5bcc",
+          "size_bytes": 53188
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/gatewayclass.v1.json",
+          "sha256": "39aa38e8c9a017accc62ef0459e1145eff75b75c17a08959887e5cec3163440b",
+          "size_bytes": 9906
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/gatewayclass.v1beta1.json",
+          "sha256": "39aa38e8c9a017accc62ef0459e1145eff75b75c17a08959887e5cec3163440b",
+          "size_bytes": 9906
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/grpcroute.v1.json",
+          "sha256": "79c9ba80f3d5d013ad359016e7ebef5c5ea04aacbc0d47371fe46362a380ce5f",
+          "size_bytes": 99554
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/guardrailsorchestrator.v1alpha1.json",
+          "sha256": "8c763b700f6ce163c7c6b0557965fa8967cccbcdf62b245e12a8631ced765479",
+          "size_bytes": 16347
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/httproute.v1.json",
+          "sha256": "4b4f4bc0ab2a43e2b1e064b74f448fcdec33547d1a2a15a885b59dc253bf506f",
+          "size_bytes": 141469
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/httproute.v1beta1.json",
+          "sha256": "4b4f4bc0ab2a43e2b1e064b74f448fcdec33547d1a2a15a885b59dc253bf506f",
+          "size_bytes": 141469
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/issuer.v1.json",
+          "sha256": "319548979e881bd057975f06524e6304c370f9c11133e76b1217d593b76f32b3",
+          "size_bytes": 264527
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/istio.v1.json",
+          "sha256": "a53a7a721376aa55f80e1203f9bc32a4d8f62d73990967764a5b3f312e28e7d1",
+          "size_bytes": 613517
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/istiocni.v1.json",
+          "sha256": "1983d157f951d6c654f6adc07d3a55ec402f1c4399222282015d951aefbd1cfb",
+          "size_bytes": 92575
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/istiocsr.v1alpha1.json",
+          "sha256": "f782c36a6f3d2781eb1ec87f8234f06c188ac8a36b9854c3b086256ac56d36ee",
+          "size_bytes": 85149
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/istiorevision.v1.json",
+          "sha256": "f7dc3cfbdc2f9fe7cbcea67b423ba935fd7846061b0bde295aa8ef6cc8eb394b",
+          "size_bytes": 609458
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/istiorevisiontag.v1.json",
+          "sha256": "0b6fb2eb055ebaedfd7f0f0f1415f1e12f8ac066fc2b436df4c8bde17b8e6711",
+          "size_bytes": 4608
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/kserve.v1alpha1.json",
+          "sha256": "350d4ac6bd1aa3e718f7efe579a33a742b8a62a899eacbc3d3c850d9f637949c",
+          "size_bytes": 14697
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/kuadrant.v1beta1.json",
+          "sha256": "e5310a1c9ed418c1581b6c432c2c2a1380b0b8557d3f7fc67607d3bc7abd5f85",
+          "size_bytes": 9296
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/leaderworkersetoperator.v1.json",
+          "sha256": "bb60c35de3b735771d056bbfe140fb9b629f8ee44348362ab42fb8e29e0038db",
+          "size_bytes": 8151
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/limitador.v1alpha1.json",
+          "sha256": "8ad33634a8f2520ca501c08bc38d27d789eb4cfac2899da3d26e5e15fe82dc01",
+          "size_bytes": 75262
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/llmbatchgateway.v1alpha1.json",
+          "sha256": "fbb0a524e29c7206d3a817a3951c1e72ba54ed6f4e0d658d899497e464482c0b",
+          "size_bytes": 76736
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/lmevaljob.v1alpha1.json",
+          "sha256": "1f4f9310434eb7520af3fd6a862645b838eb2d56662f81f1342e8eb106afc4b4",
+          "size_bytes": 336002
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/maasauthpolicy.v1alpha1.json",
+          "sha256": "ccc0ce2cf82e3d3ca7739682e222e1377dec3a1f8ed8f1ecb26e77d70fc61d8b",
+          "size_bytes": 10093
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/maasmodelref.v1alpha1.json",
+          "sha256": "aa805fcd97623e71f7dada5831fe815af236c0231debe00fdd60586445a1428a",
+          "size_bytes": 9759
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/maassubscription.v1alpha1.json",
+          "sha256": "738d76af3ea6fe02dfadf727ef37343cc2150854c4b3bd8d422a00d66b954d59",
+          "size_bytes": 13856
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/maastenantconfig.v1alpha1.json",
+          "sha256": "033cef96529039673793bc35ff8761602603f87fbd508e57524d3d6f322c3451",
+          "size_bytes": 8720
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/mcplifecycleoperator.v1alpha1.json",
+          "sha256": "d1d5ba6a651899c0332cc1a4e84cbe170d2531f868f63f2cb133df177254ac90",
+          "size_bytes": 6640
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/mcpserver.v1alpha1.json",
+          "sha256": "c4f3faacaa0cbc2dd75e93025a622f4f9ce5684ebcf28177d484e9336bf14d97",
+          "size_bytes": 94753
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/mlflow.v1.json",
+          "sha256": "e5d2b6441dc7c36916189180c224aa062892102d9617cfd945eec85e47a82a0c",
+          "size_bytes": 172943
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/mlflowconfig.v1.json",
+          "sha256": "df0ad92e9fdf0ad97522209cce01536f94b2c08fd8f2b1aa8bad28fd810b808e",
+          "size_bytes": 3372
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/mlflowoperator.v1alpha1.json",
+          "sha256": "867c2b825c9bbffc7987efe29e7d3157c823286d17410e8a71d540d9cac5da52",
+          "size_bytes": 5642
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/modelregistry.v1alpha1.json",
+          "sha256": "c9e4b3624159660df2976dc94023bde7fd3017ebb4c8ccb32d750683ca4fbd04",
+          "size_bytes": 39768
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/modelregistry.v1beta1.json",
+          "sha256": "6422a2d2f10ee1e66de446191dc19f2c9f56f2dea0a4db2f82843d05a39e234f",
+          "size_bytes": 33820
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/monitoring.v1alpha1.json",
+          "sha256": "a63db6565eb7494ffd3e2b2a6468e4aaef57517cbbfb083edfa62b595017f794",
+          "size_bytes": 18477
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/nemoguardrails.v1alpha1.json",
+          "sha256": "2efccbc88ada4c304bc2a4ead9ca5ebf249ccdeb22f8473ffc84ab8620e1540b",
+          "size_bytes": 80940
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/ogx.v1alpha1.json",
+          "sha256": "98d74e54d084301c2115258542bdcae425e50d9379886cf8fe07086bced78867",
+          "size_bytes": 6030
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/oidcpolicy.v1alpha1.json",
+          "sha256": "ece397c504820eddb69c452b4b399fbce3a910275bf26da8082acb4367b13248",
+          "size_bytes": 11300
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/order.v1.json",
+          "sha256": "5c9d27571a0007a8bff79eaa9a241a07e793391954e291092313833985a5ea31",
+          "size_bytes": 9232
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/peerauthentication.v1.json",
+          "sha256": "80e22414b518253dd02533c81527eb7df57969ee42aa58db841715b0237ec2fb",
+          "size_bytes": 6511
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/peerauthentication.v1beta1.json",
+          "sha256": "80e22414b518253dd02533c81527eb7df57969ee42aa58db841715b0237ec2fb",
+          "size_bytes": 6511
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/pipeline.v2beta1.json",
+          "sha256": "3dc216ec8fef3d8e97b65a8c1ec9065caecba666363805aceadd42278ff13803",
+          "size_bytes": 1299
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/pipelineversion.v2beta1.json",
+          "sha256": "36f99318d4a2be2a1c89f0dfd1e83404fce43891f2c2a0bf3c2c04bef1b7697e",
+          "size_bytes": 3251
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/planpolicy.v1alpha1.json",
+          "sha256": "11ba69a4545faa047df279972b0d8afa87c0fa442b8aa146e794e7af7b7114cd",
+          "size_bytes": 9547
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/proxyconfig.v1beta1.json",
+          "sha256": "0a98419c07f1c3802b76b553edfb9210ada879edb5b9d522d098e8c33b1c1472",
+          "size_bytes": 5539
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/ratelimitpolicy.v1.json",
+          "sha256": "acb1ce451ab4021b70bf8d5146576a5c9b31f2f0d06f5b34514540daf6b27936",
+          "size_bytes": 20970
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/raycluster.v1.json",
+          "sha256": "ad3613a4c6b16bacdddfa4cd2043a99d963c0b6598c8e2d7915a24416e719986",
+          "size_bytes": 594356
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/raycluster.v1alpha1.json",
+          "sha256": "99b866d490de7eb3fc3242d0f4adf4810f142c7b758c3ea92de71fa0db65cbe2",
+          "size_bytes": 581554
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/raycronjob.v1.json",
+          "sha256": "3758932d773bffc7dc3935231025d68ec59daf32c26382519890b1ad4cb2d00c",
+          "size_bytes": 969139
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/rayjob.v1.json",
+          "sha256": "65008a2de7202ea9c94990ed44b45ea4814b8730c21eca94cbc1deb03081d0e7",
+          "size_bytes": 900396
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/rayjob.v1alpha1.json",
+          "sha256": "474fab429c0627cee42a3b1bbd2e3e76aaf4c7483ea03660b592b0d126ec3a8e",
+          "size_bytes": 880699
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/rayservice.v1.json",
+          "sha256": "77079451eb4439dca034f04c66585738fbd265e0d0091b7ce763d49f4b3fb462",
+          "size_bytes": 669243
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/rayservice.v1alpha1.json",
+          "sha256": "4407252b14f6419ef43a12ad42a076aae4bc8bb568c885ceb1df71df62cb9f44",
+          "size_bytes": 648824
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/referencegrant.v1beta1.json",
+          "sha256": "ed0d40fe7ee74e1165caca21845f922aab23b5bd0ebfed398f6c93f1c09775d5",
+          "size_bytes": 5874
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/requestauthentication.v1.json",
+          "sha256": "5239f1d46ec6e19d1b24604db9db5f14e92eadf9353b162399d5f1d0d33518e9",
+          "size_bytes": 13688
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/requestauthentication.v1beta1.json",
+          "sha256": "5239f1d46ec6e19d1b24604db9db5f14e92eadf9353b162399d5f1d0d33518e9",
+          "size_bytes": 13688
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/route.v1.json",
+          "sha256": "463f0109570c898bb9a5969adbcb1afe648d78306492de78c8de334851a0ef71",
+          "size_bytes": 11303
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/scheduledworkflow.v1beta1.json",
+          "sha256": "37164a353eae65059bf578e205e53d6045e1f91e5ad588e74e203a0825b9da19",
+          "size_bytes": 509
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/serviceentry.v1.json",
+          "sha256": "a7d605f5c956a8a9cdcd854f5987f0aaa72b89d5cb5703086f25886344a1773a",
+          "size_bytes": 12844
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/serviceentry.v1alpha3.json",
+          "sha256": "a7d605f5c956a8a9cdcd854f5987f0aaa72b89d5cb5703086f25886344a1773a",
+          "size_bytes": 12844
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/serviceentry.v1beta1.json",
+          "sha256": "a7d605f5c956a8a9cdcd854f5987f0aaa72b89d5cb5703086f25886344a1773a",
+          "size_bytes": 12844
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/servicemonitor.v1.json",
+          "sha256": "2029c695f6d160d6b0706598fc2ca68155980a1212e58f98c60731321441db9a",
+          "size_bytes": 55555
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/sidecar.v1.json",
+          "sha256": "db2445dc4332053e50ea7e6432a7e7929dff3e0503261dec048ddc9cee80c5cc",
+          "size_bytes": 28999
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/sidecar.v1alpha3.json",
+          "sha256": "db2445dc4332053e50ea7e6432a7e7929dff3e0503261dec048ddc9cee80c5cc",
+          "size_bytes": 28999
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/sidecar.v1beta1.json",
+          "sha256": "db2445dc4332053e50ea7e6432a7e7929dff3e0503261dec048ddc9cee80c5cc",
+          "size_bytes": 28999
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/sparkoperator.v1alpha1.json",
+          "sha256": "ec423030bede371a2717a396b5cd653a50a34e8e51170f8d8e0be9b468a6e94f",
+          "size_bytes": 5497
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/telemetry.v1.json",
+          "sha256": "ce20c520703fd650c0fbcce86f159adb38376c84d767cabb47e63053e2b5159a",
+          "size_bytes": 21731
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/telemetry.v1alpha1.json",
+          "sha256": "ce20c520703fd650c0fbcce86f159adb38376c84d767cabb47e63053e2b5159a",
+          "size_bytes": 21731
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/telemetrypolicy.v1alpha1.json",
+          "sha256": "3cb5e6dd4c13f6a11c7c2109859f4a922858a90cad96ad03e459f87f5bbbee71",
+          "size_bytes": 7694
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/tenant.v1alpha1.json",
+          "sha256": "d9896b4f9d28a2728d760021789d085a8e88bf70809d0ed32cc1312937ef8f4d",
+          "size_bytes": 10211
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/tlspolicy.v1.json",
+          "sha256": "139e8aacb7416e1cd16f4719e107a9c89a7cdcbf84bbb6c7c5f03ce621b0d3e2",
+          "size_bytes": 14213
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/tokenratelimitpolicy.v1alpha1.json",
+          "sha256": "5eef9cb533734299718995617181f1e1e373e144f33c0418ebe83d6920ddd1b1",
+          "size_bytes": 21229
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/trainer.v1alpha1.json",
+          "sha256": "1d35ea19e020580b7318d6bfe979800a2ab937c1fc060b1ed57c7ac870d434dd",
+          "size_bytes": 8628
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/trustyaiservice.v1.json",
+          "sha256": "fb0ba9047ce09c1f44c4d7e046b0dc030f8c90849630dde43d8d965cc05d838c",
+          "size_bytes": 5255
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/trustyaiservice.v1alpha1.json",
+          "sha256": "2423c8d2b1a21145219207c62f851ceb0778854c4fe6dacb3f89a29bc148eb78",
+          "size_bytes": 3814
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/viewer.v1beta1.json",
+          "sha256": "4e086aea12f38bbf01331fad0d88a4b73207c835520492a6c188a2da5a51a1b7",
+          "size_bytes": 356
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/virtualservice.v1.json",
+          "sha256": "152f4fcd40bd85e207491bb9beec9b1910df708a560260daae5c3091b8dea755",
+          "size_bytes": 59009
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/virtualservice.v1alpha3.json",
+          "sha256": "152f4fcd40bd85e207491bb9beec9b1910df708a560260daae5c3091b8dea755",
+          "size_bytes": 59009
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/virtualservice.v1beta1.json",
+          "sha256": "152f4fcd40bd85e207491bb9beec9b1910df708a560260daae5c3091b8dea755",
+          "size_bytes": 59009
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/wasmplugin.v1alpha1.json",
+          "sha256": "bcdcd3b438b39e3d7e9e3f42b12881597b61ef8d43c764f4da68326827ca9b27",
+          "size_bytes": 14011
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workbenches.v1alpha1.json",
+          "sha256": "1e26817797733863e9c9ecc0b6db91c1e3c40e63a090eea7a4bd2bd851a9204f",
+          "size_bytes": 10040
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workflow.v1alpha1.json",
+          "sha256": "d09d616840f6e211d17009177aee9e7359ac07a8621ee3db9db38e8f03287b43",
+          "size_bytes": 511
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workflowartifactgctask.v1alpha1.json",
+          "sha256": "1a1a6e1537bec591c16dca59d8eab3cdbcfff0cb98a4a2769b7c0fa579e4a503",
+          "size_bytes": 62999
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workfloweventbinding.v1alpha1.json",
+          "sha256": "546bf45a4ccb0125b27f93cd2ac12ad6322c4d7e988636efd762ad26d93384ab",
+          "size_bytes": 38970
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workflowtaskresult.v1alpha1.json",
+          "sha256": "2e96966ef1eb19b95cea8434d43e23d4652656c14202244b81ecc96b9b17df21",
+          "size_bytes": 30883
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workflowtaskset.v1alpha1.json",
+          "sha256": "d09d616840f6e211d17009177aee9e7359ac07a8621ee3db9db38e8f03287b43",
+          "size_bytes": 511
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workflowtemplate.v1alpha1.json",
+          "sha256": "6edc52a4d3d15507128c3ee4bdca70eb4fa8973f172069c1b289a73042b7890a",
+          "size_bytes": 372
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workloadentry.v1.json",
+          "sha256": "b346329d6ea96fc1b8e2af07a37337272b8674ea85a2c5aebb42aceb0a635788",
+          "size_bytes": 6469
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workloadentry.v1alpha3.json",
+          "sha256": "b346329d6ea96fc1b8e2af07a37337272b8674ea85a2c5aebb42aceb0a635788",
+          "size_bytes": 6469
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workloadentry.v1beta1.json",
+          "sha256": "b346329d6ea96fc1b8e2af07a37337272b8674ea85a2c5aebb42aceb0a635788",
+          "size_bytes": 6469
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workloadgroup.v1.json",
+          "sha256": "8eee81b8fe637983556dd05b079d10e2d9869f8891da053c60494b01e4fa3fbd",
+          "size_bytes": 14102
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workloadgroup.v1alpha3.json",
+          "sha256": "8eee81b8fe637983556dd05b079d10e2d9869f8891da053c60494b01e4fa3fbd",
+          "size_bytes": 14102
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/workloadgroup.v1beta1.json",
+          "sha256": "8eee81b8fe637983556dd05b079d10e2d9869f8891da053c60494b01e4fa3fbd",
+          "size_bytes": 14102
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/ztunnel.v1.json",
+          "sha256": "fd3fb8e4acd96d3891c359d3722c64a8306df25758e0188f7d94a05739d1693f",
+          "size_bytes": 213270
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2/rhods-operator/.analyzer/contracts/schemas/ztunnel.v1alpha1.json",
+          "sha256": "acc9ecf27d5dab8d1e17a1dc7bf412c0f19991d2bd241259fadfba51c7e25c2f",
+          "size_bytes": 213888
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/models-as-a-service",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/models-as-a-service.md",
+        "sha256": "c5011c3c55d87af045f43910f46b01535e94ad3a0237a97ac7251f874b4a1f9b",
+        "size_bytes": 34019
+      },
+      "comparison_input_fingerprint_sha256": "bb49afb5c48c8fd9bb285aa02ca18def5d9225cb559bc1b6bbc1929d29168440",
+      "component": "models-as-a-service",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "operator",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 2,
+      "source_identity": {
+        "commit_sha": "b5bc98727a7e77dc427cb658de061745e3e04795",
+        "repository": "https://github.com/red-hat-data-services/models-as-a-service.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "e0e8f3aca1c4d52d751643330e63f8c26cd8017259a4c9eb9a43a753e1510a07",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/analyzer_architecture.md",
+          "sha256": "dc7e92723f2cee306039ff002c003d96f370b94deafddf1983ce9e4c04f3045d",
+          "size_bytes": 29047
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "dac4caf58c4e68e765db720430aa54e263ff5dcb5e0785b5646ca47aff796253",
+          "size_bytes": 47018
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/component-architecture.json",
+          "sha256": "1b4197b412ba6bcd09af2edbb62263cca9add2f8080871bd47c4347a23446a03",
+          "size_bytes": 128384
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/aitenant.v1alpha1.json",
+          "sha256": "98a33848b66083ca5205b11985a1b2c594a5b75922cb7f973c92ef81417c2bac",
+          "size_bytes": 9561
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/config.v1alpha1.json",
+          "sha256": "f4acfca68df08f688c09ce98f628ddbb9de197b54b3c5b893ec4dfc514160194",
+          "size_bytes": 2477
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/externalmodel.v1alpha1.json",
+          "sha256": "d4234abf50cead07ec0aeabb1644c2366951f5e2dc8cc4b2cffa3229017a94fd",
+          "size_bytes": 10199
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/externalprovider.v1alpha1.json",
+          "sha256": "0aeb3a1fb309f084eab800e0d2d10d7db3c68bef825d37ab48e24def3a31ec08",
+          "size_bytes": 6973
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/maasauthpolicy.v1alpha1.json",
+          "sha256": "ccc0ce2cf82e3d3ca7739682e222e1377dec3a1f8ed8f1ecb26e77d70fc61d8b",
+          "size_bytes": 10093
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/maasmodelref.v1alpha1.json",
+          "sha256": "aa805fcd97623e71f7dada5831fe815af236c0231debe00fdd60586445a1428a",
+          "size_bytes": 9759
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/maassubscription.v1alpha1.json",
+          "sha256": "738d76af3ea6fe02dfadf727ef37343cc2150854c4b3bd8d422a00d66b954d59",
+          "size_bytes": 13856
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/maastenantconfig.v1alpha1.json",
+          "sha256": "1c5892069736df6cee9a99039acf50a7bf5ade6aad71cbdba79c4df55eb404d2",
+          "size_bytes": 10547
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/models-as-a-service/.analyzer/contracts/schemas/tenant.v1alpha1.json",
+          "sha256": "798d8ead87f74940a5bf35f53facd524ee662779b1453f692de297463b4b2c0c",
+          "size_bytes": 12038
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/odh-model-controller",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/odh-model-controller.md",
+        "sha256": "bc5be5fcf818de4bde858dac29e4a8f7b26069bd6f8ca799479e3ab45a63f6af",
+        "size_bytes": 46853
+      },
+      "comparison_input_fingerprint_sha256": "01040afc24a0349c3bce3705d6db2449beddf1c1dc5bb6563ec7acacbbfac614",
+      "component": "odh-model-controller",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "operator",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 3,
+      "source_identity": {
+        "commit_sha": "8ff72dd9da97b577d1bc33a3cce6e1cd3e4b89b5",
+        "repository": "https://github.com/red-hat-data-services/odh-model-controller.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "eb5a9aac1e55523ea4b3a0ee9644e0ccc43e22b604173d4702c9ca5e26a5b1ee",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/analyzer_architecture.md",
+          "sha256": "3886f64ee63c890f34dd3d89ad69a1e56c2574b4ad99f5908791bfce1860e2a3",
+          "size_bytes": 41102
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "267d79acaa9284dd8ae00e5684b33098d41d4142ac3225281e26999aba5904ef",
+          "size_bytes": 53038
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/component-architecture.json",
+          "sha256": "2d8c11a7258919fe9a8d12439a27c38d3790c9929808046e60e2b471b07a1497",
+          "size_bytes": 189424
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/account.v1.json",
+          "sha256": "c10ddb6d8eb8aa96b9c6c563f9f3b06a65eb37623b9cfb594752c7c94d7fdb9a",
+          "size_bytes": 16257
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/datasciencecluster.v1.json",
+          "sha256": "028e5e853657d0ed512ee97f541ced2c8c5791fb2976b4ac12aa4ed3a97d5301",
+          "size_bytes": 71888
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/datasciencecluster.v2.json",
+          "sha256": "b9fe23d033be0118cecb93ac5b373ebf24c83d11cdf9d4e92659b50e4455f294",
+          "size_bytes": 63460
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/dscinitialization.v1.json",
+          "sha256": "8c930d2b4dcb6cfd217e030e0c84a7152394e6570c41078770539d0f4d19f740",
+          "size_bytes": 26131
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/dscinitialization.v2.json",
+          "sha256": "8c930d2b4dcb6cfd217e030e0c84a7152394e6570c41078770539d0f4d19f740",
+          "size_bytes": 26131
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/inferencegraph.v1alpha1.json",
+          "sha256": "963ff0eb8a2de32b69a9eeb1fd51e4ed7dc459cd1894844765b30950a2f0b774",
+          "size_bytes": 33378
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/inferenceservice.v1beta1.json",
+          "sha256": "b19baaa13039fb4c2edbca8d565bf715c3460b3c09aa3c79de64c448995e2e35",
+          "size_bytes": 1334253
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/llminferenceservice.v1alpha1.json",
+          "sha256": "3a73c2c44643b18357c2ff0d86b0f0b93d61e2bc0a31c29fb9011aee291ff4db",
+          "size_bytes": 1686329
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/llminferenceservice.v1alpha2.json",
+          "sha256": "a6de68c01d66635a53ed53664cf9460f128593ad4eafbd2a200d6ff88b6c0f1b",
+          "size_bytes": 1716644
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/llminferenceserviceconfig.v1alpha1.json",
+          "sha256": "29378d4adddd2051f6eb28a8a474b65a37569f1cd5151dcb225733c249aff214",
+          "size_bytes": 1614872
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/llminferenceserviceconfig.v1alpha2.json",
+          "sha256": "a5577fd8e751f48008b08ca1213b06bfa5c2c17fce2c1b357ac4626444363045",
+          "size_bytes": 1636908
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/podmonitor.v1.json",
+          "sha256": "f523acfdefa83f6faf5b471f22faee6b0e72a62ab0e7cbe97359789eed8f1bea",
+          "size_bytes": 33398
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/predictor.v1alpha1.json",
+          "sha256": "9fb249511707dfe492764e3ec5c33d3fdcebdc9f80d54cdde6601bbf6d0eb381",
+          "size_bytes": 7843
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/route.v1.json",
+          "sha256": "3808c6c508cf13afb96eeff23e46c23b9a852fe883c88227bd333b074d3634c0",
+          "size_bytes": 35086
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/servicemonitor.v1.json",
+          "sha256": "74ce394f0d5b82ff088de689dc72e93ddc1ab889292704c0f7774ec3d61a3fce",
+          "size_bytes": 32202
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/servingruntime.v1alpha1.json",
+          "sha256": "bd8286e3b0cfd89380767247e5bf5cacaab7ca1c6bc867262a3e2c4668664c18",
+          "size_bytes": 236162
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/template.v1.json",
+          "sha256": "13d99cf141df1083073c2053c6922ab3f6475268c248dd57f729d87f7adf1a98",
+          "size_bytes": 4492
+        },
+        {
+          "kind": "analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/odh-model-controller/.analyzer/contracts/schemas/triggerauthentication.v1alpha1.json",
+          "sha256": "799c045f1f4df048cfe9f18cfee683d5403448872c1f95c06ada967192b09193",
+          "size_bytes": 23023
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.1/llm-d-routing-sidecar",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.1/llm-d-routing-sidecar.md",
+        "sha256": "100880a03c5914b70e6a5f0308b5053e4b3a1f741863960209f328074d739b0f",
+        "size_bytes": 14898
+      },
+      "comparison_input_fingerprint_sha256": "c755d3b42be2c3a57b4df2e395c7cfbd9de9219901224574ab8b5b6ab91fd932",
+      "component": "llm-d-routing-sidecar",
+      "platform": "rhoai-3.6-ea.1",
+      "primary_role": "service",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 4,
+      "source_identity": {
+        "commit_sha": "78051b86ff13c4511fb1c8c7def56e04b0850b67",
+        "repository": "https://github.com/llm-d/llm-d-routing-sidecar.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "0dab2bffc4d08e4cc102929b26e9ecb0221c10f8fadd0d9c1ace2fefa705c1e9",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.1/llm-d-routing-sidecar/.analyzer/.render_meta.json",
+          "sha256": "2d2ac362a81c0f853bfb0a3e5d1d0a6aaf9f27e71f60880de327dfdbe993ef8e",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.1/llm-d-routing-sidecar/.analyzer/analyzer_architecture.md",
+          "sha256": "0adaaf6d035a458b1de866415dbfca30c25bf16366090b3a39794d9c685a7e3f",
+          "size_bytes": 8512
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.1/llm-d-routing-sidecar/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "598251605997f8b8da79333cc3da1cfab51b11ddeaa19e16461c4bbf60955fed",
+          "size_bytes": 7055
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.1/llm-d-routing-sidecar/.analyzer/component-architecture.json",
+          "sha256": "90003d0448efaf70f15d919cceac815fe753ed8aa3791092320e8d700aff3520",
+          "size_bytes": 22736
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/NeMo-Guardrails",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/NeMo-Guardrails.md",
+        "sha256": "7b108b6044f8c32bdf6637fe8726d1633a004d17c0ed6370209015489b77203a",
+        "size_bytes": 27546
+      },
+      "comparison_input_fingerprint_sha256": "38734f5b9bc36726e82e7530fb15d8c571b5671b18b2b7ff575b137da293eec0",
+      "component": "NeMo-Guardrails",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "service",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 5,
+      "source_identity": {
+        "commit_sha": "0740bef72f485e79aef20b237c5903c44ff838c1",
+        "repository": "https://github.com/red-hat-data-services/NeMo-Guardrails.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "84286d348ab1dff02c73663afe84c3413a4fba2dacc0a9ff13fae69c27d0bd76",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/NeMo-Guardrails/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/NeMo-Guardrails/.analyzer/analyzer_architecture.md",
+          "sha256": "16618cb9ae0503d6f72ce0ef36eee94bcd6d53c6c623038e4bdc307c5a50aba8",
+          "size_bytes": 24383
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/NeMo-Guardrails/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "880cc59022013578fd49382574ebf3aee6b99b267d30d08b23bab6a7cd66cd26",
+          "size_bytes": 12769
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/NeMo-Guardrails/.analyzer/component-architecture.json",
+          "sha256": "9e89598063dd85f9f11a542650e4d972b94e5ca7842bb4ac5f6711e5f99fd07e",
+          "size_bytes": 69051
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/batch-gateway",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/batch-gateway.md",
+        "sha256": "b19c6e1d53e076bad1ee33ec37ad8982adfdc69381240a9b44b8cabedef612a9",
+        "size_bytes": 19324
+      },
+      "comparison_input_fingerprint_sha256": "c51b9fb5136b00f5bf13e745e7dd8bc84de6420aa45a74c374dd3c22481b41c7",
+      "component": "batch-gateway",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "service",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 6,
+      "source_identity": {
+        "commit_sha": "455370eac43cd9923754897e04339ad7e9377a04",
+        "repository": "https://github.com/red-hat-data-services/batch-gateway.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "ccf9f1c5db0745fdf331d37333f0199d839cdaabac67f6133713038fa1ef00ff",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/batch-gateway/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/batch-gateway/.analyzer/analyzer_architecture.md",
+          "sha256": "e1689e8e67da7d2f9b5286602fde48e7b9a0ed337a21a96977d7d36751ba1124",
+          "size_bytes": 15739
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/batch-gateway/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "e5d894b4e14945ecf24e9de5781782b25887efe31fc24f528f7b7533649cbc1e",
+          "size_bytes": 20647
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/batch-gateway/.analyzer/component-architecture.json",
+          "sha256": "805e0ebecb267e084000a7d7cff902b43c03b66d01fa7acc068a8f6ddc3988fb",
+          "size_bytes": 56802
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/distributed-workloads",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/distributed-workloads.md",
+        "sha256": "bfc48a1add26bce8dce25c32574d0bcd1da7036946a795f66893016e131062d6",
+        "size_bytes": 44048
+      },
+      "comparison_input_fingerprint_sha256": "9be91954e89e172e7a8c7d67c3841c06431d3b24a39eb79c9522e7a9ba531804",
+      "component": "distributed-workloads",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "manifest",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 7,
+      "source_identity": {
+        "commit_sha": "8dd512b732609464f74d38b83b5c50cbf7151276",
+        "repository": "https://github.com/red-hat-data-services/distributed-workloads.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "0e993012f5ce8a121eb21edeb6fe5226d54f78aa3b22de9024fc6f110a4278ac",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/distributed-workloads/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/distributed-workloads/.analyzer/analyzer_architecture.md",
+          "sha256": "a4a016c4c55bfeb1075cb8fde41a66d0dcdb8219dd800f8892733465c9d4e84d",
+          "size_bytes": 41727
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/distributed-workloads/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "afb602cb59e395f335eee5a818ac7eb50cf5b2dc7d965f82128134386c45bb9e",
+          "size_bytes": 14490
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/distributed-workloads/.analyzer/component-architecture.json",
+          "sha256": "832ada91b35207a29e9d9d08be6b6911d3d71816c3465ab8ec74d47fe51e0021",
+          "size_bytes": 133650
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/kube-auth-proxy",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/kube-auth-proxy.md",
+        "sha256": "d7f8175a3dea126b4a76862b6f9dcc082d47b2a53ecc378f93fc44de08b52583",
+        "size_bytes": 17848
+      },
+      "comparison_input_fingerprint_sha256": "552dc0022a2b6953a5ddc207be76af3a45d5b8c1a9c7fc33b387cde47268d00d",
+      "component": "kube-auth-proxy",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "manifest",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 8,
+      "source_identity": {
+        "commit_sha": "0969a391dd59a3df56e969f57ea83b6914a1c40a",
+        "repository": "https://github.com/red-hat-data-services/kube-auth-proxy.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "380a140c5fa82cf36c18926f68e94c9645ee23659fe91bc45c231810b2197a7f",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/kube-auth-proxy/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/kube-auth-proxy/.analyzer/analyzer_architecture.md",
+          "sha256": "01f8db6a6b3ad488f613c30e4cb45d274de3252256d4cae016a892eda59adc78",
+          "size_bytes": 13107
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/kube-auth-proxy/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "19ae66e9140ba263548e357aa08fca3e5fcf221c14d13bd8069686708ee53e05",
+          "size_bytes": 9815
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/kube-auth-proxy/.analyzer/component-architecture.json",
+          "sha256": "24516684d87c2110102f939b50f02b101ec7d90cd3656387c8c4e35f54445e12",
+          "size_bytes": 34820
+        }
+      ]
+    },
+    {
+      "artifact_key": "rhoai-3.6-ea.2.claude/rhoai-mcp",
+      "comparison_document": {
+        "path": "rhoai-3.6-ea.2.claude/rhoai-mcp.md",
+        "sha256": "c8488ca11cfd188c37f0252dd56952bdc4b041f71c1861767871f644893760cf",
+        "size_bytes": 20364
+      },
+      "comparison_input_fingerprint_sha256": "5c594b65b7d6d940c3fcb97f2cf676fe9a0acf2237e0e150d22be689242e3379",
+      "component": "rhoai-mcp",
+      "platform": "rhoai-3.6-ea.2.claude",
+      "primary_role": "manifest",
+      "regeneration": {
+        "output_location": null,
+        "revision_substitution": "prohibited",
+        "status": "not-run-source-input-unavailable"
+      },
+      "sequence": 9,
+      "source_identity": {
+        "commit_sha": "d3498af571e6f2551b4ef33a19f628506aaae456",
+        "repository": "https://github.com/red-hat-data-services/rhoai-mcp.git",
+        "status": "pinned-from-stored-analyzer"
+      },
+      "source_input": {
+        "reason": "The stored architecture artifact pins source identity but does not contain the source checkout required by arch-analyzer.",
+        "status": "unavailable-under-architecture-only-constraint"
+      },
+      "stage": "representative-cohort",
+      "stored_analyzer": {
+        "behavioral_evidence_state": "field-absent",
+        "configuration": null,
+        "configuration_status": "unavailable-in-stored-artifact",
+        "output_fingerprint_sha256": "b723e2533515815813b3fa003b38bd3b5b40f998448a8acf4815ba9451b92720",
+        "revision": null,
+        "revision_status": "unavailable-in-stored-artifact",
+        "schema_version": "1",
+        "version": "0.1.0-dev"
+      },
+      "stored_outputs": [
+        {
+          "kind": "analyzer-render-metadata",
+          "path": "rhoai-3.6-ea.2.claude/rhoai-mcp/.analyzer/.render_meta.json",
+          "sha256": "32c521273a9df2d61f536dcabf4c0c1ca1abb511cda0af5c1a0cebdfd35235f5",
+          "size_bytes": 93
+        },
+        {
+          "kind": "rendered-analyzer-baseline",
+          "path": "rhoai-3.6-ea.2.claude/rhoai-mcp/.analyzer/analyzer_architecture.md",
+          "sha256": "53966e92647e4df5d91f54870cd85fb8a4f8661d725fa9a1e01d6888d1d6107a",
+          "size_bytes": 15882
+        },
+        {
+          "kind": "compact-analyzer-context",
+          "path": "rhoai-3.6-ea.2.claude/rhoai-mcp/.analyzer/analyzer_synthesis_context.md",
+          "sha256": "c3137e3aa73ef0fc40d96c608351666f1623bc393949e734b9264012fc55440b",
+          "size_bytes": 7941
+        },
+        {
+          "kind": "structured-analyzer-output",
+          "path": "rhoai-3.6-ea.2.claude/rhoai-mcp/.analyzer/component-architecture.json",
+          "sha256": "cc52656929f3aa9609221e4de868a94a2e4a1d8cf79bb5acf60716a72532e181",
+          "size_bytes": 39877
+        }
+      ]
+    }
+  ],
+  "input": {
+    "architecture_root": "architecture",
+    "rollout_audit_input_fingerprint_sha256": "8a21066d05c68d202d07f02c5f43366c3debdd3b1935877f94b4b7928f0a1051",
+    "rollout_audit_sha256": "64ea54ed30473d1f6a44fa8ffa7aeeb0e606c11a2e697c4b532f988643e721a9",
+    "selected_comparison_input_fingerprint_sha256": "1867e63fb2b72b2d2a938a2ffefa0dd77313964a30b61a9b4459a0dc4c38aa82"
+  },
+  "interpretation": "This manifest establishes identity and reproducibility for a future refresh. It is not a refreshed analyzer result and supplies no new behavioral-recall or generated-document-quality evidence.",
+  "next_requirements": [
+    "Provide each repository at its exact pinned commit; do not replace a missing commit with a branch, tag, or newer release.",
+    "Record the rebuilt arch-analyzer revision and configuration before creating isolated refreshed outputs.",
+    "Review conditional metrics enforcement and named watch predicates in rhods-operator before expanding beyond the first stage.",
+    "Rerun the rollout audit against an explicitly selected refreshed input root while preserving these historical comparison files."
+  ],
+  "schema_version": "architecture-surface-analyzer-refresh-plan/v1",
+  "selection": {
+    "excluded_representatives": [
+      {
+        "artifact_key": "rhoai-3.6-ea.2.claude/odh-cli",
+        "primary_role": "unknown",
+        "reason": "outside-requested-operator-service-manifest-cohort"
+      },
+      {
+        "artifact_key": "rhoai-3.6-ea.2.claude/llama-stack-provider-trustyai-garak",
+        "primary_role": "unknown",
+        "reason": "outside-requested-operator-service-manifest-cohort"
+      },
+      {
+        "artifact_key": "rhoai-3.6-ea.2.claude/pipelines-components",
+        "primary_role": "unknown",
+        "reason": "outside-requested-operator-service-manifest-cohort"
+      }
+    ],
+    "policy": "rhods-operator first, followed by the rollout audit's deterministic operator, service, and manifest representatives",
+    "roles": [
+      "operator",
+      "service",
+      "manifest"
+    ]
+  },
+  "summary": {
+    "analyzer_configuration_states": {
+      "unavailable-in-stored-artifact": 9
+    },
+    "analyzer_revision_states": {
+      "unavailable-in-stored-artifact": 9
+    },
+    "behavioral_evidence_states": {
+      "field-absent": 9
+    },
+    "regeneration": {
+      "not-run-source-input-unavailable": 9
+    },
+    "roles": {
+      "manifest": 3,
+      "operator": 3,
+      "service": 3
+    },
+    "selected_artifacts": 9,
+    "source_inputs": {
+      "unavailable-under-architecture-only-constraint": 9
+    }
+  }
+}

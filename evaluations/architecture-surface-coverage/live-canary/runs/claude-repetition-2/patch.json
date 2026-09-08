@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "operations": [
+    {
+      "action": "add",
+      "category": "authentication",
+      "key": ["Operator metrics (port 8443)", "HTTPS"],
+      "column": "*",
+      "analyzer_value": null,
+      "candidate_value": null,
+      "reason": "Operator metrics endpoint uses conditional controller-runtime authentication and authorization filters when MetricsSecure is enabled, applied with the OpenShift TLS profile",
+      "evidence": ["cmd/main.go:485-499"]
+    }
+  ]
+}

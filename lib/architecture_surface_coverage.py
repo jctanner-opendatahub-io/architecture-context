@@ -43,6 +43,40 @@ SAFETY_CRITICAL_SURFACES = frozenset(
 
 _SURFACE_ID_RE = re.compile(r"^[a-z][a-z0-9-]*(?:\.[a-z0-9-]+)+$")
 _SOURCE_REF_RE = re.compile(r"^(?P<path>[^:#]+):(?P<lines>\d+(?:-\d+)?)$")
+_FIPS_SIGNAL_KINDS = frozenset(
+    {
+        "crypto-build-signal",
+        "crypto-library",
+        "crypto-provider",
+        "fips-build-signal",
+        "fips-compliance",
+        "fips-packaging",
+        "fips-policy",
+        "fips-posture",
+        "fips-runtime",
+        "packaging-annotation",
+        "policy-requirement",
+        "tls-config",
+    }
+)
+_FIPS_DETERMINATE_KINDS = frozenset(
+    {"fips-compliance", "fips-policy", "fips-runtime", "policy-requirement"}
+)
+_FIPS_NEGATIVE_STATUSES = frozenset(
+    {"disabled", "explicit-negative", "not-compliant", "not-supported"}
+)
+_FIPS_EXPLICIT_NEGATIVE_RE = re.compile(
+    r"(?:"
+    r"\bnot(?:\s+(?:a|an))?\s+fips"
+    r"(?:[-_ ](?:compliant|enabled|mode|validated))?\b"
+    r"|"
+    r"\bfips(?:[-_ ](?:compliant|enabled|mode|validation))?\b"
+    r"[^.\n]{0,80}"
+    r"(?:\bfalse\b|\bdisabled\b|\bunsupported\b|"
+    r"\bnot[- ](?:enabled|supported|compliant|validated)\b)"
+    r")",
+    re.IGNORECASE,
+)
 
 
 def build_surface_inventory(
@@ -54,6 +88,7 @@ def build_surface_inventory(
 
     roles = _component_roles(analyzer)
     surfaces: list[dict[str, object]] = []
+    applicability_observations: list[dict[str, object]] = []
 
     metrics_sources = _operator_manager_metrics_sources(analyzer)
     behavioral_evidence = _dict_list(analyzer.get("behavioral_evidence"))
@@ -113,11 +148,8 @@ def build_surface_inventory(
         },
         keywords=("tls", "operator", "controller-runtime", "entrypoint"),
     )
-    fips_sources = _source_locations(
-        analyzer.get("security_evidence", []),
-        keywords=("fips", "crypto", "tls"),
-    )
     fips_record = _category_coverage(analyzer, "fips_compliance")
+    fips_basis = _fips_applicability_basis(analyzer, fips_record)
 
     if "operator" in roles:
         surfaces.append(
@@ -215,14 +247,7 @@ def build_surface_inventory(
                 candidates=lifecycle_sources,
             )
         )
-    if fips_record is not None or fips_sources:
-        candidates = list(fips_sources)
-        candidates.append(
-            {
-                "path_pattern": "**/*clusterserviceversion*.yaml",
-                "origin": "role-rule",
-            }
-        )
+    if fips_basis["candidate_locations"]:
         surfaces.append(
             _surface(
                 surface_id="compliance.runtime-fips",
@@ -233,9 +258,26 @@ def build_surface_inventory(
                     "evidence establishes or limits runtime FIPS claims?"
                 ),
                 priority="required",
-                basis="Analyzer FIPS category or crypto/TLS evidence.",
-                candidates=candidates,
+                basis=str(fips_basis["basis"]),
+                candidates=fips_basis["candidate_locations"],
+                applicability_status=str(fips_basis["status"]),
             )
+        )
+    elif fips_record is not None:
+        applicability_observations.append(
+            {
+                "surface_id": "compliance.runtime-fips",
+                "status": "uncertain",
+                "nominated": False,
+                "basis": (
+                    "The analyzer completed FIPS category discovery but supplied "
+                    "no concrete build, packaging, crypto, runtime, or policy "
+                    "source signal. Runtime applicability remains unsettled."
+                ),
+                "evidence": [
+                    "component-architecture.json#/category_coverage/fips_compliance"
+                ],
+            }
         )
 
     if "service" in roles and "operator" not in roles:
@@ -311,6 +353,7 @@ def build_surface_inventory(
     identity_payload = {
         "component": component,
         "component_roles": roles,
+        "applicability_observations": applicability_observations,
         "surfaces": surfaces,
     }
     inventory_id = hashlib.sha256(
@@ -321,6 +364,7 @@ def build_surface_inventory(
         "component": component,
         "inventory_id": inventory_id,
         "component_roles": roles,
+        "applicability_observations": applicability_observations,
         "surfaces": surfaces,
         "observed_reads": [],
         "validator_findings": [],
@@ -345,6 +389,9 @@ def validate_surface_coverage(
     payload = sidecar if isinstance(sidecar, dict) else {}
     expected_component = str(inventory.get("component", ""))
     expected_roles = inventory.get("component_roles")
+    expected_applicability_observations = inventory.get(
+        "applicability_observations", []
+    )
     inventory_surfaces = _dict_list(inventory.get("surfaces"))
     seeded_by_id = {
         str(surface.get("id", "")): surface for surface in inventory_surfaces
@@ -367,6 +414,12 @@ def validate_surface_coverage(
         errors.append("component_roles must be a non-empty string array")
     elif roles != expected_roles:
         errors.append("component_roles must match the seeded inventory")
+    if payload.get("applicability_observations", []) != (
+        expected_applicability_observations
+    ):
+        errors.append(
+            "applicability_observations must match the seeded inventory"
+        )
     if payload.get("observed_reads") != []:
         errors.append("agent sidecar observed_reads must remain empty")
     if payload.get("validator_findings") != []:
@@ -537,6 +590,9 @@ def validate_surface_coverage(
         "schema_version": SCHEMA_VERSION,
         "component": expected_component,
         "inventory_id": inventory.get("inventory_id"),
+        "applicability_observations": copy.deepcopy(
+            expected_applicability_observations
+        ),
         "structural_valid": not errors,
         "structural_errors": errors,
         "coverage_accounting": {
@@ -575,6 +631,7 @@ def finalized_sidecar(
             "component",
             "inventory_id",
             "component_roles",
+            "applicability_observations",
         ):
             payload[field] = copy.deepcopy(inventory.get(field))
     payload["surfaces"] = report["accounted_surfaces"]
@@ -645,6 +702,153 @@ def _category_coverage(
     return record if isinstance(record, dict) else None
 
 
+def _fips_applicability_basis(
+    analyzer: dict[str, object],
+    category_record: dict[str, object] | None,
+) -> dict[str, object]:
+    """Return concrete FIPS candidates without inferring runtime compliance."""
+
+    records = [
+        record
+        for record in _dict_list(analyzer.get("security_evidence"))
+        if str(record.get("kind", "")).casefold() in _FIPS_SIGNAL_KINDS
+        and _repository_source(record.get("source")) is not None
+    ]
+    candidates = _source_locations(records)
+    fact_count = (
+        category_record.get("fact_count")
+        if isinstance(category_record, dict)
+        else None
+    )
+    category_locations = (
+        _category_evidence_locations(category_record)
+        if isinstance(category_record, dict)
+        else []
+    )
+    category_explicit_negative = bool(
+        isinstance(category_record, dict)
+        and category_locations
+        and _fips_record_is_explicit_negative(
+            category_record, category_context=True
+        )
+    )
+    category_determinate = bool(
+        isinstance(category_record, dict)
+        and category_locations
+        and _fips_record_is_determinate(
+            category_record, category_context=True
+        )
+    )
+    if (
+        (isinstance(fact_count, int) and fact_count > 0)
+        or category_explicit_negative
+        or category_determinate
+    ):
+        candidates = _dedupe_locations(candidates + category_locations)
+
+    explicit_negative = category_explicit_negative or any(
+        _fips_record_is_explicit_negative(item) for item in records
+    )
+    determinate = category_determinate or any(
+        _fips_record_is_determinate(item) for item in records
+    )
+    if explicit_negative:
+        return {
+            "status": "applicable",
+            "basis": (
+                "Analyzer source evidence contains an explicit negative FIPS "
+                "signal, making the runtime limitation applicable without "
+                "establishing compliance."
+            ),
+            "candidate_locations": candidates,
+        }
+    if determinate:
+        return {
+            "status": "applicable",
+            "basis": (
+                "Analyzer source evidence contains an explicit runtime FIPS or "
+                "policy-requirement signal."
+            ),
+            "candidate_locations": candidates,
+        }
+    if candidates:
+        return {
+            "status": "uncertain",
+            "basis": (
+                "Analyzer source evidence contains a build, packaging, crypto, "
+                "provider, or TLS signal. Static presence makes applicability "
+                "uncertain and does not establish runtime FIPS compliance."
+            ),
+            "candidate_locations": candidates,
+        }
+    return {
+        "status": "uncertain",
+        "basis": "No concrete FIPS applicability source signal was extracted.",
+        "candidate_locations": [],
+    }
+
+
+def _repository_source(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    source = value.strip().replace("\\", "/")
+    if not source or source.startswith("coverage:"):
+        return None
+    match = _SOURCE_REF_RE.fullmatch(source)
+    source_path = match.group("path") if match else source
+    if _repository_relative_path_errors(source_path):
+        return None
+    return source
+
+
+def _category_evidence_locations(
+    category_record: dict[str, object],
+) -> list[dict[str, str]]:
+    evidence = category_record.get("evidence")
+    if not isinstance(evidence, list):
+        return []
+    return [
+        _candidate_location(source)
+        for item in evidence
+        if (source := _repository_source(item)) is not None
+    ]
+
+
+def _fips_record_has_context(
+    record: dict[str, object], *, category_context: bool = False
+) -> bool:
+    if category_context:
+        return True
+    serialized = json.dumps(record, sort_keys=True)
+    return re.search(r"\bfips\b", serialized, re.IGNORECASE) is not None
+
+
+def _fips_record_is_explicit_negative(
+    record: dict[str, object], *, category_context: bool = False
+) -> bool:
+    serialized = json.dumps(record, sort_keys=True)
+    if _FIPS_EXPLICIT_NEGATIVE_RE.search(serialized) is not None:
+        return True
+    if not _fips_record_has_context(record, category_context=category_context):
+        return False
+    if str(record.get("status", "")).casefold() in _FIPS_NEGATIVE_STATUSES:
+        return True
+    if record.get("value") is False or record.get("compliant") is False:
+        return True
+    return False
+
+
+def _fips_record_is_determinate(
+    record: dict[str, object], *, category_context: bool = False
+) -> bool:
+    if not _fips_record_has_context(record, category_context=category_context):
+        return False
+    return (
+        str(record.get("kind", "")).casefold() in _FIPS_DETERMINATE_KINDS
+        or record.get("required") is True
+    )
+
+
 def _surface(
     *,
     surface_id: str,
@@ -654,13 +858,15 @@ def _surface(
     priority: str,
     basis: str,
     candidates: list[dict[str, str]],
+    applicability_status: str | None = None,
 ) -> dict[str, object]:
+    status = applicability_status or ("applicable" if candidates else "uncertain")
     return {
         "id": surface_id,
         "parent_category": parent_category,
         "component_role": component_role,
         "applicability": {
-            "status": "applicable" if candidates else "uncertain",
+            "status": status,
             "basis": basis,
             "evidence": [],
         },
@@ -1059,7 +1265,15 @@ def _json_pointer_exists(document: object, pointer: str) -> bool:
 
 def _repository_relative_path_errors(path: str) -> list[str]:
     normalized = path.replace("\\", "/")
-    if not normalized or normalized.startswith("/") or ".." in Path(normalized).parts:
+    if (
+        not normalized
+        or normalized.startswith("/")
+        or normalized.startswith("//")
+        or ":" in normalized
+        or "\0" in normalized
+        or any(character in normalized for character in ("\n", "\r"))
+        or ".." in Path(normalized).parts
+    ):
         return ["path must be repository-relative"]
     return []
 
@@ -1074,8 +1288,7 @@ def _candidate_location_errors(location: object) -> list[str]:
     selected = path or pattern
     if not isinstance(selected, str) or not selected.strip():
         return ["candidate location path must be a non-empty string"]
-    normalized = selected.replace("\\", "/")
-    if normalized.startswith("/") or ".." in Path(normalized).parts:
+    if _repository_relative_path_errors(selected):
         return ["candidate location path must be repository-relative"]
     line_range = location.get("line_range")
     if line_range is not None and not re.fullmatch(

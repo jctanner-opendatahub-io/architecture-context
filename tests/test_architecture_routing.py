@@ -1666,12 +1666,12 @@ async def test_synthesis_guard_allows_edit_on_output_artifacts(tmp_path: Path):
         None,
         {},
     )
-    changes_result = await guard.pre_tool_use(
+    patch_result = await guard.pre_tool_use(
         {
             "tool_name": "Write",
             "tool_input": {
-                "file_path": str(checkout / "ARCHITECTURE_CHANGES.md"),
-                "content": "# changes",
+                "file_path": str(checkout / "ARCHITECTURE_PATCH.json"),
+                "content": '{"schema_version":1,"operations":[]}',
             },
         },
         None,
@@ -1690,7 +1690,7 @@ async def test_synthesis_guard_allows_edit_on_output_artifacts(tmp_path: Path):
     )
 
     assert edit_result == {}
-    assert changes_result == {}
+    assert patch_result == {}
     assert insights_result == {}
     assert guard.telemetry()["denied_tool_calls"] == 0
 

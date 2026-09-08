@@ -25,6 +25,8 @@ VALID_DISCOVERED_VIA = {
 
 VALID_CONFIDENCE = {"high", "medium", "low", "disputed"}
 
+VALID_INTEGRATION_STATUSES = {"current", "not-integrated", "unknown"}
+
 VALID_UPSTREAM_DETECTION = {"github_api", "sync_workflow", "known_mapping", "name_prefix", "sync_config"}
 VALID_DOWNSTREAM_DETECTION = {"cross_org_match", "sync_config"}
 VALID_SYNC_MECHANISMS = {
@@ -138,6 +140,19 @@ def validate(path: str) -> list[str]:
             conf = comp.get("confidence")
             if conf and conf not in VALID_CONFIDENCE:
                 errors.append(f"{prefix}.confidence: '{conf}' not in {VALID_CONFIDENCE}")
+
+            integration_status = comp.get("integration_status")
+            if (
+                integration_status is not None
+                and (
+                    not isinstance(integration_status, str)
+                    or integration_status not in VALID_INTEGRATION_STATUSES
+                )
+            ):
+                errors.append(
+                    f"{prefix}.integration_status: '{integration_status}'"
+                    f" not in {VALID_INTEGRATION_STATUSES}"
+                )
 
             repo_url = comp.get("repo_url")
             if repo_url and not repo_url.startswith("https://"):

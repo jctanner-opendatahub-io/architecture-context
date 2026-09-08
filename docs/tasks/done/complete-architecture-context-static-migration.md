@@ -72,7 +72,7 @@ quality gates.
 
 These are deliberately not folded into the completed migration task:
 
-- [Replace Markdown change records with a JSON patch contract](../pending/replace-markdown-change-record-with-json-patch.md)
+- [Replace Markdown change records with a JSON patch contract](replace-markdown-change-record-with-json-patch.md)
   is pending workflow hardening.
 - [Resolve external analyzer-assisted rollout gates](../blocked/resolve-external-analyzer-assisted-rollout-gates.md)
   remains blocked on external services and human adjudication; it does not

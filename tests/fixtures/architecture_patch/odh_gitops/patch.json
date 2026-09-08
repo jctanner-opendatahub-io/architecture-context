@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "operations": [
+    {
+      "action": "add",
+      "category": "architecture_components",
+      "key": ["rhai-on-openshift-chart"],
+      "column": "*",
+      "analyzer_value": null,
+      "candidate_value": null,
+      "reason": "The Helm chart is a deployable architecture component",
+      "evidence": ["charts/rhai-on-openshift-chart/Chart.yaml:1-3"]
+    },
+    {
+      "action": "add",
+      "category": "architecture_components",
+      "key": ["rhai-on-xks-chart"],
+      "column": "*",
+      "analyzer_value": null,
+      "candidate_value": null,
+      "reason": "The Helm chart packages non-OLM dependencies",
+      "evidence": ["charts/rhai-on-xks-chart/Chart.yaml:1-3"]
+    },
+    {
+      "action": "add",
+      "category": "internal_dependencies",
+      "key": ["Kueue Operator"],
+      "column": "*",
+      "analyzer_value": null,
+      "candidate_value": null,
+      "reason": "The dependency overlay installs the Kueue operator",
+      "evidence": ["dependencies/operators/kustomization.yaml:6"]
+    },
+    {
+      "action": "add",
+      "category": "authentication",
+      "key": ["Platform Services", "All"],
+      "column": "*",
+      "analyzer_value": null,
+      "candidate_value": null,
+      "reason": "The configuration deploys Authorino for platform authorization",
+      "evidence": ["configurations/rhcl-operator/tls-enabled/authorino-tls.yaml:6-15"]
+    },
+    {
+      "action": "add",
+      "category": "integration_points",
+      "key": ["Authorino", "CRD Configuration"],
+      "column": "*",
+      "analyzer_value": null,
+      "candidate_value": null,
+      "reason": "The overlay configures a cluster-wide Authorino resource",
+      "evidence": ["configurations/rhcl-operator/tls-enabled/authorino-tls.yaml:1-15"]
+    }
+  ]
+}

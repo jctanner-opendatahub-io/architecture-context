@@ -2,6 +2,8 @@
 
 BINARY := arch-analyzer
 BUILD_DIR := ../../bin
+GOLANGCI_LINT_VERSION := v1.64.8
+GOLANGCI_LINT ?= go run github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 build:
 	mkdir -p $(BUILD_DIR)
@@ -13,6 +15,7 @@ test:
 lint:
 	test -z "$$(gofmt -l .)"
 	go vet ./...
+	$(GOLANGCI_LINT) run ./...
 
 smoke: build
 	$(BUILD_DIR)/$(BINARY) render \

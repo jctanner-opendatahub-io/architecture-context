@@ -77,7 +77,7 @@ adjudication, semantic calibration, and other explicitly documented inputs.
    evidence without weakening preservation or structural gates.
 2. Complete post-migration consumer evaluation against the pinned corpus and
    convert failures into a prioritized analyzer/contract backlog.
-3. Replace Markdown change records with the pending versioned JSON patch
+3. Replace Markdown change records with the versioned JSON patch
    contract when the workflow hardening work begins.
 4. Decide whether `arch-query` should be distributed as an embedded binary,
    including cache invalidation, version selection, freshness, and base-directory
@@ -118,7 +118,7 @@ adjudication, semantic calibration, and other explicitly documented inputs.
 - [Consolidated migration bug record](../bugs/fixed/architecture-context-static-migration-bug-cluster.md)
 - [Analyzer ownership migration milestone](../milestones/analyzer-ownership-migration-v1.md)
 - [Open partial-route runtime bug](../bugs/open/partial-route-component-runtime-remains-high.md)
-- [Pending JSON patch follow-up](../tasks/pending/replace-markdown-change-record-with-json-patch.md)
+- [JSON patch follow-up](../tasks/done/replace-markdown-change-record-with-json-patch.md)
 - [Blocked external rollout gates](../tasks/blocked/resolve-external-analyzer-assisted-rollout-gates.md)
 
 ## Status

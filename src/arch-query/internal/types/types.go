@@ -36,7 +36,63 @@ type ComponentDoc struct {
 	CommitSHA       string `json:"commit_sha,omitempty"`
 	AnalyzerVersion string `json:"analyzer_version,omitempty"`
 
+	// Accepted-document fields are populated only by the authoritative
+	// document.json path. They keep identity, provenance, citations, and patch
+	// dispositions queryable without treating sibling Markdown as fact input.
+	DocumentSchemaVersion string                `json:"document_schema_version,omitempty"`
+	SourceComponent       string                `json:"source_component,omitempty"`
+	VersionScope          string                `json:"version_scope,omitempty"`
+	IntegrationStatus     string                `json:"integration_status,omitempty"`
+	Aliases               []string              `json:"aliases,omitempty"`
+	BundleFingerprint     string                `json:"bundle_fingerprint,omitempty"`
+	SourceCitations       []SourceCitation      `json:"source_citations,omitempty"`
+	ProvenanceGaps        []ProvenanceGap       `json:"provenance_gaps,omitempty"`
+	ProposalDispositions  []ProposalDisposition `json:"proposal_dispositions,omitempty"`
+
 	RawSections map[string]string `json:"-"`
+}
+
+type SourceCitation struct {
+	FactID     string `json:"fact_id,omitempty"`
+	FactType   string `json:"fact_type,omitempty"`
+	SectionID  string `json:"section_id,omitempty"`
+	TableID    string `json:"table_id,omitempty"`
+	Path       string `json:"path"`
+	StartLine  int    `json:"start_line,omitempty"`
+	EndLine    int    `json:"end_line,omitempty"`
+	Revision   string `json:"revision"`
+	OriginKind string `json:"origin_kind,omitempty"`
+	OriginID   string `json:"origin_id,omitempty"`
+	ClaimClass string `json:"claim_class,omitempty"`
+}
+
+type ProvenanceGap struct {
+	FactID   string `json:"fact_id"`
+	FactType string `json:"fact_type"`
+	Reason   string `json:"reason"`
+}
+
+type ProposalDisposition struct {
+	PatchID             string           `json:"patch_id"`
+	ProposalFingerprint string           `json:"proposal_fingerprint"`
+	BundleFingerprint   string           `json:"bundle_fingerprint"`
+	OperationID         string           `json:"operation_id"`
+	Action              string           `json:"action"`
+	FactType            string           `json:"fact_type"`
+	OriginKind          string           `json:"origin_kind"`
+	OriginID            string           `json:"origin_id"`
+	ClaimClass          string           `json:"claim_class"`
+	Status              string           `json:"status"`
+	TargetFactID        string           `json:"target_fact_id,omitempty"`
+	ResultingFactID     string           `json:"resulting_fact_id,omitempty"`
+	Evidence            []SourceCitation `json:"evidence"`
+	ProposalReason      string           `json:"proposal_reason"`
+	PolicyID            string           `json:"policy_id"`
+	AuthorizedBy        string           `json:"authorized_by"`
+	AllowedFactTypes    []string         `json:"allowed_fact_types"`
+	DecisionID          string           `json:"decision_id"`
+	DecidedBy           string           `json:"decided_by"`
+	DecisionReason      string           `json:"decision_reason"`
 }
 
 type CrossCuttingEvidence struct {
@@ -119,10 +175,11 @@ type Egress struct {
 }
 
 type RBACRole struct {
-	RoleName  string `json:"role_name"`
-	APIGroup  string `json:"api_group"`
-	Resources string `json:"resources"`
-	Verbs     string `json:"verbs"`
+	RoleName        string `json:"role_name"`
+	APIGroup        string `json:"api_group"`
+	Resources       string `json:"resources"`
+	NonResourceURLs string `json:"non_resource_urls,omitempty"`
+	Verbs           string `json:"verbs"`
 }
 
 type ControllerWatch struct {

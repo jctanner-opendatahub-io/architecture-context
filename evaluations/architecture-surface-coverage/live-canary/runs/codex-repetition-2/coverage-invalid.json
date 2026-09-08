@@ -1,0 +1,397 @@
+{
+  "applicability_observations": [],
+  "component": "rhods-operator",
+  "component_roles": [
+    "operator",
+    "service"
+  ],
+  "inventory_id": "0c76c94c9c8965db8a320de7dae839d50d5d1351dd86971677e03b15f8334ca1",
+  "observed_reads": [],
+  "schema_version": "architecture-surface-coverage/v1",
+  "summary": {
+    "documented": 6,
+    "not_applicable": 0,
+    "seeded": 7,
+    "unresolved": 1
+  },
+  "surfaces": [
+    {
+      "applicability": {
+        "basis": "Analyzer webhook or admission authentication evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "501",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "config/default/manager_webhook_patch.yaml"
+        },
+        {
+          "line_range": "22",
+          "origin": "analyzer",
+          "path": "internal/webhook/dashboard/validating_acceleratorprofile.go"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "kind": "table-row",
+        "category": "authentication",
+        "row_key": ["Webhook (port 9443)", "HTTPS"],
+        "expected_cells": {
+          "auth_mechanism": "TLS serving certificate (server identity)",
+          "enforcement_point": "controller-runtime webhook server"
+        }
+      },
+      "evidence": [
+        {
+          "kind": "analyzer-fact",
+          "reference": "component-architecture.json#/webhooks"
+        },
+        {
+          "kind": "source-read",
+          "reference": "cmd/main.go:478-505"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "authentication.admission-serving-identity",
+      "parent_category": "authentication",
+      "priority": "high",
+      "question": "What admission behavior is served, and what establishes the webhook server identity?",
+      "reason": "The analyzer webhook inventory documents admission behavior and the manager source applies shared TLS options to the port 9443 webhook server.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer gateway, OAuth, OIDC, or auth-proxy signal.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-oidc-deployment.tmpl.yaml"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml"
+        },
+        {
+          "line_range": "68",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "line_range": "72",
+          "origin": "analyzer",
+          "path": "internal/controller/datasciencecluster/datasciencecluster_controller.go"
+        },
+        {
+          "line_range": "60",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "line_range": "77",
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml"
+        },
+        {
+          "origin": "analyzer",
+          "path": "internal/controller/services/gateway/gateway_controller.go"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "kind": "section",
+        "section": "Security > Gateway Authentication Modes",
+        "fact_identity": "gateway reconciliation differs across integrated OAuth, external OIDC, and externally managed authentication"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "internal/controller/services/gateway/gateway_controller_actions.go:100-195"
+        },
+        {
+          "kind": "source-read",
+          "reference": "internal/controller/services/gateway/gateway_support.go:570-650"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "authentication.gateway-modes",
+      "parent_category": "authentication",
+      "priority": "required",
+      "question": "How do integrated OAuth, external OIDC, and externally managed authentication change gateway behavior?",
+      "reason": "The authentication-mode branch and credential helper establish proxy deployment, OAuthClient creation, OIDC Secret use, and the external-auth no-proxy path.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer identifies an operator-manager metrics serving surface.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "485-500",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "line_range": "3",
+          "origin": "analyzer",
+          "path": "config/default/metrics_service_patch.yaml"
+        },
+        {
+          "line_range": "1",
+          "origin": "analyzer",
+          "path": "config/default/manager_webhook_patch.yaml"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "kind": "section",
+        "section": "Security > Metrics Enforcement",
+        "fact_identity": "metrics authentication and authorization filters are conditional on secure serving"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "cmd/main.go:478-505"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "authentication.metrics-enforcement",
+      "parent_category": "authentication",
+      "priority": "required",
+      "question": "When and where are the operator metrics endpoint's authentication and authorization filters enforced?",
+      "reason": "Manager construction installs the controller-runtime authentication and authorization filter only when MetricsSecure is true.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer source evidence contains a build, packaging, crypto, provider, or TLS signal. Static presence makes applicability uncertain and does not establish runtime FIPS compliance.",
+        "evidence": [],
+        "status": "uncertain"
+      },
+      "candidate_locations": [
+        {
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "kind": "section",
+        "section": "Security > FIPS Compliance",
+        "fact_identity": "strict FIPS build signals exist but runtime compliance is not verified"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "Dockerfiles/Dockerfile.konflux:58-65"
+        },
+        {
+          "kind": "source-read",
+          "reference": "cmd/main.go:478-505"
+        },
+        {
+          "kind": "source-read",
+          "reference": "pkg/tls/profile.go:142-170"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "compliance.runtime-fips",
+      "parent_category": "fips_compliance",
+      "priority": "required",
+      "question": "Which build or packaging signals exist, and what source evidence establishes or limits runtime FIPS claims?",
+      "reason": "The build enables strict FIPS runtime signals and serving surfaces consume the cluster TLS profile, but no runtime attestation or deployment validation was found in the bounded evidence.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer records one or more Namespace watch candidates.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "63-69",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "70-76",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "140-150",
+          "origin": "analyzer",
+          "path": "internal/controller/components/kueue/kueue_controller.go"
+        },
+        {
+          "line_range": "140",
+          "origin": "analyzer",
+          "path": "internal/controller/components/kueue/kueue_controller.go"
+        },
+        {
+          "line_range": "63",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        },
+        {
+          "line_range": "70",
+          "origin": "analyzer",
+          "path": "internal/controller/services/auth/auth_controller.go"
+        }
+      ],
+      "claim_support": "uncertain",
+      "component_role": "operator",
+      "disposition": "unresolved",
+      "document_reference": null,
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "internal/controller/services/auth/auth_controller.go:55-84"
+        },
+        {
+          "kind": "analyzer-fact",
+          "reference": "component-architecture.json#/behavioral_evidence"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "controller.named-resource-watches",
+      "parent_category": "internal_dependencies",
+      "priority": "required",
+      "question": "Which literal resource or namespace names constrain each controller watch, and which controller owns the watch?",
+      "reason": "The Auth controller source resolves two literal Namespace predicates, but the analyzer identifies additional dynamic predicates whose literal constraints were not established by the bounded read.",
+      "remaining_question": "Which runtime values constrain the remaining dynamic Namespace and resource watch predicates?"
+    },
+    {
+      "applicability": {
+        "basis": "Analyzer runtime-client or external-connection evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "58",
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/pkg/applier/olm.go"
+        },
+        {
+          "line_range": "63",
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/pkg/applier/olm.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "cmd/manifest-tools/go.mod"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "kind": "section",
+        "section": "Architectural Analysis > Gateway and failure boundaries",
+        "fact_identity": "manifest tool uses kubeconfig-backed clients and distinguishes unavailable OLM API from other failures"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "cmd/manifest-tools/pkg/applier/olm.go:39-110"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "dependencies.outbound-credentials",
+      "parent_category": "integration_points",
+      "priority": "high",
+      "question": "Which outbound clients are used, and how are their target, credentials, TLS, and failure boundaries configured?",
+      "reason": "The manifest tool loads the standard kubeconfig, constructs dynamic and typed Kubernetes clients, and exposes its OLM discovery and mutation failure boundaries.",
+      "remaining_question": ""
+    },
+    {
+      "applicability": {
+        "basis": "Operator entrypoint or TLS configuration evidence.",
+        "evidence": [],
+        "status": "applicable"
+      },
+      "candidate_locations": [
+        {
+          "line_range": "95",
+          "origin": "analyzer",
+          "path": "Dockerfiles/Dockerfile"
+        },
+        {
+          "line_range": "79",
+          "origin": "analyzer",
+          "path": "Dockerfiles/Dockerfile.konflux"
+        },
+        {
+          "line_range": "301",
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        },
+        {
+          "origin": "analyzer",
+          "path": "cmd/main.go"
+        }
+      ],
+      "claim_support": "supported",
+      "component_role": "operator",
+      "disposition": "documented",
+      "document_reference": {
+        "kind": "section",
+        "section": "Architectural Analysis > Control-plane shape",
+        "fact_identity": "configuration precedes manager construction and the cluster TLS profile governs metrics and webhook listeners"
+      },
+      "evidence": [
+        {
+          "kind": "source-read",
+          "reference": "Dockerfiles/Dockerfile.konflux:58-79"
+        },
+        {
+          "kind": "source-read",
+          "reference": "cmd/main.go:301-325"
+        },
+        {
+          "kind": "source-read",
+          "reference": "cmd/main.go:478-505"
+        },
+        {
+          "kind": "source-read",
+          "reference": "pkg/tls/profile.go:142-170"
+        }
+      ],
+      "evidence_status": "available",
+      "id": "lifecycle.configuration-tls",
+      "parent_category": "architecture_components",
+      "priority": "high",
+      "question": "What initialization ordering and TLS-profile lifecycle govern the operator's serving surfaces?",
+      "reason": "The entrypoint, manager initialization, and TLS profile helper establish configuration ordering and the serving-surface TLS lifecycle.",
+      "remaining_question": ""
+    }
+  ],
+  "validator_findings": []
+}

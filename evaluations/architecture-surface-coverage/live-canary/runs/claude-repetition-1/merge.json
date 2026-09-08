@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "counts": {
+    "unchanged": 274,
+    "applied": 1,
+    "rejected": 0,
+    "restored": 0
+  },
+  "unchanged_by_category": {
+    "architecture_components": 12,
+    "authentication": 7,
+    "crds": 14,
+    "egress": 1,
+    "external_dependencies": 47,
+    "http_endpoints": 12,
+    "ingress": 3,
+    "integration_points": 86,
+    "internal_dependencies": 11,
+    "rbac_cluster_roles": 65,
+    "rbac_role_bindings": 3,
+    "recent_changes": 7,
+    "secrets": 3,
+    "services": 3
+  },
+  "parse_errors": [],
+  "change_artifact_format": "architecture-table-patch/v1",
+  "decisions": [
+    {
+      "status": "applied",
+      "action": "add",
+      "category": "authentication",
+      "key": [
+        "operator metrics",
+        "https"
+      ],
+      "column": "*",
+      "analyzer_value": "",
+      "candidate_value": "",
+      "reason": "Metrics endpoint has conditional authentication via controller-runtime WithAuthenticationAndAuthorization filter when MetricsSecure is true",
+      "evidence": [
+        "cmd/main.go:491-493"
+      ],
+      "detail": "Metrics endpoint has conditional authentication via controller-runtime WithAuthenticationAndAuthorization filter when MetricsSecure is true"
+    }
+  ],
+  "accepted_conflicts": [],
+  "accepted_deletions": []
+}

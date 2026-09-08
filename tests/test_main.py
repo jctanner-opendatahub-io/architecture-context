@@ -29,3 +29,26 @@ def test_fetch_does_not_require_claude_environment(
     monkeypatch.setattr(main, "Path", lambda *_args: tmp_path / "missing.env")
 
     main._load_agent_environment(SimpleNamespace(command="fetch"))
+
+
+def test_generate_index_does_not_require_claude_environment(
+    tmp_path: Path,
+    monkeypatch,
+):
+    monkeypatch.setattr(main, "Path", lambda *_args: tmp_path / "missing.env")
+
+    main._load_agent_environment(SimpleNamespace(command="generate-index"))
+
+
+def test_index_only_pipeline_does_not_require_claude_environment(
+    tmp_path: Path,
+    monkeypatch,
+):
+    monkeypatch.setattr(main, "Path", lambda *_args: tmp_path / "missing.env")
+    args = SimpleNamespace(
+        command="pipeline",
+        harness="claude",
+        phase=["generate-index"],
+    )
+
+    main._load_agent_environment(args)

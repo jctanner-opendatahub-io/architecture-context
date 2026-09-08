@@ -38,8 +38,14 @@ def replay() -> dict:
     return json.loads((CANARY_ROOT / "replay-results.json").read_text())
 
 
+def evaluate_archived(manifest: dict, replay: dict) -> dict:
+    return evaluate_module.evaluate(
+        manifest, replay, verify_current_fingerprints=False
+    )
+
+
 def test_durable_replay_selects_behavioral_extraction(manifest, replay):
-    report = evaluate_module.evaluate(manifest, replay)
+    report = evaluate_archived(manifest, replay)
 
     assert report["recommendation"] == {
         "selected_condition": "behavioral-extraction",
@@ -68,24 +74,21 @@ def test_durable_replay_selects_behavioral_extraction(manifest, replay):
     assert all(item["merge_totals"]["lost"] == 0 for item in conditions.values())
 
 
-def test_manifest_fingerprints_match_current_analyzer_and_skill(manifest):
+def test_archived_manifest_fingerprints_are_immutable(manifest):
     settings = manifest["settings"]
-    assert (
-        evaluate_module.source_bundle_sha256(settings["analyzer_sources"])
-        == settings["analyzer_source_sha256"]
+    live_manifest = json.loads(
+        (CANARY_ROOT / "live-canary/manifest.json").read_text()
     )
-    assert (
-        evaluate_module.file_sha256(
-            PROJECT_ROOT / ".claude/skills/repo-to-architecture-summary/SKILL.md"
-        )
-        == settings["skill_sha256"]
+    assert evaluate_module.file_sha256(CANARY_ROOT / "experiment.json") == (
+        live_manifest["expected_claims"]["manifest_sha256"]
     )
-    assert (
-        evaluate_module.file_sha256(
-            PROJECT_ROOT / "src/arch-analyzer/schema/component-architecture.schema.json"
-        )
-        == settings["analyzer_schema_sha256"]
+    with pytest.raises(evaluate_module.CanaryError, match="does not match"):
+        evaluate_module.validate_manifest(manifest)
+    evaluate_module.validate_manifest(
+        manifest, verify_current_fingerprints=False
     )
+    assert len(settings["analyzer_source_sha256"]) == 64
+    assert len(settings["skill_sha256"]) == 64
 
 
 def test_durable_report_is_reproducible(tmp_path):
@@ -103,6 +106,7 @@ def test_durable_report_is_reproducible(tmp_path):
             str(output_json),
             "--output-markdown",
             str(output_markdown),
+            "--archived-inputs",
         ],
         check=True,
     )
@@ -117,7 +121,9 @@ def test_manifest_rejects_more_than_one_changed_factor(manifest):
     factors["budget_policy"] = "surface-aware"
 
     with pytest.raises(evaluate_module.CanaryError, match="change exactly"):
-        evaluate_module.validate_manifest(mutated)
+        evaluate_module.validate_manifest(
+            mutated, verify_current_fingerprints=False
+        )
 
 
 def test_manifest_rejects_workers_after_passing_non_worker_condition(manifest, replay):
@@ -140,7 +146,7 @@ def test_manifest_rejects_workers_after_passing_non_worker_condition(manifest, r
         mutated_results["runs"].append(duplicate)
 
     with pytest.raises(evaluate_module.CanaryError, match="workers were tested"):
-        evaluate_module.evaluate(mutated_manifest, mutated_results)
+        evaluate_archived(mutated_manifest, mutated_results)
 
 
 def test_recommendation_reason_uses_derived_selected_condition(manifest, replay):
@@ -157,7 +163,7 @@ def test_recommendation_reason_uses_derived_selected_condition(manifest, replay)
                 behavioral_runs[repeat]["surface_results"]
             )
 
-    report = evaluate_module.evaluate(manifest, mutated)
+    report = evaluate_archived(manifest, mutated)
 
     assert report["recommendation"]["selected_condition"] == "surface-planning-review"
     assert (
@@ -178,7 +184,7 @@ def test_manifest_rejects_safety_setting_drift(manifest, replay, field, value, m
     mutated["settings"][field] = value
 
     with pytest.raises(evaluate_module.CanaryError, match=message):
-        evaluate_module.evaluate(mutated, replay)
+        evaluate_archived(mutated, replay)
 
 
 @pytest.mark.parametrize("field", ["mode", "harness", "model"])
@@ -187,7 +193,7 @@ def test_replay_provenance_must_match_controlled_settings(manifest, replay, fiel
     mutated["runs"][0]["provenance"][field] = "drifted"
 
     with pytest.raises(evaluate_module.CanaryError, match=f"controlled {field} drift"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_supported_claim_requires_pinned_source_reference(manifest, replay):
@@ -200,7 +206,7 @@ def test_supported_claim_requires_pinned_source_reference(manifest, replay):
     metrics["evidence"]["metrics.secure-conditional-filter"] = ["cmd/main.go:1-10"]
 
     with pytest.raises(evaluate_module.CanaryError, match="outside pinned"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_missing_repeat_is_rejected(manifest, replay):
@@ -212,7 +218,7 @@ def test_missing_repeat_is_rejected(manifest, replay):
     ]
 
     with pytest.raises(evaluate_module.CanaryError, match="at least 2 repeats"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_cumulative_context_window_is_rejected(manifest, replay):
@@ -223,11 +229,11 @@ def test_cumulative_context_window_is_rejected(manifest, replay):
     }
 
     with pytest.raises(evaluate_module.CanaryError, match="not cumulative"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_observed_outputs_have_complementary_half_recall(manifest, replay):
-    report = evaluate_module.evaluate(manifest, replay)
+    report = evaluate_archived(manifest, replay)
     comparisons = {item["harness"]: item for item in report["observed_comparisons"]}
 
     assert comparisons["claude"]["surface_recall"] == 0.5
@@ -251,7 +257,7 @@ def test_observed_review_basis_must_match_surface_source_inventory(manifest, rep
     ]
 
     with pytest.raises(evaluate_module.CanaryError, match="pinned source"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_observed_harness_and_model_must_match_manifest(manifest, replay):
@@ -259,14 +265,14 @@ def test_observed_harness_and_model_must_match_manifest(manifest, replay):
     mutated["observed_comparisons"][0]["model"] = "uncontrolled-model"
 
     with pytest.raises(evaluate_module.CanaryError, match="does not match manifest"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_observed_recall_is_derived_from_surface_statuses(manifest, replay):
     mutated = copy.deepcopy(replay)
     mutated["observed_comparisons"][0]["surface_recall"] = 1.0
 
-    report = evaluate_module.evaluate(manifest, mutated)
+    report = evaluate_archived(manifest, mutated)
 
     assert report["observed_comparisons"][0]["surface_recall"] == 0.5
 
@@ -278,7 +284,7 @@ def test_observed_runtime_measurements_must_all_be_explicitly_unavailable(
     del mutated["observed_comparisons"][0]["measurements"]["latency_seconds"]
 
     with pytest.raises(evaluate_module.CanaryError, match="every unavailable"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_unsupported_surface_requires_attributable_claim(manifest, replay):
@@ -286,7 +292,7 @@ def test_unsupported_surface_requires_attributable_claim(manifest, replay):
     mutated["observed_comparisons"][0]["unsupported_claims"] = []
 
     with pytest.raises(evaluate_module.CanaryError, match="every unsupported surface"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_unsupported_claim_must_name_an_unsupported_surface(manifest, replay):
@@ -296,7 +302,7 @@ def test_unsupported_claim_must_name_an_unsupported_surface(manifest, replay):
     )
 
     with pytest.raises(evaluate_module.CanaryError, match="unsupported surface"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)
 
 
 def test_recommendation_reason_uses_derived_observed_recall(manifest, replay):
@@ -308,7 +314,7 @@ def test_recommendation_reason_uses_derived_observed_recall(manifest, replay):
     )
     gateway["status"] = "supported"
 
-    report = evaluate_module.evaluate(manifest, mutated)
+    report = evaluate_archived(manifest, mutated)
 
     reason = report["recommendation"]["reason"]
     assert "claude 0.75" in reason
@@ -320,4 +326,4 @@ def test_observed_artifact_must_stay_under_architecture(manifest, replay):
     mutated["observed_comparisons"][0]["artifact"] = "logs/run.json"
 
     with pytest.raises(evaluate_module.CanaryError, match="under architecture"):
-        evaluate_module.evaluate(manifest, mutated)
+        evaluate_archived(manifest, mutated)

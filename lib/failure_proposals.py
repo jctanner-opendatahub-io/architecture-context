@@ -25,6 +25,11 @@ from typing import Any
 
 GENERATOR_VERSION = "1.1.0"
 PROPOSAL_SCHEMA_VERSION = "1.0.0"
+PROPOSAL_SCHEMA_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "schemas"
+    / "failure-proposal-v1.schema.json"
+)
 
 # When no input timestamps exist, use Unix epoch as a documented sentinel
 # so output is deterministic and obviously not a real generation time.
@@ -398,12 +403,7 @@ def main() -> int:
         return 1
 
     if args.validate:
-        schema_path = (
-            Path(__file__).resolve().parent.parent
-            / "benchmark"
-            / "analyzer-assisted-v1"
-            / "proposal_schema.json"
-        )
+        schema_path = PROPOSAL_SCHEMA_PATH
         if not schema_path.exists():
             print(
                 f"Warning: proposal schema not found "

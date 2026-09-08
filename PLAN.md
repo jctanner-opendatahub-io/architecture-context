@@ -18,24 +18,41 @@ The next focused milestone is the
 
 ## Active Tasks
 
-- [Checkpoint Surface Work and Restore Validation](docs/tasks/current/checkpoint-surface-work-and-restore-validation.md) — in progress; checkpoint first, then baseline repair follows FIPS applicability.
-- [Fix Surface FIPS Applicability](docs/tasks/pending/fix-surface-fips-applicability.md) — next code fix after checkpoint.
-- [Refresh Surface Analyzer Evidence](docs/tasks/pending/refresh-surface-analyzer-evidence.md) — pending source inputs and scoped regeneration approval.
-- [Run Repeated Surface Coverage Live Canary](docs/tasks/pending/run-surface-coverage-live-canary.md) — deferred pending model access and explicit live-run approval.
-- [Decide Surface Coverage Rollout](docs/tasks/pending/decide-surface-coverage-rollout.md) — separate enforcement/worker decisions; defaults remain unchanged.
+- [Prepare Structured Offline Checks](docs/tasks/done/prepare-structured-offline-checks.md) — cleanup and local checks complete; changes queued for Claude review.
+
+- [Implement Structured Component Assembly](docs/tasks/current/implement-structured-component-assembly.md) — deterministic rendering, bounded reuse, and SC-18 adapter independently accepted; opt-in structured generation and publication integration remain open.
+- [Repair Live-Canary Promotion Defects](docs/tasks/done/repair-live-canary-promotion-defects.md) — complete and independently accepted; repaired promotion preserves non-resource RBAC facts and rejects misplaced configured synthesis subsections with durable diagnostics.
+- [Generate a Deterministic Version Index](docs/tasks/done/generate-deterministic-version-index.md) — complete zero-agent navigation phase after platform architecture and before diagrams; live generation remains operator-controlled.
+- [Checkpoint Surface Work and Restore Validation](docs/tasks/done/checkpoint-surface-work-and-restore-validation.md) — complete; checkpoint committed and full validation baseline restored.
+- [Fix Surface FIPS Applicability](docs/tasks/done/fix-surface-fips-applicability.md) — complete after iterative independent review; source provenance and FIPS-specific negative boundaries are regressed.
+- [Refresh Surface Analyzer Evidence](docs/tasks/done/refresh-surface-analyzer-evidence.md) — complete; nine exact source checkouts were refreshed in isolation and independently reviewed.
+- [Run Repeated Surface Coverage Live Canary](docs/tasks/done/run-surface-coverage-live-canary.md) — complete; independent review accepted the corrected report, which rejects the canary because all four promotions lost analyzer-rendered RBAC rows.
+- [Decide Surface Coverage Rollout](docs/tasks/done/decide-surface-coverage-rollout.md) — complete; ADR-0023 keeps coverage warning-only and subsection workers disabled.
 - [Audit Architecture Surface Rollout](docs/tasks/done/audit-architecture-surface-rollout.md) — completed read-only audit; stored artifacts lack the evidence needed for an enforcement decision.
 - [Improve Architecture Surface Coverage](docs/tasks/done/improve-architecture-surface-coverage.md) — implemented and independently reviewed; the offline-canary selection remains provisional pending any separate rollout decision.
 - [Complete the Architecture Context Static Migration](docs/tasks/done/complete-architecture-context-static-migration.md) — consolidated implementation and iteration history.
-- [Replace Markdown Change Records with a JSON Patch Contract](docs/tasks/pending/replace-markdown-change-record-with-json-patch.md) — pending workflow hardening.
+- [Replace Markdown Change Records with a JSON Patch Contract](docs/tasks/done/replace-markdown-change-record-with-json-patch.md) — complete; new generation uses a validated JSON patch and historical Markdown replay remains available.
 - [Resolve External Analyzer-Assisted Rollout Gates](docs/tasks/blocked/resolve-external-analyzer-assisted-rollout-gates.md) — blocked on external and human inputs; not a local implementation blocker.
+
+## Pending Claude review tasks
+
+These are ordered review handoffs under the existing parent task and phase
+budgets. Creation does not start a worker or waive the rate-limit pause.
+
+1. [Finish P3 synthesis review](docs/tasks/pending/review-structured-synthesis-final.md) — interrupted final scheduled review; existing packet retained.
+2. [Review P4 publishing and consumers](docs/tasks/pending/review-structured-publication-consumers.md) — waits for P3 acceptance and completed implementation.
+3. [Review P5 final checks and adoption hold](docs/tasks/pending/review-structured-final-readiness.md) — waits for P4 acceptance and final offline evidence.
 
 ## Open Bugs
 
 - [Partial Route Component Runtime Remains High](docs/bugs/open/partial-route-component-runtime-remains-high.md)
-- [Surface Inventory Nominates Empty FIPS Category](docs/bugs/open/surface-inventory-nominates-empty-fips-category.md)
+- [Surface Coverage Document References Produce False Positives](docs/bugs/open/surface-coverage-document-reference-false-positives.md)
+- [Codex Discovery Telemetry Does Not Classify rg Searches](docs/bugs/open/codex-discovery-telemetry-misses-rg.md)
 
 ## Plans
 
+- [Structured Component Assembly — Consolidated Plan](docs/plans/structured-component-assembly-consolidated.md)
+- [Structured Component Assembly — Original Proposal and Reviews](docs/plans/structured-component-assembly.md)
 - [Architecture Surface Coverage](docs/plans/architecture-surface-coverage.md)
 - [Architecture Context Static Migration](docs/plans/architecture-context-static-migration.md)
 - [Architecture Diagram Implementation](docs/plans/000-architecture-diagram-implementation.md)
@@ -59,9 +76,16 @@ The next focused milestone is the
 - [ADR-0015: Build Metadata Extraction](docs/decisions/ADR-0015-build-metadata-extraction.md)
 - [ADR-0016: Image and Repo Provenance](docs/decisions/ADR-0016-image-and-repo-provenance.md)
 - [ADR-0017: Selectable Agent Harness](docs/decisions/ADR-0017-selectable-agent-harness.md)
+- [ADR-0018: Retire the Deleted Legacy Benchmark Harness](docs/decisions/ADR-0018-retire-legacy-benchmark-harness.md)
+- [ADR-0019: Use Versioned JSON Architecture Table Patches](docs/decisions/ADR-0019-versioned-json-architecture-patches.md)
+- [ADR-0023: Keep Surface Coverage Warning-Only and Subsection Workers Disabled](docs/decisions/ADR-0023-keep-surface-coverage-warning-only.md)
+- [ADR-0024: Generate a Deterministic Version Navigation Index](docs/decisions/ADR-0024-deterministic-version-navigation-index.md)
 
 ## Notes
 
+- [Implementation and Independent Review Framework](docs/notes/implementation-framework.md) — reusable execution roles, requirements, phase gates, and evidence records.
+- [FIPS Applicability Review Packet](docs/notes/fips-applicability-review-packet.md)
+- [Architecture Surface Coverage Completion Audit](docs/notes/architecture-surface-coverage-completion-audit.md)
 - [Architecture Context Static Migration](docs/notes/architecture-context-static-migration.md)
 - [Architecture Diagram Requirements](docs/notes/architecture-diagram-requirements.md)
 - [Webhooks feature reference](docs/notes/webhooks.md)

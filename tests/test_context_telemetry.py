@@ -126,14 +126,11 @@ def test_signals_remain_none_when_never_recorded():
 def test_context_metrics_matches_result_schema_keys():
     schema_path = (
         PROJECT_ROOT
-        / "benchmark"
-        / "analyzer-assisted-v1"
-        / "result_schema.json"
+        / "schemas"
+        / "context-metrics-v1.schema.json"
     )
     schema = json.loads(schema_path.read_text())
-    expected_keys = set(
-        schema["properties"]["context_metrics"]["properties"].keys()
-    )
+    expected_keys = set(schema["properties"].keys())
     collector = ContextTelemetryCollector()
     actual_keys = set(collector.context_metrics().keys())
     assert actual_keys == expected_keys
@@ -342,7 +339,7 @@ async def test_guard_context_exporter_receives_events(tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_partial_guard_denied_read_recorded_in_telemetry(tmp_path: Path):
+async def test_partial_guard_soft_budget_recorded_in_telemetry(tmp_path: Path):
     from lib.agent_runner import _AgentExecutionGuard
 
     checkout = tmp_path / "checkout"
@@ -375,6 +372,9 @@ async def test_partial_guard_denied_read_recorded_in_telemetry(tmp_path: Path):
     )
 
     agg = guard.ctx_telemetry.aggregate()
-    assert agg.useful_reads == 1
-    assert agg.denied_reads == 1
-    assert agg.context_fetches == 1
+    assert agg.useful_reads == 2
+    assert agg.denied_reads == 0
+    telemetry = guard.telemetry()
+    assert telemetry["source_read_budget_exceeded"] == 1
+    assert telemetry["source_read_budget_exceeded_files"] == ["second.py"]
+    assert agg.context_fetches == 2

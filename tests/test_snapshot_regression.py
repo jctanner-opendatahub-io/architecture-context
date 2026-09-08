@@ -187,6 +187,8 @@ def test_skip_files_excluded(tmp_path):
     (candidate / "PLATFORM.md").write_text("# Platform\n")
     (baseline / "README.md").write_text("# README\n")
     (candidate / "README.md").write_text("# README\n")
+    (baseline / "INDEX.md").write_text("# Index\n")
+    (candidate / "INDEX.md").write_text("# Index\n")
 
     report = compare_snapshots(baseline, candidate)
 

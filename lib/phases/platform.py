@@ -1,4 +1,4 @@
-"""Phase 5: Generate platform-level architecture documents."""
+"""Phase 4: Generate platform-level architecture documents."""
 
 from pathlib import Path
 
@@ -52,9 +52,9 @@ def _strip_distribution_prefix(name: str, distribution: str) -> str:
 
 
 async def run_generate_platform_architecture_phase(args) -> None:
-    """Run Phase 5: Generate platform-level architecture documents."""
+    """Run Phase 4: Generate platform-level architecture documents."""
     print("\n" + "=" * 60)
-    print("PHASE 5: Generating platform architectures")
+    print("PHASE 4: Generating platform architectures")
     print("=" * 60 + "\n")
 
     architecture_dir = Path(args.architecture_dir)
@@ -92,7 +92,7 @@ async def run_generate_platform_architecture_phase(args) -> None:
     for item in scan_dirs:
         component_files = [
             f for f in item.glob("*.md")
-            if f.name not in ("README.md", "PLATFORM.md")
+            if f.name not in ("INDEX.md", "README.md", "PLATFORM.md")
         ]
         if not component_files:
             continue

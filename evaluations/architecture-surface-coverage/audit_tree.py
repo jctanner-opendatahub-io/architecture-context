@@ -28,6 +28,8 @@ from lib.architecture_surface_coverage import (  # noqa: E402
 from lib.architecture_surface_coverage import build_surface_inventory  # noqa: E402
 
 AUDIT_SCHEMA_VERSION = "architecture-surface-rollout-audit/v1"
+BASELINE_SCHEMA_VERSION = "architecture-surface-rollout-baseline/v1"
+COMPARISON_SCHEMA_VERSION = "architecture-surface-rollout-comparison/v1"
 SPECIAL_DOCUMENTS = frozenset({"INDEX.md", "PLATFORM.md", "README.md"})
 SIDECAR_NAME = "SURFACE_COVERAGE.json"
 REPRESENTATIVES_PER_ROLE = 3
@@ -62,6 +64,10 @@ INTERPRETATION_LIMITS = [
     (
         "The audit reads no source checkout, pipeline log, agent transcript, or "
         "external service and does not modify generated architecture."
+    ),
+    (
+        "A decrease in nominated surfaces after narrowing applicability does not "
+        "demonstrate better semantic recall. It only measures a planning-rule change."
     ),
 ]
 
@@ -269,8 +275,7 @@ def _representatives(components: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _follow_ups(
     *,
     summary: dict[str, Any],
-    fips_without_facts: int,
-    fips_without_fact_repositories: int,
+    fips_applicability: dict[str, Any],
 ) -> list[dict[str, Any]]:
     follow_ups: list[dict[str, Any]] = []
     behavioral = summary["behavioral_evidence"]
@@ -293,19 +298,22 @@ def _follow_ups(
                 ),
             }
         )
-    if fips_without_facts:
+    uncertain_fips = fips_applicability["nominated_uncertain"]
+    unseeded_fips = fips_applicability["uncertain_without_nomination"]
+    if uncertain_fips or unseeded_fips:
         follow_ups.append(
             {
                 "rank": 2,
-                "id": "narrow-runtime-fips-applicability",
+                "id": "refresh-runtime-fips-applicability-evidence",
                 "evidence": (
-                    f"Runtime FIPS is nominated for {fips_without_facts} artifact(s) "
-                    f"across {fips_without_fact_repositories} repository identity(s) "
-                    "whose analyzer category reports zero facts."
+                    f"{uncertain_fips} concrete analyzer signal(s) nominate an "
+                    "uncertain runtime-FIPS question; "
+                    f"{unseeded_fips} empty category record(s) retain uncertainty "
+                    "without nomination."
                 ),
                 "action": (
-                    "Review the role rule and applicability basis so generic category "
-                    "coverage does not create required-surface warning noise."
+                    "Refresh analyzer evidence before judging runtime-FIPS warning "
+                    "quality or drawing runtime-compliance conclusions."
                 ),
             }
         )
@@ -375,8 +383,16 @@ def audit_architecture_tree(architecture_root: str | Path) -> dict[str, Any]:
     surface_reference_present: Counter[str] = Counter()
     surface_reference_absent: Counter[str] = Counter()
     repositories: set[str] = set()
-    fips_without_facts = 0
-    fips_without_fact_repositories: set[str] = set()
+    fips_category_records = 0
+    fips_category_with_facts = 0
+    fips_category_without_facts = 0
+    fips_nominated_with_facts = 0
+    fips_nominated_without_facts = 0
+    fips_nominated_uncertain = 0
+    fips_nominated_applicable = 0
+    fips_uncertain_without_nomination = 0
+    fips_nominated_repositories: set[str] = set()
+    fips_uncertain_without_nomination_repositories: set[str] = set()
     unpaired_generation_cohorts: Counter[str] = Counter()
 
     for platform_path in sorted(root.iterdir(), key=lambda path: path.name):
@@ -497,10 +513,14 @@ def audit_architecture_tree(architecture_root: str | Path) -> dict[str, Any]:
                     )
                 )
 
-            surfaces = [
-                _surface_record(surface, document_text)
+            inventory_surfaces = [
+                surface
                 for surface in inventory.get("surfaces", [])
                 if isinstance(surface, dict)
+            ]
+            surfaces = [
+                _surface_record(surface, document_text)
+                for surface in inventory_surfaces
             ]
             for surface in surfaces:
                 surface_id = surface["surface_id"]
@@ -524,16 +544,62 @@ def audit_architecture_tree(architecture_root: str | Path) -> dict[str, Any]:
                 if isinstance(analyzer.get("category_coverage"), dict)
                 else None
             )
-            if any(
-                surface["surface_id"] == "compliance.runtime-fips"
-                for surface in surfaces
-            ) and (
-                not isinstance(fips_record, dict)
-                or not isinstance(fips_record.get("fact_count"), int)
-                or fips_record["fact_count"] == 0
+            fips_has_facts = bool(
+                isinstance(fips_record, dict)
+                and isinstance(fips_record.get("fact_count"), int)
+                and fips_record["fact_count"] > 0
+            )
+            if isinstance(fips_record, dict):
+                fips_category_records += 1
+                if fips_has_facts:
+                    fips_category_with_facts += 1
+                else:
+                    fips_category_without_facts += 1
+            fips_surface = next(
+                (
+                    surface
+                    for surface in surfaces
+                    if surface["surface_id"] == "compliance.runtime-fips"
+                ),
+                None,
+            )
+            if fips_surface is not None:
+                fips_nominated_repositories.add(repository)
+                if fips_has_facts:
+                    fips_nominated_with_facts += 1
+                else:
+                    fips_nominated_without_facts += 1
+                seeded_fips_surface = next(
+                    (
+                        surface
+                        for surface in inventory_surfaces
+                        if surface.get("id") == "compliance.runtime-fips"
+                    ),
+                    {},
+                )
+                applicability = seeded_fips_surface.get("applicability")
+                if (
+                    isinstance(applicability, dict)
+                    and applicability.get("status") == "uncertain"
+                ):
+                    fips_nominated_uncertain += 1
+                elif (
+                    isinstance(applicability, dict)
+                    and applicability.get("status") == "applicable"
+                ):
+                    fips_nominated_applicable += 1
+            applicability_observations = inventory.get(
+                "applicability_observations", []
+            )
+            if isinstance(applicability_observations, list) and any(
+                isinstance(observation, dict)
+                and observation.get("surface_id") == "compliance.runtime-fips"
+                and observation.get("status") == "uncertain"
+                and observation.get("nominated") is False
+                for observation in applicability_observations
             ):
-                fips_without_facts += 1
-                fips_without_fact_repositories.add(repository)
+                fips_uncertain_without_nomination += 1
+                fips_uncertain_without_nomination_repositories.add(repository)
 
             components.append(
                 {
@@ -658,6 +724,31 @@ def audit_architecture_tree(architecture_root: str | Path) -> dict[str, Any]:
     missing_by_platform: Counter[str] = Counter(
         item.split("/", 1)[0] for item in documents_without_analyzer
     )
+    fips_applicability = {
+        "category_records": fips_category_records,
+        "category_with_facts": fips_category_with_facts,
+        "category_without_facts": fips_category_without_facts,
+        "nominated_surface_occurrences": (
+            fips_nominated_with_facts + fips_nominated_without_facts
+        ),
+        "nominated_repository_occurrences": len(fips_nominated_repositories),
+        "nominated_with_category_facts": fips_nominated_with_facts,
+        "nominated_without_category_facts": fips_nominated_without_facts,
+        "nominated_uncertain": fips_nominated_uncertain,
+        "nominated_applicable": fips_nominated_applicable,
+        "uncertain_without_nomination": fips_uncertain_without_nomination,
+        "uncertain_without_nomination_repositories": len(
+            fips_uncertain_without_nomination_repositories
+        ),
+        "interpretation": (
+            "Static build, packaging, provider, crypto, or TLS signals nominate "
+            "an uncertain question; they do not establish runtime compliance. "
+            "Source-backed explicit runtime, policy, or negative signals make "
+            "the question applicable while claim support remains uncertain. "
+            "Evidence-free category records remain explicit uncertain "
+            "observations without required-surface nomination."
+        ),
+    }
     excluded_inputs = {
         "platform_aliases": aliases,
         "documents_without_project_arch_analyzer": {
@@ -705,15 +796,79 @@ def audit_architecture_tree(architecture_root: str | Path) -> dict[str, Any]:
             "by_surface": surface_rows,
             "structural_signal_only": True,
         },
+        "fips_applicability": fips_applicability,
         "representative_review_set": _representatives(components),
         "follow_up_priorities": _follow_ups(
             summary=summary,
-            fips_without_facts=fips_without_facts,
-            fips_without_fact_repositories=len(fips_without_fact_repositories),
+            fips_applicability=fips_applicability,
         ),
         "excluded_inputs": excluded_inputs,
         "components": components,
         "interpretation_limits": INTERPRETATION_LIMITS,
+    }
+    return report
+
+
+def _comparison_metrics(report: dict[str, Any]) -> dict[str, int]:
+    summary = report["summary"]
+    fips = report["fips_applicability"]
+    return {
+        "surface_occurrences": int(summary["surface_occurrences"]),
+        "required_surface_occurrences": int(
+            summary["priorities"].get("required", 0)
+        ),
+        "runtime_fips_surface_occurrences": int(
+            fips["nominated_surface_occurrences"]
+        ),
+        "runtime_fips_repository_occurrences": int(
+            fips["nominated_repository_occurrences"]
+        ),
+        "runtime_fips_without_category_facts": int(
+            fips["nominated_without_category_facts"]
+        ),
+    }
+
+
+def attach_comparison(
+    report: dict[str, Any], baseline: dict[str, Any]
+) -> dict[str, Any]:
+    """Attach a same-input planning-rule delta to an audit report."""
+
+    if baseline.get("schema_version") != BASELINE_SCHEMA_VERSION:
+        raise AuditError("comparison baseline schema_version is unsupported")
+    fingerprint = report["input"]["fingerprint_sha256"]
+    if baseline.get("input_fingerprint_sha256") != fingerprint:
+        raise AuditError(
+            "comparison baseline input fingerprint does not match the audit"
+        )
+    before = baseline.get("metrics")
+    if not isinstance(before, dict):
+        raise AuditError("comparison baseline metrics must be an object")
+    after = _comparison_metrics(report)
+    if set(before) != set(after) or not all(
+        isinstance(value, int) for value in before.values()
+    ):
+        raise AuditError("comparison baseline metrics do not match the contract")
+    compared = {
+        metric: {
+            "before": int(before[metric]),
+            "after": after[metric],
+            "delta": after[metric] - int(before[metric]),
+        }
+        for metric in sorted(after)
+    }
+    report["comparison"] = {
+        "schema_version": COMPARISON_SCHEMA_VERSION,
+        "baseline": {
+            "source_commit": str(baseline.get("source_commit", "")),
+            "report_sha256": str(baseline.get("report_sha256", "")),
+            "input_fingerprint_sha256": fingerprint,
+        },
+        "metrics": compared,
+        "interpretation": (
+            "The delta isolates the FIPS planning-rule change on identical on-disk "
+            "inputs. Fewer nominations do not demonstrate improved semantic recall."
+        ),
     }
     return report
 
@@ -840,6 +995,49 @@ def render_markdown(report: dict[str, Any]) -> str:
             "A document path signal only means that at least one exact analyzer "
             "candidate path appears in the Markdown. It is not semantic coverage.",
             "",
+            "## Runtime FIPS applicability",
+            "",
+            "| Measure | Artifacts |",
+            "|---|---:|",
+        ]
+    )
+    fips = report["fips_applicability"]
+    for label, field in (
+        ("FIPS category records", "category_records"),
+        ("Category records with facts", "category_with_facts"),
+        ("Category records without facts", "category_without_facts"),
+        ("Nominated runtime-FIPS surfaces", "nominated_surface_occurrences"),
+        ("Nominated with category facts", "nominated_with_category_facts"),
+        (
+            "Nominated without category facts but with a source signal",
+            "nominated_without_category_facts",
+        ),
+        ("Nominated with uncertain applicability", "nominated_uncertain"),
+        ("Nominated with applicable status", "nominated_applicable"),
+        ("Uncertain without nomination", "uncertain_without_nomination"),
+    ):
+        lines.append(f"| {label} | {fips[field]} |")
+    lines.extend(["", fips["interpretation"], ""])
+
+    comparison = report.get("comparison")
+    if isinstance(comparison, dict):
+        lines.extend(
+            [
+                "## Same-input planning-rule delta",
+                "",
+                "| Measure | Before | After | Delta |",
+                "|---|---:|---:|---:|",
+            ]
+        )
+        for metric, values in comparison["metrics"].items():
+            lines.append(
+                f"| {metric} | {values['before']} | {values['after']} | "
+                f"{values['delta']:+d} |"
+            )
+        lines.extend(["", comparison["interpretation"], ""])
+
+    lines.extend(
+        [
             "## Representative review set",
             "",
             "| Role | Artifact | Required surfaces | Repository |",
@@ -882,13 +1080,19 @@ def main() -> int:
     )
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-markdown", type=Path, required=True)
+    parser.add_argument("--comparison-baseline", type=Path)
     args = parser.parse_args()
     for output in (args.output_json, args.output_markdown):
         if _is_within(output, args.architecture_root):
             parser.error("audit outputs must remain outside the architecture tree")
     try:
         report = audit_architecture_tree(args.architecture_root)
-    except (OSError, AuditError) as error:
+        if args.comparison_baseline is not None:
+            baseline = json.loads(args.comparison_baseline.read_text())
+            if not isinstance(baseline, dict):
+                raise AuditError("comparison baseline root must be an object")
+            attach_comparison(report, baseline)
+    except (OSError, json.JSONDecodeError, AuditError) as error:
         parser.error(str(error))
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     args.output_markdown.parent.mkdir(parents=True, exist_ok=True)

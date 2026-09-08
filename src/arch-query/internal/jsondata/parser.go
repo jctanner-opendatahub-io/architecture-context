@@ -17,14 +17,17 @@ type rawJSON struct {
 	Summary         string `json:"summary"`
 
 	RBAC struct {
+		ClusterRoles       []rawRole `json:"cluster_roles"`
+		Roles              []rawRole `json:"roles"`
 		KubebuilderMarkers []struct {
 			File   string `json:"file"`
 			Line   int    `json:"line"`
 			Marker string `json:"marker"`
 			Parsed struct {
-				Groups    []string `json:"groups"`
-				Resources []string `json:"resources"`
-				Verbs     []string `json:"verbs"`
+				Groups          []string `json:"groups"`
+				Resources       []string `json:"resources"`
+				NonResourceURLs []string `json:"nonResourceURLs"`
+				Verbs           []string `json:"verbs"`
 			} `json:"parsed"`
 		} `json:"kubebuilder_markers"`
 	} `json:"rbac"`
@@ -130,6 +133,16 @@ type rawJSON struct {
 	} `json:"dependencies"`
 }
 
+type rawRole struct {
+	Name  string `json:"name"`
+	Rules []struct {
+		APIGroups       []string `json:"apiGroups"`
+		Resources       []string `json:"resources"`
+		NonResourceURLs []string `json:"nonResourceURLs"`
+		Verbs           []string `json:"verbs"`
+	} `json:"rules"`
+}
+
 // ParseComponentJSON reads a component-architecture.json file and returns
 // a ComponentDoc populated with the structured data. The caller should
 // merge this with the markdown-parsed ComponentDoc.
@@ -143,8 +156,13 @@ func ParseComponentJSON(fsys fs.FS, path string) (*types.ComponentDoc, error) {
 	if err := json.Unmarshal(data, &raw); err != nil {
 		return nil, fmt.Errorf("parsing %s: %w", path, err)
 	}
+	if strings.TrimSpace(raw.Component) == "" {
+		return nil, fmt.Errorf("parsing %s: missing component identity", path)
+	}
 
 	doc := &types.ComponentDoc{
+		Name:            raw.Component,
+		Repository:      raw.Repo,
 		CommitSHA:       raw.CommitSHA,
 		AnalyzerVersion: raw.AnalyzerVersion,
 	}
@@ -164,11 +182,18 @@ func ParseComponentJSON(fsys fs.FS, path string) (*types.ComponentDoc, error) {
 		groups := strings.Join(m.Parsed.Groups, ",")
 		groups = strings.ReplaceAll(groups, `""`, "")
 		doc.RBACRoles = append(doc.RBACRoles, types.RBACRole{
-			RoleName:  m.File,
-			APIGroup:  groups,
-			Resources: strings.Join(m.Parsed.Resources, ","),
-			Verbs:     strings.Join(m.Parsed.Verbs, ","),
+			RoleName: m.File, APIGroup: groups,
+			Resources: strings.Join(m.Parsed.Resources, ","), NonResourceURLs: strings.Join(m.Parsed.NonResourceURLs, ","),
+			Verbs: strings.Join(m.Parsed.Verbs, ","),
 		})
+	}
+	for _, role := range append(raw.RBAC.ClusterRoles, raw.RBAC.Roles...) {
+		for _, rule := range role.Rules {
+			doc.RBACRoles = append(doc.RBACRoles, types.RBACRole{
+				RoleName: role.Name, APIGroup: strings.Join(rule.APIGroups, ","), Resources: strings.Join(rule.Resources, ","),
+				NonResourceURLs: strings.Join(rule.NonResourceURLs, ","), Verbs: strings.Join(rule.Verbs, ","),
+			})
+		}
 	}
 
 	// Services — one entry per port

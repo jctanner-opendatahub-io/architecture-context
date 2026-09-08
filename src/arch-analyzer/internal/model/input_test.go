@@ -43,6 +43,10 @@ func TestDecodeInputRequiresComponent(t *testing.T) {
 func TestCategoryCoverageRoundTrips(t *testing.T) {
 	input := Input{
 		Component: "example",
+		ScanStatistics: []ScanStatistic{{
+			Category: "authentication", Metric: "files_scanned", Value: 12,
+			Unit: "files", Scope: "Python source files",
+		}},
 		CategoryCoverage: map[string]CategoryCoverage{
 			"authentication": {
 				Status: "complete", FactCount: 0,
@@ -74,6 +78,9 @@ func TestCategoryCoverageRoundTrips(t *testing.T) {
 	got := decoded.CategoryCoverage["authentication"]
 	if got.Status != "complete" || got.DiscoveryContract != "authentication/v1" || len(got.CompletedChecks) != 1 {
 		t.Fatalf("category coverage = %#v", got)
+	}
+	if len(decoded.ScanStatistics) != 1 || decoded.ScanStatistics[0].Value != 12 {
+		t.Fatalf("scan statistics = %#v", decoded.ScanStatistics)
 	}
 }
 
@@ -124,5 +131,35 @@ func TestBehavioralEvidenceRoundTripsWithoutChangingLegacyInput(t *testing.T) {
 	}
 	if len(decoded.BehavioralEvidence) != 1 || decoded.BehavioralEvidence[0].LiteralValues[0] != "models-as-a-service" {
 		t.Fatalf("behavioral evidence = %#v, want lossless compatibility round trip", decoded.BehavioralEvidence)
+	}
+}
+
+func TestEncodeInputIncludesEmptyBehavioralEvidence(t *testing.T) {
+	input := Input{Component: "behavior-free"}
+	var encoded strings.Builder
+	if err := EncodeInput(&encoded, input); err != nil {
+		t.Fatal(err)
+	}
+	var raw map[string]any
+	if err := json.Unmarshal([]byte(encoded.String()), &raw); err != nil {
+		t.Fatal(err)
+	}
+	evidence, exists := raw["behavioral_evidence"]
+	if !exists {
+		t.Fatal("encoded input omitted behavioral_evidence")
+	}
+	items, ok := evidence.([]any)
+	if !ok || len(items) != 0 {
+		t.Fatalf("behavioral_evidence = %#v, want empty array", evidence)
+	}
+}
+
+func TestDecodeInputAcceptsMissingLegacyBehavioralEvidence(t *testing.T) {
+	input, err := DecodeInput(strings.NewReader(`{"component":"legacy"}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if input.BehavioralEvidence != nil {
+		t.Fatalf("behavioral evidence = %#v, want absent legacy value", input.BehavioralEvidence)
 	}
 }

@@ -273,7 +273,29 @@ rhoai-3.3 -> rhoai-3.4
 
 ## Data Model
 
-`arch-query` parses the structured markdown format used by architecture-context component docs. Each `.md` file is split on `## ` headings and subsections are extracted by `### ` headings. Pipe-delimited markdown tables are parsed by column position.
+`arch-query` supports both accepted structured components and the legacy flat
+format. A valid `<component>/document.json` with schema version `1.0.0` is
+authoritative: typed queries map its validated `rendering_view` plus typed facts
+that are not present in that view. The sibling `<component>.md` is read only for
+raw section search and `component --output raw`; it is never merged back into
+accepted facts. An invalid, unsupported, or identity/version-mismatched accepted
+document is an error and cannot fall back to Markdown.
+
+When no `document.json` exists, the current Markdown plus analyzer-JSON
+compatibility path remains explicit. JSON-only accepted component directories
+support typed queries. Raw output for one of those components reports the
+missing sibling Markdown path as an actionable error.
+
+The phase-one schema does not define a publication envelope or external
+artifact hashes. This adapter therefore validates the accepted document schema,
+identity, fact IDs/accounting, patch/disposition links, and available provenance,
+but does not invent hash fields or infer cross-file publication completion.
+Binding `document.json`, `analyzer.json`, `synthesis.json`, and rendered Markdown
+hashes remains the phase-four publication integration boundary.
+
+For legacy components, each `.md` file is split on `## ` headings and
+subsections are extracted by `### ` headings. Pipe-delimited Markdown tables are
+parsed by column position.
 
 ### Parsed Sections
 
@@ -290,7 +312,7 @@ rhoai-3.3 -> rhoai-3.4
 | Network Architecture | Services | Name, type, port, target port, protocol, encryption, auth, exposure |
 | Network Architecture | Ingress | Component, type (Route/HTTPRoute), hosts, port, protocol, encryption, TLS mode, exposure |
 | Network Architecture | Egress | Destination, port, protocol, encryption, auth, purpose |
-| Security | RBAC | Role name, API group, resources, verbs |
+| Security | RBAC | Role name, API group, resources, non-resource URLs, verbs |
 
 ### Version Resolution
 
@@ -321,6 +343,8 @@ src/arch-query/
       table.go                     # pipe-delimited table parser
       metadata.go                  # "- **Key**: value" metadata parser
       platform.go                  # PLATFORM.md parser
+    documentdata/                  # accepted document schema validation and mapping
+    embeddeddata/                  # bounded release-data staging
     loader/
       loader.go                    # loads a version directory into VersionData
       versions.go                  # discovers versions, resolves symlinks
@@ -334,4 +358,5 @@ src/arch-query/
 
 - [cobra](https://github.com/spf13/cobra) -- CLI framework
 - [gopkg.in/yaml.v3](https://pkg.go.dev/gopkg.in/yaml.v3) -- YAML parsing for overlay frontmatter
-- Everything else is Go stdlib
+- [jsonschema](https://github.com/santhosh-tekuri/jsonschema) -- draft 2020-12 accepted-document validation
+- [regexp2](https://github.com/dlclark/regexp2) -- ECMA-262 pattern semantics required by the accepted schema

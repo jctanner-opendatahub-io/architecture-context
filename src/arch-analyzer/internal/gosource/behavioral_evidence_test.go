@@ -372,7 +372,8 @@ func TestNamedWatchBehaviorRequiresExactModuleHelpersAndDirectHandlerComposition
 	}
 	for name, imports := range tests {
 		t.Run(name, func(t *testing.T) {
-			reconcilerName, resourcesName, handlerExpression := "reconciler", "resources", `reconciler.WithEventHandler(handlers.ToNamed("target"))`
+			reconcilerName, resourcesName := "reconciler", "resources"
+			var handlerExpression string
 			if name == "foreign matching suffixes" {
 				reconcilerName, resourcesName = "foreignreconciler", "foreignresources"
 				handlerExpression = `foreignreconciler.WithEventHandler(foreignhandlers.ToNamed("target"))`
