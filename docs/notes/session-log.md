@@ -819,3 +819,323 @@ Remote origin is jctanner-opendatahub-io/architecture-context; its observed bran
 head 28728163 is an ancestor of local HEAD 39209078. A normal push is planned.
 Detailed local review logs remain ignored; the tracked checkpoint note records
 current validation, outstanding reviews, and this evidence-availability limit.
+
+### P3 cycle3 resumption after committed cleanup — 2026-09-08
+
+User reports Claude reset and authorizes continuation. Verified all547 final
+cleanup source identities at committed HEAD e0f6f367; new source snapshot and
+assignment saved in logs/structured-component-assembly/20260908-review-resume/.
+Completing interrupted cycle3 with same Fable/high and cleanup impact review,
+not resetting budget. No implementer active. Historical compare.py formatting
+exception and original retained bytes disclosed. No live generation/adoption.
+Stop again on actual rate limit. Review task moved current and links updated.
+
+### P3 cycle3 complete; one focused repair needs budget direction — 2026-09-08
+
+Fable/high session 50e748ed-9760-46e7-b8f2-b0c9fdbeb37b completed REQUEST_CHANGES
+at19:46:34Z without a rate limit; auxiliary Haiku reported. All547 sources match.
+Independent fullPython1202passed10skip, allGo suites and both lint routes pass.
+Earlier F6/F7 repairs, root guard and12-file cleanup independently verified;
+nine scoped bugs moved fixed. New blocking F-P3-8: structured Codex SDK RPC
+quota exceptions lose data and can allow subsequent component calls. Preflight
+aborts but lacks RateLimitError/durable diagnostic. Probe uses stubs, no live
+rate event. Filed bug immediately and saved report plus313 reproduction/evidence
+files in logs/structured-component-assembly/20260908-review-resume/.
+
+Third scheduled cycle is complete; P3 remains unaccepted and P4/P5 stay pending.
+Prepared a bounded Sol repair and same Fable/high re-review proposal; awaiting
+user direction before extending the phase budget. Review task moved blocked.
+No repair worker, source edit, live generation, commit, push, or new review launch.
+
+### Extra focused P3 cycle authorized — 2026-09-08
+
+User explicitly approved one focused F-P3-8 repair plus one additional Claude
+review. Same Sol/high implementer and Fable/high independent reviewer; no other
+phase budgets reset. Verified547 source hashes against completed cycle3 packet.
+Assignment and baseline: logs/structured-component-assembly/20260908-rpc-quota-repair/.
+Existing dirty changes are ledger records; source preserved before dispatch.
+No live model tests, commits, or rollout; stop on any actual rate limit.
+
+### F-P3-8 repair implemented; additional review ready — 2026-09-08
+
+Direct Sol/high worker01a082cd-15df-7ef1-9ab3-155950ceae66 exited0 at21:24:28Z;
+no rate limit. Initial role-misread attempt redelegated unsuccessfully before
+nested initialization; corrected same-model direct assignment completed repair.
+Five reported source/test hashes verified, all547 inputs frozen.229focusedtests
+and Pythonlint pass; full1213pass10skip7socketerrors plus coordinator7pass rerun.
+Private preflight diagnostic is failure-only; no schema/publication changes.
+Evidence and fresh Fable/high assignment in20260908-rpc-quota-repair/. P3 still
+unaccepted pending this user-authorized extra review. No commit/livegeneration.
+
+### Authorized additional P3 review completed — 2026-09-08
+
+Fable/high session 02cfe002-63e0-4cbe-8cf1-707e84e46530 completed REQUEST_CHANGES
+at21:55:15Z; auxiliary Haiku reported, no actual rate limit. Independent full
+Python1220passed10skip, focused229 and Pythonlint pass. Original F-P3-8 is fixed
+for its reproduced shape. New blocking F-P3-9: SDK-probed errorInfo/bare-string/
+dictionary-value quota shapes still allow later components. F-P3-10: preflight
+diagnostic detail retains a synthetic Bearer token despite sibling redaction.
+Filed both bugs; kept parentquota bug open. Report plus18evidence files saved
+under20260908-rpc-quota-repair/; all547sourcehashes unchanged during review.
+
+The one extra cycle authorized by the user is consumed. Prepared a narrow
+follow-up assignment; no automatic fifth cycle. Repair/review tasks moved blocked
+pending direction. P3/P4/P5 remain open; no livegeneration, commit, push, or
+additional worker. No actual credential exposure observed; probes used fake
+values with modeltransports blocked.
+
+### F-P3-9/F-P3-10 follow-up authorized — 2026-09-08
+
+User explicitly approved the two repairs and another focused review, then return
+to original plan after P3 acceptance. Interrupted preceding turn left no pending
+worker invocation; all recorded workers have final results, and all547 baseline
+source hashes match. Same direct Sol/high implementation and fresh Fable/high
+review; no nested harness, live generation, or review substitution. New packet:
+logs/structured-component-assembly/20260908-quota-shapes/. Stop on actual rate.
+
+### 2026-09-08 — quota-format repairs ready for independent review
+
+Direct Sol/high session01a0830c-d740-7453-8845-09e8de21007c exited0 at22:24:28Z,
+no actual rate limit. Four-file delta frozen against547-file cycle4 baseline.
+Classifier formats and preflight detail redaction repaired; focused283 pass,
+combined fullPython1274 pass/10skip after seven permitted local-server reruns,
+Pythonlint pass. Fresh Fable/high reviewer actually launched using saved
+`logs/structured-component-assembly/20260908-quota-shapes/review-prompt.txt`;
+review remains pending. No live generation or new commit/push.
+
+### P3 accepted; return to P4 — 2026-09-08
+
+Fable/high session a6ccbff3-0617-487d-9223-2549189ce1f4 completed PASS at23:00:20Z,
+auxiliary Haiku disclosed, no actual rate limit. F-P3-9/F-P3-10 fixed, original
+F-P3-8 and cycle3/4 guarantees retained. All547 source identities verified.
+Independent fullPython1274passed10skip, focused283, lint and27 new seam probes
+pass. One old scratch probe still fails in its known test helper, not production;
+review explicitly distinguishes this. Three quota bugs and P3 review/repair tasks
+closed. Evidence: logs/structured-component-assembly/20260908-quota-shapes/.
+P4 publishing/consumers and P5 final checks now next; no live adoption or commit.
+
+### 2026-09-08 — back to the consolidated plan, P4 launched
+
+After verified P3 PASS, coordinator started the direct Sol/high publishing and
+consumer implementation via scripts/run_implementation_worker.py. Packet and
+actual invocation: logs/structured-component-assembly/20260908-publication/.
+Source ownership serialized; no nested workers or live SDK calls authorized.
+
+### P4 implementation complete; cycle1 independent review launched — 2026-09-09 UTC
+
+Direct Sol/high session01a0834d-053f-7403-b138-f743c6859eac completed00:48:50Z,
+no actual rate.37owned files verified;555file review snapshot with exact P4 delta,
+70 selected command outputs and final report saved under20260908-publication/.
+26recoveryboundaries pass; affectedPython/Go/vet/race/embeddedbuild pass. Earlier
+fullPython1309pass10skip7socketerrors plus coordinator7pass, final small delta
+covered by focusedchecks pending reviewer fullrun. Default pinned Golint passes
+outside sandbox; linter import regression filed and repaired pending acceptance.
+Fresh Fable/high reviewer actually launched, current P4 task; cycle1 of3. No
+implementation acceptance, livegeneration, defaultadoption, commit or push.
+
+### P4 cycle1 REQUEST_CHANGES; focused repair proceeds within budget
+
+Fable/high sessiona5d91853-a159-43d6-8187-97ba233134c9 exited0 at01:12:18Z,
+auxiliaryHaiku disclosed, no actual rate. All555sourcehashes unchanged. Full
+Python1317pass10skip, fullGo/vet/race/lint/embedded and26recoveryboundaries pass.
+Two blockers: F-P4-1 broadignorepattern hides futurelegacy sidecars; F-P4-2 lint
+mutates staleMarkdown and createslocks instead of rejecting read-only. Bothfiled,
+plus nonblocking numeric-canonicalization and repair-race backlogs. Report/evidence
+saved20260908-publication/. Existing queryexists/purpose/predecessor fixes meet
+criteria, closure waits focusedrepairreview. Linterimport fixed but remainsopen
+untilF-P4-2. Cycle2 repair/review authorized by original3cycleP4 budget.
+
+SC04 interface disposition independentlyaccepted: legacy arch-doc cannot consume
+structured document and remains only legacy assembler while those callers remain;
+all structured rendering delegates shared analyzer renderer. O2 requires ADR
+clarification: Go query/Stage do not independently recompute rawresponse identity
+or producingmodel eligibility; Python producer/reuse checks do. Packaging requires
+completeMarkdown although typedqueries supportJSONonly. Deterministic-only is a
+tested library state, no migrationpipelinecaller; live/defaultadoption stillHOLD.
+
+### 2026-09-09 UTC — P4 cycle2 focused repair launched
+
+After cycle1 REQUEST_CHANGES and555source verification, direct Sol/high started
+F-P4-1/F-P4-2 plus conditional documentation clarification within original budget.
+Actual invocation: logs/structured-component-assembly/20260909-publication-repair/.
+No new permission question, livegeneration, commit or reviewer substitution.
+
+### 2026-09-09 UTC — P4 cycle2 review launched
+
+Eightfilefocusedrepaircomplete and555reviewsourcehashesverified. ActualFable/high
+review invocation in20260909-publication-repair/reviewer/. No actualrate;
+no P5launch, livegeneration, adoption, commit orpush. Priorcycle1evidenceretained
+forunchanged547inputs; renewedreadonlylint andignorechecks pendingreview.
+
+### P4 accepted; P5 next — 2026-09-09 UTC
+
+Fable/high b036fa12-9fc3-444a-ab72-fcc15280a655 completedP4 PASS at01:55:50Z,
+auxiliaryHaiku disclosed,no actualrate.555sourcehashes match. FullPython1320pass
+10skip, actualCLI readonly/ignorechecks pass; earlierGo/race/build/corpus/recovery
+retainedbyidentity. Sixbugsclosed andP4reviewtaskdone. O1numericcanonicalization
+andO7repairrace remainexplicitnonblockingbacklogs. O12recoveryalwaysrepairs even
+repair_markdown=False noted; newreadonlyAPI separate. O13strayrecoveryfiles beside
+validsnapshot passlint (cosmetic). O14corrects priorreport: five unchangedcommitted
+arch-queryfiles appear in gofmt-l; arch-queryrequiredlintpasses, arch-analyzergofmt
+gatepasses. No blanketclaimGoformatoutputempty. P5 finalofflineevidence next;
+no livegeneration/adoption ornewcommit/push.
+
+### 2026-09-09 UTC — final offline phase launched after P4 PASS
+
+Direct Sol/high startedP5 at20260909-final-evidence/;555acceptedsourcebaseline
+andboundedassignment saved. No livegeneration/adoption/commit/push. Final
+independentreview remainsrequired; stoponactualrate.
+
+### 2026-09-09 — final evidence continuation for verified available sources
+
+Coordinator caught missingfreshreusecomparison beforeindependentreview; initial
+SolREADYclaimnotaccepted. Saved586filebaseline/provisionalreport. NewdirectSol/high
+launched20260909-fresh-reuse/ withverified184sourcepaths andcommittedbuildinputs.
+Originalsourcecheckouts andhistoricaldata untouched; no livecalls oractualrate.
+
+### 2026-09-09 — continuation resumed without duplicate worker
+
+On user continuation, verified the existing Sol/high attempt remains active
+(`20260909-fresh-reuse/worker`, session `01a08580-c811-7993-95d6-7f170a01c530`).
+Updated PLAN and the pending final review task to reflect P4 acceptance and
+the outstanding fresh comparison. Extended the existing local snapshot helper
+to include new evidence directories; its CLI parses successfully. No new
+implementation worker or independent review was launched. P5 review cycle one
+remains available; live evaluation and adoption remain on hold.
+
+### 2026-09-09 — P5 final independent review dispatched
+
+Sol/high continuation exited 0 at 10:09:41 UTC with no actual rate event.
+Fresh comparison covers all 184 recorded source sides and 92 pairs. Retained
+two failed driver attempts and filed their distribution, Git parsing and output
+identity defects for independent review. Final result: 31 legacy fact matches,
+37 current analyzer-only matches, zero verified reuse; no live model evaluation.
+Root verified all 555 accepted product hashes and 2,963 final packet hashes.
+Launched fresh Fable/high review cycle 1 in `20260909-fresh-reuse/review-cycle-1/`;
+moved final review task to current. Independent verdict remains pending.
+
+### 2026-09-09 — P5 cycle 1 repairs dispatched
+
+Fable/high session `4d779de7-348b-4720-8325-55d82e5183bc` returned
+REQUEST_CHANGES at 10:27:22 UTC, no rate event; auxiliary Haiku usage disclosed
+by the launcher. Independent checks passed (1330 Python, 10 skipped, Go tests,
+race, full lint, normal and embedded builds). Actual rerun found analyzer list
+ordering instability causing conservative reuse misses, and stale future-build
+references. Filed both findings; selected a producer repair to satisfy SC-11/13
+without waiving the guarantee. Direct Sol/high launched in
+`20260909-ordering-repair/worker`. P5 cycle 2 remains the next review.
+Closed independently verified wrong-distribution and target-integration bugs;
+kept output-identity bug open for the adjacent regression. Corrected first-run
+accounting: 98 selector failures, six parser failures, dotted-name collisions
+also occurred in attempt 1. Earlier evidence remains unchanged.
+
+### 2026-09-09 — P5 ordering repair handed to independent cycle 2
+
+Sol/high exited 0 at 11:51:00 UTC, no rate event. Preserved every ordering and
+bounded-selection experiment; final producer-local fixes preserve facts and
+candidate membership while stabilizing output. Two fresh 184-side runs agree;
+85 focused Python tests, Go/race/lint/build checks pass. Filed the bounded-gap
+selection issue for independent review rather than silently discarding it.
+Root froze and verified 9,717 final source/evidence files, manifest c3a655eb…,
+then launched Fable/high cycle 2 in `20260909-ordering-review/`. No final gate
+acceptance yet; live evaluation/adoption remain HOLD.
+
+### 2026-09-09T12:26:36Z — stopped on Claude session limit
+
+P5 cycle-2 Fable/high reviewer `79b9135b-098b-4c27-a207-e8d0738a68ee` exited
+1 with API 429, reset 11:10 a.m. America/New_York (15:10 UTC). Stopped without
+retry/fallback. Preserved the scratch draft unchanged in the review packet;
+its proposed PASS is not finalized acceptance. Draft evidence records 1332
+Python passes, 10 skips, complete Go/race/lint/build passes, and an independent
+184-side reproduction matching the final repair. Filed two provisional
+nonblocking follow-ups; no post-limit implementation or closure. All input
+hashes matched the last reviewer check. Pending same-model completion of
+interrupted cycle 2; third cycle unused. Live/adoption HOLD, no commit/push.
+
+### 2026-09-09 — final review continuation after user-reported reset
+
+Verified all 9,717 cycle-2 frozen hashes unchanged. Launched the same selected
+Fable/high model in a fresh bounded continuation, `20260909-ordering-review/reviewer-resume`,
+to reconcile the saved draft and completed checks and publish the final verdict.
+The interrupted second cycle remains the active gate; no budget reset, source
+changes, live run, commit, or push.
+
+### 2026-09-09T15:35:29Z — structured implementation independently accepted
+
+Fable/high continuation b72d66cb-5ba6-4411-9dcb-7b7ec437700b completed cycle 2
+with final PASS, exit 0 and no new rate event. Launcher disclosed auxiliary
+Haiku usage. The draft remains unchanged; the published final report has SHA
+fe29c90dfc21056dbc190679ba4103cb57027108470cbfc700dc179a36d5f0e9.
+All 9717 reviewed file hashes verified; prior independent 1332 Python passes,
+10 skips, full Go/race/lint/build checks and 184-source reproduction retained
+by identity, plus narrow repeated ordering tests. Cycle 3 unused.
+
+Closed the five bugs explicitly accepted in section 6 and moved implementation
+and final review tasks to done. Recorded the final requirements ledger while
+preserving its prior bytes. Added a durable completion note, including moving
+row positions and retained validation limits. Kept rare-input ordering and
+materialization-error cleanup as independently confirmed backlog. Added a
+separate pending authorized-live-evaluation task; no live run, default change,
+commit or push occurred. Frozen product/evaluation inputs remain unchanged.
+
+### 2026-09-09 — structured layout adoption confirmed as the objective
+
+Traced why the structured route cannot run without `--structured-inputs`: the
+guard at `lib/structured_component_synthesis.py:3013` and the per-component
+requirement at `:3134` stand where a deterministic input builder was never
+written. Nothing in the engine or schemas requires nonempty inputs, but an empty
+record yields an evidence bundle with zero source excerpts and a follow-up
+allowlist of width zero (`:1042`, enforced at `:933`), so it is not a usable
+default. The input builder is the only remaining blocker to a runnable route.
+
+Drafted ADR-0026 proposing deterministic input-fingerprint reuse on the legacy
+route, then rejected it the same day. The draft treated "structured reuse only
+pays off after one full regeneration" as a disqualifying cost; the user corrected
+that the layout migration requires that regeneration regardless, so the objective
+is adopting the four-file layout and reuse is a consequence of it. The rejected
+ADR is retained with its reasoning. The corresponding pending task was withdrawn.
+
+Revised the structured default task from deferred to active, re-sequenced it so
+the bounded live canary is the first real structured output rather than a gate
+before implementation, and recorded seven open input-builder design questions.
+The first two — nomination evidence and follow-up scope — determine whether
+generated documents are grounded in source. Documentation only: no code change,
+no live run, no commit or push.
+
+### 2026-09-09 — generation architecture decided (ADR-0027)
+
+Established that the structured route is tool-free by construction: the adapter
+protocol requires `tool_free_enforced` and `invoke` raises on adapters that
+cannot guarantee a tool-free single response
+(`lib/structured_component_synthesis.py:232`). The model never reads the
+repository; the parent pre-reads a bundle and answers bounded evidence requests.
+That conflicted with the user's expectation and with how the existing corpus was
+actually produced.
+
+The user selected keeping the existing analyzer-preseeded agent route with
+repository read access and changing only the output contract and publication.
+Recorded as ADR-0027, amending the ADR-0025 synthesis protocol. Publication,
+schemas, assembly, renderer and consumers are unchanged and still apply. Bounded
+tool-free synthesis, the evidence bundle and `--structured-inputs` remain in tree
+behind their flags and are no longer the default path. The deterministic input
+builder is no longer needed, which removes the blocker; the nomination and
+follow-up-scope questions are moot.
+
+Retitled the task to layout adoption and reduced the open questions to reuse
+selection, flag surface and command scope. Documentation only: no code change,
+no live run, no commit or push.
+
+### 2026-09-09 — consolidated plan amended for intent (ADR-0027)
+
+Reviewed the consolidated plan against the user's intent and added a dated
+amendment section restating it: adopt the four-file layout; keep the existing
+agent generation route; reuse is a consequence available from the second
+structured version; no multi-day implementation before a one-component intent
+check. Marked SC-10 superseded as the default (retained opt-in), annotated phase
+3, added a traceability row, and added an "Adoption path" with a no-new-code
+Step 0, a sized Slice 1 (agent-loop adapter; not a one-to-two-hour change) and a
+separate Slice 2 (reuse from telemetry).
+
+Offline check: all 149 committed analyzer payloads pass
+`validate_legacy_conversion_input` and carry `commit_sha`, so Step 0 can run on
+any existing component. Documentation only; no live run, commit or push.

@@ -1,0 +1,106 @@
+{
+  "schema_version": "structured-component-fresh-reuse-result/v1",
+  "classification": "repaired-producer-ordering-comparison-not-verified-reuse",
+  "old_committed_build_sample": {
+    "report": "logs/structured-component-assembly/20260909-fresh-reuse/fresh-evidence-attempt-3/report.json",
+    "report_sha256": "a07e06bf9d398e590373105999131df1c2fde17fc66c734089ccd1eac1195471",
+    "extraction_index": "logs/structured-component-assembly/20260909-fresh-reuse/fresh-evidence-attempt-3/extraction-index.json",
+    "extraction_index_sha256": "09cf795805ff15a6a368cf4164ed89581e70e90930ccbeb4240cfae486b8db50",
+    "unchanged_compare_stdout": "logs/structured-component-assembly/20260909-fresh-reuse/fresh-evidence-attempt-3/compare-py.stdout",
+    "unchanged_compare_stdout_sha256": "541026f267f3d291a70574fb739fd01d795806f5e991dc74d9998a35b43858a4"
+  },
+  "old_committed_source_and_build": {
+    "source_sides": 184,
+    "recorded_pairs": 92,
+    "successful_extractions": 184,
+    "failed_extractions": 0,
+    "original_source_identity_changed": 0,
+    "committed_analyzer_commit": "e0f6f367f4daf58ef1c7edfafc73817adcf0ee73",
+    "committed_analyzer_archive_sha256": "5f753cdb2ed40b3207c16985ca3dd83a839be578c8276bc31203e03bdfad4afa",
+    "committed_analyzer_binary_sha256": "458c04cb0387fe70b3dab8d5e0aedb88dccd0ee444d8cfc6bfce14ae6606f4e7",
+    "build_vcs": false,
+    "commit_identity_basis": "verified Git archive and prepared-source manifest",
+    "exact_committed_tree_materialization": true,
+    "checkout_filters_or_hooks_executed": false,
+    "gitlinks_recorded_not_materialized": 12
+  },
+  "old_committed_build_observed_counts": {
+    "same_commit": 11,
+    "unchanged_compare_py_same_full_canonical_json": 11,
+    "unchanged_compare_py_legacy_semantic_facts_samples": [31, 30],
+    "current_sc13_analyzer_payload_only_samples": [37, 36],
+    "ordering_variance": "13 of 184 sides differed ordering-only in the independent rerun",
+    "complete_sc13_semantic_fingerprint": "unavailable",
+    "verified_reuse": 0
+  },
+  "repaired_build_evidence": {
+    "build": "logs/structured-component-assembly/20260909-ordering-repair/repaired-analyzer-build.json",
+    "build_sha256": "2d92386abca3a85b08510ef68e4e5592714e96225a043bec3a49139206b35440",
+    "binary_sha256": "2ffc6dd7f567a941162cfa842cc7c20a5c8b4c56678b87073ffd90a9b5f92be8",
+    "source_manifest_sha256": "86c1661ee978025117119934116c1777a84dfa1f70f16f8281f7f140844a6d40",
+    "source_diff_sha256": "6d916ec369bc32441890c31a04b79d9825251952b47fae9a7d6625a933f564c5",
+    "stability_summary": "logs/structured-component-assembly/20260909-ordering-repair/stability-summary.json",
+    "stability_summary_sha256": "5f3b733f3373c42c883c91dab75e3a64001052f9d249854c4c369537581d725c",
+    "render_impact": "logs/structured-component-assembly/20260909-ordering-repair/render-impact.json",
+    "render_impact_sha256": "3e2b1b4d4f13b03cafc7755cec7d794a2a3c100afd6bfb89f7681caa7ce12ddc"
+  },
+  "repaired_build_counts": {
+    "independent_process_runs": 2,
+    "source_sides_per_run": 184,
+    "identical_relevant_outputs": 184,
+    "compared_pairs_per_run": 92,
+    "same_commit_per_run": [11, 11],
+    "legacy_candidate_semantic_facts_per_run": [32, 32],
+    "reviewed_scan_count_diagnostic_per_run": [32, 32],
+    "drop_all_version_keys_sensitivity_only_per_run": [32, 32],
+    "current_sc13_analyzer_payload_only_per_run": [38, 38],
+    "complete_sc13_semantic_fingerprint": "unavailable",
+    "verified_reuse": 0
+  },
+  "historical_saved_counts": {
+    "same_commit": 11,
+    "legacy_semantic_facts": 33,
+    "after_scan_count_normalization": 38,
+    "after_dropping_all_version_keys_not_recommended": 40,
+    "analyzer_identity": "39209078846f15f1909373c106d2d665a907a509 plus 11 dirty analyzer files",
+    "disposition": "retained historical result; not attributed to the committed fresh analyzer build"
+  },
+  "attempt_lineage": [
+    {
+      "attempt": 1,
+      "report": "logs/structured-component-assembly/20260909-fresh-reuse/fresh-evidence/report.json",
+      "report_sha256": "10a80a19addc56c2d66a185f536be5b67fceedab7fd7e818582d8afd656711d5",
+      "disposition": "failed driver attempt preserved; 98 forced rhoai.next selector failures plus 6 padded-gitlink parser failures; dotted-name collision left 39 raw files per side for 40 internally compared pairs"
+    },
+    {
+      "attempt": 2,
+      "report": "logs/structured-component-assembly/20260909-fresh-reuse/fresh-evidence-attempt-2/report.json",
+      "report_sha256": "66c0f8391bd4080f265c03ca5e04e6902a9b3abefa3515dc73ae7b80ad0a5172",
+      "disposition": "superseded driver attempt preserved; six padded gitlink sizes failed and the two dotted component names collided"
+    },
+    {
+      "attempt": 3,
+      "disposition": "complete old-build sample; carried 174 uniquely hash-verified successes and freshly executed 10 affected source sides; 248.218 aggregate subprocess seconds comprise about 218.0 carried plus 30.2 current-attempt seconds"
+    },
+    {
+      "attempt": "cycle-1-independent-rerun",
+      "report": "logs/structured-component-assembly/20260909-fresh-reuse/review-cycle-1/review-evidence/independent-rerun/report.json",
+      "report_sha256": "83e8b623d4b4c2e4af7b14bee982fc1e711da4629fe806494be9b787f92aec4e",
+      "disposition": "complete old-build sample; 184 newly executed sides exposed ordering variance and 30/36 counts"
+    },
+    {
+      "attempt": "ordering-repair-final-runs",
+      "disposition": "two independent processes, each with 184 fresh subprocesses and no carry-forward; identical relevant outputs and 32/38 counts in both"
+    }
+  ],
+  "limits": [
+    "Legacy candidate fact equality is not the current complete SC-13 semantic contract.",
+    "The current SC-13 analyzer-payload-only count excludes scan_statistics and the two reviewed legacy scan-summary forms, but omits configuration, overlays, contracts, settings, and dependency observations.",
+    "All-version-key dropping is an unsupported sensitivity test; version and dependency fields remain meaningful.",
+    "The saved pairs lack verified producing-model, read/search, synthesis, accepted-predecessor, and response context, so stable repaired extraction does not create reuse eligibility.",
+    "Twelve gitlinks were recorded but external submodule trees were not materialized or analyzed.",
+    "Minimal isolated Git metadata intentionally lacks an index; the analyzer enumerates the materialized filesystem.",
+    "kube-rbac-proxy's old mismatch was an import-map ordering artifact; models-perf-benchmark-data separately differs because historical input was a dirty working tree and fresh input is the committed tree.",
+    "No live model call, avoided call, token, cost, quality, or savings measurement was made."
+  ]
+}

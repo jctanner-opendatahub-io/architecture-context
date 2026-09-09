@@ -39,6 +39,13 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 		documentPath := resolved + "/" + key + "/document.json"
 		if _, err := fs.Stat(fsys, documentPath); err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
+				partial, inspectErr := hasPublicationState(fsys, resolved+"/"+key)
+				if inspectErr != nil {
+					return nil, fmt.Errorf("checking accepted snapshot for %s: %w", key, inspectErr)
+				}
+				if partial {
+					return nil, fmt.Errorf("accepted snapshot for %s is incomplete: document.json is missing", key)
+				}
 				continue
 			}
 			return nil, fmt.Errorf("checking accepted document %s: %w", documentPath, err)
@@ -47,13 +54,19 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 		if err != nil {
 			return nil, err
 		}
-		doc.FileName = key + ".md"
-		rawPath := resolved + "/" + doc.FileName
-		rawSections, rawErr := markdown.ReadRawSections(fsys, rawPath)
-		if rawErr == nil {
-			doc.RawSections = rawSections
-		} else if !errors.Is(rawErr, fs.ErrNotExist) {
-			return nil, fmt.Errorf("reading rendered Markdown sections %s: %w", rawPath, rawErr)
+		if _, statErr := fs.Stat(fsys, resolved+"/"+key+".md"); errors.Is(statErr, fs.ErrNotExist) {
+			doc.FileName = ""
+		} else if statErr != nil {
+			return nil, fmt.Errorf("checking rendered Markdown for %s: %w", documentPath, statErr)
+		}
+		if doc.FileName != "" {
+			rawPath := resolved + "/" + doc.FileName
+			rawSections, rawErr := markdown.ReadRawSections(fsys, rawPath)
+			if rawErr == nil {
+				doc.RawSections = rawSections
+			} else if !errors.Is(rawErr, fs.ErrNotExist) {
+				return nil, fmt.Errorf("reading rendered Markdown sections %s: %w", rawPath, rawErr)
+			}
 		}
 		components[key] = doc
 		accepted[key] = true
@@ -152,6 +165,23 @@ func LoadVersion(fsys fs.FS, overlayFS fs.FS, version string) (*types.VersionDat
 	}
 
 	return data, nil
+}
+
+func hasPublicationState(fsys fs.FS, componentPath string) (bool, error) {
+	entries, err := fs.ReadDir(fsys, componentPath)
+	if err != nil {
+		return false, err
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if name == "analyzer.json" || name == "synthesis.json" ||
+			strings.HasPrefix(name, ".analyzer.json.") ||
+			strings.HasPrefix(name, ".synthesis.json.") ||
+			strings.HasPrefix(name, ".document.json.") {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func loadBuildInfo(fsys fs.FS, versionDir string) *types.BuildInfo {

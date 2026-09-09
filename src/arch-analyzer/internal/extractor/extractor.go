@@ -193,6 +193,8 @@ func Extract(root string, options Options) (model.Input, error) {
 	input.SynthesisEvidence = synthesisEvidence(input)
 	input.CrossCuttingEvidence = crossCuttingEvidence(input)
 	input.GapEvidenceIndex = gapEvidenceIndex(input)
+	sortEntrypoints(input.Entrypoints)
+	sortIntegrationPoints(input.IntegrationPoints)
 	return input, nil
 }
 

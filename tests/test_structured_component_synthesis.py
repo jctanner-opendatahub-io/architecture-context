@@ -163,6 +163,20 @@ def arch_analyzer_binary(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return output
 
 
+@pytest.fixture(scope="session")
+def arch_query_binary(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    output = tmp_path_factory.mktemp("structured-query-go") / "arch-query"
+    subprocess.run(
+        ["go", "build", "-o", str(output), "."],
+        cwd=ROOT / "src/arch-query",
+        env={**os.environ, "GOCACHE": "/tmp/structured-component-go-cache"},
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return output
+
+
 def _pipeline_fixture(tmp_path: Path, versions: tuple[str, ...]):
     checkout = tmp_path / "checkout"
     checkout.mkdir()
@@ -277,6 +291,156 @@ def _private_dir(architecture: Path, version: str, component="praxis-policy") ->
     return architecture / version / component / ".generation" / "structured"
 
 
+@pytest.mark.parametrize(
+    "legacy",
+    [
+        {"network_policies": [{"name": "deny"}]},
+        {"platform_webhooks": [{"component": "a", "webhook": "b"}]},
+        {"dockerfiles": [{"path": "Dockerfile", "stages": 2}]},
+        {"webhooks": [{"name": "hook", "side_effects": "None"}]},
+    ],
+)
+def test_legacy_conversion_rejects_unrepresentable_fields(legacy: dict) -> None:
+    from lib.structured_component_publication import (
+        PublicationError,
+        validate_legacy_conversion_input,
+    )
+
+    with pytest.raises(PublicationError, match="would drop unsupported fields"):
+        validate_legacy_conversion_input(legacy)
+
+
+@pytest.mark.parametrize(
+    "fips",
+    [None, {}, "supported", [{"claim": "FIPS", "sources": []}]],
+)
+def test_legacy_conversion_rejects_ambiguous_fips(fips: object) -> None:
+    from lib.structured_component_publication import (
+        PublicationError,
+        validate_legacy_conversion_input,
+    )
+
+    with pytest.raises(PublicationError, match="FIPS evidence.*ambiguous"):
+        validate_legacy_conversion_input({"cross_cutting_evidence": {"fips": fips}})
+
+
+def test_deterministic_only_publication_is_honest_and_zero_model(
+    tmp_path: Path, arch_analyzer_binary: Path
+) -> None:
+    from lib.structured_component_publication import (
+        load_accepted_publication,
+        publish_deterministic_snapshot,
+    )
+
+    assembler = GoStructuredAssembler(
+        (str(arch_analyzer_binary),), ROOT / "src/arch-analyzer"
+    )
+    document = tmp_path / "private-document.json"
+    analyzer = FIXTURES / "analyzer-rbac-praxis.json"
+    assembler._run(
+        [
+            "normalize",
+            "--input",
+            str(analyzer),
+            "--output",
+            str(document),
+            "--component-map",
+            str(FIXTURES / "component-map-praxis.json"),
+            "--version-scope",
+            "rhoai-test",
+            "--integration-status",
+            "not-integrated",
+        ]
+    )
+    published = publish_deterministic_snapshot(
+        architecture_dir=tmp_path / "architecture",
+        version_scope="rhoai-test",
+        component="praxis-policy",
+        analyzer=analyzer.read_bytes(),
+        private_document=document.read_bytes(),
+        assembler=assembler,
+        reason="synthesis deliberately unavailable in offline migration",
+    )
+    envelope = json.loads(published.synthesis)
+    assert envelope["state"] == "deterministic-only"
+    assert envelope["calls"]["total"] == 0
+    assert envelope["responses"] == []
+    binding = published.document_value["publication"]["synthesis"]
+    assert not binding["producing_model_eligible"]
+    assert "accepted_response_identity" not in binding
+    load_accepted_publication(published.component_dir, assembler)
+    assert {path.name for path in published.component_dir.iterdir()} == {
+        "analyzer.json",
+        "document.json",
+        "synthesis.json",
+    }
+    assert published.markdown_path.is_file()
+
+
+def _add_second_pipeline_component(
+    architecture: Path,
+    checkout: Path,
+    inputs: Path,
+    *,
+    version: str,
+    key: str = "second",
+) -> SimpleNamespace:
+    platform = architecture / version
+    component_map_path = platform / "component-map.json"
+    component_map = json.loads(component_map_path.read_text())
+    component_map["components"][key] = {
+        **component_map["components"]["praxis-policy"],
+        "key": key,
+    }
+    component_map_path.write_text(json.dumps(component_map))
+    first_analyzer = platform / "praxis-policy/.analyzer/component-architecture.json"
+    second_analyzer = platform / key / ".analyzer/component-architecture.json"
+    second_analyzer.parent.mkdir(parents=True)
+    second_payload = json.loads(first_analyzer.read_text())
+    second_payload["component"] = key
+    second_analyzer.write_text(json.dumps(second_payload))
+    inputs_payload = json.loads(inputs.read_text())
+    inputs_payload["components"][key] = copy.deepcopy(
+        inputs_payload["components"]["praxis-policy"]
+    )
+    inputs.write_text(json.dumps(inputs_payload))
+    return SimpleNamespace(key=key, checkout_path=checkout, has_architecture=False)
+
+
+_CODEX_RPC_LOOP_CASES = (
+    pytest.param(
+        {"codexErrorInfo": "usageLimitExceeded"},
+        True,
+        id="known-codex-error-info",
+    ),
+    pytest.param(
+        {"codex_error_info": "sessionBudgetExceeded"},
+        True,
+        id="known-snake-error-info",
+    ),
+    pytest.param(
+        {"errorInfo": "workspaceMemberUsageLimitReached"},
+        True,
+        id="sdk-error-info",
+    ),
+    pytest.param(
+        "workspace_owner_usage_limit_reached",
+        True,
+        id="sdk-bare-data",
+    ),
+    pytest.param(
+        {"codexErrorInfo": {"reason": "rate_limit_error"}},
+        True,
+        id="sdk-nested-info-value",
+    ),
+    pytest.param(
+        {"codexErrorInfo": "internalServerError"},
+        False,
+        id="ordinary-server-control",
+    ),
+)
+
+
 def _refresh_target_analyzer(
     architecture: Path,
     version: str,
@@ -344,7 +508,8 @@ async def test_one_json_response_success_through_both_adapters(tmp_path, kind):
 
 @pytest.mark.asyncio
 async def test_authenticated_claude_adapter_separates_primary_and_auxiliary_models(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ):
     from lib import agent_runner
 
@@ -648,9 +813,7 @@ async def test_pipeline_seam_retains_unsafe_answer_then_bounded_repair_succeeds(
 ):
     from lib import fetch
 
-    architecture, _checkout, component = _pipeline_fixture(
-        tmp_path, ("rhoai-test",)
-    )
+    architecture, _checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
     platforms = tmp_path / "platforms.yaml"
     platforms.write_text("rhoai-test: {}\n")
     attempts = []
@@ -1366,6 +1529,61 @@ def test_special_states_and_settings_constraints_are_explicit():
         SynthesisLimits(total_calls=2, evidence_followups=1, repairs=1)
 
 
+@pytest.mark.parametrize(
+    ("rpc_data", "denied"),
+    _CODEX_RPC_LOOP_CASES
+    + (
+        pytest.param(
+            {"errorInfo": "unauthorized"},
+            False,
+            id="ordinary-auth-control",
+        ),
+        pytest.param(
+            {"codex_error_info": "badRequest"},
+            False,
+            id="ordinary-config-control",
+        ),
+        pytest.param(
+            {"errorInfo": "serverOverloaded"},
+            False,
+            id="ordinary-overload-control",
+        ),
+        pytest.param(
+            "usage limit exceeded",
+            False,
+            id="bare-prose-control",
+        ),
+        pytest.param(
+            {"message": "usageLimitExceeded"},
+            False,
+            id="message-field-control",
+        ),
+    ),
+)
+def test_codex_quota_classifiers_share_sdk_structural_boundaries(
+    rpc_data: object,
+    denied: bool,
+):
+    from openai_codex.errors import map_jsonrpc_error
+
+    from lib import codex_agent
+
+    provider_error = codex_agent.codex_exception_details(
+        map_jsonrpc_error(-32000, "usageLimitExceeded", rpc_data)
+    )
+
+    assert codex_agent._codex_rate_limit_denied(provider_error) is denied
+    assert (
+        synthesis._provider_rate_limit_denied(
+            {
+                "success": False,
+                "provider_error": provider_error,
+            }
+        )
+        is denied
+    )
+
+
 def test_parent_input_schema_rejects_unknown_or_escaping_configuration(tmp_path):
     valid = tmp_path / "valid.json"
     valid.write_text(
@@ -1555,6 +1773,330 @@ async def test_pipeline_seam_persists_reloads_and_reuses_with_actual_go(
             (str(arch_analyzer_binary),), ROOT / "src/arch-analyzer"
         ),
     ).load("rhoai-new", "praxis-policy")
+
+
+@pytest.mark.asyncio
+async def test_published_core_survives_private_state_removal_and_reuses(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+    arch_query_binary: Path,
+):
+    from lib import fetch
+    from lib.structured_component_publication import (
+        PublicationError,
+        load_accepted_publication,
+    )
+
+    architecture, checkout, component = _pipeline_fixture(
+        tmp_path, ("rhoai-old", "rhoai-new")
+    )
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-old: {}\nrhoai-new:\n  reuse_from: rhoai-old\n")
+    calls: list[str] = []
+
+    def answer(prompt, *_):
+        calls.append(prompt)
+        return _response(prompt)
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    monkeypatch.setattr(
+        synthesis,
+        "authenticated_harness_adapter",
+        lambda _harness: _adapter("claude", answer),
+    )
+    await _run_pipeline_fixture_version(
+        architecture=architecture,
+        component=component,
+        version="rhoai-old",
+        inputs=_pipeline_inputs(tmp_path / "old-inputs.json"),
+        platforms=platforms,
+    )
+    component_dir = architecture / "rhoai-old" / "praxis-policy"
+    assembler = GoStructuredAssembler(
+        (str(arch_analyzer_binary),), ROOT / "src/arch-analyzer"
+    )
+    published = load_accepted_publication(component_dir, assembler)
+    original_synthesis = published.synthesis
+    query = subprocess.run(
+        [
+            str(arch_query_binary),
+            "--base-dir",
+            str(architecture),
+            "--version",
+            "rhoai-old",
+            "component",
+            "praxis-policy",
+            "--output",
+            "json",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert json.loads(query.stdout)["name"] == "praxis-policy"
+    markdown = architecture / "rhoai-old" / "praxis-policy.md"
+    marker, body = markdown.read_bytes().split(b"\n", 1)
+    markdown.write_bytes(marker + b"\nTAMPERED\n" + body)
+    with pytest.raises(PublicationError, match="stale, or tampered"):
+        load_accepted_publication(component_dir, assembler)
+    load_accepted_publication(component_dir, assembler, repair_markdown=True)
+    shutil.rmtree(component_dir / ".generation")
+
+    (checkout / "irrelevant.txt").write_text("new release only\n")
+    _git(checkout, "add", "irrelevant.txt")
+    _git(checkout, "commit", "-qm", "new release")
+    _refresh_target_analyzer(
+        architecture,
+        "rhoai-new",
+        checkout,
+        extracted_at="2026-09-08T05:00:00Z",
+    )
+    await _run_pipeline_fixture_version(
+        architecture=architecture,
+        component=component,
+        version="rhoai-new",
+        inputs=_pipeline_inputs(
+            tmp_path / "new-inputs.json", reuse_version="rhoai-old"
+        ),
+        platforms=platforms,
+    )
+    assert len(calls) == 1
+    target = load_accepted_publication(
+        architecture / "rhoai-new" / "praxis-policy", assembler
+    )
+    assert target.synthesis == original_synthesis
+    assert target.document_value["reuse"]["prior_platform"] == "rhoai-old"
+    assert target.document_value["publication"]["accepted_inputs"]["run_record"][
+        "dependencies"
+    ]["complete"]
+
+    original_document = (target.component_dir / "document.json").read_bytes()
+    forged = json.loads(original_document)
+    forged["publication"]["analyzer"]["producer_build_identity"] = (
+        "sha256:" + "0" * 64
+    )
+    (target.component_dir / "document.json").write_text(json.dumps(forged))
+    with pytest.raises(PublicationError, match="build differs"):
+        load_accepted_publication(target.component_dir, assembler)
+    (target.component_dir / "document.json").write_bytes(original_document)
+
+    forged = json.loads(original_document)
+    forged["identity"]["aliases"] = ["self-asserted-alias"]
+    (target.component_dir / "document.json").write_text(json.dumps(forged))
+    with pytest.raises(PublicationError, match="originally accepted model"):
+        load_accepted_publication(target.component_dir, assembler)
+    (target.component_dir / "document.json").write_bytes(original_document)
+
+
+@pytest.mark.asyncio
+async def test_failed_synthesis_cannot_replace_prior_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+):
+    from lib import fetch
+    from lib.structured_component_publication import load_accepted_publication
+
+    architecture, checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-test: {}\n")
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    monkeypatch.setattr(
+        synthesis,
+        "authenticated_harness_adapter",
+        lambda _harness: _adapter("claude", lambda prompt, *_: _response(prompt)),
+    )
+    inputs = _pipeline_inputs(tmp_path / "inputs.json")
+    await _run_pipeline_fixture_version(
+        architecture=architecture,
+        component=component,
+        version="rhoai-test",
+        inputs=inputs,
+        platforms=platforms,
+    )
+    assembler = GoStructuredAssembler(
+        (str(arch_analyzer_binary),), ROOT / "src/arch-analyzer"
+    )
+    component_dir = architecture / "rhoai-test" / "praxis-policy"
+    prior = load_accepted_publication(component_dir, assembler)
+    (checkout / "source.go").write_text("package source\n\nconst Broken = true\n")
+    _git(checkout, "add", "source.go")
+    _git(checkout, "commit", "-qm", "new input before failed synthesis")
+    _refresh_target_analyzer(
+        architecture,
+        "rhoai-test",
+        checkout,
+        extracted_at="2026-09-08T07:00:00Z",
+    )
+    failing = _adapter(
+        "claude",
+        lambda *_: (_ for _ in ()).throw(
+            StructuredSynthesisError("offline synthesis failure")
+        ),
+    )
+    monkeypatch.setattr(
+        synthesis, "authenticated_harness_adapter", lambda _harness: failing
+    )
+    await _run_pipeline_fixture_version(
+        architecture=architecture,
+        component=component,
+        version="rhoai-test",
+        inputs=inputs,
+        platforms=platforms,
+        refresh=True,
+    )
+    current = load_accepted_publication(component_dir, assembler)
+    assert current.document == prior.document
+    assert current.synthesis == prior.synthesis
+
+
+def test_recovery_discards_incomplete_first_atomic_temporary(tmp_path: Path):
+    from lib import structured_component_publication as publication
+
+    component_dir = tmp_path / "architecture/rhoai-test/praxis-policy"
+    component_dir.mkdir(parents=True)
+    temporary = component_dir / ".analyzer.json.interrupted"
+    temporary.write_text("partial write")
+
+    assert publication.recover_publication(component_dir, FakeAssembler()) is None
+    assert not temporary.exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "boundary",
+    [
+        "staged:analyzer.json",
+        "staged:synthesis.json",
+        "staged:document.json",
+        "staged:praxis-policy.md",
+        "staged",
+        "backed-up:analyzer.json",
+        "backed-up:synthesis.json",
+        "backed-up:document.json",
+        "backed-up:praxis-policy.md",
+        "replaced:analyzer.json",
+        "replaced:synthesis.json",
+        "replaced:document.json",
+        "replaced:praxis-policy.md",
+    ],
+)
+@pytest.mark.parametrize("replacement", [False, True], ids=["first", "replacement"])
+async def test_publication_recovers_every_replacement_boundary(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+    boundary: str,
+    replacement: bool,
+):
+    from lib import fetch
+    from lib import structured_component_publication as publication
+
+    architecture, checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-test: {}\n")
+    calls: list[str] = []
+
+    def answer(prompt, *_):
+        calls.append(prompt)
+        return _response(prompt)
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    monkeypatch.setattr(
+        synthesis,
+        "authenticated_harness_adapter",
+        lambda _harness: _adapter("claude", answer),
+    )
+    inputs = _pipeline_inputs(tmp_path / "inputs.json")
+    await _run_pipeline_fixture_version(
+        architecture=architecture,
+        component=component,
+        version="rhoai-test",
+        inputs=inputs,
+        platforms=platforms,
+    )
+    assembler = GoStructuredAssembler(
+        (str(arch_analyzer_binary),), ROOT / "src/arch-analyzer"
+    )
+    component_dir = architecture / "rhoai-test" / "praxis-policy"
+    prior = publication.load_accepted_publication(component_dir, assembler)
+
+    if not replacement:
+        for path in (
+            component_dir / "analyzer.json",
+            component_dir / "synthesis.json",
+            component_dir / "document.json",
+            component_dir.parent / "praxis-policy.md",
+        ):
+            path.unlink()
+        with pytest.raises(publication.PublicationError, match="incomplete"):
+            publication.load_accepted_publication(component_dir, assembler)
+        with pytest.raises(
+            publication.PublicationError, match="simulated interruption"
+        ):
+            publication.publish_private_run(
+                architecture_dir=architecture,
+                version_scope="rhoai-test",
+                component="praxis-policy",
+                assembler=assembler,
+                interrupt_after=boundary,
+            )
+        recovered = publication.recover_publication(component_dir, assembler)
+        if boundary in {"staged:analyzer.json", "staged:synthesis.json"}:
+            assert recovered is None
+            assert not (component_dir / "document.json").exists()
+            return
+        assert recovered is not None
+        assert publication.load_accepted_publication(component_dir, assembler)
+        return
+
+    (checkout / "source.go").write_text("package source\n\nconst Enabled = false\n")
+    _git(checkout, "add", "source.go")
+    _git(checkout, "commit", "-qm", "change accepted input")
+    _refresh_target_analyzer(
+        architecture,
+        "rhoai-test",
+        checkout,
+        extracted_at="2026-09-08T06:00:00Z",
+    )
+    real_publish = publication.publish_private_run
+    monkeypatch.setattr(publication, "publish_private_run", lambda **_kwargs: None)
+    await _run_pipeline_fixture_version(
+        architecture=architecture,
+        component=component,
+        version="rhoai-test",
+        inputs=inputs,
+        platforms=platforms,
+        refresh=True,
+    )
+    monkeypatch.setattr(publication, "publish_private_run", real_publish)
+    with pytest.raises(publication.PublicationError, match="simulated interruption"):
+        real_publish(
+            architecture_dir=architecture,
+            version_scope="rhoai-test",
+            component="praxis-policy",
+            assembler=assembler,
+            interrupt_after=boundary,
+        )
+    recovered = publication.recover_publication(component_dir, assembler)
+    assert recovered is not None
+    validated = publication.load_accepted_publication(component_dir, assembler)
+    assert validated.document == recovered.document
+    if boundary in {"replaced:document.json", "replaced:praxis-policy.md"}:
+        assert validated.document != prior.document
+    else:
+        assert validated.document == prior.document
 
 
 @pytest.mark.asyncio
@@ -1765,6 +2307,17 @@ async def test_pipeline_seam_never_accepts_unusable_predecessor_records(
                     synthesis._record_without_identity(record)
                 )
                 record_path.write_text(json.dumps(record))
+            # This P3 regression exercises an unusable predecessor with no
+            # independently accepted P4 authority.  A valid published snapshot
+            # is deliberately covered by the publication-removal reuse test.
+            published = architecture / "rhoai-old" / "praxis-policy"
+            for path in (
+                published / "analyzer.json",
+                published / "synthesis.json",
+                published / "document.json",
+                architecture / "rhoai-old" / "praxis-policy.md",
+            ):
+                path.unlink(missing_ok=True)
     await _run_pipeline_fixture_version(
         architecture=architecture,
         component=component,
@@ -2156,6 +2709,18 @@ def _install_production_codex_protocol_stub(monkeypatch, state, captured):
 
     from lib import codex_agent
 
+    def maybe_raise(stage, occurrence):
+        failures = state.get("rpc_failures")
+        if failures is None:
+            failures = (state.get("rpc_failure"),)
+        for failure in failures:
+            if (
+                isinstance(failure, dict)
+                and failure.get("stage") == stage
+                and failure.get("occurrence") == occurrence
+            ):
+                raise failure["error"]
+
     class FakeTurn:
         def __init__(self, prompt):
             self.id = f"turn-{len(captured['turns']) + 1}"
@@ -2201,12 +2766,14 @@ def _install_production_codex_protocol_stub(monkeypatch, state, captured):
 
         async def turn(self, prompt, **kwargs):
             captured["turns"].append({"prompt": prompt, "kwargs": kwargs})
+            maybe_raise("turn/start", len(captured["turns"]))
             return FakeTurn(prompt)
 
     class FakeProtocol:
         async def request(self, method, params, *, response_model):
             assert method == "config/read"
             captured["config_reads"].append(copy.deepcopy(params))
+            maybe_raise("config/read", len(captured["config_reads"]))
             return codex_types.ConfigReadResponse(
                 config={
                     "model": state["resolved_model"],
@@ -2221,6 +2788,7 @@ def _install_production_codex_protocol_stub(monkeypatch, state, captured):
 
         async def thread_start(self, params):
             captured["thread_starts"].append(copy.deepcopy(params))
+            maybe_raise("thread/start", len(captured["thread_starts"]))
             return SimpleNamespace(
                 thread=SimpleNamespace(id="thread-stub"),
                 model=state["resolved_model"],
@@ -2392,9 +2960,9 @@ async def test_production_codex_preflight_controls_actual_go_reuse(
     target = _private_dir(architecture, "rhoai-new")
     envelope = json.loads((target / "synthesis.json").read_text())
     bundle = json.loads((target / "evidence-bundle.json").read_text())
-    resolution = bundle["synthesis_configuration"]["model_context"][
-        "implicit_context"
-    ]["requested_model_resolution"]
+    resolution = bundle["synthesis_configuration"]["model_context"]["implicit_context"][
+        "requested_model_resolution"
+    ]
     assert resolution["parent_requested_model"] == parent_model
     assert resolution["resolved_model_identity"] == state["resolved_model"]
     assert all(
@@ -2411,9 +2979,9 @@ async def test_production_codex_preflight_controls_actual_go_reuse(
         document = json.loads((target / "document.json").read_text())
         assert "reuse" in document
     else:
-        assert "semantic_input_mismatch" in envelope[
-            "resolution_provenance"
-        ][0]["reasons"]
+        assert (
+            "semantic_input_mismatch" in envelope["resolution_provenance"][0]["reasons"]
+        )
         assert envelope["calls"]["total"] == 1
 
 
@@ -2436,9 +3004,7 @@ async def test_production_codex_preflight_fails_before_any_model_turn(
 ):
     from lib import fetch
 
-    architecture, _checkout, component = _pipeline_fixture(
-        tmp_path, ("rhoai-test",)
-    )
+    architecture, _checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
     platforms = tmp_path / "platforms.yaml"
     platforms.write_text("rhoai-test: {}\n")
     state = {
@@ -2483,6 +3049,360 @@ async def test_production_codex_preflight_fails_before_any_model_turn(
     assert captured["turns"] == []
     assert len(captured["thread_starts"]) == 1
     assert not _private_dir(architecture, "rhoai-test").exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stage", ["config/read", "thread/start"])
+@pytest.mark.parametrize(("rpc_data", "denied"), _CODEX_RPC_LOOP_CASES)
+async def test_codex_preflight_rpc_quota_is_durable_without_component_record(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+    stage: str,
+    rpc_data: object,
+    denied: bool,
+):
+    from openai_codex.errors import map_jsonrpc_error
+
+    from lib import fetch
+
+    architecture, checkout, first = _pipeline_fixture(tmp_path, ("rhoai-test",))
+    inputs = _pipeline_inputs(tmp_path / "inputs.json")
+    second = _add_second_pipeline_component(
+        architecture, checkout, inputs, version="rhoai-test"
+    )
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-test: {}\n")
+    fake_bearer = "sk-abcdefghijklmnopqrstuvwxyz0123"
+    rpc_error = map_jsonrpc_error(
+        -32000,
+        f"usage limit wording is not sufficient; Bearer {fake_bearer}",
+        rpc_data,
+    )
+    state = {
+        "configured_model": "gpt-5.6-sol",
+        "resolved_model": "gpt-5.6-sol",
+        "model_provider": "openai",
+        "reasoning_effort": "high",
+        "service_tier": None,
+        "config_revision": "a",
+        "cli_version": "codex-cli 0.147.0-test",
+        "cli_hash": "a",
+        "rpc_failure": {"stage": stage, "occurrence": 1, "error": rpc_error},
+    }
+    captured = {
+        "constructors": [],
+        "config_reads": [],
+        "thread_starts": [],
+        "turns": [],
+        "interrupts": 0,
+    }
+    _install_production_codex_protocol_stub(monkeypatch, state, captured)
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    args = _pipeline_args(platform="rhoai-test", inputs=inputs, platforms=platforms)
+    args.harness = "codex"
+    args.model = "gpt-5.6-sol"
+    run = synthesis.run_pipeline_seam(
+        args,
+        {first.key: first, second.key: second},
+        architecture_dir=architecture,
+        distribution="RHOAI",
+    )
+    if denied:
+        with pytest.raises(RateLimitError):
+            await run
+    else:
+        with pytest.raises(Exception) as raised:
+            await run
+        assert raised.value is rpc_error
+
+    diagnostic_path = (
+        architecture
+        / "rhoai-test/.generation/structured"
+        / synthesis.PREFLIGHT_DIAGNOSTIC_FILENAME
+    )
+    assert diagnostic_path.exists() is denied
+    if denied:
+        diagnostic = json.loads(diagnostic_path.read_text())
+        assert diagnostic["phase"] == "context-preflight"
+        assert diagnostic["model_calls_started"] == 0
+        assert diagnostic["diagnostic"]["provider_error"]["code"] == -32000
+        assert diagnostic["diagnostic"]["provider_error"]["data"] == rpc_data
+        diagnostic_text = diagnostic_path.read_text()
+        assert fake_bearer not in diagnostic_text
+        assert "Bearer [REDACTED]" in diagnostic["diagnostic"]["detail"]
+    assert captured["turns"] == []
+    for component in (first, second):
+        target = _private_dir(architecture, "rhoai-test", component.key)
+        assert not (target / "synthesis.json").exists()
+        assert not (target / "run-record.json").exists()
+
+
+@pytest.mark.asyncio
+async def test_codex_preflight_diagnostic_write_failure_still_stops_pipeline(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+):
+    from openai_codex.errors import map_jsonrpc_error
+
+    from lib import fetch
+
+    architecture, checkout, first = _pipeline_fixture(tmp_path, ("rhoai-test",))
+    inputs = _pipeline_inputs(tmp_path / "inputs.json")
+    second = _add_second_pipeline_component(
+        architecture, checkout, inputs, version="rhoai-test"
+    )
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-test: {}\n")
+    state = {
+        "configured_model": "gpt-5.6-sol",
+        "resolved_model": "gpt-5.6-sol",
+        "model_provider": "openai",
+        "reasoning_effort": "high",
+        "service_tier": None,
+        "config_revision": "a",
+        "cli_version": "codex-cli 0.147.0-test",
+        "cli_hash": "a",
+        "rpc_failure": {
+            "stage": "config/read",
+            "occurrence": 1,
+            "error": map_jsonrpc_error(
+                -32000,
+                "quota",
+                {"errorInfo": "usageLimitExceeded"},
+            ),
+        },
+    }
+    captured = {
+        "constructors": [],
+        "config_reads": [],
+        "thread_starts": [],
+        "turns": [],
+        "interrupts": 0,
+    }
+    _install_production_codex_protocol_stub(monkeypatch, state, captured)
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    real_atomic_json = synthesis._atomic_json
+
+    def fail_preflight_diagnostic(path, value):
+        if path.name == synthesis.PREFLIGHT_DIAGNOSTIC_FILENAME:
+            raise OSError(28, "simulated full diagnostic volume")
+        return real_atomic_json(path, value)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    monkeypatch.setattr(synthesis, "_atomic_json", fail_preflight_diagnostic)
+    args = _pipeline_args(platform="rhoai-test", inputs=inputs, platforms=platforms)
+    args.harness = "codex"
+    args.model = "gpt-5.6-sol"
+
+    with pytest.raises(OSError) as raised:
+        await synthesis.run_pipeline_seam(
+            args,
+            {first.key: first, second.key: second},
+            architecture_dir=architecture,
+            distribution="RHOAI",
+        )
+
+    assert isinstance(raised.value.__context__, RateLimitError)
+    assert len(captured["config_reads"]) == 1
+    assert captured["thread_starts"] == []
+    assert captured["turns"] == []
+    for component in (first, second):
+        target = _private_dir(architecture, "rhoai-test", component.key)
+        assert not (target / "synthesis.json").exists()
+        assert not (target / "run-record.json").exists()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stage", ["config/read", "thread/start", "turn/start"])
+@pytest.mark.parametrize(("rpc_data", "denied"), _CODEX_RPC_LOOP_CASES)
+async def test_producing_rpc_quota_stops_actual_two_component_loop(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+    stage: str,
+    rpc_data: object,
+    denied: bool,
+):
+    from openai_codex.errors import map_jsonrpc_error
+
+    from lib import fetch
+
+    architecture, checkout, first = _pipeline_fixture(tmp_path, ("rhoai-test",))
+    inputs = _pipeline_inputs(tmp_path / "inputs.json")
+    second = _add_second_pipeline_component(
+        architecture, checkout, inputs, version="rhoai-test"
+    )
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-test: {}\n")
+    rpc_error = map_jsonrpc_error(
+        -32000,
+        "ordinary provider wording",
+        rpc_data,
+    )
+    state = {
+        "configured_model": "gpt-5.6-sol",
+        "resolved_model": "gpt-5.6-sol",
+        "model_provider": "openai",
+        "reasoning_effort": "high",
+        "service_tier": None,
+        "config_revision": "a",
+        "cli_version": "codex-cli 0.147.0-test",
+        "cli_hash": "a",
+        "rpc_failure": {
+            "stage": stage,
+            "occurrence": 1 if stage == "turn/start" else 2,
+            "error": rpc_error,
+        },
+    }
+    captured = {
+        "constructors": [],
+        "config_reads": [],
+        "thread_starts": [],
+        "turns": [],
+        "interrupts": 0,
+    }
+    _install_production_codex_protocol_stub(monkeypatch, state, captured)
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    args = _pipeline_args(platform="rhoai-test", inputs=inputs, platforms=platforms)
+    args.harness = "codex"
+    args.model = "gpt-5.6-sol"
+    run = synthesis.run_pipeline_seam(
+        args,
+        {first.key: first, second.key: second},
+        architecture_dir=architecture,
+        distribution="RHOAI",
+    )
+    if denied:
+        with pytest.raises(RateLimitError):
+            await run
+    else:
+        await run
+
+    first_target = _private_dir(architecture, "rhoai-test", first.key)
+    first_envelope = json.loads((first_target / "synthesis.json").read_text())
+    expected_code = "rate-limit-refusal" if denied else "adapter-failed"
+    assert first_envelope["diagnostics"][-1]["code"] == expected_code
+    provider_error = first_envelope["diagnostics"][-1]["provider_error"]
+    assert provider_error["code"] == -32000
+    assert provider_error["data"] == rpc_data
+    assert not (first_target / "run-record.json").exists()
+    second_target = _private_dir(architecture, "rhoai-test", second.key)
+    assert (second_target / "synthesis.json").exists() is (not denied)
+    assert (second_target / "run-record.json").exists() is (not denied)
+    expected_turns = {
+        ("config/read", True): 0,
+        ("thread/start", True): 0,
+        ("turn/start", True): 1,
+        ("config/read", False): 1,
+        ("thread/start", False): 1,
+        ("turn/start", False): 2,
+    }
+    assert len(captured["turns"]) == expected_turns[(stage, denied)]
+
+
+@pytest.mark.asyncio
+async def test_ordinary_rpc_failure_then_quota_never_starts_third_component(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arch_analyzer_binary: Path,
+):
+    from openai_codex.errors import map_jsonrpc_error
+
+    from lib import fetch
+
+    architecture, checkout, first = _pipeline_fixture(tmp_path, ("rhoai-test",))
+    inputs = _pipeline_inputs(tmp_path / "inputs.json")
+    second = _add_second_pipeline_component(
+        architecture, checkout, inputs, version="rhoai-test"
+    )
+    third = _add_second_pipeline_component(
+        architecture,
+        checkout,
+        inputs,
+        version="rhoai-test",
+        key="third",
+    )
+    platforms = tmp_path / "platforms.yaml"
+    platforms.write_text("rhoai-test: {}\n")
+    state = {
+        "configured_model": "gpt-5.6-sol",
+        "resolved_model": "gpt-5.6-sol",
+        "model_provider": "openai",
+        "reasoning_effort": "high",
+        "service_tier": None,
+        "config_revision": "a",
+        "cli_version": "codex-cli 0.147.0-test",
+        "cli_hash": "a",
+        "rpc_failures": (
+            {
+                "stage": "turn/start",
+                "occurrence": 1,
+                "error": map_jsonrpc_error(
+                    -32000,
+                    "ordinary failure",
+                    {"codexErrorInfo": "internalServerError"},
+                ),
+            },
+            {
+                "stage": "turn/start",
+                "occurrence": 2,
+                "error": map_jsonrpc_error(
+                    -32000,
+                    "quota",
+                    {"errorInfo": "usageLimitExceeded"},
+                ),
+            },
+        ),
+    }
+    captured = {
+        "constructors": [],
+        "config_reads": [],
+        "thread_starts": [],
+        "turns": [],
+        "interrupts": 0,
+    }
+    _install_production_codex_protocol_stub(monkeypatch, state, captured)
+
+    async def ensure_analyzer():
+        return str(arch_analyzer_binary)
+
+    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
+    args = _pipeline_args(platform="rhoai-test", inputs=inputs, platforms=platforms)
+    args.harness = "codex"
+    args.model = "gpt-5.6-sol"
+
+    with pytest.raises(RateLimitError):
+        await synthesis.run_pipeline_seam(
+            args,
+            {item.key: item for item in (first, second, third)},
+            architecture_dir=architecture,
+            distribution="RHOAI",
+        )
+
+    assert len(captured["turns"]) == 2
+    assert len(captured["thread_starts"]) == 3
+    first_path = _private_dir(architecture, "rhoai-test", first.key)
+    second_path = _private_dir(architecture, "rhoai-test", second.key)
+    first_envelope = json.loads((first_path / "synthesis.json").read_text())
+    second_envelope = json.loads((second_path / "synthesis.json").read_text())
+    assert first_envelope["diagnostics"][-1]["code"] == "adapter-failed"
+    assert second_envelope["diagnostics"][-1]["code"] == "rate-limit-refusal"
+    third_target = _private_dir(architecture, "rhoai-test", third.key)
+    assert not (third_target / "synthesis.json").exists()
+    assert not (third_target / "run-record.json").exists()
 
 
 @pytest.mark.asyncio
@@ -2601,20 +3521,16 @@ async def test_production_claude_context_controls_zero_call_reuse(
     target = _private_dir(architecture, "rhoai-new")
     envelope = json.loads((target / "synthesis.json").read_text())
     bundle = json.loads((target / "evidence-bundle.json").read_text())
-    implicit = bundle["synthesis_configuration"]["model_context"][
-        "implicit_context"
-    ]
+    implicit = bundle["synthesis_configuration"]["model_context"]["implicit_context"]
     assert implicit["cli_implementation"] == cli_state["identity"]
-    assert implicit["requested_model_resolution"]["parent_requested_model"] == (
-        "opus"
-    )
+    assert implicit["requested_model_resolution"]["parent_requested_model"] == ("opus")
     if context_change == "none":
         document = json.loads((target / "document.json").read_text())
         assert "reuse" in document
     else:
-        assert "semantic_input_mismatch" in envelope[
-            "resolution_provenance"
-        ][0]["reasons"]
+        assert (
+            "semantic_input_mismatch" in envelope["resolution_provenance"][0]["reasons"]
+        )
         assert envelope["calls"]["total"] == 1
         assert (target / "run-record.json").is_file()
 
@@ -2702,9 +3618,7 @@ async def test_pipeline_seam_stops_all_components_on_real_provider_quota_denial(
 
     async def refused_transport(*args, **kwargs):
         calls.append(
-            json.loads(args[2])["evidence_bundle"]["analyzer"]["payload"][
-                "component"
-            ]
+            json.loads(args[2])["evidence_bundle"]["analyzer"]["payload"]["component"]
         )
         return {
             "success": False,
@@ -2727,8 +3641,7 @@ async def test_pipeline_seam_stops_all_components_on_real_provider_quota_denial(
         assert calls == ["policy"]
         refused = json.loads(
             (
-                _private_dir(architecture, "rhoai-test", first.key)
-                / "synthesis.json"
+                _private_dir(architecture, "rhoai-test", first.key) / "synthesis.json"
             ).read_text()
         )
         assert refused["diagnostics"][-1]["code"] == "rate-limit-refusal"
@@ -2752,9 +3665,7 @@ async def test_pipeline_seam_binds_input_bytes_before_run_boundary(
 ):
     from lib import fetch
 
-    architecture, _checkout, component = _pipeline_fixture(
-        tmp_path, ("rhoai-test",)
-    )
+    architecture, _checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
     platforms = tmp_path / "platforms.yaml"
     platforms.write_text("rhoai-test: {}\n")
     inputs = _pipeline_inputs(tmp_path / "inputs.json")
@@ -2799,9 +3710,7 @@ async def test_pipeline_seam_refuses_inconsistent_completed_record_at_save(
     monkeypatch: pytest.MonkeyPatch,
     arch_analyzer_binary: Path,
 ):
-    architecture, _checkout, component = _pipeline_fixture(
-        tmp_path, ("rhoai-test",)
-    )
+    architecture, _checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
     platforms = tmp_path / "platforms.yaml"
     platforms.write_text("rhoai-test: {}\n")
     calls: list[str] = []
@@ -2815,9 +3724,7 @@ async def test_pipeline_seam_refuses_inconsistent_completed_record_at_save(
         result.document_path.write_text(json.dumps(document))
         return result
 
-    monkeypatch.setattr(
-        synthesis, "run_structured_synthesis", corrupt_after_actual_go
-    )
+    monkeypatch.setattr(synthesis, "run_structured_synthesis", corrupt_after_actual_go)
     with pytest.raises(ReuseRecordError, match="document/input binding"):
         await _run_pipeline_fixture_version(
             architecture=architecture,
@@ -2828,9 +3735,7 @@ async def test_pipeline_seam_refuses_inconsistent_completed_record_at_save(
         )
 
     assert len(calls) == 1
-    assert not (
-        _private_dir(architecture, "rhoai-test") / "run-record.json"
-    ).exists()
+    assert not (_private_dir(architecture, "rhoai-test") / "run-record.json").exists()
 
 
 @pytest.mark.asyncio
@@ -2841,9 +3746,7 @@ async def test_pipeline_seam_does_not_save_unknown_producing_identity(
 ):
     from lib import fetch
 
-    architecture, _checkout, component = _pipeline_fixture(
-        tmp_path, ("rhoai-test",)
-    )
+    architecture, _checkout, component = _pipeline_fixture(tmp_path, ("rhoai-test",))
     platforms = tmp_path / "platforms.yaml"
     platforms.write_text("rhoai-test: {}\n")
 
@@ -2889,9 +3792,7 @@ async def test_producer_ineligible_component_does_not_abort_unrelated_component(
 ):
     from lib import fetch
 
-    architecture, checkout, first = _pipeline_fixture(
-        tmp_path, ("rhoai-test",)
-    )
+    architecture, checkout, first = _pipeline_fixture(tmp_path, ("rhoai-test",))
     platform = architecture / "rhoai-test"
     component_map_path = platform / "component-map.json"
     component_map = json.loads(component_map_path.read_text())
@@ -2920,9 +3821,9 @@ async def test_producer_ineligible_component_does_not_abort_unrelated_component(
     seen: list[str] = []
 
     async def caller(prompt, _schema, model, settings):
-        component_name = json.loads(prompt)["evidence_bundle"]["analyzer"][
-            "payload"
-        ]["component"]
+        component_name = json.loads(prompt)["evidence_bundle"]["analyzer"]["payload"][
+            "component"
+        ]
         seen.append(component_name)
         return HarnessResponse(
             raw_text=_response(prompt),

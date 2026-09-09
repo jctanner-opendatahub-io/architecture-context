@@ -274,24 +274,35 @@ rhoai-3.3 -> rhoai-3.4
 ## Data Model
 
 `arch-query` supports both accepted structured components and the legacy flat
-format. A valid `<component>/document.json` with schema version `1.0.0` is
+format. A valid `<component>/document.json` with schema version `1.0.0` or
+published version `1.1.0` is
 authoritative: typed queries map its validated `rendering_view` plus typed facts
 that are not present in that view. The sibling `<component>.md` is read only for
 raw section search and `component --output raw`; it is never merged back into
 accepted facts. An invalid, unsupported, or identity/version-mismatched accepted
 document is an error and cannot fall back to Markdown.
 
+Published `1.1.0` documents bind the exact nested `analyzer.json` and
+`synthesis.json` bytes. When flat Markdown exists, arch-query verifies it against
+the exact document hash and current producer renderer before raw/grep consumers
+can use its sections. A missing derivative leaves typed queries available but is
+reported as unavailable by `exists` and raw output. Any invalid new-format
+authority or stale present derivative fails the whole version load; it never
+silently produces partial typed answers or falls back to legacy files.
+
 When no `document.json` exists, the current Markdown plus analyzer-JSON
 compatibility path remains explicit. JSON-only accepted component directories
 support typed queries. Raw output for one of those components reports the
-missing sibling Markdown path as an actionable error.
+missing sibling Markdown path as an actionable error. JSON-only support is a
+query capability, not a complete-package format: release staging requires and
+validates the flat Markdown derivative.
 
-The phase-one schema does not define a publication envelope or external
-artifact hashes. This adapter therefore validates the accepted document schema,
-identity, fact IDs/accounting, patch/disposition links, and available provenance,
-but does not invent hash fields or infer cross-file publication completion.
-Binding `document.json`, `analyzer.json`, `synthesis.json`, and rendered Markdown
-hashes remains the phase-four publication integration boundary.
+The prepublication `1.0.0` schema remains an explicit compatibility format. New
+publication uses `1.1.0`. The Go loader and stager validate schemas, exact bytes,
+document reconstruction, evidence revisions, and published cross-artifact
+bindings. They do not independently recompute raw-response identities or
+producing-model eligibility; the Python producer establishes those properties
+and rechecks them before reuse. Hashes alone are not treated as evidence truth.
 
 For legacy components, each `.md` file is split on `## ` headings and
 subsections are extracted by `### ` headings. Pipe-delimited Markdown tables are

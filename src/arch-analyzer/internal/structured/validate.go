@@ -98,8 +98,14 @@ func sectionDefinition(id string) (SectionDefinition, bool) {
 }
 
 func Validate(document Document) error {
-	if document.SchemaVersion != DocumentSchemaVersion {
+	if document.SchemaVersion != DocumentSchemaVersion && document.SchemaVersion != PublishedDocumentSchemaVersion {
 		return fmt.Errorf("unsupported structured document schema_version %q", document.SchemaVersion)
+	}
+	if document.SchemaVersion == PublishedDocumentSchemaVersion && document.Publication == nil {
+		return fmt.Errorf("published structured document requires publication bindings")
+	}
+	if document.SchemaVersion == DocumentSchemaVersion && document.Publication != nil {
+		return fmt.Errorf("private structured document must not contain publication bindings")
 	}
 	if strings.TrimSpace(document.Identity.Component) == "" || strings.TrimSpace(document.Identity.SourceComponent) == "" {
 		return fmt.Errorf("structured document identity requires component and source_component")
@@ -134,6 +140,11 @@ func Validate(document Document) error {
 	}
 	if document.Reuse != nil {
 		if err := validateReuseRecord(*document.Reuse, document); err != nil {
+			return err
+		}
+	}
+	if document.Publication != nil {
+		if err := validatePublication(*document.Publication, document); err != nil {
 			return err
 		}
 	}
@@ -376,6 +387,56 @@ func Validate(document Document) error {
 	}
 	if err := validateRenderingView(document); err != nil {
 		return err
+	}
+	return nil
+}
+
+func validatePublication(publication Publication, document Document) error {
+	if publication.Contract != "structured-component-publication/v1" {
+		return fmt.Errorf("unsupported publication contract %q", publication.Contract)
+	}
+	for label, value := range map[string]string{
+		"snapshot_id":                                 publication.SnapshotID,
+		"analyzer.content_hash":                       publication.Analyzer.ContentHash,
+		"analyzer.bundle_fingerprint":                 publication.Analyzer.BundleFingerprint,
+		"analyzer.producer_build_identity":            publication.Analyzer.ProducerBuildIdentity,
+		"synthesis.content_hash":                      publication.Synthesis.ContentHash,
+		"synthesis.input_bundle_identity":             publication.Synthesis.InputBundleIdentity,
+		"synthesis.current_evidence_bundle_identity":  publication.Synthesis.CurrentEvidenceBundleIdentity,
+		"synthesis.original_evidence_bundle_identity": publication.Synthesis.OriginalEvidenceBundleIdentity,
+	} {
+		if !fingerprintPattern.MatchString(value) {
+			return fmt.Errorf("publication %s has invalid hash %q", label, value)
+		}
+	}
+	if publication.Analyzer.BundleFingerprint != document.AnalyzerInput.BundleFingerprint ||
+		publication.Analyzer.SchemaVersion != document.AnalyzerInput.SchemaVersion ||
+		publication.Analyzer.SourceComponent != document.Identity.SourceComponent ||
+		publication.Analyzer.Repository != document.Identity.Repository ||
+		publication.Analyzer.SourceRevision != document.Identity.SourceRevision ||
+		publication.Analyzer.AnalyzerVersion != document.Producers.AnalyzerVersion {
+		return fmt.Errorf("publication analyzer binding does not match accepted document inputs")
+	}
+	if publication.Markdown.Path != document.Identity.Component+".md" || publication.Markdown.RendererVersion != document.Producers.RendererVersion {
+		return fmt.Errorf("publication Markdown binding does not match accepted document identity")
+	}
+	switch publication.Synthesis.State {
+	case "synthesized":
+		if !publication.Synthesis.ProducingModelEligible || strings.TrimSpace(publication.Synthesis.AcceptedResponseIdentity) == "" {
+			return fmt.Errorf("synthesized publication requires an eligible producing model and accepted response")
+		}
+	case "deterministic-only", "historical-response-missing":
+		if publication.Synthesis.ProducingModelEligible || publication.Synthesis.AcceptedResponseIdentity != "" {
+			return fmt.Errorf("%s publication cannot claim an eligible producing model response", publication.Synthesis.State)
+		}
+	default:
+		return fmt.Errorf("publication synthesis state %q is invalid", publication.Synthesis.State)
+	}
+	if publication.Diagram.State != "unavailable" && publication.Diagram.State != "available" && publication.Diagram.State != "failed" {
+		return fmt.Errorf("publication diagram state %q is invalid", publication.Diagram.State)
+	}
+	if len(publication.AcceptedInputs.RunRecord) == 0 || len(publication.AcceptedInputs.CurrentEvidenceBundle) == 0 || len(publication.AcceptedInputs.OriginalEvidenceBundle) == 0 {
+		return fmt.Errorf("publication requires durable run record and evidence bundles")
 	}
 	return nil
 }

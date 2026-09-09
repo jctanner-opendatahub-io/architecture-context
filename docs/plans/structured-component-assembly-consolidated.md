@@ -3,8 +3,12 @@
 ## Status, authority, and provenance
 
 Consolidated 2026-09-06. Execution started 2026-09-06; phase-one deterministic
-gate and bounded SC-18 adapter independently accepted. Phase-two bounded reuse is independently accepted; synthesis/publication and
-final integration gates remain open.
+gate and bounded SC-18 adapter independently accepted. Phase-two bounded reuse is independently accepted; bounded synthesis and publication/consumers are independently accepted;
+final offline evidence and integration gate independently accepted on 2026-09-09.
+The authorized implementation is complete. SC-24 live evaluation and default
+adoption remain HOLD under the [separate live task](../tasks/pending/evaluate-structured-component-live-canary.md).
+See the [completion record](../notes/structured-component-assembly-completion.md)
+for the final verdict, evidence identities and retained nonblocking limits.
 This is the authoritative
 implementation plan for this effort; it replaces the conflicting design options
 in the [original proposal and review history](structured-component-assembly.md).
@@ -24,6 +28,29 @@ semantic truth. Existing coverage stays warning-only and component-generation
 subagents stay disabled. Live generation and default-route adoption require
 separate authorization and evidence.
 
+## Intent and 2026-09-09 amendment (ADR-0027)
+
+The user's intent, restated so every later step can be checked against it:
+
+1. **Adopt the four-file component layout** — `analyzer.json`,
+   `synthesis.json`, `document.json`, `<component>.md`. This is the objective.
+2. **Generation keeps working the way it does now**: an agent preseeded with
+   analyzer output that reads the repository with ordinary tools. The tool-free
+   single-call producer built under SC-10 is not what was asked for. It stays
+   available as an opt-in variant and is not the default.
+3. **Reuse of previous generations** is wanted, is a consequence of (1), and
+   becomes possible only from the second version generated on the new layout. It
+   is not a precondition and is not pursued through a separate mechanism
+   ([ADR-0026](../decisions/ADR-0026-deterministic-input-fingerprint-reuse.md), rejected).
+4. **No further multi-day implementation before a one-component intent check**
+   shows the layout and rendered Markdown are what the user wants. See
+   [Adoption path](#adoption-path-adr-0027).
+
+Phases 1, 2, 4 and 5 stand. SC-10 is superseded on the default route by
+[ADR-0027](../decisions/ADR-0027-agent-loop-generation-with-structured-layout.md).
+Where the body below describes bounded tool-free synthesis as the default,
+ADR-0027 governs.
+
 ## Explicit requirements and acceptance checks
 
 These requirements are binding for implementation. Every phase report must name
@@ -40,7 +67,7 @@ the requirement IDs it verifies, the test/evidence, and any unfinished IDs.
 | SC-07 | Render headings, parent sections, tables, and citations from schemas. | FIPS has a fixed Security parent; current conditional sections remain supported; invalid structures fail with durable diagnostics. |
 | SC-08 | Preserve canonical aliases, repository identity, version scope, and explicit uncertainty. | Praxis fixtures retain prefixes and remain included without claiming current integration. |
 | SC-09 | Preserve attributed human corrections and distinguish implementation, support, and planned behavior. | Overlay applicability/conflict tests retain provenance and never promote roadmap intent to observed implementation. |
-| SC-10 | Default to one structured synthesis call over an orchestrator-built evidence bundle, with bounded evidence follow-up. | Tests verify one-call completion, fixed follow-up/repair limits, explicit unresolved outcomes, and no open-ended tool loop on the new route. |
+| SC-10 | ~~Default to~~ Offer one structured synthesis call over an orchestrator-built evidence bundle, with bounded evidence follow-up. **Superseded as the default by ADR-0027; retained opt-in.** | Tests verify one-call completion, fixed follow-up/repair limits, explicit unresolved outcomes, and no open-ended tool loop on the new route. |
 | SC-11 | Implement whole-component cross-version reuse early. | Identical relevant inputs and verified equal semantic/evidence inputs across new commits make zero synthesis calls. |
 | SC-12 | Select a predecessor explicitly and validate reuse eligibility. | `reuse_from` tests cover missing/cyclic/self references, aliases, wrong repositories, incompatible or rejected snapshots, and explicit refresh overrides. |
 | SC-13 | Fingerprint every semantic input supplied to synthesis. | Exclusions have documented reasons and invalidation tests; versions, permissions, conditions, and meaningful ordering remain significant. |
@@ -358,6 +385,10 @@ Gate: successful, unresolved, malformed, and exhausted-budget cases produce
 correct artifacts/diagnostics. No implicit legacy fallback, extra per-section
 agent, or live model run is required to verify the contract.
 
+Delivered and accepted as an opt-in route. Under ADR-0027 it is not the default
+producer; the default producer is the existing agent loop emitting the same
+response contract (see Adoption path).
+
 ### Phase 4: four-file publication and consumer integration
 
 Implement hash-linked artifacts, per-file atomic publication, stale derivative
@@ -383,6 +414,147 @@ pre-commit baseline. With separate live-run authorization and model/cost bounds,
 evaluate rhods-operator plus representative service, manifest, and prefixed
 non-integrated components. Measure SC-24, verify all requirement IDs, and record
 adopt/hold plus rollback. Enforcement and workers are separate decisions.
+
+## Adoption path (ADR-0027)
+
+### Step 0 — intent check with no new code
+
+About one hour, one model call, requires live authorization. Pick one component
+whose analyzer payload is committed; all 149 currently pass the route's input
+validation (`validate_legacy_conversion_input`, checked 2026-09-09). Write:
+
+```json
+{"schema_version": "1.0.0", "instructions": "", "components": {"<component>": {}}}
+```
+
+Run `generate-architecture --platform <version> --component <component>
+--structured-synthesis --structured-inputs <file>`. On existing code this
+exercises bundle → tool-free call → validation → assembly → four-file publication
+→ rendered Markdown → `arch-query`. Inspect the four files, the Markdown, and a
+query. Producer quality is *not* the question — with no nominations the model
+sees analyzer facts only. The question is whether the layout and rendering are
+what the user wants.
+
+Stop rule: if the layout or rendering is wrong, fix that first. Do not start
+producer work.
+
+### Slice 1 — agent-loop producer, four-file output
+
+Not a one-to-two-hour change. The Python is small in lines but sits on the
+adapter and provenance boundary the seam was built to defend, and review must
+inspect it. Expect a focused day for the glue and tests; the skill rewrite is
+separate and may be hand-written by the user.
+
+- Add an agent-loop adapter that runs the existing harness (`run_agent`, whose
+  telemetry collector already records reads and searches) with repository read
+  access and returns the final response JSON. Permit `tool_free_enforced=False`
+  for it; the only hard gate is `CallbackStructuredAdapter.invoke`.
+- When `--structured-inputs` is absent, use empty per-component records. No
+  input builder.
+- Make this the default route. Keep tool-free opt-in. Keep an explicit legacy
+  flat-Markdown option, byte-preserving.
+- Reuse eligibility is recorded as unavailable on this slice (model context
+  incomplete); the four files still publish. This is honest, not a failure.
+- Skill: emit the response JSON — `sections`, `typed_patches`, `limitations`,
+  empty `evidence_requests` — instead of editing `candidate.md`.
+
+Gate: one component regenerated end to end on the default command with no extra
+flags; four files validate; `arch-query` reads them; independent review of the
+adapter boundary and the provenance record.
+
+#### Hand-implementation notes for Slice 1
+
+Line numbers are as of 2026-09-09. Python first, all in
+`lib/structured_component_synthesis.py` unless noted.
+
+1. **Adapter.** `authenticated_harness_adapter` (`:414`) builds a `call`
+   closure that invokes `run_agent` at `:467` with `tool_free=True,
+   max_turns=1, enable_skills=False`. Add an agent-loop variant (a mode
+   argument or sibling factory) with `tool_free=False`, a sane `max_turns` cap
+   or `None`, `enable_skills=True`, and keep `response_schema=dict(_schema)`.
+   With tools enabled, `run_agent` passes that schema as
+   `output_format=json_schema` (`lib/agent_runner.py:940`), so the final
+   `raw_response` is schema-enforced JSON and the existing extraction at `:497`
+   still works. Construct it with `tool_free_enforced=False,
+   context_complete=False, unobserved_context=("agent-tool-use",)` and set
+   `implicit_context["tool_policy"]` to describe the real tool set.
+2. **Guard.** `CallbackStructuredAdapter.invoke` (`:232`) raises whenever
+   `tool_free_enforced` is False. Remove that raise for the agent-loop adapter.
+3. **CLI identity.** `run_agent` resolves `claude_cli_identity` only under
+   `tool_free` (`lib/agent_runner.py:890`), and the closure requires it
+   (`:502`). Make the resolution unconditional.
+4. **Checkout access.** `call` receives no request object. Put the absolute
+   checkout path into the prompt instructions where the seam builds the request
+   (`:3172`, `instructions=`). The temporary `cwd` is fine; tools read absolute
+   paths. Pass no `agent_policy`, so `_AgentExecutionGuard` defaults to the
+   unrestricted legacy tool set.
+5. **Default inputs.** `_load_pipeline_inputs` (`:3013`) raises on `None`.
+   Return `{"schema_version": "1.0.0", "instructions": "", "components": {}}`
+   instead, and at `:3134` treat a missing component record as `{}`.
+6. **Route selection.** `lib/phases/architecture.py:202` enters the seam only
+   with `--structured-synthesis`. Flip the default there; add an explicit
+   `--legacy-generation` opt-out; fix the stale flag help in
+   `_add_structured_synthesis_options` (`lib/cli.py:136`), which still says the
+   route does not publish.
+7. **Prompt text.** `PARENT_RESPONSE_INSTRUCTIONS` (`:78`) says "Do not invoke
+   tools." Use a variant for the agent-loop prompt.
+8. **Section acceptance — read this before judging output.** Model sections
+   are proposals with no authority. `_select_sections` (`:1265`) accepts a
+   section only when a trusted `section_policy` says `accept`; with no policy,
+   every model section is recorded as rejected and the document carries analyzer
+   facts only. For a first real run, either supply a `section_policy` through
+   `--structured-inputs` or add a parent default that accepts model sections you
+   are willing to trust. Without this, the rendered Markdown will look like the
+   analyzer baseline and that is expected, not a bug.
+9. **Reuse.** Leave it. With `context_complete=False` the seam forces refresh
+   (`:1637`) and records eligibility unavailable. That is Slice 2.
+10. **Tests.** Existing tests assert the tool-free guard and single-turn
+    behavior; expect a handful in `tests/test_structured_component_synthesis.py`
+    to need updating rather than the code being wrong.
+
+Skill — `.claude/skills/repo-to-architecture-summary/SKILL.md`:
+
+- The prompt now arrives as the canonical JSON request (`evidence_bundle`,
+  `response_schema`, `instructions` with the checkout path). Keep the partial
+  route's reading discipline (`SKILL.md:68`); retire the candidate-Markdown and
+  patch-output contract (`SKILL.md:208-291`).
+- The final answer is one JSON object: `schema_version` `"1.0.0"`,
+  `response_id`, `input_bundle_identity` copied verbatim from
+  `evidence_bundle.bundle_identity`, `completion_status` `"complete"`,
+  `sections`, `typed_patches`, `limitations`, and `evidence_requests: []`.
+- `sections[]`: `id` from the fixed enum (`aipcc-ecosystems-use`,
+  `sub-component-details`, `deployment-manifests`, `security.fips-compliance`,
+  `security.build-hermeticity`, `multi-tenancy`), `status`
+  (`documented|unresolved|not-applicable`), `blocks`, and `evidence[]` entries
+  of `path` plus `revision` (the analyzer `commit_sha`), optionally
+  `start_line`/`end_line`.
+- `typed_patches[]`: start with `[]`. Sections alone yield a valid document.
+  Add fact patches (`patch_id`, `bundle_fingerprint`, `operations[]` with
+  `operation_id`, `action`, `fact_type`, target or key/value, `evidence`,
+  `reason`) only after the sections path works end to end.
+- `limitations[]`: `code`, `detail`, optional `section_id` — say what could
+  not be verified rather than omitting it.
+
+Verify:
+
+```bash
+uv run main.py generate-architecture --platform rhoai-3.6-ea.2 \
+  --component rhods-operator --force --model opus
+ls architecture/rhoai-3.6-ea.2/rhods-operator/      # analyzer.json synthesis.json document.json
+head architecture/rhoai-3.6-ea.2/rhods-operator.md  # marker binds document hash
+make build && make lint
+```
+
+Then run any `arch-query` command against `rhoai-3.6-ea.2` and confirm the
+component loads from `document.json`.
+
+### Slice 2 — reuse from telemetry
+
+Separate, after Slice 1 is accepted. Feed harness read and search observations
+(`dependency_record_from_telemetry`) into the run record so default-route runs
+can be reuse-eligible. Codex stays a miss until the `rg` classification bug is
+fixed (SC-25). Reuse then becomes effective from the version after the first
+structured generation.
 
 ## Evidence and cost reporting
 
@@ -445,8 +617,13 @@ deliberately replaced mechanisms.
 | Recurring cost reduction versus structural simplification | Both explicit; reuse early and measured one-call synthesis, SC-10/11/24 |
 | Codex snapshots not reuse-eligible until search telemetry is complete (consensus open item) | Made an explicit requirement: SC-25 |
 | Diagram paths must be preserved for consumers | Superseded by user decision: diagrams have human readers only; relocation permitted |
+| Tool-free single-call producer as the default (SC-10) | Superseded on the default route by ADR-0027: the existing agent loop emits the same response contract; tool-free retained opt-in |
 
 ## Execution and tracking
+
+Under ADR-0027 the user may author the skill directly. Framework roles apply to
+the Python adapter, defaults, flags, and independent review. Step 0 precedes any
+implementation assignment.
 
 Follow the [Implementation and Independent Review Framework](../notes/implementation-framework.md).
 For this plan, Astra coordinates, Sol implements, and Fable 5.1 independently
@@ -474,7 +651,7 @@ is not permitted for rate-limit-driven substitution. These are execution
 instructions, not authorization to launch agents during this documentation edit
 or to change the pipeline's product-level worker policy.
 
-Use the [implementation task](../tasks/current/implement-structured-component-assembly.md)
+Use the [implementation task](../tasks/done/implement-structured-component-assembly.md)
 for progress and record requirement-level evidence. Implementation completion,
 live evaluation, and default-route adoption are distinct outcomes. Existing
 [surface coverage decisions](architecture-surface-coverage.md) and

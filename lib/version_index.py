@@ -13,6 +13,12 @@ from urllib.parse import quote
 
 import yaml
 
+from lib.structured_component_publication import (
+    accepted_publications,
+    has_publication_state,
+)
+from lib.structured_component_synthesis import GoStructuredAssembler
+
 INDEX_FILENAME = "INDEX.md"
 RESERVED_DOCUMENTS = frozenset({INDEX_FILENAME, "PLATFORM.md", "README.md"})
 INTEGRATION_STATUSES = frozenset({"current", "planned", "not-integrated", "unknown"})
@@ -781,9 +787,19 @@ def generate_version_index(
     *,
     platforms_file: Path = Path("platforms.yaml"),
     overlays_dir: Path = Path("overlays"),
+    assembler: GoStructuredAssembler | None = None,
 ) -> IndexGenerationResult:
     """Validate local inputs and atomically create ``INDEX.md``."""
 
+    if not platform_dir.is_dir():
+        raise VersionIndexError(f"version directory does not exist: {platform_dir}")
+    has_structured = has_publication_state(platform_dir)
+    if has_structured:
+        if assembler is None:
+            raise VersionIndexError(
+                "accepted snapshot validation requires the arch-analyzer renderer"
+            )
+        accepted_publications(platform_dir, assembler, repair_markdown=True)
     platform_config = load_platform_configuration(platforms_file, platform_dir.name)
     overlays = load_active_overlays(overlays_dir, platform_dir.name)
     model = build_index_model(

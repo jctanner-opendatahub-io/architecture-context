@@ -69,10 +69,14 @@ architecture/
     odh-dashboard.md
     notebooks.md
     kserve/
+      analyzer.json              # exact accepted analyzer input
+      synthesis.json             # original synthesis response envelope
+      document.json              # accepted authority and recovery provenance
+      diagrams/                  # optional component derivatives + metadata
       .analyzer/
     PLATFORM.md
     INDEX.md
-    diagrams/
+    diagrams/                    # platform diagrams and legacy component diagrams
       kserve-component.mmd
       kserve-component.png
       ...
@@ -111,6 +115,15 @@ Spawns Claude agents that read each component and platform `.md` file and produc
 - Mermaid diagrams (`.mmd`): component, dataflow, dependencies, RBAC, security/network
 - C4 context diagrams (`.dsl`)
 - PNG renders via `scripts/generate_diagram_pngs.py`
+
+For newly published structured components, the three nested JSON files and the
+existing flat component Markdown form one validated snapshot. `document.json`
+binds the analyzer and synthesis bytes; the Markdown marker binds the exact
+document bytes and renderer output. Typed queries can use a valid JSON-only
+authority, while repository linting and release packaging require all four
+files, including Markdown. Component diagrams are written below
+`{component}/diagrams/` with document/generator/status metadata. Platform and
+explicitly legacy component diagrams retain the version-level `diagrams/` path.
 
 ## Project structure
 

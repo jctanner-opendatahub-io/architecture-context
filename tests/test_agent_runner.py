@@ -475,6 +475,48 @@ async def test_codex_rejects_claude_only_limits(tmp_path: Path):
 
 
 @pytest.mark.asyncio
+async def test_codex_dispatch_preserves_structured_rpc_quota_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    from lib import codex_agent
+
+    expected = {
+        "name": "structured",
+        "success": False,
+        "error": "JSON-RPC error -32000: quota refused",
+        "provider_error": {
+            "kind": "codex-rpc-error",
+            "error_type": "CodexRpcError",
+            "code": -32000,
+            "message": "quota refused",
+            "data": {"codexErrorInfo": "usageLimitExceeded"},
+        },
+        "rate_limit_denied": True,
+    }
+    captured = {}
+
+    async def refused(**kwargs):
+        captured.update(kwargs)
+        return expected
+
+    monkeypatch.setattr(codex_agent, "run_codex_agent", refused)
+    result = await agent_runner.run_agent(
+        "structured",
+        str(tmp_path),
+        "return JSON",
+        tmp_path,
+        harness="codex",
+        tool_free=True,
+        response_schema={"type": "object"},
+    )
+
+    assert result is expected
+    assert captured["tool_free"] is True
+    assert captured["response_schema"] == {"type": "object"}
+
+
+@pytest.mark.asyncio
 async def test_run_agent_propagates_name_as_component_when_policy_omits_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ):

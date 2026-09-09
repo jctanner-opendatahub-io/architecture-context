@@ -29,6 +29,7 @@ from openai_codex import (
     TextInput,
 )
 from openai_codex.api import AsyncThread
+from openai_codex.errors import JsonRpcError
 from openai_codex.generated.v2_all import (
     AskForApproval,
     AskForApprovalValue,
@@ -43,6 +44,7 @@ from lib.context_telemetry import (
     search_result_identity,
 )
 from lib.skill_paths import resolve_skill_file
+from lib.telemetry_redact import redact_dict, redact_value
 
 if TYPE_CHECKING:
     from lib.progress import AgentProgress
@@ -777,27 +779,127 @@ async def _request_interrupt(turn: object, activity: dict[str, Any]) -> None:
         interruption["request_succeeded"] = True
 
 
+_CODEX_RATE_LIMIT_CODES = frozenset({
+    "ratelimit",
+    "ratelimiterror",
+    "ratelimitreached",
+    "sessionbudgetexceeded",
+    "usagelimit",
+    "usagelimitexceeded",
+    "workspacememberusagelimitreached",
+    "workspaceownerusagelimitreached",
+})
+_CODEX_RATE_LIMIT_CODE_FIELDS = frozenset({
+    "code",
+    "codexerrorinfo",
+    "errorinfo",
+    "errorcode",
+    "type",
+})
+_CODEX_ERROR_INFO_FIELDS = frozenset({"codexerrorinfo", "errorinfo"})
+_CODEX_HTTP_STATUS_FIELDS = frozenset({"httpstatuscode", "statuscode"})
+_CODEX_ERROR_CODE_TOKEN = re.compile(r"[a-z][a-z0-9_-]*", re.IGNORECASE)
+
+
+def _normalized_error_code(value: object) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(value).casefold())
+
+
+def _known_rate_limit_code(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and _CODEX_ERROR_CODE_TOKEN.fullmatch(value) is not None
+        and _normalized_error_code(value) in _CODEX_RATE_LIMIT_CODES
+    )
+
+
 def _codex_rate_limit_denied(value: object) -> bool:
-    """Recognize only structured quota refusal codes or an actual HTTP 429."""
+    """Recognize structured quota refusal codes or an actual HTTP 429.
+
+    Message fields are deliberately not classified. A provider exception must
+    expose a known code in structured metadata or an HTTP status of 429.
+    """
+
+    def contains_structured_denial(
+        data: object,
+        *,
+        allow_code_value: bool,
+    ) -> bool:
+        if isinstance(data, dict):
+            for key, item in data.items():
+                normalized_key = _normalized_error_code(key)
+                if normalized_key in _CODEX_HTTP_STATUS_FIELDS and item == 429:
+                    return True
+                if (
+                    normalized_key in _CODEX_RATE_LIMIT_CODE_FIELDS
+                    and _known_rate_limit_code(item)
+                ):
+                    return True
+                if normalized_key == "data" and _known_rate_limit_code(item):
+                    return True
+                child_allows_code = (
+                    allow_code_value
+                    or normalized_key in _CODEX_ERROR_INFO_FIELDS
+                )
+                if isinstance(item, (dict, list)) and contains_structured_denial(
+                    item,
+                    allow_code_value=child_allows_code,
+                ):
+                    return True
+                if child_allows_code and _known_rate_limit_code(item):
+                    return True
+            return False
+        if isinstance(data, list):
+            return any(
+                contains_structured_denial(
+                    item,
+                    allow_code_value=allow_code_value,
+                )
+                for item in data
+            )
+        return allow_code_value and _known_rate_limit_code(data)
+
+    data = _jsonable(value)
+    return contains_structured_denial(
+        data,
+        allow_code_value=not isinstance(data, (dict, list)),
+    )
+
+
+def _sanitized_provider_value(value: object) -> object:
+    """Make provider metadata JSON-safe while redacting credential material."""
 
     data = _jsonable(value)
     if isinstance(data, dict):
-        for key, item in data.items():
-            normalized = str(key).casefold().replace("_", "")
-            if normalized in {"httpstatuscode", "statuscode"} and item == 429:
-                return True
-            if _codex_rate_limit_denied(item):
-                return True
-        return False
+        return redact_dict(data)
     if isinstance(data, list):
-        return any(_codex_rate_limit_denied(item) for item in data)
-    return str(data) in {
-        "usageLimitExceeded",
-        "sessionBudgetExceeded",
-        "rate_limit_reached",
-        "workspace_owner_usage_limit_reached",
-        "workspace_member_usage_limit_reached",
+        return redact_dict({"value": data})["value"]
+    return redact_value("value", data)
+
+
+def codex_exception_details(error: BaseException) -> dict[str, Any]:
+    """Retain safe structured SDK failure evidence for durable audit."""
+
+    error_text = str(error) or repr(error)
+    details: dict[str, Any] = {
+        "kind": "codex-exception",
+        "error_type": type(error).__name__,
+        "message": redact_value("message", error_text),
     }
+    response = getattr(error, "response", None)
+    status_code = getattr(error, "status_code", None)
+    if status_code is None and response is not None:
+        status_code = getattr(response, "status_code", None)
+    if isinstance(status_code, int):
+        details["status_code"] = status_code
+    if isinstance(error, JsonRpcError):
+        details.update({
+            "kind": "codex-rpc-error",
+            "code": error.code,
+            "message": redact_value("message", error.message),
+            "data": _sanitized_provider_value(error.data),
+        })
+    return details
 
 
 async def _stream_turn(
@@ -1411,16 +1513,17 @@ async def run_codex_agent(
         if progress:
             progress.agent_completed(name, success=False)
         error_text = str(exc) or repr(exc)
+        safe_error_text = str(redact_value("message", error_text))
         emit(
             f"Failed: {name} ({int(elapsed)}s) — "
-            f"{type(exc).__name__}: {error_text}"
+            f"{type(exc).__name__}: {safe_error_text}"
         )
         with log_file.open("a") as log:
             log.write(
                 json.dumps({
                     "type": "codex_turn_error",
                     "error_type": type(exc).__name__,
-                    "error": repr(exc),
+                    "error": safe_error_text,
                 })
             )
             log.write("\n")
@@ -1436,24 +1539,14 @@ async def run_codex_agent(
                 ),
             )
             else {
-                "kind": (
-                    "codex-tool-activity"
-                    if isinstance(exc, _CodexToolActivityRejected)
-                    else (
-                        "codex-model-reroute"
-                        if isinstance(exc, _CodexModelRerouteRejected)
-                        else "codex-exception"
-                    )
-                ),
-                "error_type": type(exc).__name__,
-                "message": error_text,
+                **codex_exception_details(exc),
                 **(
-                    {"tool_activity": exc.activity}
+                    {"kind": "codex-tool-activity", "tool_activity": exc.activity}
                     if isinstance(exc, _CodexToolActivityRejected)
                     else {}
                 ),
                 **(
-                    {"model_reroute": exc.reroute}
+                    {"kind": "codex-model-reroute", "model_reroute": exc.reroute}
                     if isinstance(exc, _CodexModelRerouteRejected)
                     else {}
                 ),
@@ -1462,7 +1555,7 @@ async def run_codex_agent(
         return {
             "name": name,
             "success": False,
-            "error": error_text,
+            "error": safe_error_text,
             "provider_error": provider_error,
             "rate_limit_denied": _codex_rate_limit_denied(provider_error),
             "log_file": str(log_file),

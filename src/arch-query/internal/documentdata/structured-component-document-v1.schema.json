@@ -21,7 +21,7 @@
     "rendering_view"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"enum": ["1.0.0", "1.1.0"]},
     "identity": {"$ref": "#/$defs/identity"},
     "producers": {"$ref": "#/$defs/producers"},
     "analyzer_input": {"$ref": "#/$defs/analyzerInput"},
@@ -34,9 +34,15 @@
     "proposal_dispositions": {"type": "array", "items": {"$ref": "#/$defs/disposition"}},
     "uncertainty": {"type": "array", "items": {"$ref": "#/$defs/uncertainty"}},
     "reuse": {"$ref": "#/$defs/reuseRecord"},
+    "publication": {"$ref": "#/$defs/publication"},
     "rendering_view": {"$ref": "#/$defs/renderingView"}
   },
   "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "1.1.0"}}, "required": ["schema_version"]},
+      "then": {"required": ["publication"]},
+      "else": {"not": {"required": ["publication"]}}
+    },
     {
       "if": {"properties": {"identity": {"properties": {"integration_status": {"const": "current"}}, "required": ["integration_status"]}}, "required": ["identity"]},
       "then": {"properties": {"uncertainty": {
@@ -405,6 +411,51 @@
         "comparison_hash": {"$ref": "#/$defs/sha256"},
         "reason": {"$ref": "#/$defs/nonEmptyString"},
         "revalidation_checks": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmptyString"}}
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "snapshot_id", "analyzer", "synthesis", "accepted_inputs", "markdown", "diagram"],
+      "properties": {
+        "contract": {"const": "structured-component-publication/v1"},
+        "snapshot_id": {"$ref": "#/$defs/sha256"},
+        "analyzer": {
+          "type": "object", "additionalProperties": false,
+          "required": ["content_hash", "bundle_fingerprint", "schema_version", "source_component", "repository", "source_revision", "analyzer_version", "producer_build_identity"],
+          "properties": {
+            "content_hash": {"$ref": "#/$defs/sha256"}, "bundle_fingerprint": {"$ref": "#/$defs/sha256"},
+            "schema_version": {"const": "1"}, "source_component": {"$ref": "#/$defs/nonEmptyString"},
+            "repository": {"type": "string"}, "source_revision": {"type": "string"},
+            "analyzer_version": {"type": "string"}, "producer_build_identity": {"$ref": "#/$defs/sha256"}
+          }
+        },
+        "synthesis": {
+          "type": "object", "additionalProperties": false,
+          "required": ["content_hash", "state", "input_bundle_identity", "current_evidence_bundle_identity", "original_evidence_bundle_identity", "producing_model_eligible"],
+          "properties": {
+            "content_hash": {"$ref": "#/$defs/sha256"},
+            "state": {"enum": ["synthesized", "deterministic-only", "historical-response-missing"]},
+            "input_bundle_identity": {"$ref": "#/$defs/sha256"},
+            "current_evidence_bundle_identity": {"$ref": "#/$defs/sha256"},
+            "original_evidence_bundle_identity": {"$ref": "#/$defs/sha256"},
+            "accepted_response_identity": {"$ref": "#/$defs/nonEmptyString"},
+            "producing_model_eligible": {"type": "boolean"}
+          }
+        },
+        "accepted_inputs": {
+          "type": "object", "additionalProperties": false,
+          "required": ["run_record", "current_evidence_bundle", "original_evidence_bundle"],
+          "properties": {"run_record": {"type": "object"}, "current_evidence_bundle": {"type": "object"}, "original_evidence_bundle": {"type": "object"}}
+        },
+        "markdown": {
+          "type": "object", "additionalProperties": false, "required": ["path", "renderer_version"],
+          "properties": {"path": {"$ref": "#/$defs/nonEmptyString"}, "renderer_version": {"const": "arch-analyzer-markdown/v1"}}
+        },
+        "diagram": {
+          "type": "object", "additionalProperties": false, "required": ["state"],
+          "properties": {"state": {"enum": ["unavailable", "available", "failed"]}, "generator_identity": {"type": "string"}}
+        }
       }
     },
     "renderingView": {

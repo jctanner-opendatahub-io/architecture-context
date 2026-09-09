@@ -22,6 +22,22 @@ func TestInternalDependencyDiscoveryAliasesIncludeSemanticResourceGroups(t *test
 	}
 }
 
+func TestOpenShiftIntegrationsHaveCanonicalMapOrder(t *testing.T) {
+	facts := openshiftIntegrations(map[string]string{
+		"user.openshift.io":  "role.yaml:4",
+		"image.openshift.io": "role.yaml:3",
+		"route.openshift.io": "role.yaml:2",
+	})
+	got := make([]string, 0, len(facts))
+	for _, fact := range facts {
+		got = append(got, fact.Component)
+	}
+	want := []string{"OpenShift Image Streams", "OpenShift Routes", "OpenShift Users/Groups"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("integrations = %#v, want canonical map order %#v", got, want)
+	}
+}
+
 func TestWatchInternalDependencies(t *testing.T) {
 	watches := []model.ControllerWatch{
 		{Controller: "JobSet", GVK: "jobset/v1alpha2/JobSet", Source: "jobset.go:198"},

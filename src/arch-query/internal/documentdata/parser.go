@@ -24,18 +24,25 @@ import (
 )
 
 const (
-	documentSchemaVersion = "1.0.0"
-	schemaResource        = "https://github.com/jctanner/odh.architecture-context/schemas/structured-component-document-v1.schema.json"
-	synthesisListLimit    = 4
+	documentSchemaVersion   = "1.0.0/1.1.0"
+	schemaResource          = "https://github.com/jctanner/odh.architecture-context/schemas/structured-component-document-v1.schema.json"
+	synthesisSchemaResource = "https://github.com/jctanner/odh.architecture-context/schemas/structured-component-synthesis-envelope-v1.schema.json"
+	synthesisListLimit      = 4
 )
 
 //go:embed structured-component-document-v1.schema.json
 var documentSchemaJSON []byte
 
+//go:embed structured-component-synthesis-envelope-v1.schema.json
+var synthesisSchemaJSON []byte
+
 var (
-	compileSchemaOnce sync.Once
-	compiledSchema    *jsonschema.Schema
-	compileSchemaErr  error
+	compileSchemaOnce       sync.Once
+	compiledSchema          *jsonschema.Schema
+	compileSchemaErr        error
+	compileSynthesisOnce    sync.Once
+	compiledSynthesisSchema *jsonschema.Schema
+	compileSynthesisErr     error
 )
 
 type acceptedDocument struct {
@@ -266,7 +273,7 @@ func Parse(fsys fs.FS, path, expectedComponent, expectedVersion string) (*types.
 		return nil, fmt.Errorf("parsing accepted document %s: top-level value must be an object", path)
 	}
 	version, _ := object["schema_version"].(string)
-	if version != documentSchemaVersion {
+	if version != "1.0.0" && version != "1.1.0" {
 		return nil, fmt.Errorf("validating accepted document %s: unsupported schema_version %q (supported: %q)", path, version, documentSchemaVersion)
 	}
 	schema, err := acceptedSchema()
@@ -287,7 +294,65 @@ func Parse(fsys fs.FS, path, expectedComponent, expectedVersion string) (*types.
 	if err != nil {
 		return nil, fmt.Errorf("mapping accepted document %s: %w", path, err)
 	}
+	result.FileName = expectedComponent + ".md"
+	if version == "1.1.0" {
+		componentDir := strings.TrimSuffix(path, "/document.json")
+		versionDir := strings.TrimSuffix(componentDir, "/"+expectedComponent)
+		analyzer, readErr := fs.ReadFile(fsys, componentDir+"/analyzer.json")
+		if readErr != nil {
+			return nil, fmt.Errorf("reading published analyzer for %s: %w", path, readErr)
+		}
+		synthesis, readErr := fs.ReadFile(fsys, componentDir+"/synthesis.json")
+		if readErr != nil {
+			return nil, fmt.Errorf("reading published synthesis for %s: %w", path, readErr)
+		}
+		if err := ValidateSynthesisJSON(synthesis); err != nil {
+			return nil, fmt.Errorf("validating published synthesis schema for %s: %w", path, err)
+		}
+		if err := analyzerdocument.ValidateAuthorityJSON(raw, analyzer, synthesis); err != nil {
+			return nil, fmt.Errorf("validating published authority %s: %w", path, err)
+		}
+		markdownPath := versionDir + "/" + expectedComponent + ".md"
+		markdownData, readErr := fs.ReadFile(fsys, markdownPath)
+		if readErr == nil {
+			if err := analyzerdocument.ValidatePublicationJSON(raw, analyzer, synthesis, markdownData); err != nil {
+				return nil, fmt.Errorf("validating published derivative %s: %w", markdownPath, err)
+			}
+		} else if errors.Is(readErr, fs.ErrNotExist) {
+			result.FileName = ""
+		} else {
+			return nil, fmt.Errorf("reading published derivative %s: %w", markdownPath, readErr)
+		}
+	}
 	return result, nil
+}
+
+// ValidateSynthesisJSON checks the central synthesis-envelope schema embedded
+// in arch-query. Release staging uses the same copy as the query loader.
+func ValidateSynthesisJSON(raw []byte) error {
+	instance, err := decodeJSON(raw)
+	if err != nil {
+		return err
+	}
+	compileSynthesisOnce.Do(func() {
+		schemaValue, decodeErr := decodeJSON(synthesisSchemaJSON)
+		if decodeErr != nil {
+			compileSynthesisErr = decodeErr
+			return
+		}
+		compiler := jsonschema.NewCompiler()
+		compiler.DefaultDraft(jsonschema.Draft2020)
+		compiler.UseRegexpEngine(compileECMARegexp)
+		if addErr := compiler.AddResource(synthesisSchemaResource, schemaValue); addErr != nil {
+			compileSynthesisErr = addErr
+			return
+		}
+		compiledSynthesisSchema, compileSynthesisErr = compiler.Compile(synthesisSchemaResource)
+	})
+	if compileSynthesisErr != nil {
+		return compileSynthesisErr
+	}
+	return compiledSynthesisSchema.Validate(instance)
 }
 
 func acceptedSchema() (*jsonschema.Schema, error) {

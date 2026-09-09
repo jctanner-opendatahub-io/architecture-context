@@ -11,6 +11,7 @@ from types import SimpleNamespace
 import pytest
 from openai_codex import SkillInput, TextInput
 from openai_codex.client import CodexClient
+from openai_codex.errors import map_jsonrpc_error
 from openai_codex.generated import v2_all as codex_types
 from openai_codex.generated.v2_all import ThreadStartParams, TurnStatus
 from openai_codex.models import Notification, UnknownNotification
@@ -37,6 +38,8 @@ def _install_structured_transport_stub(
     model_provider: str = "openai",
     reasoning_effort: str = "high",
     service_tier: str | None = None,
+    rpc_error: BaseException | None = None,
+    error_stage: str | None = None,
 ) -> None:
     """Install a protocol-level stub before AsyncCodex can construct transport."""
 
@@ -46,6 +49,9 @@ def _install_structured_transport_stub(
 
         async def turn(self, _input, **kwargs):
             captured["turn"] = kwargs
+            if error_stage == "turn/start":
+                assert rpc_error is not None
+                raise rpc_error
             return turn
 
     class FakeProtocol:
@@ -55,6 +61,9 @@ def _install_structured_transport_stub(
                 "params": params,
                 "response_model": response_model,
             }
+            if error_stage == "config/read":
+                assert rpc_error is not None
+                raise rpc_error
             return SimpleNamespace(config={
                 "model": resolved_model,
                 "model_provider": model_provider,
@@ -64,6 +73,9 @@ def _install_structured_transport_stub(
 
         async def thread_start(self, params):
             captured["params"] = params
+            if error_stage == "thread/start":
+                assert rpc_error is not None
+                raise rpc_error
             return SimpleNamespace(
                 thread=SimpleNamespace(id="thread-structured-stub"),
                 model=resolved_model,
@@ -1089,6 +1101,146 @@ async def test_codex_failed_turn_retains_structured_provider_events_and_quota_co
     assert result["rate_limit_denied"] is denied
     assert result["provider_error"]["error"]["code"] == code
     assert result["provider_error"]["provider_events"][0]["method"] == "error"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stage", ["config/read", "thread/start", "turn/start"])
+@pytest.mark.parametrize(
+    ("rpc_data", "denied"),
+    [
+        pytest.param(
+            {
+                "codexErrorInfo": "usageLimitExceeded",
+                "access_token": "test-secret-must-not-persist",
+            },
+            True,
+            id="known-codex-error-info",
+        ),
+        pytest.param(
+            {"errorInfo": "workspaceMemberUsageLimitReached"},
+            True,
+            id="sdk-error-info",
+        ),
+        pytest.param(
+            "workspace_owner_usage_limit_reached",
+            True,
+            id="sdk-bare-data",
+        ),
+        pytest.param(
+            {"codexErrorInfo": {"reason": "rate_limit_error"}},
+            True,
+            id="sdk-nested-info-value",
+        ),
+        pytest.param(
+            {"codex_error_info": {"reason": "sessionBudgetExceeded"}},
+            True,
+            id="snake-nested-info-value",
+        ),
+        pytest.param(
+            {"codexErrorInfo": "internalServerError"},
+            False,
+            id="ordinary-server-error",
+        ),
+        pytest.param(
+            {"errorInfo": "unauthorized"},
+            False,
+            id="ordinary-auth-error",
+        ),
+        pytest.param(
+            {"codex_error_info": "badRequest"},
+            False,
+            id="ordinary-config-error",
+        ),
+        pytest.param(
+            "usage limit exceeded",
+            False,
+            id="bare-prose-is-not-code",
+        ),
+    ],
+)
+async def test_codex_rpc_exceptions_preserve_safe_structure_at_each_sdk_hop(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    stage: str,
+    rpc_data: object,
+    denied: bool,
+):
+    rpc_error = map_jsonrpc_error(
+        -32000,
+        "usage limit words alone are not authoritative",
+        rpc_data,
+    )
+    captured = {}
+    _install_structured_transport_stub(
+        monkeypatch,
+        object(),
+        captured,
+        rpc_error=rpc_error,
+        error_stage=stage,
+    )
+
+    result = await codex_agent.run_codex_agent(
+        name="rpc-error",
+        cwd=str(tmp_path),
+        prompt="must not complete",
+        log_dir=tmp_path / "logs",
+        model="gpt-5.6-sol",
+        enable_skills=False,
+        progress=None,
+        strace_dir=None,
+        tool_free=True,
+        response_schema={"type": "object"},
+    )
+
+    assert result["success"] is False
+    assert result["rate_limit_denied"] is denied
+    expected_data = copy.deepcopy(rpc_data)
+    if isinstance(expected_data, dict) and "access_token" in expected_data:
+        expected_data["access_token"] = "[REDACTED]"
+    assert result["provider_error"] == {
+        "kind": "codex-rpc-error",
+        "error_type": "CodexRpcError",
+        "code": -32000,
+        "message": "usage limit words alone are not authoritative",
+        "data": expected_data,
+    }
+    assert "test-secret-must-not-persist" not in Path(result["log_file"]).read_text()
+    assert ("turn" in captured) is (stage == "turn/start")
+
+
+@pytest.mark.asyncio
+async def test_codex_http_429_exception_is_structured_without_message_inference(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    class HTTP429Error(RuntimeError):
+        status_code = 429
+
+    captured = {}
+    _install_structured_transport_stub(
+        monkeypatch,
+        object(),
+        captured,
+        rpc_error=HTTP429Error("ordinary transport wording"),
+        error_stage="thread/start",
+    )
+
+    result = await codex_agent.run_codex_agent(
+        name="http-429",
+        cwd=str(tmp_path),
+        prompt="must not turn",
+        log_dir=tmp_path / "logs",
+        model="gpt-5.6-sol",
+        enable_skills=False,
+        progress=None,
+        strace_dir=None,
+        tool_free=True,
+        response_schema={"type": "object"},
+    )
+
+    assert result["rate_limit_denied"] is True
+    assert result["provider_error"]["status_code"] == 429
+    assert result["provider_error"]["message"] == "ordinary transport wording"
 
 
 def _event(method, payload):

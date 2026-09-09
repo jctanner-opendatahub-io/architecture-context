@@ -3,6 +3,7 @@ package gosource
 import (
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 )
 
@@ -33,6 +34,38 @@ func main() { _ = &tls.Config{} }
 	}
 	if !found {
 		t.Error("expected tls-config security evidence from crypto/tls import")
+	}
+}
+
+func TestSecurityEvidenceMultipleImportsHaveCanonicalOrder(t *testing.T) {
+	root := writeSecurityRepository(t, `package main
+
+import (
+	"k8s.io/client-go/kubernetes/typed/authorization/v1"
+	"k8s.io/apiserver/pkg/authorization/authorizer"
+)
+
+func main() {
+	_ = v1.AuthorizationV1Interface(nil)
+	_ = authorizer.DecisionAllow
+}
+`)
+	result, err := Extract(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var targets []string
+	for _, evidence := range result.SecurityEvidence {
+		if evidence.Kind == "rbac-ref" && evidence.Status == "dependency-signal" {
+			targets = append(targets, evidence.Target)
+		}
+	}
+	want := []string{
+		"k8s.io/apiserver/pkg/authorization/authorizer",
+		"k8s.io/client-go/kubernetes/typed/authorization/v1",
+	}
+	if !reflect.DeepEqual(targets, want) {
+		t.Fatalf("RBAC import targets = %#v, want %#v", targets, want)
 	}
 }
 

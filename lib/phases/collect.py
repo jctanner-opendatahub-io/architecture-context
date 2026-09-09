@@ -11,7 +11,12 @@ from lib.component_discovery import (
     get_component_map_metadata,
     read_component_map,
 )
-from lib.fetch import load_platform_config
+from lib.fetch import _ensure_arch_analyzer, load_platform_config
+from lib.structured_component_publication import (
+    accepted_publications,
+    has_publication_state,
+)
+from lib.structured_component_synthesis import GoStructuredAssembler
 
 
 def _discover_platform_maps(architecture_dir: Path) -> list[tuple[str, Path]]:
@@ -117,11 +122,26 @@ async def run_collect_architectures_phase(args) -> None:
                 components, platform_config, checkouts_base="checkouts",
             )
 
+        output_dir = architecture_dir / platform_key
+        accepted = {}
+        if has_publication_state(output_dir):
+            analyzer = await _ensure_arch_analyzer()
+            accepted = accepted_publications(
+                output_dir,
+                GoStructuredAssembler(
+                    (analyzer,),
+                    Path(__file__).resolve().parents[2] / "src/arch-analyzer",
+                ),
+                repair_markdown=True,
+            )
+
         # Find components with architecture files
         # Check both canonical and legacy filenames
         arch_filenames = ["GENERATED_ARCHITECTURE.md", "ARCHITECTURE_SUMMARY.md"]
         found = []
         for key, comp in sorted(components.items()):
+            if key in accepted:
+                continue
             if not comp.checkout_path:
                 continue
             for fname in arch_filenames:
@@ -130,7 +150,7 @@ async def run_collect_architectures_phase(args) -> None:
                     found.append((key, arch_file))
                     break
 
-        if not found:
+        if not found and not accepted:
             print("  No GENERATED_ARCHITECTURE.md files found")
             print(
             "  Run: uv run main.py generate-architecture"
@@ -138,13 +158,15 @@ async def run_collect_architectures_phase(args) -> None:
         )
             continue
 
-        print(f"  Found {len(found)} architecture file(s)")
+        print(
+            f"  Found {len(found) + len(accepted)} architecture file(s) "
+            f"({len(accepted)} accepted structured snapshot(s))"
+        )
 
         # Collect into the same directory as the component-map
-        output_dir = architecture_dir / platform_key
 
         # Copy files
-        collected_names = []
+        collected_names = sorted(accepted)
         for comp_key, arch_file in found:
             target = output_dir / f"{comp_key}.md"
             shutil.copy2(arch_file, target)

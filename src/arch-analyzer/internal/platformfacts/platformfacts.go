@@ -152,11 +152,18 @@ func Extract(root string, input model.Input) Result {
 	result.Integrations = append(result.Integrations, runtimeClientIntegrationFacts(input.RuntimeClients)...)
 	result.Internal = append(result.Internal, runtimeModuleInternalDependencies(input.RuntimeModuleUses)...)
 	result.Internal = append(result.Internal, grpcServiceInternalDependencies(input.GRPCServices)...)
-	for identity, source := range roleResourceSources(input.RBAC) {
+	resourceSources := roleResourceSources(input.RBAC)
+	resourceIdentities := make([]string, 0, len(resourceSources))
+	for identity := range resourceSources {
+		resourceIdentities = append(resourceIdentities, identity)
+	}
+	sort.Strings(resourceIdentities)
+	for _, identity := range resourceIdentities {
 		fact, exists := resourceKinds[identity]
 		if !exists {
 			continue
 		}
+		source := resourceSources[identity]
 		result.Integrations = append(result.Integrations, model.IntegrationFact{
 			Component: fact.IntegrationName, InteractionType: fact.IntegrationType,
 			Port: 6443, Protocol: "HTTPS", Encryption: "TLS 1.2+",
@@ -2138,7 +2145,13 @@ func openshiftIntegrations(groups map[string]string) []model.IntegrationFact {
 		"image.openshift.io":   {Component: "OpenShift Image Streams", InteractionType: "REST", Port: 6443, Protocol: "HTTPS", Encryption: "TLS 1.2+", Purpose: "Image stream access"},
 	}
 	var result []model.IntegrationFact
-	for group, fact := range mappings {
+	groupNames := make([]string, 0, len(mappings))
+	for group := range mappings {
+		groupNames = append(groupNames, group)
+	}
+	sort.Strings(groupNames)
+	for _, group := range groupNames {
+		fact := mappings[group]
 		if source := groups[group]; source != "" {
 			fact.Source = source
 			result = append(result, fact)

@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	DocumentSchemaVersion = "1.0.0"
-	PatchSchemaVersion    = "1.0.0"
-	PolicySchemaVersion   = "1.0.0"
-	NormalizerVersion     = "structured-component-normalizer/v1"
-	RendererVersion       = "arch-analyzer-markdown/v1"
+	DocumentSchemaVersion          = "1.0.0"
+	PublishedDocumentSchemaVersion = "1.1.0"
+	PatchSchemaVersion             = "1.0.0"
+	PolicySchemaVersion            = "1.0.0"
+	NormalizerVersion              = "structured-component-normalizer/v1"
+	RendererVersion                = "arch-analyzer-markdown/v1"
 )
 
 type Document struct {
@@ -30,7 +31,62 @@ type Document struct {
 	Dispositions    []ProposalDisposition     `json:"proposal_dispositions"`
 	Uncertainty     []Uncertainty             `json:"uncertainty"`
 	Reuse           *ReuseRecord              `json:"reuse,omitempty"`
+	Publication     *Publication              `json:"publication,omitempty"`
 	RenderingView   model.Document            `json:"rendering_view"`
+}
+
+// Publication is trusted parent-produced binding and recovery provenance.  It
+// intentionally does not contain a document or Markdown hash: the exact
+// document bytes are the authority identity and the Markdown derivative names
+// those bytes, avoiding a circular hash relationship.
+type Publication struct {
+	Contract       string                  `json:"contract"`
+	SnapshotID     string                  `json:"snapshot_id"`
+	Analyzer       PublishedAnalyzer       `json:"analyzer"`
+	Synthesis      PublishedSynthesis      `json:"synthesis"`
+	AcceptedInputs PublishedAcceptedInputs `json:"accepted_inputs"`
+	Markdown       PublishedMarkdown       `json:"markdown"`
+	Diagram        PublishedDiagram        `json:"diagram"`
+}
+
+type PublishedAnalyzer struct {
+	ContentHash           string `json:"content_hash"`
+	BundleFingerprint     string `json:"bundle_fingerprint"`
+	SchemaVersion         string `json:"schema_version"`
+	SourceComponent       string `json:"source_component"`
+	Repository            string `json:"repository"`
+	SourceRevision        string `json:"source_revision"`
+	AnalyzerVersion       string `json:"analyzer_version"`
+	ProducerBuildIdentity string `json:"producer_build_identity"`
+}
+
+type PublishedSynthesis struct {
+	ContentHash                    string `json:"content_hash"`
+	State                          string `json:"state"`
+	InputBundleIdentity            string `json:"input_bundle_identity"`
+	CurrentEvidenceBundleIdentity  string `json:"current_evidence_bundle_identity"`
+	OriginalEvidenceBundleIdentity string `json:"original_evidence_bundle_identity"`
+	AcceptedResponseIdentity       string `json:"accepted_response_identity,omitempty"`
+	ProducingModelEligible         bool   `json:"producing_model_eligible"`
+}
+
+// PublishedAcceptedInputs retains the complete private acceptance record and
+// both evidence bundles needed to audit and reuse a snapshot after disposable
+// logs and private staging have been removed.
+type PublishedAcceptedInputs struct {
+	RunRecord              json.RawMessage `json:"run_record"`
+	CurrentEvidenceBundle  json.RawMessage `json:"current_evidence_bundle"`
+	OriginalEvidenceBundle json.RawMessage `json:"original_evidence_bundle"`
+}
+
+type PublishedMarkdown struct {
+	Path            string `json:"path"`
+	RendererVersion string `json:"renderer_version"`
+}
+
+type PublishedDiagram struct {
+	State             string `json:"state"`
+	GeneratorIdentity string `json:"generator_identity,omitempty"`
 }
 
 // ReuseRecord is trusted parent-produced provenance for a verified

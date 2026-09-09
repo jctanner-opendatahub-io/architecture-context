@@ -2,7 +2,7 @@
 
 Status: complete 2026-09-08 — bounded cleanup and local checks only; independent phase approval remains pending.
 
-Follow the [parent task](../current/implement-structured-component-assembly.md) and
+Follow the [parent task](../done/implement-structured-component-assembly.md) and
 [implementation framework](../../notes/implementation-framework.md). Bring forward
 independent P5 cleanup and verification; do not approve P3 or start dependent
 publication changes. Claude review remains pending. Stop on a new actual rate

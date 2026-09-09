@@ -288,6 +288,11 @@ func crossCuttingEvidence(input model.Input) map[string][]model.CrossCuttingEvid
 }
 
 func dedupeSecurityEvidence(records []model.SecurityEvidence) []model.SecurityEvidence {
+	sort.SliceStable(records, func(i, j int) bool {
+		left, right := records[i], records[j]
+		return strings.Join([]string{left.Kind, left.Target, left.Detail, left.Status, left.Source}, "\x00") <
+			strings.Join([]string{right.Kind, right.Target, right.Detail, right.Status, right.Source}, "\x00")
+	})
 	result := make([]model.SecurityEvidence, 0, len(records))
 	indexes := map[string]int{}
 	for _, record := range records {
@@ -300,6 +305,9 @@ func dedupeSecurityEvidence(records []model.SecurityEvidence) []model.SecurityEv
 		record.Sources = uniqueStrings(append(record.Sources, record.Source))
 		result = append(result, record)
 		indexes[key] = len(result) - 1
+	}
+	for index := range result {
+		result[index].Sources = uniqueStrings(result[index].Sources)
 	}
 	return result
 }
@@ -472,10 +480,24 @@ func gapEvidenceIndex(input model.Input) map[string][]model.GapEvidenceCandidate
 	}
 	for category, candidates := range result {
 		sort.Slice(candidates, func(i, j int) bool {
-			if candidates[i].Source != candidates[j].Source {
-				return candidates[i].Source < candidates[j].Source
-			}
-			return candidates[i].Question < candidates[j].Question
+			left, right := candidates[i], candidates[j]
+			return strings.Join([]string{
+				left.Source,
+				left.LineRange,
+				left.Question,
+				left.ExpectedSignal,
+				left.Status,
+				strings.Join(left.Symbols, "\x00"),
+				strings.Join(left.Limitations, "\x00"),
+			}, "\x00") < strings.Join([]string{
+				right.Source,
+				right.LineRange,
+				right.Question,
+				right.ExpectedSignal,
+				right.Status,
+				strings.Join(right.Symbols, "\x00"),
+				strings.Join(right.Limitations, "\x00"),
+			}, "\x00")
 		})
 		result[category] = candidates
 	}

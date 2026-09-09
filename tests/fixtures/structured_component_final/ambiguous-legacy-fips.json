@@ -1,0 +1,11 @@
+{
+  "component": "fixture",
+  "cross_cutting_evidence": {
+    "fips": [
+      {
+        "claim": "FIPS signal without an explicit status",
+        "sources": []
+      }
+    ]
+  }
+}

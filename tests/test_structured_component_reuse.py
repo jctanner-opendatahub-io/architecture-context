@@ -521,6 +521,101 @@ def test_unchanged_source_is_zero_call_hit(tmp_path, accepted_document):
         target.inputs.semantic_payload["settings"] = "mutated"
 
 
+def test_repeated_real_extraction_is_zero_extra_synthesis_calls(
+    tmp_path: Path, accepted_document: dict
+) -> None:
+    root = _repository(tmp_path)
+    (root / "source.go").write_text(
+        """package source
+
+import (
+    "crypto/tls"
+    "k8s.io/apiserver/pkg/authorization/authorizer"
+)
+
+var _ = tls.VersionTLS13
+var _ = authorizer.DecisionAllow
+"""
+    )
+    (root / "pyproject.toml").write_text(
+        """[project]
+name = "ordering-fixture"
+version = "1"
+[project.scripts]
+z-worker = "fixture:worker"
+a-api = "fixture:api"
+"""
+    )
+    _git(root, "add", "source.go", "pyproject.toml")
+    _git(root, "commit", "-qm", "add unordered producer inputs")
+
+    extracted = []
+    for index in range(2):
+        output = tmp_path / f"real-extraction-{index}.json"
+        subprocess.run(
+            [
+                "go",
+                "run",
+                ".",
+                "extract",
+                str(root),
+                "--output",
+                str(output),
+            ],
+            cwd=ROOT / "src" / "arch-analyzer",
+            env={**os.environ, "GOCACHE": "/tmp/structured-component-go-cache"},
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        extracted.append(json.loads(output.read_text()))
+
+    for field in (
+        "security_evidence",
+        "entrypoints",
+        "integration_points",
+        "gap_evidence_index",
+    ):
+        assert extracted[0].get(field) == extracted[1].get(field)
+
+    prior_analyzer = _analyzer(root)
+    target_analyzer = copy.deepcopy(prior_analyzer)
+    for field in (
+        "security_evidence",
+        "entrypoints",
+        "integration_points",
+        "gap_evidence_index",
+    ):
+        prior_analyzer[field] = extracted[0].get(field)
+        target_analyzer[field] = extracted[1].get(field)
+
+    prior, target = _snapshot_and_target(
+        root, accepted_document, analyzer=prior_analyzer
+    )
+    dependencies = prior.dependencies
+    inputs = _inputs(root, dependencies, analyzer=target_analyzer)
+    target = replace(
+        target,
+        inputs=inputs,
+        normalization=_target_normalization_from_prior(
+            prior,
+            platform=target.platform,
+            source_state=target.source_state,
+            analyzer=target_analyzer,
+        ),
+    )
+    synthesis_calls = []
+    result = resolve_or_synthesize(
+        prior,
+        target,
+        revalidate=_valid_revalidation,
+        synthesize=lambda item: synthesis_calls.append(item),
+    )
+
+    assert result.reused is True
+    assert synthesis_calls == []
+
+
 @pytest.mark.parametrize(
     ("mutation", "reason"),
     [
@@ -557,7 +652,10 @@ def test_unchanged_source_is_zero_call_hit(tmp_path, accepted_document):
     ],
 )
 def test_reuse_decision_rejects_producing_envelope_tampering(
-    tmp_path, accepted_document, mutation, reason,
+    tmp_path,
+    accepted_document,
+    mutation,
+    reason,
 ):
     root = _repository(tmp_path)
     prior, target = _snapshot_and_target(root, accepted_document)
@@ -576,9 +674,7 @@ def test_reuse_decision_rejects_producing_envelope_tampering(
     assert reason in decision.reasons
 
 
-def test_missing_target_normalization_is_one_explicit_miss(
-    tmp_path, accepted_document
-):
+def test_missing_target_normalization_is_one_explicit_miss(tmp_path, accepted_document):
     root = _repository(tmp_path)
     prior, target = _snapshot_and_target(root, accepted_document)
     target = replace(target, normalization=None)
@@ -678,12 +774,10 @@ def test_actual_go_validator_cannot_authorize_changed_or_invalid_returned_model(
         synthesize=lambda item: arbitrary_calls.append(item) or {"fresh": True},
     )
     assert arbitrary.reused is False
-    assert arbitrary.decision.reasons == (
+    assert arbitrary.decision.reasons == ("target_normalization_content_mismatch",)
+    assert arbitrary.decision.comparison["target_normalization_content_errors"] == (
         "target_normalization_content_mismatch",
     )
-    assert arbitrary.decision.comparison[
-        "target_normalization_content_errors"
-    ] == ("target_normalization_content_mismatch",)
     assert arbitrary_calls == [arbitrary_target]
 
 
@@ -1186,9 +1280,7 @@ def test_codex_telemetry_dependency_decision_defaults_unknown_to_miss_and_rg_hit
     tmp_path, accepted_document
 ):
     root = _repository(tmp_path)
-    command = (
-        "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
-    )
+    command = "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
     direct_rg = _rg_item(root, command, identifier="direct-rg")
     telemetry = codex_agent._source_read_telemetry([direct_rg], root)
     dependencies = _search_dependencies(root, telemetry)
@@ -1212,9 +1304,9 @@ def test_codex_telemetry_dependency_decision_defaults_unknown_to_miss_and_rg_hit
     )
     assert dependencies.searches[0].replay_result_identity
     assert dependencies.searches[0].replay_context_identity
-    assert "observed_result_identity" not in dependencies.reusable_payload()[
-        "searches"
-    ][0]
+    assert (
+        "observed_result_identity" not in dependencies.reusable_payload()["searches"][0]
+    )
 
     synthesis_calls = []
     result = resolve_or_synthesize(
@@ -1257,30 +1349,88 @@ def test_codex_telemetry_dependency_decision_defaults_unknown_to_miss_and_rg_hit
 @pytest.mark.parametrize(
     ("mutation", "value"),
     [
-        ("argv", [
-            "--no-config", "--no-ignore-global", "--color", "never",
-            "--sort", "path", "--pre", "/tmp/not-allowed", "Enabled", ".",
-        ]),
-        ("argv", [
-            "--no-config", "--no-ignore-global", "--color", "never",
-            "--sort", "path", "-f", "/etc/hostname", ".",
-        ]),
-        ("argv", [
-            "--no-config", "--no-ignore-global", "--color", "never",
-            "--sort", "path", "Enabled", "/etc/passwd",
-        ]),
-        ("argv", [
-            "--no-ignore-global", "--color", "never", "--sort", "path",
-            "Enabled", ".",
-        ]),
-        ("argv", [
-            "--no-config", "--no-ignore-global", "--color", "never",
-            "--sort", "path", "--hidden", "Enabled", ".",
-        ]),
-        ("argv", [
-            "--no-config", "--no-ignore-global", "--color", "never",
-            "--sort", "path", "Enabled", ".", "&",
-        ]),
+        (
+            "argv",
+            [
+                "--no-config",
+                "--no-ignore-global",
+                "--color",
+                "never",
+                "--sort",
+                "path",
+                "--pre",
+                "/tmp/not-allowed",
+                "Enabled",
+                ".",
+            ],
+        ),
+        (
+            "argv",
+            [
+                "--no-config",
+                "--no-ignore-global",
+                "--color",
+                "never",
+                "--sort",
+                "path",
+                "-f",
+                "/etc/hostname",
+                ".",
+            ],
+        ),
+        (
+            "argv",
+            [
+                "--no-config",
+                "--no-ignore-global",
+                "--color",
+                "never",
+                "--sort",
+                "path",
+                "Enabled",
+                "/etc/passwd",
+            ],
+        ),
+        (
+            "argv",
+            [
+                "--no-ignore-global",
+                "--color",
+                "never",
+                "--sort",
+                "path",
+                "Enabled",
+                ".",
+            ],
+        ),
+        (
+            "argv",
+            [
+                "--no-config",
+                "--no-ignore-global",
+                "--color",
+                "never",
+                "--sort",
+                "path",
+                "--hidden",
+                "Enabled",
+                ".",
+            ],
+        ),
+        (
+            "argv",
+            [
+                "--no-config",
+                "--no-ignore-global",
+                "--color",
+                "never",
+                "--sort",
+                "path",
+                "Enabled",
+                ".",
+                "&",
+            ],
+        ),
         ("pattern", "Different"),
         ("resolved_root", "/etc"),
         ("execution_cwd", "/etc"),
@@ -1291,9 +1441,7 @@ def test_persisted_rg_replay_rejects_unbound_or_unsafe_argv_before_execution(
     tmp_path, monkeypatch, replay_mode, mutation, value
 ):
     root = _repository(tmp_path)
-    command = (
-        "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
-    )
+    command = "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
     telemetry = codex_agent._source_read_telemetry([_rg_item(root, command)], root)
     observed = copy.deepcopy(telemetry["dependency_observations"]["searches"][0])
     marker = tmp_path / "unsafe-replay-executed"
@@ -1301,9 +1449,7 @@ def test_persisted_rg_replay_rejects_unbound_or_unsafe_argv_before_execution(
         argv = list(value)
         if "--pre" in argv:
             preprocessor = tmp_path / "unsafe-preprocessor.sh"
-            preprocessor.write_text(
-                f"#!/bin/sh\ntouch {marker}\ncat \"$1\"\n"
-            )
+            preprocessor.write_text(f'#!/bin/sh\ntouch {marker}\ncat "$1"\n')
             preprocessor.chmod(0o755)
             argv[argv.index("--pre") + 1] = str(preprocessor)
         observed["options"]["argv"] = argv
@@ -1391,13 +1537,9 @@ async def test_claude_unknown_tools_flow_to_dependency_decision_and_denials_do_n
         {},
     )
     assert permitted == {}
-    permitted_observation = permitted_unhandled.telemetry()[
-        "dependency_observations"
-    ]
+    permitted_observation = permitted_unhandled.telemetry()["dependency_observations"]
     assert permitted_observation["complete"] is False
-    assert permitted_observation["unclassified_source_commands"] == [
-        "NotebookRead"
-    ]
+    assert permitted_observation["unclassified_source_commands"] == ["NotebookRead"]
 
     restricted = agent_runner._AgentExecutionGuard(
         {"route": "partial", "readiness": "partial"},
@@ -1631,18 +1773,14 @@ def test_parent_gitignore_change_updates_verified_search_and_misses_end_to_end(
         justifications={},
     )
     unsafe_target = _target_with_dependencies(prior, root, unsafe_dependencies)
-    assert "dependency_record_incomplete" in decide_reuse(
-        prior, unsafe_target
-    ).reasons
+    assert "dependency_record_incomplete" in decide_reuse(prior, unsafe_target).reasons
 
 
 def test_created_and_deleted_local_ignore_config_is_verified_by_replay(
     tmp_path, accepted_document
 ):
     root = _repository(tmp_path)
-    command = (
-        "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
-    )
+    command = "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
     telemetry = codex_agent._source_read_telemetry([_rg_item(root, command)], root)
     prior_dependencies = _search_dependencies(root, telemetry)
     prior, _ = _snapshot_and_target(
@@ -1657,9 +1795,7 @@ def test_created_and_deleted_local_ignore_config_is_verified_by_replay(
     assert created.searches[0].replay_result_identity != (
         prior_dependencies.searches[0].replay_result_identity
     )
-    assert "semantic_input_mismatch" in decide_reuse(
-        prior, created_target
-    ).reasons
+    assert "semantic_input_mismatch" in decide_reuse(prior, created_target).reasons
 
     _git(root, "rm", "-q", ".ignore")
     _git(root, "commit", "-qm", "delete local ripgrep ignore")
@@ -1687,8 +1823,7 @@ def test_include_glob_and_explicit_ignored_file_root_have_verified_hits(
     _git(root, "add", ".gitignore")
     _git(root, "commit", "-qm", "ignore tracked source")
     command = (
-        "rg --no-config --no-ignore-global --color never --sort path "
-        + search_tail
+        "rg --no-config --no-ignore-global --color never --sort path " + search_tail
     )
     item = _rg_item(root, command)
     assert item["exit_code"] == 0
@@ -1713,16 +1848,12 @@ def test_external_ripgrep_config_is_disabled_or_search_is_unavailable(
     execution_env = os.environ.copy()
     execution_env[config_variable] = str(external_config)
     monkeypatch.setenv(config_variable, str(external_config))
-    command = (
-        "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
-    )
+    command = "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
     item = _rg_item(root, command, env=execution_env)
     assert "source.go" in item["aggregated_output"]
     telemetry = codex_agent._source_read_telemetry([item], root)
     dependencies = _search_dependencies(root, telemetry)
-    prior, _ = _snapshot_and_target(
-        root, accepted_document, dependencies=dependencies
-    )
+    prior, _ = _snapshot_and_target(root, accepted_document, dependencies=dependencies)
 
     external_config.unlink()
     target_dependencies = _search_dependencies(
@@ -1750,15 +1881,11 @@ def test_global_ignore_configuration_is_explicitly_disabled(
     global_ignore = tmp_path / "global-ignore"
     global_ignore.write_text("source.go\n")
     global_config = tmp_path / "gitconfig"
-    global_config.write_text(
-        f"[core]\n\texcludesFile = {global_ignore.as_posix()}\n"
-    )
+    global_config.write_text(f"[core]\n\texcludesFile = {global_ignore.as_posix()}\n")
     execution_env = os.environ.copy()
     execution_env["GIT_CONFIG_GLOBAL"] = str(global_config)
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(global_config))
-    command = (
-        "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
-    )
+    command = "rg --no-config --no-ignore-global --color never --sort path -n Enabled ."
     item = _rg_item(root, command, env=execution_env)
     assert "source.go" in item["aggregated_output"]
     telemetry = codex_agent._source_read_telemetry([item], root)
@@ -2006,9 +2133,10 @@ def test_rejected_legacy_refresh_integrity_and_invalid_output_take_one_miss_path
 
     tampered_inputs = replace(prior.inputs, semantic="sha256:tampered")
     tampered_target = replace(target, inputs=tampered_inputs)
-    assert "target_semantic_identity_integrity_mismatch" in decide_reuse(
-        prior, tampered_target
-    ).reasons
+    assert (
+        "target_semantic_identity_integrity_mismatch"
+        in decide_reuse(prior, tampered_target).reasons
+    )
 
 
 def test_recent_changes_refresh_original_response_and_renderer_only_rerender(
@@ -2085,15 +2213,12 @@ def test_recent_changes_refresh_original_response_and_renderer_only_rerender(
     assert result.provenance["predecessor_document_integrity"] == (
         prior.document_integrity
     )
-    assert result.provenance["target_document_integrity"] == content_hash(
-        result.output
-    )
+    assert result.provenance["target_document_integrity"] == content_hash(result.output)
     assert result.output == refreshed_document
     assert result.output["identity"]["version_scope"] == "rhoai-target"
     assert result.output["identity"]["source_revision"] == analyzer["commit_sha"]
-    assert result.output["analyzer_input"]["bundle_fingerprint"] == (
-        target.inputs.analyzer_binding["bundle_fingerprint"]
+    assert (
+        result.output["analyzer_input"]["bundle_fingerprint"]
+        == (target.inputs.analyzer_binding["bundle_fingerprint"])
     )
-    assert result.output["analyzer_input"]["extracted_at"] == (
-        analyzer["extracted_at"]
-    )
+    assert result.output["analyzer_input"]["extracted_at"] == (analyzer["extracted_at"])

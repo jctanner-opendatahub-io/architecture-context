@@ -10,12 +10,20 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	analyzerdocument "github.com/jctanner/arch-analyzer/pkg/document"
+	"github.com/jctanner/arch-query/internal/documentdata"
 )
 
 var acceptedArtifactNames = map[string]bool{
 	"analyzer.json":  true,
 	"document.json":  true,
 	"synthesis.json": true,
+}
+
+var nonComponentDirectories = map[string]bool{
+	"diagrams": true, "logs": true, "metadata": true, "overlays": true,
+	"prompts": true, "run-metadata": true, "runs": true,
 }
 
 // Stage copies queryable legacy and accepted architecture artifacts. The
@@ -83,9 +91,68 @@ func stageVersion(source, destination string) error {
 			}
 			continue
 		}
+		if nonComponentDirectories[entry.Name()] || strings.HasPrefix(entry.Name(), ".") {
+			continue
+		}
+		if err := validateComponentSnapshot(source, from, entry.Name()); err != nil {
+			return err
+		}
 		if err := stageComponent(from, to); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func validateComponentSnapshot(versionSource, componentSource, component string) error {
+	documentPath := filepath.Join(componentSource, "document.json")
+	document, err := os.ReadFile(documentPath)
+	if os.IsNotExist(err) {
+		entries, readErr := os.ReadDir(componentSource)
+		if readErr != nil {
+			return fmt.Errorf("inspect component %s publication state: %w", component, readErr)
+		}
+		for _, entry := range entries {
+			name := entry.Name()
+			if acceptedArtifactNames[name] || strings.HasPrefix(name, ".analyzer.json.") ||
+				strings.HasPrefix(name, ".synthesis.json.") || strings.HasPrefix(name, ".document.json.") {
+				return fmt.Errorf("component %s has accepted artifact %s without document.json", component, name)
+			}
+		}
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("read accepted document for %s: %w", component, err)
+	}
+	if err := analyzerdocument.ValidateJSON(document); err != nil {
+		return fmt.Errorf("validate accepted document for %s: %w", component, err)
+	}
+	var header struct {
+		SchemaVersion string `json:"schema_version"`
+	}
+	if err := json.Unmarshal(document, &header); err != nil {
+		return fmt.Errorf("decode accepted document version for %s: %w", component, err)
+	}
+	if header.SchemaVersion != "1.1.0" {
+		return nil
+	}
+	analyzer, err := os.ReadFile(filepath.Join(componentSource, "analyzer.json"))
+	if err != nil {
+		return fmt.Errorf("read published analyzer for %s: %w", component, err)
+	}
+	synthesis, err := os.ReadFile(filepath.Join(componentSource, "synthesis.json"))
+	if err != nil {
+		return fmt.Errorf("read published synthesis for %s: %w", component, err)
+	}
+	if err := documentdata.ValidateSynthesisJSON(synthesis); err != nil {
+		return fmt.Errorf("validate published synthesis for %s: %w", component, err)
+	}
+	markdown, err := os.ReadFile(filepath.Join(versionSource, component+".md"))
+	if err != nil {
+		return fmt.Errorf("read published Markdown for %s: %w", component, err)
+	}
+	if err := analyzerdocument.ValidatePublicationJSON(document, analyzer, synthesis, markdown); err != nil {
+		return fmt.Errorf("validate complete published snapshot for %s: %w", component, err)
 	}
 	return nil
 }

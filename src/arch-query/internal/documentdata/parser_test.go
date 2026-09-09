@@ -28,6 +28,20 @@ func TestEmbeddedSchemaMatchesAcceptedContract(t *testing.T) {
 	}
 }
 
+func TestEmbeddedSynthesisSchemaMatchesAcceptedContract(t *testing.T) {
+	want, err := os.ReadFile("../../../../schemas/structured-component-synthesis-envelope-v1.schema.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile("structured-component-synthesis-envelope-v1.schema.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatal("embedded synthesis schema differs from the central contract")
+	}
+}
+
 func TestAcceptedFixturesPassSharedValidation(t *testing.T) {
 	for _, path := range []string{
 		"testdata/rejected-document.json",
@@ -123,6 +137,32 @@ func TestParseAcceptedDocumentMatchesRenderedMarkdownTypedProjection(t *testing.
 	}
 	if len(accepted.SourceCitations) == 0 || accepted.SourceCitations[0].Revision != "0123456789abcdef" {
 		t.Fatalf("revision-bound citations missing: %#v", accepted.SourceCitations)
+	}
+}
+
+func TestPurposeProjectionTracksCurrentProducerRenderer(t *testing.T) {
+	raw, err := os.ReadFile("testdata/rhoai.next/praxis-policy/document.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	rendered, err := analyzerdocument.RenderBodyJSON(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fsys := fstest.MapFS{
+		"document.json": {Data: raw},
+		"rendered.md":   {Data: rendered},
+	}
+	accepted, err := documentdata.Parse(fsys, "document.json", "praxis-policy", "rhoai.next")
+	if err != nil {
+		t.Fatal(err)
+	}
+	current, err := markdown.ParseComponentDoc(fsys, "rendered.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if accepted.Purpose != current.Purpose || accepted.PurposeFull != current.PurposeFull {
+		t.Fatalf("query purpose projection drifted from current producer renderer\naccepted: %q / %q\nrenderer: %q / %q", accepted.Purpose, accepted.PurposeFull, current.Purpose, current.PurposeFull)
 	}
 }
 

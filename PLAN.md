@@ -18,9 +18,11 @@ The next focused milestone is the
 
 ## Active Tasks
 
-- [Prepare Structured Offline Checks](docs/tasks/done/prepare-structured-offline-checks.md) — cleanup and local checks complete; changes queued for Claude review.
+- [Prepare Structured Offline Checks](docs/tasks/done/prepare-structured-offline-checks.md) — cleanup and checks independently accepted in the completed structured implementation.
 
-- [Implement Structured Component Assembly](docs/tasks/current/implement-structured-component-assembly.md) — deterministic rendering, bounded reuse, and SC-18 adapter independently accepted; opt-in structured generation and publication integration remain open.
+- [Implement Structured Component Assembly](docs/tasks/done/implement-structured-component-assembly.md) — implementation and offline gates complete; final independent PASS. Live evaluation and default adoption remain HOLD.
+- [Evaluate the Structured Route Live](docs/tasks/pending/evaluate-structured-component-live-canary.md) — prepared bounded trial; requires separate execution, model and spending authorization.
+- [Adopt the Structured Component Layout](docs/tasks/pending/make-structured-publication-the-default.md) — **active**; ADR-0027 keeps the existing agent generation route and changes only the producer's output contract and what is published. ADR-0026 was drafted and rejected the same day.
 - [Repair Live-Canary Promotion Defects](docs/tasks/done/repair-live-canary-promotion-defects.md) — complete and independently accepted; repaired promotion preserves non-resource RBAC facts and rejects misplaced configured synthesis subsections with durable diagnostics.
 - [Generate a Deterministic Version Index](docs/tasks/done/generate-deterministic-version-index.md) — complete zero-agent navigation phase after platform architecture and before diagrams; live generation remains operator-controlled.
 - [Checkpoint Surface Work and Restore Validation](docs/tasks/done/checkpoint-surface-work-and-restore-validation.md) — complete; checkpoint committed and full validation baseline restored.
@@ -34,14 +36,14 @@ The next focused milestone is the
 - [Replace Markdown Change Records with a JSON Patch Contract](docs/tasks/done/replace-markdown-change-record-with-json-patch.md) — complete; new generation uses a validated JSON patch and historical Markdown replay remains available.
 - [Resolve External Analyzer-Assisted Rollout Gates](docs/tasks/blocked/resolve-external-analyzer-assisted-rollout-gates.md) — blocked on external and human inputs; not a local implementation blocker.
 
-## Pending Claude review tasks
+## Structured component review gates
 
-These are ordered review handoffs under the existing parent task and phase
-budgets. Creation does not start a worker or waive the rate-limit pause.
+These gates are complete under the parent task's phase budgets. The final
+rate-limit interruption was resumed with the same model and effort.
 
-1. [Finish P3 synthesis review](docs/tasks/pending/review-structured-synthesis-final.md) — interrupted final scheduled review; existing packet retained.
-2. [Review P4 publishing and consumers](docs/tasks/pending/review-structured-publication-consumers.md) — waits for P3 acceptance and completed implementation.
-3. [Review P5 final checks and adoption hold](docs/tasks/pending/review-structured-final-readiness.md) — waits for P4 acceptance and final offline evidence.
+1. [Finish P3 synthesis review](docs/tasks/done/review-structured-synthesis-final.md) — P3 independently accepted; all quota findings fixed.
+2. [Review P4 publishing and consumers](docs/tasks/done/review-structured-publication-consumers.md) — P4 independently accepted after focused repairs.
+3. [Review P5 final checks and adoption hold](docs/tasks/done/review-structured-final-readiness.md) — final PASS in cycle 2; live evaluation/adoption remain HOLD.
 
 ## Open Bugs
 

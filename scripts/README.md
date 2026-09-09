@@ -445,6 +445,10 @@ This script is used by the `/analyze-platform-components` skill to:
 
 Generate high-resolution PNG files from Mermaid (.mmd) diagrams using mmdc (Mermaid CLI). Automatically detects Chrome/Chromium and processes all diagrams in a directory.
 
+Pass the concrete diagram directory. Newly structured components use
+`architecture/<version>/<component>/diagrams/`; platform and legacy component
+diagrams use `architecture/<version>/diagrams/`.
+
 ### Usage
 
 ```bash

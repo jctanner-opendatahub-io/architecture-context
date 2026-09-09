@@ -17,6 +17,7 @@ import (
 	"github.com/jctanner/arch-analyzer/internal/renderer"
 	"github.com/jctanner/arch-analyzer/internal/schema"
 	"github.com/jctanner/arch-analyzer/internal/structured"
+	pubdocument "github.com/jctanner/arch-analyzer/pkg/document"
 )
 
 func Execute(args []string) error {
@@ -32,6 +33,8 @@ func Execute(args []string) error {
 		return normalizeStructured(args[1:])
 	case "render-document":
 		return renderStructured(args[1:])
+	case "render-published-document":
+		return renderPublishedStructured(args[1:])
 	case "extract-schema":
 		return extractSchema(args[1:])
 	case "harvest-proposals":
@@ -42,6 +45,30 @@ func Execute(args []string) error {
 	default:
 		return fmt.Errorf("unknown command %q\n\n%s", args[0], usage())
 	}
+}
+
+func renderPublishedStructured(args []string) error {
+	flags := flag.NewFlagSet("render-published-document", flag.ContinueOnError)
+	inputPath := flags.String("input", "", "published accepted document JSON input path")
+	outputPath := flags.String("output", "", "published Markdown output path")
+	if err := flags.Parse(args); err != nil {
+		return err
+	}
+	if *inputPath == "" || *outputPath == "" || flags.NArg() != 0 {
+		return errors.New("render-published-document requires --input and --output")
+	}
+	raw, err := os.ReadFile(*inputPath)
+	if err != nil {
+		return fmt.Errorf("read published document: %w", err)
+	}
+	markdown, err := pubdocument.RenderMarkdownJSON(raw)
+	if err != nil {
+		return fmt.Errorf("render published document Markdown: %w", err)
+	}
+	if err := os.WriteFile(*outputPath, markdown, 0o644); err != nil {
+		return fmt.Errorf("write published Markdown: %w", err)
+	}
+	return nil
 }
 
 type repeatedFlag []string

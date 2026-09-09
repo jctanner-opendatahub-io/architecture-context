@@ -3,7 +3,12 @@
 from pathlib import Path
 
 from lib.agent_runner import get_model_display_name, run_agents_concurrently
-from lib.fetch import _ensure_arch_query, load_platform_config
+from lib.fetch import _ensure_arch_analyzer, _ensure_arch_query, load_platform_config
+from lib.structured_component_publication import (
+    accepted_publications,
+    has_publication_state,
+)
+from lib.structured_component_synthesis import GoStructuredAssembler
 
 
 def _resolve_version(dir_name: str, args) -> str:
@@ -89,7 +94,17 @@ async def run_generate_platform_architecture_phase(args) -> None:
     # Check each directory for component files and staleness
     force = getattr(args, 'force', False)
     platform_dirs = []
+    analyzer_assembler = None
     for item in scan_dirs:
+        if has_publication_state(item):
+            if analyzer_assembler is None:
+                analyzer_assembler = GoStructuredAssembler(
+                    (await _ensure_arch_analyzer(),),
+                    Path(__file__).resolve().parents[2] / "src/arch-analyzer",
+                )
+            accepted_publications(
+                item, analyzer_assembler, repair_markdown=True
+            )
         component_files = [
             f for f in item.glob("*.md")
             if f.name not in ("INDEX.md", "README.md", "PLATFORM.md")

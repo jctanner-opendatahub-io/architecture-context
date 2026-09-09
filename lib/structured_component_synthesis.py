@@ -14,6 +14,7 @@ import importlib.metadata
 import json
 import math
 import os
+import re
 import subprocess
 import tempfile
 from dataclasses import dataclass, field, replace
@@ -53,6 +54,7 @@ from lib.structured_component_reuse import (
     select_predecessor_snapshot,
     thaw,
 )
+from lib.telemetry_redact import redact_dict, redact_value
 
 SYNTHESIS_ROUTE = "structured-component/v1"
 RESPONSE_SCHEMA = "structured-component-synthesis-response-v1.schema.json"
@@ -72,6 +74,7 @@ NORMALIZER_VERSION = "structured-component-normalizer/v1"
 MAX_RESPONSE_JSON_DEPTH = 64
 RUN_RECORD_FILENAME = "run-record.json"
 SYNTHESIS_BUNDLE_FILENAME = "synthesis-evidence-bundle.json"
+PREFLIGHT_DIAGNOSTIC_FILENAME = "preflight-diagnostic.json"
 PARENT_RESPONSE_INSTRUCTIONS = (
     "Return exactly one JSON object matching the supplied response schema. "
     "Use only analyzer facts, corrections, and source_evidence in this bundle. "
@@ -83,6 +86,15 @@ _MISS = object()
 
 class StructuredSynthesisError(RuntimeError):
     """The bounded structured route could not produce an accepted result."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        provider_error: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.provider_error = redact_dict(copy.deepcopy(dict(provider_error or {})))
 
 
 class EvidenceScopeError(StructuredSynthesisError):
@@ -307,24 +319,68 @@ def _provider_rate_limit_denied(result: Mapping[str, Any]) -> bool:
         return True
     provider_error = result.get("provider_error")
 
-    def contains_structured_denial(value: Any) -> bool:
+    known_codes = {
+        "ratelimit",
+        "ratelimiterror",
+        "ratelimitreached",
+        "sessionbudgetexceeded",
+        "usagelimit",
+        "usagelimitexceeded",
+        "workspacememberusagelimitreached",
+        "workspaceownerusagelimitreached",
+    }
+    code_fields = {"code", "codexerrorinfo", "errorinfo", "errorcode", "type"}
+    error_info_fields = {"codexerrorinfo", "errorinfo"}
+    error_code_token = re.compile(r"[a-z][a-z0-9_-]*", re.IGNORECASE)
+
+    def normalize_code(value: Any) -> str:
+        return "".join(
+            character for character in str(value).casefold() if character.isalnum()
+        )
+
+    def known_rate_limit_code(value: Any) -> bool:
+        return (
+            isinstance(value, str)
+            and error_code_token.fullmatch(value) is not None
+            and normalize_code(value) in known_codes
+        )
+
+    def contains_structured_denial(
+        value: Any,
+        *,
+        allow_code_value: bool,
+    ) -> bool:
         if isinstance(value, Mapping):
             for key, item in value.items():
-                normalized = str(key).casefold().replace("_", "")
-                if normalized in {"httpstatuscode", "statuscode"} and item == 429:
+                normalized_key = normalize_code(key)
+                if normalized_key in {"httpstatuscode", "statuscode"} and item == 429:
                     return True
-                if contains_structured_denial(item):
+                if normalized_key in code_fields and known_rate_limit_code(item):
+                    return True
+                if normalized_key == "data" and known_rate_limit_code(item):
+                    return True
+                child_allows_code = (
+                    allow_code_value or normalized_key in error_info_fields
+                )
+                if isinstance(item, (Mapping, list, tuple)) and (
+                    contains_structured_denial(
+                        item,
+                        allow_code_value=child_allows_code,
+                    )
+                ):
+                    return True
+                if child_allows_code and known_rate_limit_code(item):
                     return True
             return False
         if isinstance(value, (list, tuple)):
-            return any(contains_structured_denial(item) for item in value)
-        return str(value) in {
-            "usageLimitExceeded",
-            "sessionBudgetExceeded",
-            "rate_limit_reached",
-            "workspace_owner_usage_limit_reached",
-            "workspace_member_usage_limit_reached",
-        }
+            return any(
+                contains_structured_denial(
+                    item,
+                    allow_code_value=allow_code_value,
+                )
+                for item in value
+            )
+        return allow_code_value and known_rate_limit_code(value)
 
     if isinstance(provider_error, Mapping):
         rate_events = provider_error.get("rate_limit_events")
@@ -333,7 +389,10 @@ def _provider_rate_limit_denied(result: Mapping[str, Any]) -> bool:
             for event in rate_events
         ):
             return True
-    if contains_structured_denial(provider_error):
+    if contains_structured_denial(
+        provider_error,
+        allow_code_value=not isinstance(provider_error, (Mapping, list, tuple)),
+    ):
         return True
     if (
         not isinstance(provider_error, Mapping)
@@ -421,9 +480,20 @@ def authenticated_harness_adapter(harness: str) -> StructuredAdapter:
             )
         if not result.get("success"):
             detail = str(result.get("error") or "harness call failed")
+            provider_error = result.get("provider_error")
             if _provider_rate_limit_denied(result):
-                raise RateLimitError(detail)
-            raise StructuredSynthesisError(detail)
+                raise RateLimitError(
+                    detail,
+                    provider_error=(
+                        provider_error if isinstance(provider_error, Mapping) else None
+                    ),
+                )
+            raise StructuredSynthesisError(
+                detail,
+                provider_error=(
+                    provider_error if isinstance(provider_error, Mapping) else None
+                ),
+            )
         raw_response = result.get("raw_response")
         if not isinstance(raw_response, str):
             raise StructuredSynthesisError("harness returned no final response text")
@@ -449,27 +519,21 @@ def authenticated_harness_adapter(harness: str) -> StructuredAdapter:
         model_usage = telemetry.get("model_usage") or {}
         response_models = tuple(dict.fromkeys(telemetry.get("response_models") or ()))
         reported_model = response_models[0] if len(response_models) == 1 else None
-        auxiliary_models = tuple(
-            sorted(set(model_usage).difference(response_models))
-        )
+        auxiliary_models = tuple(sorted(set(model_usage).difference(response_models)))
         applied_settings = telemetry.get("applied_model_settings")
         settings_observed = isinstance(applied_settings, Mapping)
         return HarnessResponse(
             raw_text=raw_response,
             reported_model=reported_model,
             reported_settings=(
-                copy.deepcopy(dict(applied_settings))
-                if settings_observed
-                else None
+                copy.deepcopy(dict(applied_settings)) if settings_observed else None
             ),
             requested_model_identity=(
                 str(telemetry["requested_model_identity"])
                 if telemetry.get("requested_model_identity")
                 else None
             ),
-            settings_source=(
-                "applied-sdk-options" if settings_observed else "unknown"
-            ),
+            settings_source=("applied-sdk-options" if settings_observed else "unknown"),
             auxiliary_models=auxiliary_models,
             observations=telemetry,
         )
@@ -505,6 +569,7 @@ def authenticated_harness_adapter(harness: str) -> StructuredAdapter:
         )
         return ClaudeStructuredAdapter(call, tool_free_enforced=True, **common)
     if harness == "codex":
+
         async def prepare_codex(
             model: str | None,
             settings: Mapping[str, Any],
@@ -514,28 +579,44 @@ def authenticated_harness_adapter(harness: str) -> StructuredAdapter:
                 raise ValueError(
                     "Codex settings are resolved by the isolated preflight"
                 )
-            from lib.codex_agent import preflight_structured_codex_context
+            from lib.codex_agent import (
+                _codex_rate_limit_denied,
+                codex_exception_details,
+                preflight_structured_codex_context,
+            )
 
-            codex_context = await preflight_structured_codex_context(model)
+            try:
+                codex_context = await preflight_structured_codex_context(model)
+            except Exception as error:
+                provider_error = codex_exception_details(error)
+                if _codex_rate_limit_denied(provider_error):
+                    detail = str(redact_value("message", str(error) or repr(error)))
+                    raise RateLimitError(
+                        detail,
+                        provider_error=provider_error,
+                    ) from error
+                raise
             implicit_context = copy.deepcopy(dict(common["implicit_context"]))
-            implicit_context.update({
-                "cli_implementation": copy.deepcopy(
-                    codex_context["cli_implementation"]
-                ),
-                "requested_model_resolution": {
-                    "parent_requested_model": model,
-                    "resolved_model_identity": codex_context[
-                        "resolved_model_identity"
-                    ],
-                    "model_provider": codex_context["model_provider"],
-                    "reasoning_effort": codex_context["reasoning_effort"],
-                    "service_tier": codex_context["service_tier"],
-                },
-                "isolated_local_context": copy.deepcopy(
-                    codex_context["isolated_local_context"]
-                ),
-                "codex_context_identity": codex_context["context_identity"],
-            })
+            implicit_context.update(
+                {
+                    "cli_implementation": copy.deepcopy(
+                        codex_context["cli_implementation"]
+                    ),
+                    "requested_model_resolution": {
+                        "parent_requested_model": model,
+                        "resolved_model_identity": codex_context[
+                            "resolved_model_identity"
+                        ],
+                        "model_provider": codex_context["model_provider"],
+                        "reasoning_effort": codex_context["reasoning_effort"],
+                        "service_tier": codex_context["service_tier"],
+                    },
+                    "isolated_local_context": copy.deepcopy(
+                        codex_context["isolated_local_context"]
+                    ),
+                    "codex_context_identity": codex_context["context_identity"],
+                }
+            )
             resolved_settings = {
                 "model_provider": codex_context["model_provider"],
                 "reasoning_effort": codex_context["reasoning_effort"],
@@ -776,6 +857,44 @@ def _atomic_json(path: Path, value: Any) -> None:
     temporary = path.with_name(f".{path.name}.tmp")
     temporary.write_text(payload)
     temporary.replace(path)
+
+
+def _write_preflight_rate_limit_diagnostic(
+    architecture_dir: Path,
+    platform: str,
+    *,
+    harness: str,
+    requested_model: str | None,
+    error: RateLimitError,
+) -> Path:
+    """Persist a private, component-independent preflight refusal record."""
+
+    path = (
+        architecture_dir
+        / platform
+        / ".generation"
+        / "structured"
+        / PREFLIGHT_DIAGNOSTIC_FILENAME
+    )
+    diagnostic: dict[str, Any] = {
+        "code": "rate-limit-refusal",
+        "detail": str(error),
+    }
+    if error.provider_error:
+        diagnostic["provider_error"] = copy.deepcopy(error.provider_error)
+    _atomic_json(
+        path,
+        {
+            "schema_version": SCHEMA_VERSION,
+            "state": "failed",
+            "phase": "context-preflight",
+            "harness": harness,
+            "requested_model": requested_model,
+            "model_calls_started": 0,
+            "diagnostic": diagnostic,
+        },
+    )
+    return path
 
 
 class EvidenceBundleBuilder:
@@ -1589,17 +1708,22 @@ async def run_structured_synthesis(
             )
         except RateLimitError as error:
             envelope["state"] = "failed"
-            envelope["diagnostics"].append(
-                {"code": "rate-limit-refusal", "detail": str(error)}
-            )
+            diagnostic: dict[str, Any] = {
+                "code": "rate-limit-refusal",
+                "detail": str(error),
+            }
+            if error.provider_error:
+                diagnostic["provider_error"] = copy.deepcopy(error.provider_error)
+            envelope["diagnostics"].append(diagnostic)
             _validate_schema(ENVELOPE_SCHEMA, envelope)
             _atomic_json(envelope_path, envelope)
             raise
         except StructuredSynthesisError as error:
             envelope["state"] = "failed"
-            envelope["diagnostics"].append(
-                {"code": "adapter-failed", "detail": str(error)}
-            )
+            diagnostic = {"code": "adapter-failed", "detail": str(error)}
+            if error.provider_error:
+                diagnostic["provider_error"] = copy.deepcopy(error.provider_error)
+            envelope["diagnostics"].append(diagnostic)
             _validate_schema(ENVELOPE_SCHEMA, envelope)
             _atomic_json(envelope_path, envelope)
             return StructuredSynthesisResult(
@@ -2093,9 +2217,7 @@ def _successful_response(
     requested = envelope.get("requested")
     if not isinstance(requested, Mapping):
         raise ReuseRecordError("predecessor requested producer identity is missing")
-    model_context = bundle.get("synthesis_configuration", {}).get(
-        "model_context", {}
-    )
+    model_context = bundle.get("synthesis_configuration", {}).get("model_context", {})
     if (
         not isinstance(model_context, Mapping)
         or requested.get("harness") != model_context.get("adapter")
@@ -2107,17 +2229,15 @@ def _successful_response(
         )
     if (
         not isinstance(response.get("requested_model_identity"), str)
-        or response.get("reported_model")
-        != response.get("requested_model_identity")
+        or response.get("reported_model") != response.get("requested_model_identity")
         or response.get("reported_settings") != requested.get("settings")
     ):
         raise ReuseRecordError(
             "predecessor requested/reported producer settings are incompatible"
         )
     if requested.get("harness") in {"claude", "codex"}:
-        resolution = (
-            model_context.get("implicit_context", {})
-            .get("requested_model_resolution", {})
+        resolution = model_context.get("implicit_context", {}).get(
+            "requested_model_resolution", {}
         )
         resolved_model_identity = resolution.get("resolved_model_identity")
         if (
@@ -2140,9 +2260,7 @@ def _successful_response(
     models = reported.get("models") if isinstance(reported, Mapping) else None
     settings = reported.get("settings") if isinstance(reported, Mapping) else None
     auxiliary = (
-        reported.get("auxiliary_models")
-        if isinstance(reported, Mapping)
-        else None
+        reported.get("auxiliary_models") if isinstance(reported, Mapping) else None
     )
     if (
         not isinstance(models, list)
@@ -2152,9 +2270,7 @@ def _successful_response(
         or len(settings) != len(responses)
         or models[accepted_index] != response.get("reported_model")
         or settings[accepted_index] != response.get("reported_settings")
-        or not all(
-            item in auxiliary for item in response.get("auxiliary_models") or ()
-        )
+        or not all(item in auxiliary for item in response.get("auxiliary_models") or ())
     ):
         raise ReuseRecordError("predecessor producing model audit is inconsistent")
     raw_representation = response.get("raw_response")
@@ -2923,12 +3039,14 @@ def _record_producer_ineligible_failure(
         "available": False,
         "reason": "producer-ineligible",
         "unobserved_context": list(
-            dict.fromkeys([
-                *envelope.get("reuse_eligibility", {}).get(
-                    "unobserved_context", []
-                ),
-                "reported-model-or-settings",
-            ])
+            dict.fromkeys(
+                [
+                    *envelope.get("reuse_eligibility", {}).get(
+                        "unobserved_context", []
+                    ),
+                    "reported-model-or-settings",
+                ]
+            )
         ),
     }
     envelope["diagnostics"].append(diagnostic)
@@ -2948,10 +3066,18 @@ async def run_pipeline_seam(
     architecture_dir: Path,
     distribution: str,
 ) -> None:
-    """Concrete opt-in pipeline seam; outputs remain private until phase 4."""
+    """Concrete opt-in pipeline seam with validated P4 publication."""
 
     from lib.fetch import _ensure_arch_analyzer, load_platform_config
     from lib.phases.static_analysis import analyzer_output_dir
+    from lib.structured_component_publication import (
+        PublicationError,
+        load_accepted_publication,
+        load_published_reuse_snapshot,
+        publish_private_run,
+        recover_publication,
+        validate_legacy_conversion_input,
+    )
     from lib.version_index import _resolve_integration, load_active_overlays
 
     inputs = _load_pipeline_inputs(getattr(args, "structured_inputs", None))
@@ -2982,7 +3108,17 @@ async def run_pipeline_seam(
         if getattr(args, "max_budget_usd", None) is not None
         else {}
     )
-    prepared = await adapter.prepare(parent_model, parent_settings)
+    try:
+        prepared = await adapter.prepare(parent_model, parent_settings)
+    except RateLimitError as error:
+        _write_preflight_rate_limit_diagnostic(
+            architecture_dir,
+            args.platform,
+            harness=harness,
+            requested_model=parent_model,
+            error=error,
+        )
+        raise
     limits = SynthesisLimits(
         total_calls=getattr(args, "structured_total_calls", 3),
         evidence_followups=getattr(args, "structured_evidence_followups", 1),
@@ -3023,6 +3159,10 @@ async def run_pipeline_seam(
             / "component-architecture.json"
         ).resolve()
         analyzer_bytes = analyzer_path.read_bytes()
+        analyzer_value = json.loads(analyzer_bytes)
+        if not isinstance(analyzer_value, dict):
+            raise ValueError("structured analyzer input must be a JSON object")
+        validate_legacy_conversion_input(analyzer_value)
         artifact_dir = (
             architecture_dir
             / args.platform
@@ -3055,6 +3195,10 @@ async def run_pipeline_seam(
             },
             limits=limits,
             force_refresh=getattr(args, "structured_refresh", False),
+        )
+        recover_publication(
+            architecture_dir / args.platform / component.key,
+            assembler,
         )
         source_start = capture_source_snapshot(request.checkout_root)
         bundle, _, _, _ = build_evidence_bundle(request, adapter)
@@ -3092,16 +3236,36 @@ async def run_pipeline_seam(
                 raise ReuseConfigurationError(
                     "trusted reuse_from version does not match the platform graph"
                 )
+            prior = None
+            prior_record = None
+            prior_bundle = None
             try:
                 prior = record_store.load(
                     reuse_selection["version_scope"], reuse_selection["component"]
                 )
             except ReuseRecordError:
-                request = replace(
-                    request,
-                    predecessor_miss_reasons=("predecessor-record-invalid",),
-                )
-            else:
+                try:
+                    prior = load_published_reuse_snapshot(
+                        architecture_dir,
+                        reuse_selection["version_scope"],
+                        reuse_selection["component"],
+                        assembler,
+                    )
+                    published = load_accepted_publication(
+                        architecture_dir
+                        / reuse_selection["version_scope"]
+                        / reuse_selection["component"],
+                        assembler,
+                        repair_markdown=True,
+                    ).document_value["publication"]["accepted_inputs"]
+                    prior_record = published["run_record"]
+                    prior_bundle = published["original_evidence_bundle"]
+                except PublicationError:
+                    request = replace(
+                        request,
+                        predecessor_miss_reasons=("predecessor-record-invalid",),
+                    )
+            if prior_record is None and prior is not None:
                 prior_directory = record_store.directory(
                     reuse_selection["version_scope"], reuse_selection["component"]
                 )
@@ -3114,6 +3278,7 @@ async def run_pipeline_seam(
                         / prior_record["artifacts"]["synthesis_bundle"]["path"]
                     ).read_text()
                 )
+            if prior_record is not None and prior_bundle is not None:
                 prior_payload, _ = _successful_response(
                     prior.synthesis_bytes, prior_bundle
                 )
@@ -3182,11 +3347,18 @@ async def run_pipeline_seam(
                     response_identity=response_identity,
                     rebindings=rebindings if result.reused else (),
                 )
+                publish_private_run(
+                    architecture_dir=architecture_dir,
+                    version_scope=args.platform,
+                    component=component.key,
+                    assembler=assembler,
+                )
             except ReuseRecordError as error:
                 failed_envelope = json.loads(result.envelope_path.read_text())
-                if failed_envelope.get("reuse_eligibility", {}).get(
-                    "reason"
-                ) != "reported-model-or-settings-not-exactly-bound":
+                if (
+                    failed_envelope.get("reuse_eligibility", {}).get("reason")
+                    != "reported-model-or-settings-not-exactly-bound"
+                ):
                     raise
                 record_store.invalidate(args.platform, component.key)
                 result = _record_producer_ineligible_failure(result, error)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/jctanner/arch-analyzer/internal/model"
@@ -33,7 +34,8 @@ func extractPythonEntrypoints(root string, manifests []string, dependencies []mo
 		relative, _ := filepath.Rel(root, path)
 		source := filepath.ToSlash(relative)
 
-		for name, target := range manifest.Project.Scripts {
+		for _, name := range sortedScriptNames(manifest.Project.Scripts) {
+			target := manifest.Project.Scripts[name]
 			if seen[name] {
 				continue
 			}
@@ -46,7 +48,8 @@ func extractPythonEntrypoints(root string, manifests []string, dependencies []mo
 				Source:  fmt.Sprintf("%s:%d", source, sourceLine(string(content), name)),
 			})
 		}
-		for name, target := range manifest.Project.GUIScripts {
+		for _, name := range sortedScriptNames(manifest.Project.GUIScripts) {
+			target := manifest.Project.GUIScripts[name]
 			if seen[name] {
 				continue
 			}
@@ -77,6 +80,15 @@ func extractPythonEntrypoints(root string, manifests []string, dependencies []mo
 	}
 
 	return result
+}
+
+func sortedScriptNames(scripts map[string]string) []string {
+	names := make([]string, 0, len(scripts))
+	for name := range scripts {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
 }
 
 func extractPythonSecurityEvidence(root string, dependencies []model.LanguagePackage) []model.SecurityEvidence {

@@ -1114,8 +1114,7 @@ def _producing_envelope_errors(
     accepted_indexes = [
         index
         for index, item in enumerate(responses)
-        if isinstance(item, dict)
-        and item.get("response_identity") == accepted_identity
+        if isinstance(item, dict) and item.get("response_identity") == accepted_identity
     ]
     if len(accepted_indexes) != 1:
         return [*errors, "producing_envelope_identity_missing"]
@@ -1132,9 +1131,7 @@ def _producing_envelope_errors(
     reported = envelope.get("reported")
     models = reported.get("models") if isinstance(reported, dict) else None
     settings = reported.get("settings") if isinstance(reported, dict) else None
-    auxiliary = (
-        reported.get("auxiliary_models") if isinstance(reported, dict) else None
-    )
+    auxiliary = reported.get("auxiliary_models") if isinstance(reported, dict) else None
     if (
         not isinstance(models, list)
         or not isinstance(settings, list)
@@ -1143,9 +1140,7 @@ def _producing_envelope_errors(
         or len(settings) != len(responses)
         or models[accepted_index] != response.get("reported_model")
         or settings[accepted_index] != response.get("reported_settings")
-        or not all(
-            item in auxiliary for item in response.get("auxiliary_models") or ()
-        )
+        or not all(item in auxiliary for item in response.get("auxiliary_models") or ())
     ):
         errors.append("producing_model_audit_mismatch")
     return errors
@@ -1604,6 +1599,12 @@ def _reuse_invariant_document(document: Mapping[str, Any]) -> dict[str, Any]:
     # audit record describes that earlier decision, not synthesized component
     # content, and must not prevent an explicitly selected later reuse hop.
     result.pop("reuse", None)
+    # Publication binds exact artifact bytes and recovery provenance, not
+    # synthesized component semantics. A target publication receives fresh
+    # bindings after current-input revalidation.
+    result.pop("publication", None)
+    if result.get("schema_version") == "1.1.0":
+        result["schema_version"] = "1.0.0"
     identity = result.get("identity")
     if isinstance(identity, dict):
         identity.pop("component", None)

@@ -249,7 +249,10 @@ async def run_all_phases(args) -> None:
     print(f"  - Analyzer artifacts: architecture/{args.platform}/*/.analyzer/")
     print(f"  - Platform documents: architecture/{args.platform}/PLATFORM.md")
     print(f"  - Version index: architecture/{args.platform}/INDEX.md")
-    print(f"  - Diagrams: architecture/{args.platform}/diagrams/")
+    print(
+        f"  - Diagrams: architecture/{args.platform}/diagrams/ and "
+        f"architecture/{args.platform}/*/diagrams/"
+    )
     print("=" * 80 + "\n")
 
 

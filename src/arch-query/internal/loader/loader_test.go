@@ -1,10 +1,15 @@
 package loader
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
 	"testing/fstest"
+
+	analyzerdocument "github.com/jctanner/arch-analyzer/pkg/document"
 )
 
 func TestLoadVersionMergesComponentAnalyzerArtifacts(t *testing.T) {
@@ -114,6 +119,21 @@ func TestLoadVersionInvalidAcceptedDocumentNeverFallsBack(t *testing.T) {
 	}
 }
 
+func TestLoadVersionIncompletePublicationNeverFallsBack(t *testing.T) {
+	for _, artifact := range []string{"analyzer.json", ".document.json.next"} {
+		t.Run(artifact, func(t *testing.T) {
+			fsys := fstest.MapFS{
+				"rhoai.next/typed-only.md":          {Data: []byte("# Component: typed-only\n\n## Purpose\n\nlegacy fallback\n")},
+				"rhoai.next/typed-only/" + artifact: {Data: []byte(`{}`)},
+			}
+			data, err := LoadVersion(fsys, nil, "rhoai.next")
+			if err == nil || data != nil || !strings.Contains(err.Error(), "incomplete") {
+				t.Fatalf("LoadVersion = %#v, %v; want incomplete-publication error", data, err)
+			}
+		})
+	}
+}
+
 func TestLoadVersionJSONOnlyAcceptedAndMixedLegacyCorpus(t *testing.T) {
 	document := readFixture(t, "../documentdata/testdata/rhoai.next/typed-only/document.json")
 	fsys := fstest.MapFS{
@@ -133,7 +153,7 @@ func TestLoadVersionJSONOnlyAcceptedAndMixedLegacyCorpus(t *testing.T) {
 		t.Fatalf("mixed component count = %d/%d, want 2", data.Version.ComponentCount, len(data.Components))
 	}
 	accepted := data.Components["typed-only"]
-	if accepted == nil || accepted.FileName != "typed-only.md" || accepted.RawSections != nil || len(accepted.Webhooks) != 1 {
+	if accepted == nil || accepted.FileName != "" || accepted.RawSections != nil || len(accepted.Webhooks) != 1 {
 		t.Fatalf("JSON-only accepted component unavailable for typed queries: %#v", accepted)
 	}
 	if legacy := data.Components["legacy"]; legacy == nil || len(legacy.ControllerWatches) != 1 {
@@ -146,6 +166,117 @@ func TestLoadVersionJSONOnlyAcceptedAndMixedLegacyCorpus(t *testing.T) {
 	if len(versions) != 1 || versions[0].ComponentCount != 2 {
 		t.Fatalf("mixed version inventory = %#v", versions)
 	}
+}
+
+func TestLoadVersionPublishedDerivativeFreshnessAndJSONOnlyAvailability(t *testing.T) {
+	complete := publishedFixture(t, true)
+	data, err := LoadVersion(complete, nil, "rhoai.next")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Components["typed-only"].FileName != "typed-only.md" {
+		t.Fatalf("published Markdown availability lost: %#v", data.Components["typed-only"])
+	}
+
+	jsonOnly := publishedFixture(t, false)
+	data, err = LoadVersion(jsonOnly, nil, "rhoai.next")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data.Components["typed-only"].FileName != "" {
+		t.Fatalf("missing derivative reported as available: %#v", data.Components["typed-only"])
+	}
+
+	tampered := publishedFixture(t, true)
+	markdown := tampered["rhoai.next/typed-only.md"]
+	markdown.Data = append(append([]byte{}, markdown.Data...), []byte("tampered body\n")...)
+	tampered["rhoai.next/typed-only.md"] = markdown
+	if loaded, loadErr := LoadVersion(tampered, nil, "rhoai.next"); loadErr == nil || loaded != nil || !strings.Contains(loadErr.Error(), "stale or tampered") {
+		t.Fatalf("tampered derivative LoadVersion = %#v, %v", loaded, loadErr)
+	}
+}
+
+func publishedFixture(t *testing.T, withMarkdown bool) fstest.MapFS {
+	t.Helper()
+	document := map[string]any{}
+	if err := json.Unmarshal(readFixture(t, "../documentdata/testdata/rhoai.next/typed-only/document.json"), &document); err != nil {
+		t.Fatal(err)
+	}
+	identity := document["identity"].(map[string]any)
+	producers := document["producers"].(map[string]any)
+	analyzerInput := document["analyzer_input"].(map[string]any)
+	analyzer := map[string]any{
+		"schema_version": "1", "component": identity["source_component"],
+		"repo": identity["repository"], "commit_sha": identity["source_revision"],
+		"extracted_at":     analyzerInput["extracted_at"],
+		"analyzer_version": producers["analyzer_version"],
+	}
+	analyzerData, err := json.Marshal(analyzer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bundleFingerprint := testHash(analyzerData)
+	analyzerInput["bundle_fingerprint"] = bundleFingerprint
+	hash := "sha256:" + strings.Repeat("a", 64)
+	synthesis := map[string]any{
+		"schema_version": "1.0.0", "state": "deterministic-only", "route": "structured-component/v1",
+		"input_bundle_identity": hash, "context_identity": hash,
+		"reuse_eligibility": map[string]any{"available": false, "reason": "offline fixture", "unobserved_context": []any{}},
+		"requested":         map[string]any{"harness": "none", "model": "none", "settings": map[string]any{}},
+		"reported":          map[string]any{"models": []any{}, "settings": []any{}, "auxiliary_models": []any{}},
+		"calls":             map[string]any{"total": 0, "initial": 0, "evidence_followup": 0, "repair": 0, "limits": map[string]any{"total": 0, "evidence_followup": 0, "repair": 0}},
+		"responses":         []any{}, "resolution_provenance": []any{}, "observations": map[string]any{},
+		"justifications": []any{}, "accepted_response_identity": nil,
+		"diagnostics": []any{map[string]any{"code": "deterministic-only", "detail": "offline fixture"}},
+	}
+	synthesisData, err := json.Marshal(synthesis)
+	if err != nil {
+		t.Fatal(err)
+	}
+	document["schema_version"] = "1.1.0"
+	document["publication"] = map[string]any{
+		"contract": "structured-component-publication/v1", "snapshot_id": hash,
+		"analyzer": map[string]any{
+			"content_hash": testHash(analyzerData), "bundle_fingerprint": bundleFingerprint,
+			"schema_version": "1", "source_component": identity["source_component"],
+			"repository": identity["repository"], "source_revision": identity["source_revision"],
+			"analyzer_version": producers["analyzer_version"], "producer_build_identity": hash,
+		},
+		"synthesis": map[string]any{
+			"content_hash": testHash(synthesisData), "state": "deterministic-only",
+			"input_bundle_identity": hash, "current_evidence_bundle_identity": hash,
+			"original_evidence_bundle_identity": hash, "producing_model_eligible": false,
+		},
+		"accepted_inputs": map[string]any{
+			"run_record":               map[string]any{"fixture": true},
+			"current_evidence_bundle":  map[string]any{"fixture": true},
+			"original_evidence_bundle": map[string]any{"fixture": true},
+		},
+		"markdown": map[string]any{"path": "typed-only.md", "renderer_version": "arch-analyzer-markdown/v1"},
+		"diagram":  map[string]any{"state": "unavailable"},
+	}
+	documentData, err := json.Marshal(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result := fstest.MapFS{
+		"rhoai.next/typed-only/document.json":  {Data: documentData},
+		"rhoai.next/typed-only/analyzer.json":  {Data: analyzerData},
+		"rhoai.next/typed-only/synthesis.json": {Data: synthesisData},
+	}
+	if withMarkdown {
+		markdown, renderErr := analyzerdocument.RenderMarkdownJSON(documentData)
+		if renderErr != nil {
+			t.Fatal(renderErr)
+		}
+		result["rhoai.next/typed-only.md"] = &fstest.MapFile{Data: markdown}
+	}
+	return result
+}
+
+func testHash(raw []byte) string {
+	sum := sha256.Sum256(raw)
+	return "sha256:" + hex.EncodeToString(sum[:])
 }
 
 func TestDiscoverVersionsPreservesSortedAliases(t *testing.T) {

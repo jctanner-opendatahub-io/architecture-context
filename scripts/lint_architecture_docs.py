@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """Validate generated component architecture Markdown files under architecture/."""
 
+import argparse
+import asyncio
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
-ARCHITECTURE_DIR = Path(__file__).resolve().parent.parent / "architecture"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+ARCHITECTURE_DIR = PROJECT_ROOT / "architecture"
 
 SKIP_NAMES = {"INDEX.md", "PLATFORM.md", "README.md"}
 
@@ -39,11 +44,42 @@ def validate_component_doc(path: Path) -> list[str]:
     return errors
 
 
-def main() -> int:
-    arch_dir = ARCHITECTURE_DIR
+def main(
+    architecture_dir: Path | None = None,
+    arch_analyzer: Path | None = None,
+) -> int:
+    arch_dir = architecture_dir or ARCHITECTURE_DIR
     if not arch_dir.is_dir():
         print(f"architecture directory not found: {arch_dir}")
         return 1
+
+    from lib.structured_component_publication import has_publication_state
+
+    structured_versions = [
+        version
+        for version in sorted(arch_dir.iterdir())
+        if version.is_dir() and has_publication_state(version)
+    ]
+    if structured_versions:
+        from lib.fetch import _ensure_arch_analyzer
+        from lib.structured_component_publication import (
+            PublicationError,
+            validate_accepted_publications,
+        )
+        from lib.structured_component_synthesis import GoStructuredAssembler
+
+        analyzer = str(arch_analyzer) if arch_analyzer else asyncio.run(
+            _ensure_arch_analyzer()
+        )
+        assembler = GoStructuredAssembler(
+            (analyzer,), Path(__file__).resolve().parents[1] / "src/arch-analyzer"
+        )
+        try:
+            for version in structured_versions:
+                validate_accepted_publications(version, assembler)
+        except PublicationError as error:
+            print(f"invalid accepted structured snapshot: {error}")
+            return 1
 
     seen: set[Path] = set()
     files: list[Path] = []
@@ -74,5 +110,22 @@ def main() -> int:
     return 0
 
 
+def cli(argv: Sequence[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--architecture-dir",
+        type=Path,
+        default=ARCHITECTURE_DIR,
+        help="architecture tree to validate (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--arch-analyzer",
+        type=Path,
+        help="existing arch-analyzer binary (otherwise build the repository binary)",
+    )
+    args = parser.parse_args(argv)
+    return main(args.architecture_dir, args.arch_analyzer)
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(cli())

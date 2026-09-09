@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -139,6 +140,24 @@ func TestPreciseBehavioralGapsSurviveCategoryCapAndSameFileDeduplication(t *test
 			!strings.Contains(gap.Question, "literal resource names") {
 			t.Fatalf("gap[%d] = %#v, want precise identity/range without generic replacement", index, gap)
 		}
+	}
+}
+
+func TestGapEvidenceOrderingUsesCompleteCandidateTieBreakers(t *testing.T) {
+	first := model.IntegrationFact{
+		Component: "Zulu", InteractionType: "REST", Source: "client.go:7",
+	}
+	second := model.IntegrationFact{
+		Component: "Alpha", InteractionType: "REST", Source: "client.go:7",
+	}
+	left := gapEvidenceIndex(model.Input{IntegrationPoints: []model.IntegrationFact{first, second}})
+	right := gapEvidenceIndex(model.Input{IntegrationPoints: []model.IntegrationFact{second, first}})
+
+	if !reflect.DeepEqual(left, right) {
+		t.Fatalf("gap evidence ordering differs: %#v != %#v", left, right)
+	}
+	if got := left["integration_points"]; len(got) != 2 || !strings.Contains(strings.Join(got[0].Symbols, ","), "Alpha") || !strings.Contains(strings.Join(got[1].Symbols, ","), "Zulu") {
+		t.Fatalf("gap evidence = %#v, want complete symbol tie-break order", got)
 	}
 }
 

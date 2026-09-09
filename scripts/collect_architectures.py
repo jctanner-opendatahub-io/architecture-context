@@ -18,9 +18,20 @@ import argparse
 import re
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
+from lib.structured_component_publication import (  # noqa: E402
+    PublicationError,
+    accepted_publications,
+    has_publication_state,
+)
+from lib.structured_component_synthesis import GoStructuredAssembler  # noqa: E402
 
 
 @dataclass
@@ -274,6 +285,7 @@ def collect_architectures(
     output_dir: Path,
     platform_filter: Optional[str] = None,
     version_filter: Optional[str] = None,
+    assembler: Optional[GoStructuredAssembler] = None,
 ) -> dict:
     """
     Main collection function.
@@ -323,10 +335,22 @@ def collect_architectures(
         platform_output_dir.mkdir(parents=True, exist_ok=True)
         print(f"  Output directory: {platform_output_dir}")
 
+        has_accepted_files = has_publication_state(platform_output_dir)
+        if has_accepted_files and assembler is None:
+            raise PublicationError(
+                "standalone collection found accepted snapshots but no "
+                "arch-analyzer validator was supplied"
+            )
+        accepted = (
+            accepted_publications(platform_output_dir, assembler, repair_markdown=True)
+            if assembler is not None
+            else {}
+        )
+
         # Find architecture files
         arch_files = find_architecture_files(platform)
 
-        if not arch_files:
+        if not arch_files and not accepted:
             print(
                 f"  No GENERATED_ARCHITECTURE.md files"
                 f" found for {platform.name.upper()}"
@@ -337,11 +361,17 @@ def collect_architectures(
             )
             continue
 
-        print(f"  Found {len(arch_files)} component(s)")
+        print(
+            f"  Found {len(arch_files) + len(accepted)} component source(s) "
+            f"({len(accepted)} accepted snapshot(s))"
+        )
 
         # Copy files
-        components = []
+        components = sorted(accepted)
         for arch_file, component_name in arch_files:
+            if component_name in accepted:
+                print(f"    ✓ {component_name}: preserved accepted snapshot")
+                continue
             target_path = platform_output_dir / f"{component_name}.md"
             shutil.copy2(arch_file, target_path)
             components.append(component_name)
@@ -471,6 +501,11 @@ def main():
         help='Directory containing platform checkouts (default: ./checkouts)'
     )
     parser.add_argument(
+        '--arch-analyzer',
+        type=Path,
+        help='arch-analyzer binary required when accepted snapshots exist'
+    )
+    parser.add_argument(
         '--output-dir',
         type=Path,
         default=Path('./architecture'),
@@ -505,7 +540,18 @@ def main():
         return 0
 
     # Run collection
-    summary = collect_architectures(args.checkouts_dir, args.output_dir)
+    assembler = None
+    if args.arch_analyzer is not None:
+        if not args.arch_analyzer.is_file():
+            print(f"Error: arch-analyzer binary not found: {args.arch_analyzer}")
+            return 1
+        assembler = GoStructuredAssembler(
+            (str(args.arch_analyzer.resolve()),),
+            Path(__file__).resolve().parents[1] / "src/arch-analyzer",
+        )
+    summary = collect_architectures(
+        args.checkouts_dir, args.output_dir, assembler=assembler
+    )
 
     # Print summary
     print_summary(summary, args.checkouts_dir, args.output_dir)

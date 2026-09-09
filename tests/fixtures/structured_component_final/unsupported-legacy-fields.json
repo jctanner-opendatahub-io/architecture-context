@@ -1,0 +1,8 @@
+{
+  "component": "fixture",
+  "network_policies": [
+    {
+      "name": "deny-all"
+    }
+  ]
+}

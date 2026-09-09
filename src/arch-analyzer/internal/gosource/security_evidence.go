@@ -2,6 +2,7 @@ package gosource
 
 import (
 	"go/ast"
+	"sort"
 	"strings"
 
 	"github.com/jctanner/arch-analyzer/internal/model"
@@ -40,8 +41,12 @@ func extractGoSecurityEvidence(files []sourceFile) []model.SecurityEvidence {
 	}
 
 	for _, file := range files {
-		for importAlias, importPath := range file.imports {
-			_ = importAlias
+		importPaths := make([]string, 0, len(file.imports))
+		for _, importPath := range file.imports {
+			importPaths = append(importPaths, importPath)
+		}
+		sort.Strings(importPaths)
+		for _, importPath := range importPaths {
 			if tlsPackages[importPath] {
 				add(model.SecurityEvidence{Kind: "tls-config", Target: importPath, Detail: "TLS configuration import", Status: "dependency-signal", Source: file.path})
 			}

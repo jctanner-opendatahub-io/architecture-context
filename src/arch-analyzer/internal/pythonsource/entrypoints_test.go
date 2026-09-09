@@ -1,6 +1,7 @@
 package pythonsource
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -27,6 +28,22 @@ func TestPythonEntrypointsFromScripts(t *testing.T) {
 	}
 	if !scripts["uvicorn"] {
 		t.Error("missing uvicorn ASGI server entrypoint")
+	}
+}
+
+func TestPythonScriptEntrypointsHaveCanonicalMapOrder(t *testing.T) {
+	result, err := Extract("testdata/entrypoint_app")
+	if err != nil {
+		t.Fatalf("Extract() error = %v", err)
+	}
+	var scripts []string
+	for _, entrypoint := range result.Entrypoints {
+		if entrypoint.Type == "Python console script" {
+			scripts = append(scripts, entrypoint.Name)
+		}
+	}
+	if want := []string{"auth-migrate", "auth-serve"}; !reflect.DeepEqual(scripts, want) {
+		t.Fatalf("console scripts = %#v, want canonical map order %#v", scripts, want)
 	}
 }
 

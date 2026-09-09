@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
+
+	"github.com/jctanner/arch-query/internal/types"
 )
 
 func TestAcceptedJSONOnlyComponentRawAccessIsActionable(t *testing.T) {
@@ -22,7 +24,14 @@ func TestAcceptedJSONOnlyComponentRawAccessIsActionable(t *testing.T) {
 	outputFormat = OutputRaw
 
 	err = componentCmd.RunE(componentCmd, []string{"typed-only"})
-	if err == nil || !strings.Contains(err.Error(), "reading rhoai.next/typed-only.md") {
+	if err == nil || !strings.Contains(err.Error(), "rendered Markdown is unavailable") {
 		t.Fatalf("raw access error = %v", err)
+	}
+}
+
+func TestExistsJSONOnlyComponentReportsAuthorityNotMissingMarkdown(t *testing.T) {
+	location := formatExistsLocation(&types.ComponentDoc{DeployType: "service"}, "rhoai.next", "typed-only")
+	if strings.Contains(location, "typed-only.md") || !strings.Contains(location, "typed-only/document.json") || !strings.Contains(location, "Markdown: unavailable") {
+		t.Fatalf("JSON-only exists location = %q", location)
 	}
 }
