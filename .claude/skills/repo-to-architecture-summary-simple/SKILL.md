@@ -18,21 +18,46 @@ Baseline facts about the repostiory are in json files under --analyzer-dir, whic
 
 Read any other files from the repository as needed. If README.md exists, determine if it has any useful content for the summary but do not let it override facts from arch-analyzer.
 
-Prefer Dockerfiles with ,konflux filename suffixes over others.
+Prefer Dockerfiles with `.konflux` filename suffixes over others.
 
 
-## References
+## How to Use Reference Files
 
-Consult reference files for applicable sections of the template and the overall analysis:
+**Always consult these references (every component):**
 
-- [`${CLAUDE_SKILL_DIR}/references/operator-preparation.md`](references/operator-preparation.md) and
-  [`${CLAUDE_SKILL_DIR}/references/rhoai-ingress-patterns.md`](references/rhoai-ingress-patterns.md) — operator preparation and dynamic
-  Gateway/Envoy/auth/Route behavior.
-- [`${CLAUDE_SKILL_DIR}/references/aipcc-analysis.md`](references/aipcc-analysis.md) — Konflux Python/AIPCC checks.
-- [`${CLAUDE_SKILL_DIR}/references/security-build-analysis.md`](references/security-build-analysis.md) — FIPS, crypto, and hermetic builds.
-- [`${CLAUDE_SKILL_DIR}/references/provenance-and-quality.md`](references/provenance-and-quality.md) — lineage, output quality, and report.
-- [`${CLAUDE_SKILL_DIR}/references/webhook-analysis.md`](references/webhook-analysis.md) — analyzer-backed webhook inventory
-  synthesis, bounded handler semantics, provenance, and aggregation.
+- [`${CLAUDE_SKILL_DIR}/references/crypto-source-analysis.md`](references/crypto-source-analysis.md) — Inventory what cryptographic libraries, TLS versions, and secret handling patterns exist in source code. Document in Security section.
+
+Then check the Deployment Type and scan for patterns:
+
+**First check: What is the Deployment Type?**
+
+- **Operator or Controller** (appears in Deployment Type field)?  
+  → Read [`${CLAUDE_SKILL_DIR}/references/operator-preparation.md`](references/operator-preparation.md)  
+  → Informs: Architecture Components, CRDs, Security RBAC, APIs sections
+
+Then scan for additional patterns and consult applicable references:
+
+1. **FIPS/crypto signals** (Dockerfile with GOEXPERIMENT, CGO_ENABLED, TLS config)?  
+   → Read [`${CLAUDE_SKILL_DIR}/references/security-build-analysis.md`](references/security-build-analysis.md)  
+   → Informs: Security, FIPS Compliance, Build Hermeticity sections
+
+2. **Multi-tenancy patterns** (namespace scoping, tenant isolation, shared backends)?  
+   → Read [`${CLAUDE_SKILL_DIR}/references/multi-tenancy-analysis.md`](references/multi-tenancy-analysis.md)  
+   → Informs: Multi-Tenancy section
+
+3. **Ingress/auth patterns** (Gateway, auth sidecars, Routes)?  
+   → Read [`${CLAUDE_SKILL_DIR}/references/rhoai-ingress-patterns.md`](references/rhoai-ingress-patterns.md)  
+   → Informs: Network Architecture, Integration Points sections
+
+4. **Webhook patterns** (admission controllers, event handlers)?  
+   → Read [`${CLAUDE_SKILL_DIR}/references/webhook-analysis.md`](references/webhook-analysis.md)  
+   → Informs: Security, Integration Points sections
+
+5. **Python/AIPCC components** (Python packages, AIPCC base images)?  
+   → Read [`${CLAUDE_SKILL_DIR}/references/aipcc-analysis.md`](references/aipcc-analysis.md)  
+   → Informs: Dependencies, AIPCC Ecosystems sections
+
+After reading any reference file, add its filename to the output document's "Skill Reference Files Used" table with the template sections it informed.
 
 
 ## Arguments

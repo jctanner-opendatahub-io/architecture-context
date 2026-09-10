@@ -343,3 +343,8 @@ _If no shared services exist, keep the heading and table header but omit data ro
 |----------|--------------|------------------|
 
 _Filenames in this table should be relative to the checkout path, not absolute filepaths_
+
+## Skill Reference Files Used
+
+| Skill Reference Filename | Template Section |
+|--------------------------|------------------|

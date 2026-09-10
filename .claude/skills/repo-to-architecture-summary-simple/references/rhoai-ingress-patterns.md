@@ -59,6 +59,41 @@ nginx                       // Redirect services (301 redirects from legacy URLs
 - `rhods-operator/internal/controller/services/gateway/dashboard_redirects.go`: Creates nginx Deployment + Service + OpenShift Route CRs that redirect legacy dashboard/gateway URLs to the new Gateway API hostname
 - Document ALL resources the controller creates — both HTTPRoutes AND Routes, noting the purpose of each
 
+## Gateway Infrastructure in Platform Operators
+
+Platform operators (rhods-operator, odh-operator) may orchestrate Istio-based 
+ingress infrastructure. Key relationships to understand:
+
+- **GatewayConfig** (RHOAI custom resource) defines platform gateway policy
+- **Gateway** (Kubernetes Gateway API) is the ingress entry point
+- **EnvoyFilter** (Istio) shapes traffic, enforces auth, manipulates headers
+- **kube-auth-proxy** handles OIDC authentication for routes
+
+These are often created conditionally: the controller detects Istio CRDs at 
+runtime and creates EnvoyFilter resources dynamically.
+
+When documenting platform operator ingress:
+- Trace controller reconciliation logic to understand what gets deployed
+- Document both static manifests (Gateways, HTTPRoutes) and conditional resources
+- Explain the purpose of each resource in the chain
+- Note what's created at runtime vs. what's declarative in the repo
+
+## DestinationRule for Self-Signed Certificates
+
+RHOAI uses self-signed certificates for component-to-Envoy traffic, not mesh mTLS.
+
+Istio's Gateway API implementation assumes mesh mTLS by default. Without a 
+DestinationRule specifying `mode: TLS` and `tls.sni`, traffic falls back to HTTP.
+
+**DestinationRule is required** to:
+- Force TLS for component traffic (even when not mesh mTLS)
+- Allow self-signed certificates (skip CA validation)
+- Set SNI for proper certificate handling
+
+When documenting gateway infrastructure: if you find DestinationRule alongside 
+Gateway and EnvoyFilter, understand it as part of the TLS enforcement strategy 
+for self-signed certificates, not optional traffic tuning.
+
 ## Gateway API / Ingress controller documentation requirements
 
 When an operator manages ingress infrastructure, document the FULL stack:
