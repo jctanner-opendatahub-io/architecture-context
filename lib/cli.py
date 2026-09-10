@@ -92,6 +92,14 @@ def _add_strace_flag(parser):
         help="Run agents under strace (output to logs/strace/)",
     )
 
+def _add_simple_generation_flag(parser):
+    """Add --simple-generation flag to a subparser."""
+    parser.add_argument(
+        "--simple-generation",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+    )
+
 
 def _add_agent_options(parser, help_scope: str = "agent phases"):
     """Add harness/model selection shared by agent-backed commands."""
@@ -829,5 +837,9 @@ def parse_args():
         ),
     )
     _add_strace_flag(all_parser)
+
+    _add_simple_generation_flag(parser)
+    _add_simple_generation_flag(all_parser)
+    _add_simple_generation_flag(pipeline_parser)
 
     return parser.parse_args()

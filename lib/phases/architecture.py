@@ -199,6 +199,124 @@ async def run_generate_architecture_phase(args) -> None:
         )
         component.has_architecture = arch_file.exists()
 
+    # super simple mode ..
+    if getattr(args, "simple_generation", True):
+
+        if args.force:
+            missing_arch = [c for c in components.values()]
+        else:
+            missing_arch = [c for c in components.values() if not c.has_architecture]
+        has_arch = [c for c in components.values() if c.has_architecture]
+
+        print(f"Found {len(components)} components:")
+        print(f"  Already documented: {len(has_arch)}")
+        print(f"  Need architecture: {len(missing_arch)}")
+        print()
+
+        if not missing_arch and not args.force:
+            print("All components already have architecture documentation!")
+            return
+
+        # Prepare generation work. Every eligible component gets agent synthesis;
+        # analyzer output is always preseeded for constrained routes.
+        harness = getattr(args, "harness", "claude")
+        model_display = (
+            get_model_display_name(args.model, harness=harness)
+            if harness != "claude"
+            else get_model_display_name(args.model)
+        )
+
+        for component in sorted(missing_arch, key=lambda c: c.key):
+            analyzer_root = analyzer_output_dir(
+                architecture_dir, args.platform, component.key,
+            )
+
+        work_items = []
+        for component in sorted(missing_arch, key=lambda c: c.key):
+            analyzer_root = analyzer_output_dir(
+                architecture_dir, args.platform, component.key,
+            )
+            checkout_path = str(component.checkout_path.resolve())
+            final_output_path = component_output_path(
+                architecture_dir, args.platform, component.key,
+            )
+            generation_dir = component_generation_dir(
+                architecture_dir, args.platform, component.key,
+            )
+            prompt = ""
+            prompt = (
+                f"/repo-to-architecture-summary-simple {checkout_path}"
+                f" --analyzer-dir={analyzer_root}"
+                f" --generation-dir={analyzer_root}"
+                f" --distribution={distribution}"
+                f" --platform={distribution}"
+                f" --output={final_output_path}"
+                f" --generated-by={model_display}"
+                f" --component-name={model_display}"
+            )
+
+            job = {
+                "name": f"{component.key}",
+                "cwd": ".",
+                "prompt": prompt,
+                "repo": f"{component.repo_org}/{component.repo_name}",
+                "checkout_path": component.checkout_path,
+                "analyzer_root": analyzer_root,
+                "final_output_path": final_output_path,
+                # "output_paths": tuple(output_paths),
+            }
+            work_items.append(job)
+
+        # Display prepared jobs
+        jobs = work_items[:]
+        print(
+            f"Prepared {len(jobs)} agent job(s):\n"
+        )
+        for i, job in enumerate(jobs, 1):
+            print(f"{i:2d}. {job['name']:30s} {job['repo']}")
+            print(f"    cwd: {job['cwd']}")
+            print()
+
+        # Create logs directory
+        log_dir = Path(getattr(args, "log_dir", "logs/generate-architecture"))
+        log_dir.mkdir(parents=True, exist_ok=True)
+        print(f"Logs will be written to: {log_dir}\n")
+
+        print(f"{'=' * 60}")
+        print(f"Ready to process {len(work_items)} component(s)")
+        print(f"Max concurrent agents: {args.max_concurrent}")
+        print(f"Harness: {harness}")
+        selected_model = args.model or (
+            "opus" if harness == "claude" else "configured default"
+        )
+        print(f"Model: {selected_model}")
+        print(f"{'=' * 60}\n")
+
+        results = []
+        if jobs:
+            results = await run_agents_concurrently(
+                jobs,
+                log_dir,
+                args.model,
+                args.max_concurrent,
+                enable_skills=True,
+                phase_label="PHASE 3 · Component architecture synthesis",
+                on_result=lambda index, job, result: _postprocess_agent_result(
+                    job,
+                    result,
+                    log_dir,
+                    platform=distribution,
+                ),
+                harness=harness,
+            )
+
+        # import pdb; pdb.set_trace()
+        return
+
+    #######################################################
+    # COMPLICATED MODE ...
+    #######################################################
+
     if getattr(args, "structured_synthesis", False):
         from lib.structured_component_synthesis import run_pipeline_seam
 
