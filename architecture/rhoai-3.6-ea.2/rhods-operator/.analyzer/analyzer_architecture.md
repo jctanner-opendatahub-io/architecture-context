@@ -198,75 +198,75 @@ CRD count scope: 13 core API CRDs; 14 total CRD/API rows including configuration
 
 ### RBAC - Cluster Roles
 
-| Role Name | API Group | Resources | Verbs |
-|---------|---------|---------|-----|
-| opendatahub-operator-metrics-reader |  |  | get |
-| metrics-reader |  |  | get |
-| dashboard-editor-role | components.platform.opendatahub.io | dashboards | create, delete, get, list, patch, update, watch |
-| dashboard-editor-role | components.platform.opendatahub.io | dashboards/status | get |
-| dashboard-viewer-role | components.platform.opendatahub.io | dashboards | get, list, watch |
-| dashboard-viewer-role | components.platform.opendatahub.io | dashboards/status | get |
-| datasciencepipelines-editor-role | components.platform.opendatahub.io | datasciencepipelines | create, delete, get, list, patch, update, watch |
-| datasciencepipelines-editor-role | components.platform.opendatahub.io | datasciencepipelines/status | get |
-| datasciencepipelines-viewer-role | components.platform.opendatahub.io | datasciencepipelines | get, list, watch |
-| datasciencepipelines-viewer-role | components.platform.opendatahub.io | datasciencepipelines/status | get |
-| kserve-editor-role | components.platform.opendatahub.io | kserves | create, delete, get, list, patch, update, watch |
-| kserve-editor-role | components.platform.opendatahub.io | kserves/status | get |
-| kserve-viewer-role | components.platform.opendatahub.io | kserves | get, list, watch |
-| kserve-viewer-role | components.platform.opendatahub.io | kserves/status | get |
-| kueue-editor-role | components.platform.opendatahub.io | kueues | create, delete, get, list, patch, update, watch |
-| kueue-editor-role | components.platform.opendatahub.io | kueues/status | get |
-| kueue-viewer-role | components.platform.opendatahub.io | kueues | get, list, watch |
-| kueue-viewer-role | components.platform.opendatahub.io | kueues/status | get |
-| modelregistry-editor-role | components.platform.opendatahub.io | modelregistries | create, delete, get, list, patch, update, watch |
-| modelregistry-editor-role | components.platform.opendatahub.io | modelregistries/status | get |
-| modelregistry-viewer-role | components.platform.opendatahub.io | modelregistries | get, list, watch |
-| modelregistry-viewer-role | components.platform.opendatahub.io | modelregistries/status | get |
-| ray-editor-role | components.platform.opendatahub.io | rays | create, delete, get, list, patch, update, watch |
-| ray-editor-role | components.platform.opendatahub.io | rays/status | get |
-| ray-viewer-role | components.platform.opendatahub.io | rays | get, list, watch |
-| ray-viewer-role | components.platform.opendatahub.io | rays/status | get |
-| trustyai-editor-role | components.platform.opendatahub.io | trustyais | create, delete, get, list, patch, update, watch |
-| trustyai-editor-role | components.platform.opendatahub.io | trustyais/status | get |
-| trustyai-viewer-role | components.platform.opendatahub.io | trustyais | get, list, watch |
-| trustyai-viewer-role | components.platform.opendatahub.io | trustyais/status | get |
-| workbenches-editor-role | components.platform.opendatahub.io | workbenches | create, delete, get, list, patch, update, watch |
-| workbenches-editor-role | components.platform.opendatahub.io | workbenches/status | get |
-| workbenches-viewer-role | components.platform.opendatahub.io | workbenches | get, list, watch |
-| workbenches-viewer-role | components.platform.opendatahub.io | workbenches/status | get |
-| auth-editor-role | services.opendatahub.io | auths | create, delete, get, list, patch, update, watch |
-| auth-editor-role | services.opendatahub.io | auths/status | get |
-| auth-viewer-role | services.opendatahub.io | auths | get, list, watch |
-| auth-viewer-role | services.opendatahub.io | auths/status | get |
-| data-science-admingroupcluster-role | services.platform.opendatahub.io | auths | get, list, patch, watch |
-| data-science-admingroupcluster-role | services.platform.opendatahub.io | auths/status | get |
-| data-science-admingroupcluster-role | datasciencecluster.opendatahub.io | datascienceclusters | get, list, patch, update, watch |
-| data-science-admingroupcluster-role | modelregistry.opendatahub.io | modelregistries | create, delete, get, list, patch, update, watch |
-| data-science-admingroupcluster-role | feast.dev | featurestores | create, delete, get, list, patch, update, watch |
-| data-science-admingroupcluster-role | storage.k8s.io | storageclasses | get, list, patch, update, watch |
-| data-science-admingroupcluster-role | user.openshift.io | groups, users | get, list, watch |
-| data-science-admingroupcluster-role | maas.opendatahub.io | maasmodelrefs | get, list, watch |
-| data-science-admingroupcluster-role | loki.grafana.com | application | get |
-| data-science-allowedgroupcluster-role | services.platform.opendatahub.io | auths | get, list, watch |
-| data-science-allowedgroupcluster-role | services.platform.opendatahub.io | auths/status | get |
-| data-science-admingroup-kuadrant-role | metrics.k8s.io | pods | create, get |
-| data-science-admingroup-maas-role | maas.opendatahub.io | maasauthpolicies, maassubscriptions | create, delete, get, list, patch, update, watch |
-| data-science-admingroup-role | services.platform.opendatahub.io | auths | get, list, patch, update, watch |
-| data-science-admingroup-role | services.opendatahub.io | auths/status | get |
-| data-science-admingroup-role | infrastructure.opendatahub.io | hardwareprofiles | create, delete, get, list, patch, update, watch |
-| data-science-admingroup-role | route.openshift.io | routes | get, list, watch |
-| data-science-admingroup-role | batch | cronjobs | get, update, watch |
-| data-science-admingroup-role | image.openshift.io | imagestreams | create, delete, get, list, patch, update, watch |
-| data-science-admingroup-role | build.openshift.io | buildconfigs, builds | get, list, watch |
-| data-science-admingroup-role | apps | deployments | patch, update |
-| data-science-admingroup-role | opendatahub.io | odhdashboardconfigs | create, get, list, patch, update, watch |
-| data-science-admingroup-role | dashboard.opendatahub.io | odhapplications, odhdocuments | get, list, watch |
-| data-science-admingroup-role | console.openshift.io | odhquickstarts | get, list, watch |
-| data-science-admingroup-role | template.openshift.io | templates | create, delete, get, list, patch, update, watch |
-| data-science-admingroup-role | serving.kserve.io | servingruntimes | create |
-| data-science-admingroup-role | nim.opendatahub.io | accounts | create, delete, get, list, patch, update, watch |
-| data-science-admingroup-role |  | configmaps | get, list, patch, update, watch |
-| data-science-admingroup-role | serving.kserve.io | llminferenceserviceconfigs | create, delete, get, list, patch, update, watch |
+| Role Name | API Group | Resources | Non-Resource URLs | Verbs |
+|---------|---------|---------|-----------------|-----|
+| opendatahub-operator-metrics-reader |  |  | /metrics | get |
+| metrics-reader |  |  | /metrics | get |
+| dashboard-editor-role | components.platform.opendatahub.io | dashboards |  | create, delete, get, list, patch, update, watch |
+| dashboard-editor-role | components.platform.opendatahub.io | dashboards/status |  | get |
+| dashboard-viewer-role | components.platform.opendatahub.io | dashboards |  | get, list, watch |
+| dashboard-viewer-role | components.platform.opendatahub.io | dashboards/status |  | get |
+| datasciencepipelines-editor-role | components.platform.opendatahub.io | datasciencepipelines |  | create, delete, get, list, patch, update, watch |
+| datasciencepipelines-editor-role | components.platform.opendatahub.io | datasciencepipelines/status |  | get |
+| datasciencepipelines-viewer-role | components.platform.opendatahub.io | datasciencepipelines |  | get, list, watch |
+| datasciencepipelines-viewer-role | components.platform.opendatahub.io | datasciencepipelines/status |  | get |
+| kserve-editor-role | components.platform.opendatahub.io | kserves |  | create, delete, get, list, patch, update, watch |
+| kserve-editor-role | components.platform.opendatahub.io | kserves/status |  | get |
+| kserve-viewer-role | components.platform.opendatahub.io | kserves |  | get, list, watch |
+| kserve-viewer-role | components.platform.opendatahub.io | kserves/status |  | get |
+| kueue-editor-role | components.platform.opendatahub.io | kueues |  | create, delete, get, list, patch, update, watch |
+| kueue-editor-role | components.platform.opendatahub.io | kueues/status |  | get |
+| kueue-viewer-role | components.platform.opendatahub.io | kueues |  | get, list, watch |
+| kueue-viewer-role | components.platform.opendatahub.io | kueues/status |  | get |
+| modelregistry-editor-role | components.platform.opendatahub.io | modelregistries |  | create, delete, get, list, patch, update, watch |
+| modelregistry-editor-role | components.platform.opendatahub.io | modelregistries/status |  | get |
+| modelregistry-viewer-role | components.platform.opendatahub.io | modelregistries |  | get, list, watch |
+| modelregistry-viewer-role | components.platform.opendatahub.io | modelregistries/status |  | get |
+| ray-editor-role | components.platform.opendatahub.io | rays |  | create, delete, get, list, patch, update, watch |
+| ray-editor-role | components.platform.opendatahub.io | rays/status |  | get |
+| ray-viewer-role | components.platform.opendatahub.io | rays |  | get, list, watch |
+| ray-viewer-role | components.platform.opendatahub.io | rays/status |  | get |
+| trustyai-editor-role | components.platform.opendatahub.io | trustyais |  | create, delete, get, list, patch, update, watch |
+| trustyai-editor-role | components.platform.opendatahub.io | trustyais/status |  | get |
+| trustyai-viewer-role | components.platform.opendatahub.io | trustyais |  | get, list, watch |
+| trustyai-viewer-role | components.platform.opendatahub.io | trustyais/status |  | get |
+| workbenches-editor-role | components.platform.opendatahub.io | workbenches |  | create, delete, get, list, patch, update, watch |
+| workbenches-editor-role | components.platform.opendatahub.io | workbenches/status |  | get |
+| workbenches-viewer-role | components.platform.opendatahub.io | workbenches |  | get, list, watch |
+| workbenches-viewer-role | components.platform.opendatahub.io | workbenches/status |  | get |
+| auth-editor-role | services.opendatahub.io | auths |  | create, delete, get, list, patch, update, watch |
+| auth-editor-role | services.opendatahub.io | auths/status |  | get |
+| auth-viewer-role | services.opendatahub.io | auths |  | get, list, watch |
+| auth-viewer-role | services.opendatahub.io | auths/status |  | get |
+| data-science-admingroupcluster-role | services.platform.opendatahub.io | auths |  | get, list, patch, watch |
+| data-science-admingroupcluster-role | services.platform.opendatahub.io | auths/status |  | get |
+| data-science-admingroupcluster-role | datasciencecluster.opendatahub.io | datascienceclusters |  | get, list, patch, update, watch |
+| data-science-admingroupcluster-role | modelregistry.opendatahub.io | modelregistries |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroupcluster-role | feast.dev | featurestores |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroupcluster-role | storage.k8s.io | storageclasses |  | get, list, patch, update, watch |
+| data-science-admingroupcluster-role | user.openshift.io | groups, users |  | get, list, watch |
+| data-science-admingroupcluster-role | maas.opendatahub.io | maasmodelrefs |  | get, list, watch |
+| data-science-admingroupcluster-role | loki.grafana.com | application |  | get |
+| data-science-allowedgroupcluster-role | services.platform.opendatahub.io | auths |  | get, list, watch |
+| data-science-allowedgroupcluster-role | services.platform.opendatahub.io | auths/status |  | get |
+| data-science-admingroup-kuadrant-role | metrics.k8s.io | pods |  | create, get |
+| data-science-admingroup-maas-role | maas.opendatahub.io | maasauthpolicies, maassubscriptions |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroup-role | services.platform.opendatahub.io | auths |  | get, list, patch, update, watch |
+| data-science-admingroup-role | services.opendatahub.io | auths/status |  | get |
+| data-science-admingroup-role | infrastructure.opendatahub.io | hardwareprofiles |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroup-role | route.openshift.io | routes |  | get, list, watch |
+| data-science-admingroup-role | batch | cronjobs |  | get, update, watch |
+| data-science-admingroup-role | image.openshift.io | imagestreams |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroup-role | build.openshift.io | buildconfigs, builds |  | get, list, watch |
+| data-science-admingroup-role | apps | deployments |  | patch, update |
+| data-science-admingroup-role | opendatahub.io | odhdashboardconfigs |  | create, get, list, patch, update, watch |
+| data-science-admingroup-role | dashboard.opendatahub.io | odhapplications, odhdocuments |  | get, list, watch |
+| data-science-admingroup-role | console.openshift.io | odhquickstarts |  | get, list, watch |
+| data-science-admingroup-role | template.openshift.io | templates |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroup-role | serving.kserve.io | servingruntimes |  | create |
+| data-science-admingroup-role | nim.opendatahub.io | accounts |  | create, delete, get, list, patch, update, watch |
+| data-science-admingroup-role |  | configmaps |  | get, list, patch, update, watch |
+| data-science-admingroup-role | serving.kserve.io | llminferenceserviceconfigs |  | create, delete, get, list, patch, update, watch |
 
 ### RBAC - Role Bindings
 
@@ -301,6 +301,32 @@ CRD count scope: 13 core API CRDs; 14 total CRD/API rows including configuration
 | Kind | Target | Detail | Signal Type |
 |----|------|------|-----------|
 | tls-config | crypto/tls | TLS configuration import | dependency-signal |
+
+### Behavioral Evidence
+
+| Behavior | Status | Identity | Surface / Resource | Condition / Values | Enforcement / Target | Source |
+|--------|------|--------|------------------|------------------|--------------------|------|
+| conditional-metrics-enforcement | observed | controller-runtime metrics | controller-runtime metrics serving surface | oconfig.MetricsSecure is true | filters.WithAuthenticationAndAuthorization | cmd/main.go:485-500 |
+| named-watch-predicate | unresolved | internal/controller/cloudmanager/aws.NewReconciler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/cloudmanager/aws/awskubernetesengine_controller.go:28-32 |
+| named-watch-predicate | unresolved | internal/controller/cloudmanager/azure.NewReconciler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/cloudmanager/azure/azurekubernetesengine_controller.go:28-32 |
+| named-watch-predicate | unresolved | internal/controller/cloudmanager/coreweave.NewReconciler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/cloudmanager/coreweave/coreweavekubernetesengine_controller.go:28-32 |
+| named-watch-predicate | unresolved | internal/controller/components/datasciencepipelines.componentHandler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:59-65 |
+| named-watch-predicate | unresolved | internal/controller/components/kueue.componentHandler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/kueue/kueue_controller.go:125-133 |
+| named-watch-predicate | unresolved | internal/controller/components/kueue.componentHandler | rbac.authorization.k8s.io/v1/ClusterRole |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/kueue/kueue_controller.go:134-139 |
+| named-watch-predicate | unresolved | internal/controller/components/kueue.componentHandler | /v1/Namespace |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/kueue/kueue_controller.go:140-150 |
+| named-watch-predicate | unresolved | internal/controller/components/kueue.componentHandler | /v1/ConfigMap |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/kueue/kueue_controller.go:74-81 |
+| named-watch-predicate | unresolved | internal/controller/components/ray.componentHandler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/ray/ray_controller.go:60-66 |
+| named-watch-predicate | unresolved | internal/controller/components/trustyai.componentHandler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/components/trustyai/trustyai_controller.go:58-66 |
+| named-watch-predicate | unresolved | internal/controller/datasciencecluster.NewDataScienceClusterReconciler | services.platform.opendatahub.io/v1alpha1/GatewayConfig |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/datasciencecluster/datasciencecluster_controller.go:72-77 |
+| named-watch-predicate | unresolved | internal/controller/datasciencecluster.NewDataScienceClusterReconciler | /v1/ConfigMap |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/datasciencecluster/datasciencecluster_controller.go:78-85 |
+| named-watch-predicate | unresolved | internal/controller/modules.NewModuleReconciler | /v1/ConfigMap |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/modules/modules_controller.go:109-117 |
+| named-watch-predicate | unresolved | internal/controller/modules.addModuleCRDWatches | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/modules/modules_controller.go:175-179 |
+| named-watch-predicate | observed | internal/controller/services/auth.ServiceHandler | /v1/Namespace | models-as-a-service | services.platform.opendatahub.io/v1alpha1/Auth/auth | internal/controller/services/auth/auth_controller.go:63-69 |
+| named-watch-predicate | observed | internal/controller/services/auth.ServiceHandler | /v1/Namespace | kuadrant-system | services.platform.opendatahub.io/v1alpha1/Auth/auth | internal/controller/services/auth/auth_controller.go:70-76 |
+| named-watch-predicate | unresolved | internal/controller/services/gateway.ServiceHandler | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/services/gateway/gateway_controller.go:60-66 |
+| named-watch-predicate | unresolved | internal/controller/services/gateway.ServiceHandler | /v1/Secret |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/services/gateway/gateway_controller.go:68-76 |
+| named-watch-predicate | unresolved | internal/controller/services/gateway.ServiceHandler | gateway.networking.k8s.io/v1/HTTPRoute |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | internal/controller/services/gateway/gateway_controller.go:77-81 |
+| named-watch-predicate | unresolved | pkg/controller/actions/dependency/certmanager.Bootstrap | apiextensions/v1/CustomResourceDefinition |  | Unresolved: Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved | pkg/controller/actions/dependency/certmanager/bootstrap.go:360-364 |
 
 ## Admission Webhooks
 

@@ -29,6 +29,26 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **security**: GET /healthz —protected-by→ None; N/A: Kubernetes health probe; unauthenticated by design [source: cmd/cloudmanager/app/run.go:81]
 - **security**: GET /readyz —protected-by→ None; N/A: Kubernetes readiness probe; unauthenticated by design [source: cmd/cloudmanager/app/run.go:85]
 
+## Behavioral Evidence
+
+- **conditional-metrics-enforcement (observed)** controller-runtime metrics: controller-runtime metrics serving surface; condition=oconfig.MetricsSecure is true; enforcement=filters.WithAuthenticationAndAuthorization [source: cmd/main.go:485-500]
+- **named-watch-predicate (observed)** internal/controller/services/auth.ServiceHandler: /v1/Namespace; literal names=models-as-a-service; event target=services.platform.opendatahub.io/v1alpha1/Auth/auth [source: internal/controller/services/auth/auth_controller.go:63-69]
+- **named-watch-predicate (observed)** internal/controller/services/auth.ServiceHandler: /v1/Namespace; literal names=kuadrant-system; event target=services.platform.opendatahub.io/v1alpha1/Auth/auth [source: internal/controller/services/auth/auth_controller.go:70-76]
+- **named-watch-predicate (unresolved)** internal/controller/cloudmanager/aws.NewReconciler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/cloudmanager/aws/awskubernetesengine_controller.go:28-32]
+- **named-watch-predicate (unresolved)** internal/controller/cloudmanager/azure.NewReconciler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/cloudmanager/azure/azurekubernetesengine_controller.go:28-32]
+- **named-watch-predicate (unresolved)** internal/controller/cloudmanager/coreweave.NewReconciler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/cloudmanager/coreweave/coreweavekubernetesengine_controller.go:28-32]
+- **named-watch-predicate (unresolved)** internal/controller/components/datasciencepipelines.componentHandler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:59-65]
+- **named-watch-predicate (unresolved)** internal/controller/components/kueue.componentHandler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/kueue/kueue_controller.go:125-133]
+- **named-watch-predicate (unresolved)** internal/controller/components/kueue.componentHandler: rbac.authorization.k8s.io/v1/ClusterRole; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/kueue/kueue_controller.go:134-139]
+- **named-watch-predicate (unresolved)** internal/controller/components/kueue.componentHandler: /v1/Namespace; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/kueue/kueue_controller.go:140-150]
+- **named-watch-predicate (unresolved)** internal/controller/components/kueue.componentHandler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/kueue/kueue_controller.go:74-81]
+- **named-watch-predicate (unresolved)** internal/controller/components/ray.componentHandler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/ray/ray_controller.go:60-66]
+- **named-watch-predicate (unresolved)** internal/controller/components/trustyai.componentHandler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/trustyai/trustyai_controller.go:58-66]
+- **named-watch-predicate (unresolved)** internal/controller/datasciencecluster.NewDataScienceClusterReconciler: services.platform.opendatahub.io/v1alpha1/GatewayConfig; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/datasciencecluster/datasciencecluster_controller.go:72-77]
+- **named-watch-predicate (unresolved)** internal/controller/datasciencecluster.NewDataScienceClusterReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/datasciencecluster/datasciencecluster_controller.go:78-85]
+- **named-watch-predicate (unresolved)** internal/controller/modules.NewModuleReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/modules/modules_controller.go:109-117]
+- 5 additional behavioral records remain in the analyzer JSON.
+
 ## Gap Evidence Index
 
 ### authentication
@@ -36,6 +56,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
   **Candidate:** `cmd/cloudmanager/app/run.go`:81 (/healthz, None)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is authentication enforced for this surface, and is it conditional?
+  **Expected signal:** middleware, filter, policy, or enforcement branch
+  **Candidate:** `cmd/cloudmanager/app/run.go`:85 (/readyz, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
@@ -51,10 +75,18 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
+  **Candidate:** `config/default/manager_webhook_patch.yaml`:1 (:8081/readyz, None)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is authentication enforced for this surface, and is it conditional?
+  **Expected signal:** middleware, filter, policy, or enforcement branch
   **Candidate:** `internal/webhook/dashboard/validating_acceleratorprofile.go`:22 (Kubernetes admission, Operator webhook)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### authorization
 
+- **Question:** Which controller, handler, or service account exercises this RBAC policy?
+  **Expected signal:** role rules, binding subject, handler, or controller identity
+  **Candidate:** `config/rbac/auth_proxy_client_clusterrole.yaml`:1 (metrics-reader)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which controller, handler, or service account exercises this RBAC policy?
   **Expected signal:** role rules, binding subject, handler, or controller identity
   **Candidate:** `config/rbac/auth_proxy_client_clusterrole.yaml`:1 (opendatahub-operator-metrics-reader)
@@ -98,10 +130,6 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **Question:** Which controller, handler, or service account exercises this RBAC policy?
   **Expected signal:** role rules, binding subject, handler, or controller identity
   **Candidate:** `config/rbac/components_modelregistry_viewer_role.yaml`:2 (modelregistry-viewer-role)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which controller, handler, or service account exercises this RBAC policy?
-  **Expected signal:** role rules, binding subject, handler, or controller identity
-  **Candidate:** `config/rbac/components_ray_editor_role.yaml`:2 (ray-editor-role)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### configuration_lifecycle
 
@@ -151,6 +179,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Expected signal:** runtime client construction and target configuration
   **Candidate:** `cmd/manifest-tools/pkg/applier/olm.go`:58 (Kubernetes API, client-go dynamic client)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
+  **Expected signal:** runtime client construction and target configuration
+  **Candidate:** `cmd/manifest-tools/pkg/applier/olm.go`:63 (Kubernetes API, client-go typed clientset)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### http_endpoints
 
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
@@ -159,17 +191,61 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
+  **Candidate:** `cmd/cloudmanager/app/run.go`:85 (/readyz, GET, cmd/cloudmanager/app)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
+  **Expected signal:** route registration, handler binding, middleware, or owner symbol
   **Candidate:** `cmd/main.go`:612 (/healthz, GET, cmd)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
+  **Expected signal:** route registration, handler binding, middleware, or owner symbol
+  **Candidate:** `cmd/main.go`:616 (/readyz, GET, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### integration_points
 
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml`:1 (CRD CRUD, ModelRegistry CR)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What runtime call or protocol realizes this integration?
   **Expected signal:** client construction, request path, protocol, or failure handling
   **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml`:1 (CRD Watch, DataScienceCluster CR)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What runtime call or protocol realizes this integration?
   **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml`:1 (CRD Watch, Feast FeatureStore CR)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml`:1 (OpenShift Users/Groups, REST)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
   **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD CRUD, HardwareProfile CR)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD CRUD, NIM Account CR)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD CRUD, ServingRuntime CR)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD Watch, KServe InferenceService)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD Watch, OpenShift Console)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD Watch, OpenShift Routes)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What runtime call or protocol realizes this integration?
+  **Expected signal:** client construction, request path, protocol, or failure handling
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (OpenShift Image Streams, REST)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What runtime call or protocol realizes this integration?
   **Expected signal:** client construction, request path, protocol, or failure handling
@@ -193,9 +269,9 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Expected signal:** import, client call, queue, or controller handoff
   **Candidate:** `internal/controller/components/kueue/kueue_controller.go`:69 (Controller watch, prometheus-operator)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** What source-backed runtime behavior uses this component reference?
-  **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `internal/controller/components/kueue/kueue_support.go`:98 (/v1/Namespace, create, get, list, update operations by DSCInitializationReconciler, Injector)
+- **Question:** Where is this internal dependency invoked and what is the interaction boundary?
+  **Expected signal:** import, client call, queue, or controller handoff
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml`:1 (CRD CRUD, ModelRegistry (modelregistry.opendatahub.io))
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
@@ -203,7 +279,15 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml`:1 (CRD Watch, Feast (feast.dev))
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is this internal dependency invoked and what is the interaction boundary?
+  **Expected signal:** import, client call, queue, or controller handoff
   **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD CRUD, HardwareProfile CR)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is this internal dependency invoked and what is the interaction boundary?
+  **Expected signal:** import, client call, queue, or controller handoff
+  **Candidate:** `internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml`:1 (CRD Watch, KServe InferenceService)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
@@ -213,68 +297,61 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Expected signal:** import, client call, queue, or controller handoff
   **Candidate:** `internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml`:1 (Gateway API (data-science-gateway), HTTPRoute)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** What source-backed runtime behavior uses this component reference?
-  **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `internal/webhook/hardwareprofile/mutating.go`:523 (/v1/Event, create, list operations by Injector)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** What source-backed runtime behavior uses this component reference?
-  **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `pkg/clusterhealth/component_status.go`:82 (/v1/Pod, list operations)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
   **Candidate:** `pkg/tls/profile.go`:159 (APIServer resource read, OpenShift Cluster Configuration)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### kubernetes_relationships
 
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/cloudmanager/aws/awskubernetesengine_controller.go`:28 (apiextensions/v1/CustomResourceDefinition)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/cloudmanager/aws/awskubernetesengine_controller.go`:28-32 (apiextensions/v1/CustomResourceDefinition, internal/controller/cloudmanager/aws.NewReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/cloudmanager/azure/azurekubernetesengine_controller.go`:28 (apiextensions/v1/CustomResourceDefinition)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/cloudmanager/azure/azurekubernetesengine_controller.go`:28-32 (apiextensions/v1/CustomResourceDefinition, internal/controller/cloudmanager/azure.NewReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/cloudmanager/coreweave/coreweavekubernetesengine_controller.go`:28 (apiextensions/v1/CustomResourceDefinition)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/cloudmanager/coreweave/coreweavekubernetesengine_controller.go`:28-32 (apiextensions/v1/CustomResourceDefinition, internal/controller/cloudmanager/coreweave.NewReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go`:48 (/v1/ConfigMap, componentHandler)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go`:59-65 (apiextensions/v1/CustomResourceDefinition, internal/controller/components/datasciencepipelines.componentHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/components/kueue/kueue_controller.go`:60 (/v1/ConfigMap, componentHandler)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/kueue/kueue_controller.go`:125-133 (apiextensions/v1/CustomResourceDefinition, internal/controller/components/kueue.componentHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/components/ray/ray_controller.go`:50 (/v1/ConfigMap, componentHandler)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/kueue/kueue_controller.go`:134-139 (internal/controller/components/kueue.componentHandler, rbac.authorization.k8s.io/v1/ClusterRole)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/components/trustyai/trustyai_controller.go`:50 (/v1/ConfigMap, componentHandler)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/kueue/kueue_controller.go`:140-150 (/v1/Namespace, internal/controller/components/kueue.componentHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/datasciencecluster/datasciencecluster_controller.go`:78 (/v1/ConfigMap)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/kueue/kueue_controller.go`:74-81 (/v1/ConfigMap, internal/controller/components/kueue.componentHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/modules/modules_controller.go`:109 (/v1/ConfigMap)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/ray/ray_controller.go`:60-66 (apiextensions/v1/CustomResourceDefinition, internal/controller/components/ray.componentHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/services/auth/auth_controller.go`:63 (/v1/Namespace, ServiceHandler)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/components/trustyai/trustyai_controller.go`:58-66 (apiextensions/v1/CustomResourceDefinition, internal/controller/components/trustyai.componentHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/services/gateway/gateway_controller.go`:68 (/v1/Secret, ServiceHandler)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/datasciencecluster/datasciencecluster_controller.go`:72-77 (internal/controller/datasciencecluster.NewDataScienceClusterReconciler, services.platform.opendatahub.io/v1alpha1/GatewayConfig)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `pkg/controller/actions/dependency/certmanager/bootstrap.go`:360 (apiextensions/v1/CustomResourceDefinition)
+- **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
+  **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
+  **Candidate:** `internal/controller/datasciencecluster/datasciencecluster_controller.go`:78-85 (/v1/ConfigMap, internal/controller/datasciencecluster.NewDataScienceClusterReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- 6 additional gap candidates remain in the analyzer JSON.
 ### services
 
 - **Question:** Which container listener, probe, and service mapping expose this workload?

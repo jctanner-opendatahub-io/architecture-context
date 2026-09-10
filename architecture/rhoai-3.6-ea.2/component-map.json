@@ -2,318 +2,14 @@
   "metadata": {
     "platform": "rhoai-3.6-ea.2",
     "discovery_method": "breadcrumb",
-    "entry_point": "rhods-operator",
-    "discovered_at": "2026-09-05T03:00:18.487530+00:00",
-    "checkouts_dir": [
-      "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2",
-      "/data/checkouts/llm-d.rhoai-3.6-ea.2",
-      "/data/checkouts/project-codeflare.rhoai-3.6-ea.2",
-      "/data/checkouts/opendatahub-io.rhoai-3.6-ea.2",
-      "/data/checkouts/IBM.rhoai-3.6-ea.2",
-      "/data/checkouts/Red-Hat-AI-Innovation-Team.rhoai-3.6-ea.2",
-      "/data/checkouts/llm-d-incubation.rhoai-3.6-ea.2",
-      "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2",
-      "/data/checkouts/openshift.rhoai-3.6-ea.2"
-    ],
-    "total_repos_scanned": 103,
-    "components_discovered": 79,
-    "components_excluded": 20
+    "entry_point": "multiple",
+    "discovered_at": "2026-09-04T18:00:00Z",
+    "checkouts_dir": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2",
+    "total_repos_scanned": 97,
+    "components_discovered": 80,
+    "components_excluded": 19
   },
   "components": {
-    "ai4rag": {
-      "key": "ai4rag",
-      "repo_org": "IBM",
-      "repo_name": "ai4rag",
-      "repo_url": "https://github.com/IBM/ai4rag",
-      "ref": "main",
-      "source_folder": "src",
-      "checkout_path": "/data/checkouts/IBM.rhoai-3.6-ea.2/ai4rag",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "shared_library",
-      "tier": "payload_component",
-      "discovered_via": "image_dependency",
-      "referenced_by": [
-        "pipelines-components"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "pipelines-components"
-      ],
-      "confidence": "high"
-    },
-    "codeflare-sdk": {
-      "key": "codeflare-sdk",
-      "repo_org": "project-codeflare",
-      "repo_name": "codeflare-sdk",
-      "repo_url": "https://github.com/project-codeflare/codeflare-sdk",
-      "ref": "main",
-      "source_folder": "codeflare_sdk",
-      "checkout_path": "/data/checkouts/project-codeflare.rhoai-3.6-ea.2/codeflare-sdk",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "shared_library",
-      "tier": "payload_component",
-      "discovered_via": "image_dependency",
-      "referenced_by": [
-        "notebooks"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "notebooks"
-      ],
-      "confidence": "high"
-    },
-    "kubeflow-sdk": {
-      "key": "kubeflow-sdk",
-      "repo_org": "opendatahub-io",
-      "repo_name": "kubeflow-sdk",
-      "repo_url": "https://github.com/opendatahub-io/kubeflow-sdk",
-      "ref": "main",
-      "source_folder": "kubeflow",
-      "checkout_path": "/data/checkouts/opendatahub-io.rhoai-3.6-ea.2/kubeflow-sdk",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "shared_library",
-      "tier": "payload_component",
-      "discovered_via": "image_dependency",
-      "referenced_by": [
-        "distributed-workloads"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "distributed-workloads"
-      ],
-      "confidence": "high"
-    },
-    "kueue-operator": {
-      "key": "kueue-operator",
-      "repo_org": "openshift",
-      "repo_name": "kueue-operator",
-      "repo_url": "https://github.com/openshift/kueue-operator",
-      "ref": "release-4.22",
-      "source_folder": "config",
-      "checkout_path": "/data/checkouts/openshift.rhoai-3.6-ea.2/kueue-operator",
-      "checkout_branch": "release-4.22",
-      "has_architecture": false,
-      "type": "operator",
-      "tier": "optional_platform",
-      "discovered_via": "dsc_spec",
-      "referenced_by": [
-        "distributed-workloads",
-        "rhods-operator"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 2,
-      "consumers": [
-        "distributed-workloads",
-        "rhods-operator"
-      ],
-      "confidence": "high"
-    },
-    "llm-d": {
-      "key": "llm-d",
-      "repo_org": "llm-d",
-      "repo_name": "llm-d",
-      "repo_url": "https://github.com/llm-d/llm-d",
-      "ref": "main",
-      "source_folder": "guides",
-      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "service",
-      "tier": "payload_component",
-      "discovered_via": "container_image",
-      "referenced_by": [
-        "odh-model-controller"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "odh-model-controller"
-      ],
-      "confidence": "high"
-    },
-    "llm-d-inference-payload-processor": {
-      "key": "llm-d-inference-payload-processor",
-      "repo_org": "llm-d",
-      "repo_name": "llm-d-inference-payload-processor",
-      "repo_url": "https://github.com/llm-d/llm-d-inference-payload-processor",
-      "ref": "main",
-      "source_folder": ".",
-      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-inference-payload-processor",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "service",
-      "tier": "payload_component",
-      "discovered_via": "dependency",
-      "referenced_by": [
-        "ai-gateway-payload-processing"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "ai-gateway-payload-processing"
-      ],
-      "confidence": "high"
-    },
-    "llm-d-kv-cache": {
-      "key": "llm-d-kv-cache",
-      "repo_org": "llm-d",
-      "repo_name": "llm-d-kv-cache",
-      "repo_url": "https://github.com/llm-d/llm-d-kv-cache",
-      "ref": "main",
-      "source_folder": "deploy",
-      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-kv-cache",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "service",
-      "tier": "payload_component",
-      "discovered_via": "container_image",
-      "referenced_by": [
-        "llm-d-router",
-        "odh-model-controller"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 2,
-      "consumers": [
-        "llm-d-router",
-        "odh-model-controller"
-      ],
-      "confidence": "high"
-    },
-    "llm-d-routing-sidecar": {
-      "key": "llm-d-routing-sidecar",
-      "repo_org": "llm-d",
-      "repo_name": "llm-d-routing-sidecar",
-      "repo_url": "https://github.com/llm-d/llm-d-routing-sidecar",
-      "ref": "main",
-      "source_folder": "deploy",
-      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-routing-sidecar",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "service",
-      "tier": "payload_component",
-      "discovered_via": "container_image",
-      "referenced_by": [
-        "llm-d-router",
-        "odh-model-controller"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 2,
-      "consumers": [
-        "llm-d-router",
-        "odh-model-controller"
-      ],
-      "confidence": "high"
-    },
-    "models-perf-benchmark-data": {
-      "key": "models-perf-benchmark-data",
-      "repo_org": "red-hat-data-services",
-      "repo_name": "models-perf-benchmark-data",
-      "repo_url": "https://github.com/red-hat-data-services/models-perf-benchmark-data",
-      "ref": "main",
-      "source_folder": ".",
-      "checkout_path": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/models-perf-benchmark-data",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "asset",
-      "tier": "payload_component",
-      "discovered_via": "container_image",
-      "referenced_by": [
-        "model-registry"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "model-registry"
-      ],
-      "confidence": "high"
-    },
-    "openshell": {
-      "key": "openshell",
-      "repo_org": "red-hat-data-services",
-      "repo_name": "openshell",
-      "repo_url": "https://github.com/red-hat-data-services/openshell",
-      "ref": "rhoai-3.6-ea.2",
-      "source_folder": "deploy",
-      "checkout_path": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/openshell",
-      "checkout_branch": "rhoai-3.6-ea.2",
-      "has_architecture": false,
-      "type": "service",
-      "tier": "payload_component",
-      "discovered_via": "operator_operand",
-      "referenced_by": [
-        "rhods-operator"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "rhods-operator"
-      ],
-      "confidence": "high"
-    },
-    "praxis-ai": {
-      "key": "praxis-ai",
-      "repo_org": "praxis-proxy",
-      "repo_name": "ai",
-      "repo_url": "https://github.com/praxis-proxy/ai",
-      "ref": "main",
-      "source_folder": "server",
-      "checkout_path": "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2/praxis-ai",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "shared_library",
-      "tier": "payload_component",
-      "discovered_via": "dependency",
-      "referenced_by": [
-        "praxis-extproc"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "praxis-extproc"
-      ],
-      "confidence": "high"
-    },
-    "training_hub": {
-      "key": "training_hub",
-      "repo_org": "Red-Hat-AI-Innovation-Team",
-      "repo_name": "training_hub",
-      "repo_url": "https://github.com/Red-Hat-AI-Innovation-Team/training_hub",
-      "ref": "main",
-      "source_folder": "src",
-      "checkout_path": "/data/checkouts/Red-Hat-AI-Innovation-Team.rhoai-3.6-ea.2/training_hub",
-      "checkout_branch": "main",
-      "has_architecture": false,
-      "type": "shared_library",
-      "tier": "payload_component",
-      "discovered_via": "image_dependency",
-      "referenced_by": [
-        "distributed-workloads"
-      ],
-      "shipped": true,
-      "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "distributed-workloads"
-      ],
-      "confidence": "high"
-    },
     "vllm-cpu": {
       "key": "vllm-cpu",
       "repo_org": "red-hat-data-services",
@@ -327,15 +23,9 @@
       "type": "service",
       "tier": "payload_component",
       "discovered_via": "container_image",
-      "referenced_by": [
-        "odh-model-controller"
-      ],
+      "referenced_by": [],
       "shipped": true,
       "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "odh-model-controller"
-      ],
       "confidence": "high"
     },
     "vllm-gaudi": {
@@ -351,15 +41,229 @@
       "type": "service",
       "tier": "payload_component",
       "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "openshell": {
+      "key": "openshell",
+      "repo_org": "red-hat-data-services",
+      "repo_name": "openshell",
+      "repo_url": "https://github.com/red-hat-data-services/openshell",
+      "ref": "rhoai-3.6-ea.2",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/openshell",
+      "checkout_branch": "rhoai-3.6-ea.2",
+      "has_architecture": false,
+      "type": "service",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "llm-d": {
+      "key": "llm-d",
+      "repo_org": "llm-d",
+      "repo_name": "llm-d",
+      "repo_url": "https://github.com/llm-d/llm-d",
+      "ref": "main",
+      "source_folder": "docker",
+      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "asset",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "llm-d-inference-payload-processor": {
+      "key": "llm-d-inference-payload-processor",
+      "repo_org": "llm-d",
+      "repo_name": "llm-d-inference-payload-processor",
+      "repo_url": "https://github.com/llm-d/llm-d-inference-payload-processor",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-inference-payload-processor",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "service",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "llm-d-kv-cache": {
+      "key": "llm-d-kv-cache",
+      "repo_org": "llm-d",
+      "repo_name": "llm-d-kv-cache",
+      "repo_url": "https://github.com/llm-d/llm-d-kv-cache",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-kv-cache",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "service",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "llm-d-autoscaling": {
+      "key": "llm-d-autoscaling",
+      "repo_org": "llm-d",
+      "repo_name": "llm-d-autoscaling",
+      "repo_url": "https://github.com/llm-d/llm-d-autoscaling",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-autoscaling",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "controller",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
       "referenced_by": [
-        "odh-model-controller"
+        "llm-d"
       ],
       "shipped": true,
       "architecturally_significant": true,
-      "consumer_count": 1,
-      "consumers": [
-        "odh-model-controller"
+      "confidence": "high"
+    },
+    "llm-d-batch-gateway": {
+      "key": "llm-d-batch-gateway",
+      "repo_org": "llm-d",
+      "repo_name": "llm-d-batch-gateway",
+      "repo_url": "https://github.com/llm-d/llm-d-batch-gateway",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-batch-gateway",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "service",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
+      "referenced_by": [
+        "llm-d"
       ],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "codeflare-sdk": {
+      "key": "codeflare-sdk",
+      "repo_org": "project-codeflare",
+      "repo_name": "codeflare-sdk",
+      "repo_url": "https://github.com/project-codeflare/codeflare-sdk",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/project-codeflare.rhoai-3.6-ea.2/codeflare-sdk",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "shared_library",
+      "tier": "payload_component",
+      "discovered_via": "dependency",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "kubeflow-sdk": {
+      "key": "kubeflow-sdk",
+      "repo_org": "opendatahub-io",
+      "repo_name": "kubeflow-sdk",
+      "repo_url": "https://github.com/opendatahub-io/kubeflow-sdk",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/opendatahub-io.rhoai-3.6-ea.2/kubeflow-sdk",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "shared_library",
+      "tier": "payload_component",
+      "discovered_via": "dependency",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "ai4rag": {
+      "key": "ai4rag",
+      "repo_org": "IBM",
+      "repo_name": "ai4rag",
+      "repo_url": "https://github.com/IBM/ai4rag",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/IBM.rhoai-3.6-ea.2/ai4rag",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "shared_library",
+      "tier": "payload_component",
+      "discovered_via": "dependency",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "training-hub": {
+      "key": "training-hub",
+      "repo_org": "Red-Hat-AI-Innovation-Team",
+      "repo_name": "training_hub",
+      "repo_url": "https://github.com/Red-Hat-AI-Innovation-Team/training_hub",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/Red-Hat-AI-Innovation-Team.rhoai-3.6-ea.2/training_hub",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "shared_library",
+      "tier": "payload_component",
+      "discovered_via": "dependency",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "llm-d-planner": {
+      "key": "llm-d-planner",
+      "repo_org": "llm-d-incubation",
+      "repo_name": "llm-d-planner",
+      "repo_url": "https://github.com/llm-d-incubation/llm-d-planner",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/llm-d-incubation.rhoai-3.6-ea.2/llm-d-planner",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "service",
+      "tier": "payload_component",
+      "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "kueue-operator": {
+      "key": "kueue-operator",
+      "repo_org": "openshift",
+      "repo_name": "kueue-operator",
+      "repo_url": "https://github.com/openshift/kueue-operator",
+      "ref": "release-4.22",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/openshift.rhoai-3.6-ea.2/kueue-operator",
+      "checkout_branch": "release-4.22",
+      "has_architecture": false,
+      "type": "operator",
+      "tier": "optional_platform",
+      "discovered_via": "operator_bundle",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
       "confidence": "high"
     },
     "MLServer": {
@@ -1244,94 +1148,93 @@
       "discovered_via": "sync_config",
       "confidence": "high"
     },
-    "llm-d-planner": {
-      "key": "llm-d-planner",
-      "repo_org": "llm-d-incubation",
-      "repo_name": "llm-d-planner",
-      "checkout_path": "/data/checkouts/llm-d-incubation.rhoai-3.6-ea.2/llm-d-planner",
+    "praxis-ai": {
+      "key": "praxis-ai",
+      "repo_org": "praxis-proxy",
+      "repo_name": "ai",
+      "repo_url": "https://github.com/praxis-proxy/ai",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2/praxis-ai",
+      "checkout_branch": "main",
+      "has_architecture": false,
       "type": "service",
       "tier": "payload_component",
-      "has_architecture": false
+      "discovered_via": "container_image",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
     },
     "praxis-grid": {
       "key": "praxis-grid",
       "repo_org": "praxis-proxy",
       "repo_name": "grid",
+      "repo_url": "https://github.com/praxis-proxy/grid",
+      "ref": "main",
+      "source_folder": ".",
       "checkout_path": "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2/praxis-grid",
+      "checkout_branch": "main",
+      "has_architecture": false,
       "type": "operator",
       "tier": "payload_component",
-      "has_architecture": false
+      "discovered_via": "operator_bundle",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
+    },
+    "praxis-policy": {
+      "key": "praxis-policy",
+      "repo_org": "praxis-proxy",
+      "repo_name": "policy",
+      "repo_url": "https://github.com/praxis-proxy/policy",
+      "ref": "main",
+      "source_folder": ".",
+      "checkout_path": "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2/praxis-policy",
+      "checkout_branch": "main",
+      "has_architecture": false,
+      "type": "shared_library",
+      "tier": "payload_component",
+      "discovered_via": "dependency",
+      "referenced_by": [],
+      "shipped": true,
+      "architecturally_significant": true,
+      "confidence": "high"
     }
   },
   "dependency_graph": {
-    "ai-gateway-payload-processing": [
-      "llm-d-inference-payload-processor"
+    "llm-d-batch-gateway": [
+      "llm-d-async"
     ],
-    "distributed-workloads": [
-      "kubeflow-sdk",
-      "training_hub"
-    ],
-    "llm-d": [
-      "llm-d-kv-cache",
-      "llm-d-routing-sidecar"
-    ],
-    "llm-d-router": [
-      "llm-d-kv-cache",
-      "llm-d-routing-sidecar"
-    ],
-    "model-registry": [
-      "models-perf-benchmark-data"
-    ],
-    "notebooks": [
-      "codeflare-sdk"
-    ],
-    "odh-model-controller": [
-      "llm-d",
-      "vllm-cpu",
-      "vllm-gaudi"
-    ],
-    "pipelines-components": [
-      "ai4rag"
-    ],
-    "praxis-extproc": [
-      "praxis-ai"
-    ],
-    "rhods-operator": [
-      "kueue-operator",
-      "llm-d",
-      "llm-d-kv-cache",
-      "llm-d-routing-sidecar",
-      "models-perf-benchmark-data",
-      "openshell",
-      "vllm-cpu",
-      "vllm-gaudi"
+    "llm-d-autoscaling": [
+      "gateway-api-inference-extension"
     ]
   },
   "excluded": {
-    "RHOAI-Build-Config": "build_infrastructure",
     "konflux-central": "build_infrastructure",
-    "llm-d-api-extensions": "ecosystem_no_shipping_breadcrumb",
-    "llm-d-autoscaling": "ecosystem_no_shipping_breadcrumb",
-    "llm-d-batch-gateway": "ecosystem_no_shipping_breadcrumb",
-    "llm-d-benchmark": "benchmark_or_development_tool",
-    "llm-d-deployer": "deprecated",
-    "llm-d-go-template": "repository_template",
-    "llm-d-inference-sim": "benchmark_or_development_tool",
-    "llm-d-infra": "build_infrastructure",
+    "models-perf-benchmark-data": "benchmark_data",
+    "must-gather": "diagnostic_tool",
+    "rhoai-additional-images": "additional_images",
+    "RHOAI-Build-Config": "build_infrastructure",
+    "rhods-devops-infra": "devops_infrastructure",
+    "llm-d-api-extensions": "empty_placeholder",
+    "llm-d-benchmark": "benchmark_tool",
+    "llm-d-deployer": "deprecated_installer",
+    "llm-d.github.io": "documentation_website",
+    "llm-d-go-template": "project_template",
+    "llm-d-inference-sim": "testing_simulator",
+    "llm-d-infra": "infrastructure_tooling",
     "llm-d-model-service": "deprecated",
-    "llm-d-pd-utils": "diagnostic_or_support_tool",
-    "llm-d-prism": "benchmark_or_development_tool",
-    "llm-d-python-template": "repository_template",
-    "llm-d.github.io": "documentation_only",
-    "must-gather": "diagnostic_or_support_tool",
-    "rhoai-additional-images": "diagnostic_or_support_tool",
-    "rhods-devops-infra": "build_infrastructure",
-    "praxis-policy": "ecosystem_no_shipping_breadcrumb",
-    "praxis-enhancements": "documentation_only"
+    "llm-d-pd-utils": "operational_utilities",
+    "llm-d-prism": "development_tool",
+    "llm-d-python-template": "project_template",
+    "llm-d-routing-sidecar": "deprecated",
+    "praxis-enhancements": "enhancement_proposals"
   },
   "provenance": {
     "metadata": {
-      "generated_at": "2026-09-05T03:00:56.446341+00:00",
+      "generated_at": "2026-09-04T21:48:16.892914+00:00",
       "checkouts_dirs": [
         "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2",
         "/data/checkouts/llm-d.rhoai-3.6-ea.2",
