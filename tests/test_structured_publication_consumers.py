@@ -6,7 +6,6 @@ import asyncio
 import hashlib
 import json
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -17,8 +16,6 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "tests"))
-
-import test_structured_component_synthesis as fixtures  # noqa: E402
 
 from lib.phases import collect  # noqa: E402
 from lib.structured_component_publication import (  # noqa: E402
@@ -31,20 +28,6 @@ from scripts import lint_architecture_docs  # noqa: E402
 
 def _component(checkout: Path):
     return SimpleNamespace(checkout_path=checkout, tier="core_platform")
-
-
-@pytest.fixture(scope="module")
-def lint_arch_analyzer_binary(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    output = tmp_path_factory.mktemp("publication-lint-go") / "arch-analyzer"
-    subprocess.run(
-        ["go", "build", "-o", str(output), "."],
-        cwd=PROJECT_ROOT / "src/arch-analyzer",
-        env={**os.environ, "GOCACHE": "/tmp/structured-component-go-cache"},
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    return output
 
 
 def _tree_identity(root: Path) -> tuple[tuple[str, str], ...]:
@@ -78,46 +61,6 @@ def _run_linter(architecture: Path, analyzer: Path | None = None):
         capture_output=True,
         text=True,
     )
-
-
-def _published_lint_fixture(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    arch_analyzer_binary: Path,
-) -> tuple[Path, Path, Path]:
-    from lib import fetch
-    from lib import structured_component_synthesis as synthesis
-
-    architecture, _checkout, component = fixtures._pipeline_fixture(
-        tmp_path, ("rhoai-lint",)
-    )
-    platforms = tmp_path / "platforms.yaml"
-    platforms.write_text("rhoai-lint: {}\n")
-
-    async def ensure_analyzer():
-        return str(arch_analyzer_binary)
-
-    monkeypatch.setattr(fetch, "_ensure_arch_analyzer", ensure_analyzer)
-    monkeypatch.setattr(
-        synthesis,
-        "authenticated_harness_adapter",
-        lambda _harness: fixtures._adapter(
-            "claude", lambda prompt, *_args: fixtures._response(prompt)
-        ),
-    )
-    asyncio.run(
-        fixtures._run_pipeline_fixture_version(
-            architecture=architecture,
-            component=component,
-            version="rhoai-lint",
-            inputs=fixtures._pipeline_inputs(tmp_path / "inputs.json"),
-            platforms=platforms,
-        )
-    )
-    version = architecture / "rhoai-lint"
-    markdown = version / "praxis-policy.md"
-    shutil.rmtree(version / ".generation" / "structured-publication-locks")
-    return architecture, version, markdown
 
 
 def test_component_map_collector_preserves_validated_publication(
@@ -288,55 +231,6 @@ def test_gitignore_preserves_legacy_sidecars_and_ignores_private_structured_stat
             text=True,
         )
         assert result.returncode == 1, (path, result.stdout, result.stderr)
-
-
-def test_actual_linter_is_read_only_for_valid_and_invalid_publications(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    lint_arch_analyzer_binary: Path,
-) -> None:
-    architecture, version, markdown = _published_lint_fixture(
-        tmp_path, monkeypatch, lint_arch_analyzer_binary
-    )
-    component_dir = version / "praxis-policy"
-    lock_dir = version / ".generation" / "structured-publication-locks"
-    original_markdown = markdown.read_bytes()
-    original_document = (component_dir / "document.json").read_bytes()
-
-    before = _tree_identity(architecture)
-    valid = _run_linter(architecture, lint_arch_analyzer_binary)
-    assert valid.returncode == 0, valid.stdout + valid.stderr
-    assert "All 1 component architecture file(s) passed validation." in valid.stdout
-    assert _tree_identity(architecture) == before
-    assert not lock_dir.exists()
-
-    marker, body = original_markdown.split(b"\n", 1)
-    markdown.write_bytes(marker + b"\n" + body + b"\ntampered body\n")
-    before = _tree_identity(architecture)
-    stale = _run_linter(architecture, lint_arch_analyzer_binary)
-    assert stale.returncode != 0
-    assert "flat Markdown derivative is missing, stale, or tampered" in stale.stdout
-    assert _tree_identity(architecture) == before
-    assert not lock_dir.exists()
-
-    markdown.unlink()
-    before = _tree_identity(architecture)
-    missing = _run_linter(architecture, lint_arch_analyzer_binary)
-    assert missing.returncode != 0
-    assert "flat Markdown derivative is missing, stale, or tampered" in missing.stdout
-    assert _tree_identity(architecture) == before
-    assert not lock_dir.exists()
-
-    markdown.write_bytes(original_markdown)
-    (component_dir / "document.json").write_bytes(b"{not json\n")
-    before = _tree_identity(architecture)
-    invalid = _run_linter(architecture, lint_arch_analyzer_binary)
-    assert invalid.returncode != 0
-    assert "published document is not valid JSON" in invalid.stdout
-    assert _tree_identity(architecture) == before
-    assert not lock_dir.exists()
-
-    (component_dir / "document.json").write_bytes(original_document)
 
 
 def test_actual_linter_leaves_legacy_architecture_tree_unchanged() -> None:

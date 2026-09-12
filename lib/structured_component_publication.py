@@ -7,33 +7,22 @@ import fcntl
 import json
 import os
 import tempfile
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from lib.structured_component_reuse import (
-    AcceptedSnapshot,
-    ComponentIdentity,
-    ProducerCompatibility,
-    SourceRunState,
-)
 from lib.structured_component_synthesis import (
     BUNDLE_SCHEMA,
     DOCUMENT_SCHEMA,
     ENVELOPE_SCHEMA,
     RUN_RECORD_SCHEMA,
     GoStructuredAssembler,
-    PrivateRunRecordStore,
     ReuseRecordError,
     _analyzer_bundle_fingerprint,
     _bundle_without_identity,
-    _canonical,
-    _dependency_from_value,
     _identity_from_document,
-    _input_from_value,
     _record_without_identity,
-    _source_snapshot_from_value,
     _successful_response,
     _validate_schema,
     content_hash,
@@ -59,69 +48,6 @@ NON_COMPONENT_DIRECTORIES = frozenset(
 
 class PublicationError(RuntimeError):
     """A candidate or published snapshot is incomplete or inconsistent."""
-
-
-def validate_legacy_conversion_input(analyzer: Mapping[str, Any]) -> None:
-    """Reject legacy analyzer shapes the accepted v1 facts cannot preserve."""
-
-    unsupported = [
-        field
-        for field in ("network_policies", "platform_webhooks")
-        if analyzer.get(field)
-    ]
-    dockerfile_fields = {"path", "base_image", "user", "issues"}
-    for index, item in enumerate(analyzer.get("dockerfiles") or []):
-        if not isinstance(item, Mapping):
-            raise PublicationError(f"legacy dockerfiles[{index}] is malformed")
-        extras = sorted(set(item) - dockerfile_fields)
-        if extras:
-            unsupported.append(f"dockerfiles[{index}].{','.join(extras)}")
-    webhook_fields = {
-        "name",
-        "type",
-        "service_ref",
-        "path",
-        "port",
-        "failure_policy",
-        "rules",
-        "sources",
-        "purpose",
-    }
-    for index, item in enumerate(analyzer.get("webhooks") or []):
-        if not isinstance(item, Mapping):
-            raise PublicationError(f"legacy webhooks[{index}] is malformed")
-        extras = sorted(set(item) - webhook_fields)
-        if extras:
-            unsupported.append(f"webhooks[{index}].{','.join(extras)}")
-    evidence = analyzer.get("cross_cutting_evidence")
-    if isinstance(evidence, Mapping) and "fips" in evidence:
-        fips = evidence["fips"]
-        if not isinstance(fips, list) or not fips:
-            raise PublicationError("legacy FIPS evidence is ambiguous or malformed")
-        for index, item in enumerate(fips):
-            if (
-                not isinstance(item, Mapping)
-                or not isinstance(item.get("claim"), str)
-                or item.get("status")
-                not in {
-                    "verified",
-                    "supported",
-                    "unsupported",
-                    "unknown",
-                    "unresolved",
-                    "not-applicable",
-                }
-                or not isinstance(item.get("sources"), list)
-            ):
-                raise PublicationError(
-                    f"legacy FIPS evidence[{index}] is ambiguous or malformed"
-                )
-    elif evidence is not None and not isinstance(evidence, Mapping):
-        raise PublicationError("legacy cross-cutting evidence is malformed")
-    if unsupported:
-        raise PublicationError(
-            "legacy conversion would drop unsupported fields: " + "; ".join(unsupported)
-        )
 
 
 @dataclass(frozen=True)
@@ -176,15 +102,6 @@ def _atomic_bytes(path: Path, data: bytes) -> None:
         except FileNotFoundError:
             pass
         raise
-
-
-def _replace(source: Path, destination: Path) -> None:
-    os.replace(source, destination)
-    directory = os.open(destination.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
 
 
 def _json(raw: bytes, label: str) -> dict[str, Any]:
@@ -535,58 +452,6 @@ def load_accepted_publication(
     return publication
 
 
-def load_published_reuse_snapshot(
-    architecture_dir: Path,
-    version_scope: str,
-    component: str,
-    assembler: GoStructuredAssembler,
-) -> AcceptedSnapshot:
-    """Rebuild the P3 reuse object using only the published four-file core."""
-
-    publication = load_accepted_publication(
-        architecture_dir / version_scope / component,
-        assembler,
-        repair_markdown=True,
-    )
-    published = publication.document_value["publication"]
-    if published["synthesis"]["state"] != "synthesized":
-        raise PublicationError(
-            "deterministic-only or missing-response publication is not reusable"
-        )
-    record = published["accepted_inputs"]["run_record"]
-    document = copy.deepcopy(dict(publication.document_value))
-    document.pop("publication")
-    document["schema_version"] = "1.0.0"
-    if content_hash(document) != record["document_integrity"]:
-        raise PublicationError(
-            "published authority cannot reconstruct the accepted private document"
-        )
-    identity = ComponentIdentity(**record["identity"])
-    compatibility = ProducerCompatibility(**record["compatibility"])
-    dependencies = _dependency_from_value(record["dependencies"])
-    source_state = SourceRunState(
-        _source_snapshot_from_value(record["source_state"]["start"]),
-        _source_snapshot_from_value(record["source_state"]["end"]),
-    )
-    inputs = _input_from_value(record["inputs"])
-    return AcceptedSnapshot(
-        snapshot_id=record["snapshot_id"],
-        platform=record["version_scope"],
-        identity=identity,
-        accepted=True,
-        route=record["route"],
-        inputs=inputs,
-        compatibility=compatibility,
-        dependencies=dependencies,
-        source_state=source_state,
-        synthesis_bytes=publication.synthesis,
-        synthesis_integrity=content_hash(publication.synthesis),
-        response_identity=record["response_identity"],
-        document=document,
-        document_integrity=record["document_integrity"],
-    )
-
-
 def _recover_locked(
     component_dir: Path, assembler: GoStructuredAssembler
 ) -> AcceptedPublication | None:
@@ -755,243 +620,3 @@ def validate_accepted_publications(
         except PublicationError as error:
             raise PublicationError(f"{component_dir}: {error}") from error
     return result
-
-
-def _publish_candidate(
-    candidate: AcceptedPublication,
-    assembler: GoStructuredAssembler,
-    *,
-    interrupt_after: str | None = None,
-    observer: Callable[[str], None] | None = None,
-) -> AcceptedPublication:
-    component_dir = candidate.component_dir
-    markdown_path = candidate.markdown_path
-    component_dir.mkdir(parents=True, exist_ok=True)
-    lock_path = _publication_lock_path(component_dir)
-    with lock_path.open("a+b") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        _recover_locked(component_dir, assembler)
-        files = (
-            (component_dir / "analyzer.json", candidate.analyzer),
-            (component_dir / "synthesis.json", candidate.synthesis),
-            (component_dir / "document.json", candidate.document),
-            (markdown_path, candidate.markdown),
-        )
-        for path, value in files:
-            _atomic_bytes(path.with_name(f".{path.name}.next"), value)
-            boundary = f"staged:{path.name}"
-            if observer:
-                observer(boundary)
-            if interrupt_after == boundary:
-                raise PublicationError(
-                    f"simulated interruption while staging {path.name}"
-                )
-        if observer:
-            observer("staged")
-        if interrupt_after == "staged":
-            raise PublicationError("simulated interruption after staged")
-        for path, _value in files:
-            if path.is_file():
-                _atomic_bytes(
-                    path.with_name(f".{path.name}.previous"), path.read_bytes()
-                )
-            boundary = f"backed-up:{path.name}"
-            if observer:
-                observer(boundary)
-            if interrupt_after == boundary:
-                raise PublicationError(
-                    f"simulated interruption while backing up {path.name}"
-                )
-        for path, _value in files:
-            _replace(path.with_name(f".{path.name}.next"), path)
-            boundary = f"replaced:{path.name}"
-            if observer:
-                observer(boundary)
-            if interrupt_after == boundary:
-                raise PublicationError(f"simulated interruption after {path.name}")
-        result = load_accepted_publication(component_dir, assembler)
-        _cleanup_recovery_files(component_dir, markdown_path)
-        return result
-
-
-def publish_deterministic_snapshot(
-    *,
-    architecture_dir: Path,
-    version_scope: str,
-    component: str,
-    analyzer: bytes,
-    private_document: bytes,
-    assembler: GoStructuredAssembler,
-    reason: str,
-) -> AcceptedPublication:
-    """Publish an explicit zero-model snapshot; never accepts a failed envelope."""
-
-    from lib.structured_component_synthesis import special_synthesis_envelope
-
-    analyzer_value = _json(analyzer, "deterministic analyzer")
-    document_value = _json(private_document, "deterministic document")
-    if document_value.get("schema_version") != "1.0.0":
-        raise PublicationError(
-            "deterministic publication requires a private 1.0.0 document"
-        )
-    if (
-        document_value.get("identity", {}).get("component") != component
-        or document_value.get("identity", {}).get("version_scope") != version_scope
-    ):
-        raise PublicationError("deterministic document identity does not match target")
-    analyzer = _canonical(analyzer_value) + b"\n"
-    synthesis_value = special_synthesis_envelope(
-        "deterministic-only",
-        input_bundle_identity=_analyzer_bundle_fingerprint(analyzer_value),
-        reason=reason,
-    )
-    synthesis = _canonical(synthesis_value) + b"\n"
-    unavailable = {"state": "unavailable", "reason": "deterministic-only"}
-    unavailable_identity = content_hash(unavailable)
-    analyzer_hash = content_hash(analyzer)
-    synthesis_hash = content_hash(synthesis)
-    document_value["schema_version"] = PUBLISHED_DOCUMENT_SCHEMA
-    document_value["publication"] = {
-        "contract": PUBLICATION_CONTRACT,
-        "snapshot_id": _special_snapshot_id(
-            analyzer_hash=analyzer_hash,
-            synthesis_hash=synthesis_hash,
-            component=component,
-            version_scope=version_scope,
-        ),
-        "analyzer": {
-            "content_hash": analyzer_hash,
-            "bundle_fingerprint": _analyzer_bundle_fingerprint(analyzer_value),
-            "schema_version": analyzer_value["schema_version"],
-            "source_component": analyzer_value["component"],
-            "repository": analyzer_value.get("repo", ""),
-            "source_revision": analyzer_value.get("commit_sha", ""),
-            "analyzer_version": analyzer_value.get("analyzer_version", ""),
-            "producer_build_identity": content_hash(
-                {"state": "unavailable", "reason": "producer-build-not-recorded"}
-            ),
-        },
-        "synthesis": {
-            "content_hash": synthesis_hash,
-            "state": "deterministic-only",
-            "input_bundle_identity": synthesis_value["input_bundle_identity"],
-            "current_evidence_bundle_identity": unavailable_identity,
-            "original_evidence_bundle_identity": unavailable_identity,
-            "producing_model_eligible": False,
-        },
-        "accepted_inputs": {
-            "run_record": unavailable,
-            "current_evidence_bundle": unavailable,
-            "original_evidence_bundle": unavailable,
-        },
-        "markdown": {
-            "path": f"{component}.md",
-            "renderer_version": document_value["producers"]["renderer_version"],
-        },
-        "diagram": {"state": "unavailable"},
-    }
-    document = _canonical(document_value) + b"\n"
-    component_dir = (architecture_dir / version_scope / component).resolve()
-    candidate = _validate_authority_bytes(
-        component_dir=component_dir,
-        markdown_path=component_dir.parent / f"{component}.md",
-        analyzer=analyzer,
-        synthesis=synthesis,
-        document=document,
-        assembler=assembler,
-    )
-    return _publish_candidate(candidate, assembler)
-
-
-def publish_private_run(
-    *,
-    architecture_dir: Path,
-    version_scope: str,
-    component: str,
-    assembler: GoStructuredAssembler,
-    interrupt_after: str | None = None,
-    observer: Callable[[str], None] | None = None,
-) -> AcceptedPublication:
-    """Publish one validated private run; ``interrupt_after`` is test-only."""
-
-    store = PrivateRunRecordStore(architecture_dir, assembler)
-    store.load(version_scope, component)
-    private_dir = store.directory(version_scope, component)
-    record = _json((private_dir / "run-record.json").read_bytes(), "private run record")
-    current_bundle = _json(
-        (private_dir / "evidence-bundle.json").read_bytes(),
-        "current evidence bundle",
-    )
-    original_path = private_dir / record["artifacts"]["synthesis_bundle"]["path"]
-    original_bundle = _json(original_path.read_bytes(), "original evidence bundle")
-    analyzer_value = current_bundle["analyzer"]["payload"]
-    analyzer = _canonical(analyzer_value) + b"\n"
-    synthesis = (private_dir / "synthesis.json").read_bytes()
-    private_document = _json(
-        (private_dir / "document.json").read_bytes(), "private document"
-    )
-    _, response_identity = _successful_response(synthesis, original_bundle)
-    synthesis_value = _json(synthesis, "private synthesis")
-    analyzer_hash = content_hash(analyzer)
-    synthesis_hash = content_hash(synthesis)
-    publication = {
-        "contract": PUBLICATION_CONTRACT,
-        "snapshot_id": _snapshot_id(
-            analyzer_hash=analyzer_hash, synthesis_hash=synthesis_hash, record=record
-        ),
-        "analyzer": {
-            "content_hash": analyzer_hash,
-            "bundle_fingerprint": _analyzer_bundle_fingerprint(analyzer_value),
-            "schema_version": analyzer_value["schema_version"],
-            "source_component": analyzer_value["component"],
-            "repository": analyzer_value.get("repo", ""),
-            "source_revision": analyzer_value.get("commit_sha", ""),
-            "analyzer_version": analyzer_value.get("analyzer_version", ""),
-            "producer_build_identity": record["compatibility"][
-                "analyzer_build_identity"
-            ],
-        },
-        "synthesis": {
-            "content_hash": synthesis_hash,
-            "state": synthesis_value["state"],
-            "input_bundle_identity": synthesis_value["input_bundle_identity"],
-            "current_evidence_bundle_identity": _bundle_identity(
-                current_bundle, "current evidence"
-            ),
-            "original_evidence_bundle_identity": _bundle_identity(
-                original_bundle, "original evidence"
-            ),
-            "accepted_response_identity": response_identity,
-            "producing_model_eligible": True,
-        },
-        "accepted_inputs": {
-            "run_record": copy.deepcopy(record),
-            "current_evidence_bundle": copy.deepcopy(current_bundle),
-            "original_evidence_bundle": copy.deepcopy(original_bundle),
-        },
-        "markdown": {
-            "path": f"{component}.md",
-            "renderer_version": private_document["producers"]["renderer_version"],
-        },
-        "diagram": {"state": "unavailable"},
-    }
-    document_value = copy.deepcopy(private_document)
-    document_value["schema_version"] = PUBLISHED_DOCUMENT_SCHEMA
-    document_value["publication"] = publication
-    document = _canonical(document_value) + b"\n"
-    component_dir = (architecture_dir / version_scope / component).resolve()
-    markdown_path = component_dir.parent / f"{component}.md"
-    candidate = _validate_authority_bytes(
-        component_dir=component_dir,
-        markdown_path=markdown_path,
-        analyzer=analyzer,
-        synthesis=synthesis,
-        document=document,
-        assembler=assembler,
-    )
-    return _publish_candidate(
-        candidate,
-        assembler,
-        interrupt_after=interrupt_after,
-        observer=observer,
-    )
