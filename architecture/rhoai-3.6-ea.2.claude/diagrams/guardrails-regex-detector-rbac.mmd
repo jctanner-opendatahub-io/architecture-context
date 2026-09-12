@@ -1,8 +1,0 @@
-graph TD
-    subgraph "guardrails-regex-detector RBAC"
-        direction TB
-
-        Note["This component requires NO RBAC permissions.<br/><br/>The regex-detector binary is a pure HTTP service<br/>that does not interact with the Kubernetes API.<br/><br/>- No ClusterRoles defined<br/>- No RoleBindings defined<br/>- No ServiceAccount-specific permissions<br/>- No secrets consumed<br/>- No Kubernetes API access required<br/><br/>Security enforcement is fully platform-delegated:<br/>authentication, authorization, and TLS are handled<br/>by the service mesh or gateway layer."]
-    end
-
-    style Note fill:#f9f9f9,stroke:#999,stroke-width:2px
