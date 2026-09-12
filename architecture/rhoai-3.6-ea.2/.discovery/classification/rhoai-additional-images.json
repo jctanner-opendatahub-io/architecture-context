@@ -1,9 +1,0 @@
-{
-  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/rhoai-additional-images",
-  "classification": "configuration",
-  "files_read": [
-    "README.md",
-    "rhoai-disconnected-images.yaml"
-  ],
-  "reasoning": "This checkout is a configuration-only repository containing documentation and a YAML inventory of additional and deprecated container image references. It has no operator implementation, reusable library, or running service code."
-}
