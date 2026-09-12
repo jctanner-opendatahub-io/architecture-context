@@ -8,7 +8,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from lib.cli import parse_args
-from lib.phases import main
+from lib.phases.orchestration import main
 
 _AGENT_COMMANDS = frozenset({
     "discover-components",
