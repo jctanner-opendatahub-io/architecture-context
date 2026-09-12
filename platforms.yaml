@@ -271,12 +271,14 @@ rhoai-3.6-ea.2:
     - key: llm-d
       repo_org: llm-d
       repo_name: llm-d
+      type: service
     #- key: llm-d-async
     #  repo_org: red-hat-data-services
     #  repo_name: llm-d-async
-    - key: llm-d-autoscaling
-      repo_org: llm-d
-      repo_name: llm-d-autoscaling
+    #- key: llm-d-autoscaling
+    #  repo_org: llm-d
+    #  repo_name: llm-d-autoscaling
+    #  type: null
     #- key: llm-d-batch-gateway
     #  repo_org: llm-d
     #  repo_name: llm-d-batch-gateway
@@ -286,6 +288,7 @@ rhoai-3.6-ea.2:
     - key: llm-d-inference-payload-processor
       repo_org: llm-d
       repo_name: llm-d-inference-payload-processor
+      type: plugin
     #- key: llm-d-kv-cache
     #  repo_org: llm-d
     #  repo_name: llm-d-kv-cache
@@ -305,9 +308,11 @@ rhoai-3.6-ea.2:
     - key: praxis-ai
       repo_org: praxis-proxy
       repo_name: ai
-    - key: praxis-enhancements
-      repo_org: praxis-proxy
-      repo_name: enhancements
+      type: service
+    #- key: praxis-enhancements
+    #  repo_org: praxis-proxy
+    #  repo_name: enhancements
+    #  type: null
     - key: praxis-grid
       repo_org: praxis-proxy
       repo_name: grid
@@ -315,6 +320,7 @@ rhoai-3.6-ea.2:
     - key: praxis-policy
       repo_org: praxis-proxy
       repo_name: policy
+      type: library
 
 rhoai-3.6-ea.1:
   <<: *rhoai_3x_common
