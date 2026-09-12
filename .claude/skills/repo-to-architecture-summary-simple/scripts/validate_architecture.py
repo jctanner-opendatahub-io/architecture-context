@@ -140,12 +140,8 @@ EXPECTED_TABLE_HEADERS = {
         "Purpose",
     ],
     "Repo Lineage": [
-        "Role",
+        "Id",
         "Repository",
-        "Sync Mechanism",
-        "Sync Branch",
-        "Sync Workflows",
-        "Detection Method",
     ],
     "Aliases": ["Current Name", "Previous Name", "Type", "Context"],
     "Tenant Model": ["Aspect", "Value", "Source"],

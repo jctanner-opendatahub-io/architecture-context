@@ -68,3 +68,4 @@ After reading any reference file, add its filename to the output document's "Ski
 - `--output=PATH`, default `GENERATED_ARCHITECTURE.md` for standalone use.
 - `--generated-by=STRING`, optional metadata value.
 - `--component-name=STRING`, name of the component.
+- `--lineage=STRING,STRING,STRING`, list of repositories representing this repository's lineage
