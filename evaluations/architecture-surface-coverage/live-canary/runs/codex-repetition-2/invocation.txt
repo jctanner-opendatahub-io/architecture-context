@@ -1,5 +1,0 @@
-Agent: rhods-operator
-Harness: codex
-Model: gpt-5.6-sol
-Working directory: .
-============================================================
