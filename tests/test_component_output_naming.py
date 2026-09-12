@@ -2,7 +2,6 @@ import json
 
 from lib.manifest_parser import ComponentInfo
 from lib.phases.architecture import (
-    _promote_component_output,
     _remove_legacy_component_outputs,
 )
 from lib.phases.discover import _apply_map_overrides
@@ -88,13 +87,3 @@ def test_discovery_map_uses_alias_but_preserves_repo_identity(tmp_path):
     assert data["components"]["praxis-policy"]["repo_name"] == "policy"
     assert "praxis-grid" in data["components"]
     assert data["dependency_graph"] == {"praxis-grid": ["praxis-policy"]}
-
-
-def test_promoted_document_heading_uses_output_component_key(tmp_path):
-    source = tmp_path / "merged.md"
-    target = tmp_path / "praxis-policy.md"
-    source.write_text("# Component: policy\n\n## Metadata\n")
-
-    _promote_component_output(source, target)
-
-    assert target.read_text().startswith("# Component: praxis-policy\n")

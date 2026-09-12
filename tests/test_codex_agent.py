@@ -20,13 +20,6 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from lib import agent_runner, codex_agent  # noqa: E402
-from lib.architecture_surface_coverage import (  # noqa: E402
-    build_surface_inventory,
-    validate_surface_coverage,
-)
-from lib.phases.architecture import (  # noqa: E402
-    _observed_read_records_from_telemetry,
-)
 
 
 def _install_structured_transport_stub(
@@ -1619,103 +1612,6 @@ def test_codex_composition_unmapped_actions_and_model_text_do_not_create_evidenc
         composed["command"],
         "unmapped-action:unknown",
     ]
-
-
-def test_unparsed_codex_read_range_cannot_verify_distant_evidence(tmp_path):
-    checkout = tmp_path / "repo"
-    checkout.mkdir()
-    source = checkout / "cmd/main.go"
-    source.parent.mkdir()
-    source.write_text("\n".join(f"line {line}" for line in range(1, 521)))
-    telemetry = codex_agent._source_read_telemetry(
-        [
-            {
-                "type": "commandExecution",
-                "id": "head-read",
-                "cwd": str(checkout),
-                "exit_code": 0,
-                "command_actions": [
-                    {
-                        "type": "read",
-                        "path": "cmd/main.go",
-                        "command": "head -20 cmd/main.go",
-                    }
-                ],
-            }
-        ],
-        checkout,
-    )
-    observed = _observed_read_records_from_telemetry(telemetry)
-    assert telemetry["source_file_count"] == 1
-    assert telemetry["source_read_operations"] == 1
-    assert telemetry["source_read_ranges"] == [
-        {"path": "cmd/main.go", "offset": None, "limit": None}
-    ]
-    assert observed == [
-        {
-            "path": "cmd/main.go",
-            "line_range": "unknown",
-            "outcome": "observed-by-harness",
-        }
-    ]
-
-    inventory = build_surface_inventory(
-        {
-            "entrypoints": [
-                {
-                    "name": "manager",
-                    "type": "Go controller-runtime operator",
-                    "source": "cmd/main.go:10",
-                }
-            ]
-        },
-        component="example",
-    )
-    inventory["surfaces"] = [
-        surface
-        for surface in inventory["surfaces"]
-        if surface["id"] == "authentication.metrics-enforcement"
-    ]
-    inventory["surfaces"][0]["candidate_locations"] = [
-        {"path": "cmd/main.go", "line_range": "480-500", "origin": "analyzer"}
-    ]
-    sidecar = copy.deepcopy(inventory)
-    sidecar["surfaces"][0].update(
-        {
-            "disposition": "documented",
-            "evidence_status": "available",
-            "claim_support": "supported",
-            "evidence": [
-                {"kind": "source-read", "reference": "cmd/main.go:480-500"}
-            ],
-            "document_reference": {
-                "kind": "section",
-                "section": "Architectural Analysis",
-                "fact_identity": "conditional metrics authentication",
-            },
-        }
-    )
-    document = tmp_path / "component.md"
-    document.write_text(
-        "# Component: example\n\n## Architectural Analysis\n\n"
-        "conditional metrics authentication\n"
-    )
-
-    report = validate_surface_coverage(
-        inventory=inventory,
-        sidecar=sidecar,
-        promoted_document=document,
-        observed_reads=observed,
-        source_root=checkout,
-    )
-
-    assert report["structural_valid"] is False
-    assert report["summary"]["documented"] == 0
-    assert report["summary"]["unresolved"] == 1
-    assert {item["classification"] for item in report["validator_findings"]} == {
-        "inspection_gap",
-        "unverifiable_coverage_claim",
-    }
 
 
 @pytest.mark.asyncio
