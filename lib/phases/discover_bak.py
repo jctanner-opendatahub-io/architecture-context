@@ -652,7 +652,6 @@ async def run_discover_components_phase(args) -> None:
         strace_dir=strace_dir,
         harness=harness,
     )
-    import pdb; pdb.set_trace()
     if harness == "codex":
         result = await run_isolated_discovery(
             run_agent, platform=args.platform,

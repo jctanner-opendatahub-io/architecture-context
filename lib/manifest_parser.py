@@ -29,8 +29,8 @@ class ComponentInfo:
     repo_name: str  # Repo name (e.g., "kserve", "odh-dashboard")
     ref: str  # Branch/tag/commit
     source_folder: str  # Folder within repo
-    checkout_path: Optional[Path] = None  # Path to local checkout
     has_architecture: bool = False  # Whether GENERATED_ARCHITECTURE.md exists
+    checkout_path: Optional[Path] = None  # Path to local checkout
     repo_url: Optional[str] = None  # Full GitHub URL
     checkout_branch: Optional[str] = None  # Branch checked out locally
     tier: Optional[str] = None
@@ -40,6 +40,7 @@ class ComponentInfo:
     shipped: Optional[bool] = None
     architecturally_significant: Optional[bool] = None
     confidence: Optional[str] = None
+    lineage: Optional[List[str]] = field(default=None)
 
 
 def parse_manifest_array(content: str, array_name: str) -> Dict[str, ComponentInfo]:

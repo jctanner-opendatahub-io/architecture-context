@@ -156,6 +156,7 @@ def read_component_map(
             shipped=comp_data.get("shipped"),
             architecturally_significant=comp_data.get("architecturally_significant"),
             confidence=comp_data.get("confidence"),
+            lineage=comp_data.get("lineage"),
         )
 
     return components

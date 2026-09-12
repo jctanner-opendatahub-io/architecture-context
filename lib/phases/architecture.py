@@ -243,6 +243,10 @@ async def run_generate_architecture_phase(args) -> None:
             generation_dir = component_generation_dir(
                 architecture_dir, args.platform, component.key,
             )
+            if not component.lineage:
+                lineage=""
+            else:
+                lineage = ",".join(component.lineage)
             prompt = ""
             prompt = (
                 f"/repo-to-architecture-summary-simple {checkout_path}"
@@ -253,6 +257,7 @@ async def run_generate_architecture_phase(args) -> None:
                 f" --output={final_output_path}"
                 f" --generated-by={model_display}"
                 f" --component-name={model_display}"
+                f" --lineage={lineage}"
             )
 
             job = {
