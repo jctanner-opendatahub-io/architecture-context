@@ -69,6 +69,7 @@ async def test_component_generation_uses_supported_distribution_in_prompt(
         has_architecture=False,
         architecturally_significant=True,
         tier="core_platform",
+        lineage=None,
     )
     captured_jobs = []
 
