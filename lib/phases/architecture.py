@@ -209,7 +209,7 @@ async def run_generate_architecture_phase(args) -> None:
         else:
             lineage = ",".join(component.lineage)
         prompt = (
-            f"/repo-to-architecture-summary-simple {checkout_path}"
+            f"/repo-to-architecture-summary {checkout_path}"
             f" --analyzer-dir={analyzer_root}"
             f" --generation-dir={analyzer_root}"
             f" --distribution={distribution}"

@@ -23,23 +23,13 @@ _Free-form authored synthesis of the component's architecture. Cover patterns, d
 
 ### Repo Lineage
 
-| Role | Repository | Sync Mechanism | Sync Branch | Sync Workflows | Detection Method |
-|------|-----------|----------------|-------------|----------------|------------------|
-| Upstream | https://github.com/kserve/kserve | -- | -- | -- | github_api |
-| Midstream | https://github.com/opendatahub-io/kserve | sync_workflow | main | `sync-upstream.yaml` | sync_workflow |
-| Downstream | https://github.com/red-hat-data-services/kserve | auto_merge | rhoai-staging | -- | cross_org_match |
+| Id | Repository |
+|----|------------|
+| 1  | <url> |
 
-_**Role**: `Upstream`, `Midstream`, `Downstream` -- the three-tier model matching `repoRole()` in `cmd/provenance.go`._
-
+_**Id**: the numerical index in the lineage chain. Preserve the order given by the `--lineage` argument._
 _**Repository**: full URL (e.g., `https://github.com/org/repo`) -- no assumptions about hosting platform._
 
-_**Sync Mechanism**: `sync_workflow`, `rebase_workflow`, `auto_merge`, `manual`, or `--` for the origin._
-
-_**Sync Branch**: branch used for sync, or `--`._
-
-_**Sync Workflows**: CI workflow filenames that perform the sync (e.g., `sync-upstream.yaml`), or `--` if none. Helps engineers find the actual automation._
-
-_**Detection Method**: how the relationship was discovered -- `github_api`, `sync_workflow`, `known_mapping`, `cross_org_match`, `sync_config`, or `local_analysis` (fallback when no provenance data is available)._
 
 ### Aliases
 
@@ -336,3 +326,15 @@ _If no shared services exist, keep the heading and table header but omit data ro
 | Version | Date | Changes |
 |---------|------|---------|
 | [version] | [YYYY-MM-DD] | [summary of changes] |
+
+## Files & Findings
+
+| Filename | Line Numbers | Notable Findings |
+|----------|--------------|------------------|
+
+_Filenames in this table should be relative to the checkout path, not absolute filepaths_
+
+## Skill Reference Files Used
+
+| Skill Reference Filename | Template Section |
+|--------------------------|------------------|
