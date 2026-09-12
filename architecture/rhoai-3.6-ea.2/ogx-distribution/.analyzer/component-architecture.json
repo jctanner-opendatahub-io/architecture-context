@@ -1,8 +1,8 @@
 {
   "component": "ogx-distribution",
   "repo": "https://github.com/red-hat-data-services/ogx-distribution.git",
-  "commit_sha": "2f2d1624f9396444645f18442b9294bbf8f4bf23",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "12e3d9b43ee129bcd6470cf2a5a86555f75c748f",
+  "extracted_at": "2026-09-12T16:39:59Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -29,39 +29,39 @@
   "external_connections": null,
   "recent_changes": [
     {
-      "version": "2f2d1624",
-      "date": "2026-09-03",
+      "version": "12e3d9b4",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "93a1e91e",
-      "date": "2026-09-03",
+      "version": "e85bcd42",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "76b5f064",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #177 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "953d92fd",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #192 from red-hat-data-services/fix/rhoai-3.6-ea.2-konflux-exclude-speechrecognition"
     },
     {
-      "version": "2b5d0bb8",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+      "version": "13b13b7b",
+      "date": "2026-09-11",
+      "changes": "fix: exclude speechrecognition from Konflux lockfile"
     },
     {
-      "version": "c6227567",
-      "date": "2026-09-03",
-      "changes": "test: expand Responses API coverage for tools, instructions, chaining, and deletion (#566)"
+      "version": "77738bb0",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #191 from red-hat-data-services/fix/konflux-exclude-speechrecognition"
     },
     {
-      "version": "2ebcc76d",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "9e526714",
+      "date": "2026-09-11",
+      "changes": "fix: exclude speechrecognition from Konflux lockfile"
     },
     {
-      "version": "a57dc315",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #175 from red-hat-data-services/fix-base-image-1"
+      "version": "8317769f",
+      "date": "2026-09-11",
+      "changes": "chore: update dependency lockfiles (#598)"
     }
   ],
   "component_refs": null,

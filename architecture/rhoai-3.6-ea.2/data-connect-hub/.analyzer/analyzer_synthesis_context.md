@@ -6,7 +6,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **crds (observed)**: 3 crds facts extracted [source: dc-controller/config/crd/bases/dataconnecthub.opendatahub.io_dataconnectservices.yaml:2, dc-controller/config/crd/bases/dataconnecthub.opendatahub.io_initdataconnections.yaml:2, dc-controller/config/crd/bases/dataconnecthub.opendatahub.io_initdataconnectiontypes.yaml:2]
 - **grpc_services (confirmed-empty)**: 0 grpc_services facts extracted
-- **http_endpoints (observed)**: 18 http_endpoints facts extracted [source: dc-controller/cmd/main.go:246, dc-controller/cmd/main.go:250, services/flight/src/flight/metrics.rs:89, services/rest/src/main.rs:44, services/rest/src/main.rs:52, services/rest/src/main.rs:53, services/rest/src/main.rs:54, services/rest/src/main.rs:55, services/rest/src/main.rs:56, services/rest/src/main.rs:57, services/rest/src/main.rs:58, services/rest/src/main.rs:59, services/rest/src/main.rs:60, services/rest/src/main.rs:61, services/rest/src/main.rs:62, services/rest/src/main.rs:66, services/rest/src/main.rs:67, services/rest/src/main.rs:68]
+- **http_endpoints (observed)**: 18 http_endpoints facts extracted [source: dc-controller/cmd/main.go:246, dc-controller/cmd/main.go:250, services/flight/src/flight/metrics.rs:117, services/rest/src/main.rs:43, services/rest/src/main.rs:51, services/rest/src/main.rs:52, services/rest/src/main.rs:53, services/rest/src/main.rs:54, services/rest/src/main.rs:55, services/rest/src/main.rs:56, services/rest/src/main.rs:57, services/rest/src/main.rs:58, services/rest/src/main.rs:59, services/rest/src/main.rs:60, services/rest/src/main.rs:61, services/rest/src/main.rs:65, services/rest/src/main.rs:66, services/rest/src/main.rs:67]
 - **services (observed)**: 3 services facts extracted [source: dc-controller/config/default/metrics_service.yaml:1]
 - **ingress (confirmed-empty)**: 0 ingress facts extracted
 - **webhooks (not-verified)**: 0 webhooks facts extracted; absence is not proven by the available coverage
@@ -14,17 +14,17 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 ## Deterministic Cross-References
 
 - **controller**: ConfigMapWatcherReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: dc-controller/internal/controller/configmap_watcher_controller.go:171, dc-controller/internal/controller/configmap_watcher_controller.go:62]
-- **controller**: DataConnectServiceReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: dc-controller/internal/controller/configmap_watcher_controller.go:62, dc-controller/internal/controller/dataconnectservice_controller.go:714]
-- **controller**: DataConnectServiceReconciler —watches-reference→ api/dataconnecthub/v1alpha1/DataConnectService; api/dataconnecthub/v1alpha1/DataConnectService [source: dc-controller/internal/controller/dataconnectservice_controller.go:172, dc-controller/internal/controller/dataconnectservice_controller.go:711]
-- **controller**: DataConnectServiceReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: dc-controller/internal/controller/dataconnectservice_controller.go:660, dc-controller/internal/controller/dataconnectservice_controller.go:712]
+- **controller**: DataConnectServiceReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: dc-controller/internal/controller/configmap_watcher_controller.go:62, dc-controller/internal/controller/dataconnectservice_controller.go:751]
+- **controller**: DataConnectServiceReconciler —watches-reference→ api/dataconnecthub/v1alpha1/DataConnectService; api/dataconnecthub/v1alpha1/DataConnectService [source: dc-controller/internal/controller/dataconnectservice_controller.go:176, dc-controller/internal/controller/dataconnectservice_controller.go:748]
+- **controller**: DataConnectServiceReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: dc-controller/internal/controller/dataconnectservice_controller.go:697, dc-controller/internal/controller/dataconnectservice_controller.go:749]
 - **controller**: InitDataConnectionReconciler —watches-reference→ api/dataconnecthub/v1alpha1/InitDataConnection; api/dataconnecthub/v1alpha1/InitDataConnection [source: dc-controller/internal/controller/initdataconnection_controller.go:44, dc-controller/internal/controller/initdataconnection_controller.go:66]
-- **controller**: InitDataConnectionTypeReconciler —watches-reference→ api/dataconnecthub/v1alpha1/InitDataConnectionType; api/dataconnecthub/v1alpha1/InitDataConnectionType [source: dc-controller/internal/controller/dataconnectservice_controller.go:411, dc-controller/internal/controller/initdataconnectiontype_controller.go:146]
-- **controller**: SecretWatcherReconciler —watches-reference→ /v1/Secret; /v1/Secret [source: dc-controller/internal/controller/dataconnectservice_controller.go:514, dc-controller/internal/controller/secret_watcher_controller.go:159]
+- **controller**: InitDataConnectionTypeReconciler —watches-reference→ api/dataconnecthub/v1alpha1/InitDataConnectionType; api/dataconnecthub/v1alpha1/InitDataConnectionType [source: dc-controller/internal/controller/dataconnectservice_controller.go:416, dc-controller/internal/controller/initdataconnectiontype_controller.go:146]
+- **controller**: SecretWatcherReconciler —watches-reference→ /v1/Secret; /v1/Secret [source: dc-controller/internal/controller/dataconnectservice_controller.go:519, dc-controller/internal/controller/secret_watcher_controller.go:159]
 
 ## Behavioral Evidence
 
 - **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: dc-controller/cmd/main.go:175-175]
-- **named-watch-predicate (unresolved)** internal/controller.DataConnectServiceReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: dc-controller/internal/controller/dataconnectservice_controller.go:717-721]
+- **named-watch-predicate (unresolved)** internal/controller.DataConnectServiceReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: dc-controller/internal/controller/dataconnectservice_controller.go:754-758]
 
 ## Gap Evidence Index
 
@@ -56,11 +56,11 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `services/rest/src/main.rs`:56 (/api/v1/*, /api/v2/*, Header passthrough)
+  **Candidate:** `services/rest/src/main.rs`:55 (/api/v1/*, /api/v2/*, Header passthrough)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `services/rest/src/main.rs`:56 (/health, /info, None)
+  **Candidate:** `services/rest/src/main.rs`:55 (/health, /info, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### authorization
 
@@ -140,43 +140,43 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:52 (/connection-types, GET)
+  **Candidate:** `services/rest/src/main.rs`:51 (/connection-types, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:53 (/connection-types, POST)
+  **Candidate:** `services/rest/src/main.rs`:52 (/connection-types, POST)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:54 (/connection-types/{id}, GET)
+  **Candidate:** `services/rest/src/main.rs`:53 (/connection-types/{id}, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:55 (/connection-types/{id}, PATCH)
+  **Candidate:** `services/rest/src/main.rs`:54 (/connection-types/{id}, PATCH)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:56 (/connection-types/{id}, DELETE)
+  **Candidate:** `services/rest/src/main.rs`:55 (/connection-types/{id}, DELETE)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:59 (/connections/{id}, GET)
+  **Candidate:** `services/rest/src/main.rs`:58 (/connections/{id}, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:61 (/connections/{id}, DELETE)
+  **Candidate:** `services/rest/src/main.rs`:60 (/connections/{id}, DELETE)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:62 (/connections/{id}/exports/secrets/{secret_name}, PUT)
+  **Candidate:** `services/rest/src/main.rs`:61 (/connections/{id}/exports/secrets/{secret_name}, PUT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:66 (/connections/{id}/readiness, POST)
+  **Candidate:** `services/rest/src/main.rs`:65 (/connections/{id}/readiness, POST)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `services/rest/src/main.rs`:67 (/connections/{id}/binary, GET)
+  **Candidate:** `services/rest/src/main.rs`:66 (/connections/{id}/binary, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### integration_points
 
@@ -196,27 +196,35 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:172 (api/dataconnecthub/v1alpha1/DataConnectService, get, list, update operations by DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:176 (api/dataconnecthub/v1alpha1/DataConnectService, get, list, update operations by DataConnectServiceReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:411 (api/dataconnecthub/v1alpha1/InitDataConnectionType, create, get, list, update operations by DataConnectServiceReconciler, InitDataConnectionTypeReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:416 (api/dataconnecthub/v1alpha1/InitDataConnectionType, create, get, list, update operations by DataConnectServiceReconciler, InitDataConnectionTypeReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:514 (/v1/Secret, get, list, patch operations by DataConnectServiceReconciler, SecretWatcherReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:519 (/v1/Secret, get, list, patch operations by DataConnectServiceReconciler, SecretWatcherReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:609 (config.openshift.io/v1/Ingress, get operations by DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:539 (list operations by DataConnectServiceReconciler, rbac.authorization.k8s.io/v1/ClusterRole)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:641 (gateway.networking.k8s.io/v1/Gateway, get operations by DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:553 (list operations by DataConnectServiceReconciler, rbac.authorization.k8s.io/v1/ClusterRoleBinding)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:660 (apps/v1/Deployment, list operations by DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:646 (config.openshift.io/v1/Ingress, get operations by DataConnectServiceReconciler)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What source-backed runtime behavior uses this component reference?
+  **Expected signal:** client, API, watch, or configuration handoff
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:678 (gateway.networking.k8s.io/v1/Gateway, get operations by DataConnectServiceReconciler)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What source-backed runtime behavior uses this component reference?
+  **Expected signal:** client, API, watch, or configuration handoff
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:697 (apps/v1/Deployment, list operations by DataConnectServiceReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
@@ -234,31 +242,31 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:711 (DataConnectServiceReconciler, api/dataconnecthub/v1alpha1/DataConnectService)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:748 (DataConnectServiceReconciler, api/dataconnecthub/v1alpha1/DataConnectService)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:712 (DataConnectServiceReconciler, apps/v1/Deployment)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:749 (DataConnectServiceReconciler, apps/v1/Deployment)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:713 (/v1/Service, DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:750 (/v1/Service, DataConnectServiceReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:714 (/v1/ConfigMap, DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:751 (/v1/ConfigMap, DataConnectServiceReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:715 (/v1/ServiceAccount, DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:752 (/v1/ServiceAccount, DataConnectServiceReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:716 (DataConnectServiceReconciler, networking.k8s.io/v1/NetworkPolicy)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:753 (DataConnectServiceReconciler, networking.k8s.io/v1/NetworkPolicy)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:717-721 (/v1/ConfigMap, internal/controller.DataConnectServiceReconciler)
+  **Candidate:** `dc-controller/internal/controller/dataconnectservice_controller.go`:754-758 (/v1/ConfigMap, internal/controller.DataConnectServiceReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
@@ -287,32 +295,32 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 ### authentication
 
-- /api/v1/*, /api/v2/* methods=POST mechanism=Header passthrough enforcement=Application-level filtering policy=Configured headers are forwarded to downstream services [source: services/rest/src/main.rs:56]
-- /health, /info methods=GET mechanism=None enforcement=None policy=Unauthenticated health server [source: services/rest/src/main.rs:56]
+- /api/v1/*, /api/v2/* methods=POST mechanism=Header passthrough enforcement=Application-level filtering policy=Configured headers are forwarded to downstream services [source: services/rest/src/main.rs:55]
+- /health, /info methods=GET mechanism=None enforcement=None policy=Unauthenticated health server [source: services/rest/src/main.rs:55]
 - :8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design [source: dc-controller/cmd/main.go:246]
 - :8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design [source: dc-controller/cmd/main.go:250]
 - :8443/metrics methods=GET mechanism=TokenReview + SubjectAccessReview (controller-runtime authn/authz filter) enforcement=controller-runtime metrics authn/authz filter policy=RBAC via dc-controller-manager-role; exposed by Service dc-controller-metrics-service; controller-runtime generated self-signed TLS certificate [source: dc-controller/cmd/main.go:153]
 - Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=RBAC enforced via dc-controller-manager-role ClusterRole; SA dc-controller-manager [source: dc-controller/cmd/main.go:173]
 ### http_endpoints
 
-- DELETE /connection-types/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:56]
-- DELETE /connections/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:61]
-- GET /connection-types on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:52]
-- GET /connection-types/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:54]
-- GET /connections on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:57]
-- GET /connections/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:59]
-- GET /connections/{id}/binary on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:67]
-- GET /health on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:44]
+- DELETE /connection-types/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:55]
+- DELETE /connections/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:60]
+- GET /connection-types on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:51]
+- GET /connection-types/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:53]
+- GET /connections on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:56]
+- GET /connections/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:58]
+- GET /connections/{id}/binary on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:66]
+- GET /health on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:43]
 - GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: dc-controller/cmd/main.go:246]
-- GET /metrics on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/flight/src/flight/metrics.rs:89]
+- GET /metrics on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/flight/src/flight/metrics.rs:117]
 - GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: dc-controller/cmd/main.go:250]
-- PATCH /connection-types/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:55]
-- PATCH /connections/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:60]
-- POST /connection-types on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:53]
-- POST /connections on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:58]
-- POST /connections/{id}/readiness on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:66]
-- POST /test/credentials on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:68]
-- PUT /connections/{id}/exports/secrets/{secret_name} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:62]
+- PATCH /connection-types/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:54]
+- PATCH /connections/{id} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:59]
+- POST /connection-types on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:52]
+- POST /connections on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:57]
+- POST /connections/{id}/readiness on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:65]
+- POST /test/credentials on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:67]
+- PUT /connections/{id}/exports/secrets/{secret_name} on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: services/rest/src/main.rs:61]
 ### integrations
 
 - Gateway API interaction=HTTPRoute CRUD role=runtime-transport protocol=HTTPS purpose=Manage Gateway API routing resources [source: dc-controller/config/rbac/role.yaml:2]
@@ -341,11 +349,11 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **observed**: HTTP GET /readyz is owned by cmd [source: dc-controller/cmd/main.go:250]
 ### security
 
-- **observed**: GET /health, /info uses None at None; policy=Unauthenticated health server [source: services/rest/src/main.rs:56]
+- **observed**: GET /health, /info uses None at None; policy=Unauthenticated health server [source: services/rest/src/main.rs:55]
 - **observed**: GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design [source: dc-controller/cmd/main.go:246]
 - **observed**: GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design [source: dc-controller/cmd/main.go:250]
 - **observed**: GET :8443/metrics uses TokenReview + SubjectAccessReview (controller-runtime authn/authz filter) at controller-runtime metrics authn/authz filter; policy=RBAC via dc-controller-manager-role; exposed by Service dc-controller-metrics-service; controller-runtime generated self-signed TLS certificate [source: dc-controller/cmd/main.go:153]
-- **observed**: POST /api/v1/*, /api/v2/* uses Header passthrough at Application-level filtering; policy=Configured headers are forwarded to downstream services [source: services/rest/src/main.rs:56]
+- **observed**: POST /api/v1/*, /api/v2/* uses Header passthrough at Application-level filtering; policy=Configured headers are forwarded to downstream services [source: services/rest/src/main.rs:55]
 - **observed**: RBAC role dataconnecthub-admin-role grants 2 rule(s) [source: dc-controller/config/rbac/dataconnecthub_admin_role.yaml:8]
 - **observed**: RBAC role dataconnecthub-editor-role grants 2 rule(s) [source: dc-controller/config/rbac/dataconnecthub_editor_role.yaml:8]
 - **observed**: RBAC role dataconnecthub-viewer-role grants 2 rule(s) [source: dc-controller/config/rbac/dataconnecthub_viewer_role.yaml:8]
@@ -361,11 +369,11 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **observed**: RBAC role metrics-auth-role grants 2 rule(s) [source: dc-controller/config/rbac/metrics_auth_role.yaml:1]
 - **observed**: RBAC role metrics-reader grants 1 rule(s) [source: dc-controller/config/rbac/metrics_reader_role.yaml:1]
 - **observed**: REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=RBAC enforced via dc-controller-manager-role ClusterRole; SA dc-controller-manager [source: dc-controller/cmd/main.go:173]
-- **dependency-signal**: crypto-library targets rustls: Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification [source: Cargo.toml:78]
+- **dependency-signal**: crypto-library targets rustls: Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification [source: Cargo.toml:79]
 - **dependency-signal**: crypto-provider targets aws-lc-rs: Cargo.lock selects this cryptographic provider; FIPS validation depends on build and runtime configuration [source: Cargo.lock:646]
-- **dependency-signal**: crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider [source: Cargo.lock:4367]
-- **not-extracted**: fips-posture targets FIPS validation: FIPS validation and runtime provider selection are not fully determined by static dependency/build signals [source: Cargo.toml:78]
-- **literal**: rbac-ref targets resolveTokenReviewAudiences: Token or subject access review call [source: dc-controller/internal/controller/dataconnectservice_controller.go:362]
+- **dependency-signal**: crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider [source: Cargo.lock:4368]
+- **not-extracted**: fips-posture targets FIPS validation: FIPS validation and runtime provider selection are not fully determined by static dependency/build signals [source: Cargo.toml:79]
+- **literal**: rbac-ref targets resolveTokenReviewAudiences: Token or subject access review call [source: dc-controller/internal/controller/dataconnectservice_controller.go:367]
 - **dependency-signal**: tls-config targets crypto/tls: TLS configuration import [source: dc-controller/cmd/main.go, dc-controller/internal/controller/restclient.go]
 ### supply_chain
 

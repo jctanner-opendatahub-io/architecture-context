@@ -1,8 +1,8 @@
 {
   "component": "training_hub",
   "repo": "https://github.com/Red-Hat-AI-Innovation-Team/training_hub.git",
-  "commit_sha": "78c9a8e8f690a63227f3e6324473128dad26e235",
-  "extracted_at": "2026-09-10T15:09:34Z",
+  "commit_sha": "5777e7bb3a7e6e707a7a975ac72fc9f8ce52b4ee",
+  "extracted_at": "2026-09-12T16:40:01Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -136,14 +136,14 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:89"
+        "source": "pyproject.toml:93"
       },
       {
         "name": "ipython",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:90"
+        "source": "pyproject.toml:94"
       },
       {
         "name": "jinja2",
@@ -199,7 +199,7 @@
         "version": "\u003e=1.5.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:95"
+        "source": "pyproject.toml:99"
       },
       {
         "name": "mlflow",
@@ -279,7 +279,7 @@
         "ecosystem": "PyPI",
         "role": "runtime-transport",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:94"
+        "source": "pyproject.toml:98"
       },
       {
         "name": "psutil",
@@ -347,11 +347,18 @@
         "source": "pyproject.toml:24"
       },
       {
+        "name": "sentence-transformers",
+        "version": "\u003e=5.0",
+        "ecosystem": "PyPI",
+        "purpose": "Python package dependency",
+        "source": "pyproject.toml:89"
+      },
+      {
         "name": "sentencepiece",
         "version": "\u003e=0.2.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:96"
+        "source": "pyproject.toml:100"
       },
       {
         "name": "setuptools",
@@ -457,46 +464,46 @@
   "external_connections": null,
   "recent_changes": [
     {
+      "version": "5777e7b",
+      "date": "2026-09-11",
+      "changes": "ci: the results JSON and a summary table come back from the job (#148)"
+    },
+    {
+      "version": "d59534e",
+      "date": "2026-09-11",
+      "changes": "ci: model validation on the MiniCloud CI node (#147)"
+    },
+    {
+      "version": "4164a12",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #146 from Red-Hat-AI-Innovation-Team/remove-claude-workflow"
+    },
+    {
+      "version": "9b02019",
+      "date": "2026-09-09",
+      "changes": "Remove claude.yml workflow"
+    },
+    {
+      "version": "7064057",
+      "date": "2026-09-04",
+      "changes": "Add E2E tests for unified callback abstraction  (#143)"
+    },
+    {
+      "version": "2624915",
+      "date": "2026-09-04",
+      "changes": "Add embedding_sft algorithm for contrastive embedding fine-tuning (#139)"
+    },
+    {
       "version": "78c9a8e",
       "date": "2026-08-27",
       "changes": "docs: add GEPA to the support matrix (#144)"
-    },
-    {
-      "version": "84c2f39",
-      "date": "2026-08-17",
-      "changes": "Patch GRPOTrainer reward_funcs default in art.unsloth.service too (#137)"
-    },
-    {
-      "version": "f793034",
-      "date": "2026-08-06",
-      "changes": "Add InstructLab and Mini-Trainer adapters for TrainingHubCallback (RHOAIENG-77627) (#141)"
-    },
-    {
-      "version": "565c713",
-      "date": "2026-07-29",
-      "changes": "Added TrainingHubCallback abstraction and Unsloth adapter (#128)"
-    },
-    {
-      "version": "5dd9969",
-      "date": "2026-07-27",
-      "changes": "Fix multi-iteration GRPO with art 0.5.18 (#135)"
-    },
-    {
-      "version": "b0875c4",
-      "date": "2026-07-26",
-      "changes": "Add join timeout to prevent parent hang when subprocess gets stuck (#133)"
-    },
-    {
-      "version": "96eaad2",
-      "date": "2026-07-25",
-      "changes": "Fix subprocess hang after GRPO training completes (#132)"
     }
   ],
   "component_refs": null,
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "partial: 0 runtime facts, 1 source components, and 57 dependencies; use bounded language-specific gap discovery",
+    "agent_baseline": "partial: 0 runtime facts, 1 source components, and 58 dependencies; use bounded language-specific gap discovery",
     "controller_templates": "not_found",
     "go_crds": "not_applicable",
     "go_module_configs": "not_found",
@@ -504,7 +511,7 @@
     "kustomize": "not_used",
     "manifests": "complete",
     "platform_semantics": "partial: ODH/RHOAI semantic aliases from manifest API groups, direct modules, proxy route trees, federation configuration, and literal security middleware",
-    "python": "partial: structured Python package metadata, literal FastAPI/Flask/Starlette routes, ASGI auth middleware posture, SDK client credential construction, literal outbound URLs, environment-backed secrets, and protobuf service definitions; Python import analysis: 15 imported in shipped source, 1 test-only, 40 declared but unused; literal gRPC server registration scan: no runtime registration detected",
+    "python": "partial: structured Python package metadata, literal FastAPI/Flask/Starlette routes, ASGI auth middleware posture, SDK client credential construction, literal outbound URLs, environment-backed secrets, and protobuf service definitions; Python import analysis: 16 imported in shipped source, 1 test-only, 40 declared but unused; literal gRPC server registration scan: no runtime registration detected",
     "rust": "not_applicable",
     "serving_runtime_definitions": "not_found",
     "source": "not_applicable",
@@ -525,21 +532,23 @@
       ]
     },
     "authentication": {
-      "status": "complete",
+      "status": "partial",
       "fact_count": 0,
       "discovery_contract": "authentication/v1",
       "completed_checks": [
         "normalized-authentication-facts",
         "no-inbound-runtime-surfaces",
         "credential-reference-inventory",
-        "supported-language-surface-inventory",
         "applicable-language-runtime-inventory",
         "python-authentication-signal-scan"
       ],
-      "limitations": [],
+      "limitations": [
+        "unsupported runtime source languages require authentication analysis"
+      ],
       "evidence": [
         "summary:no analyzer-discovered inbound runtime surfaces",
-        "src/training_hub/algorithms/gepa.py:65 (credential OPENAI_API_KEY)"
+        "src/training_hub/algorithms/gepa.py:65 (credential OPENAI_API_KEY)",
+        ".ci/gpu-validation.sh (unsupported runtime source)"
       ]
     },
     "fips_compliance": {
@@ -582,20 +591,22 @@
       "evidence": []
     },
     "integration_points": {
-      "status": "complete",
+      "status": "partial",
       "fact_count": 0,
       "discovery_contract": "integration-points/v1",
       "completed_checks": [
         "normalized-integration-point-facts",
         "outbound-runtime-client-accounting",
         "external-connection-accounting",
-        "supported-language-surface-inventory",
         "manifest-resolution-completeness"
       ],
-      "limitations": [],
+      "limitations": [
+        "unsupported runtime source languages require integration point analysis"
+      ],
       "evidence": [
         "summary:no analyzer-discovered outbound runtime clients",
-        "summary:no analyzer-discovered external connections"
+        "summary:no analyzer-discovered external connections",
+        ".ci/gpu-validation.sh (unsupported runtime source)"
       ]
     },
     "internal_dependencies": {
@@ -605,14 +616,15 @@
       "completed_checks": [
         "normalized-platform-dependency-facts",
         "runtime-source-config-platform-alias-scan",
-        "dependency-impacting-manifest-resolution",
-        "supported-language-surface-inventory"
+        "dependency-impacting-manifest-resolution"
       ],
       "limitations": [
-        "1 active platform alias references require relationship accounting"
+        "1 active platform alias references require relationship accounting",
+        "unsupported runtime source languages require platform dependency analysis"
       ],
       "evidence": [
-        "src/training_hub/algorithms/lora_grpo_verl.py (volcano; runtime source/config reference)"
+        "src/training_hub/algorithms/lora_grpo_verl.py (volcano; runtime source/config reference)",
+        ".ci/gpu-validation.sh (unsupported runtime source)"
       ]
     },
     "services": {
@@ -720,14 +732,14 @@
     {
       "category": "authentication",
       "metric": "files_scanned",
-      "value": 26,
+      "value": 27,
       "unit": "files",
       "scope": "Python source files for authentication constructions"
     },
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 30,
+      "value": 31,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

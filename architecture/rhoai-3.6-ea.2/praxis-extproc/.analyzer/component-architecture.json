@@ -1,8 +1,8 @@
 {
   "component": "praxis-extproc",
   "repo": "https://github.com/red-hat-data-services/praxis-extproc.git",
-  "commit_sha": "93a7faaa630eca0f8e7768bc49f435ea2bbedbe9",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "e8bbe3bcc5f1def597c0754b958587ad257cf980",
+  "extracted_at": "2026-09-12T16:40:00Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -275,39 +275,39 @@
   "external_connections": null,
   "recent_changes": [
     {
-      "version": "93a7faa",
-      "date": "2026-09-04",
+      "version": "e8bbe3b",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "c825a17",
+      "date": "2026-09-11",
+      "changes": "chore(deps): refresh rpm lockfiles (#7)"
+    },
+    {
+      "version": "2491583",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "92a5e76",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "8aef359",
-      "date": "2026-09-04",
-      "changes": "sync config with renovate-central"
+      "version": "da24a04",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #71 from didierofrivia/protocol_safety_message_ordering"
     },
     {
-      "version": "0724fa2",
-      "date": "2026-09-03",
-      "changes": "ci: rename Containerfile.konflux to Dockerfile.konflux as required (#3)"
+      "version": "53f450d",
+      "date": "2026-09-10",
+      "changes": "refactor(protocol): Enforcing valid phase transitions, not only regressions"
     },
     {
-      "version": "974b526",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1 from ryancham715/rq-90765"
-    },
-    {
-      "version": "1056c8e",
-      "date": "2026-09-03",
-      "changes": "ci: containerfile for konflux"
-    },
-    {
-      "version": "331006e",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #63 from didierofrivia/protocol_alignment_fds_no_buff"
-    },
-    {
-      "version": "e97a423",
-      "date": "2026-09-01",
-      "changes": "refactor(stream): Propagating EOS"
+      "version": "b1c8030",
+      "date": "2026-09-10",
+      "changes": "feat(server): Monotonic lifecycle check"
     }
   ],
   "component_refs": null,
@@ -713,7 +713,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 50,
+      "value": 52,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/NeMo-Guardrails",
+  "classification": "library",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "Dockerfile.server",
+    "nemoguardrails/__main__.py",
+    "nemoguardrails/__init__.py",
+    "scripts/entrypoint.sh",
+    "nemoguardrails/server/app.py",
+    "nemoguardrails/cli/__init__.py"
+  ],
+  "reasoning": "The project is explicitly an installable Python package named nemoguardrails, described as a toolkit/library for adding programmable guardrails to LLM applications. It provides a public Python API (LLMRails and RailsConfig), a package entry point, and a CLI. Although it includes an optional FastAPI/Chainlit server and a server container, the server is an additional deployment mode built around the core library rather than the repository's primary classification."
+}

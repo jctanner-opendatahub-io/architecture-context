@@ -2,7 +2,7 @@
   "component": "workbenches",
   "repo": "https://github.com/red-hat-data-services/workbenches.git",
   "commit_sha": "1cf3a9622aec7f94d8d231ff04b23bfd1674598e",
-  "extracted_at": "2026-09-10T15:09:35Z",
+  "extracted_at": "2026-09-12T16:40:03Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 2 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 1 ingress routes, 10 controller watches, 3 registered HTTP endpoints, and 0 gRPC services.",

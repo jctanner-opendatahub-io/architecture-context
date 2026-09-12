@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/praxis-extproc",
+  "classification": "service",
+  "files_read": [
+    "Cargo.toml",
+    "README.md",
+    "docs/architecture.md",
+    "src/bin/praxis_extproc.rs",
+    "deploy/base/instance/deployment.yaml",
+    "deploy/base/instance/service.yaml"
+  ],
+  "reasoning": "This checkout is a standalone Rust application named praxis-extproc. Its README and architecture documentation describe an Envoy External Processing server that runs Praxis filter pipelines over a bidirectional gRPC interface. The binary entry point starts the ExtProc gRPC server plus separate health and Prometheus metrics listeners, and the Kubernetes manifests deploy it as a replicated Deployment exposed through a ClusterIP Service. These runtime endpoints and deployment resources make it a service rather than a reusable library, configuration-only project, or operator."
+}

@@ -1,0 +1,12 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/kube-rbac-proxy",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/kube-rbac-proxy/main.go",
+    "cmd/kube-rbac-proxy/app/kube-rbac-proxy.go",
+    "pkg/proxy/proxy.go"
+  ],
+  "reasoning": "This is a standalone Go service: it builds a kube-rbac-proxy executable, listens for HTTP/HTTPS traffic, authenticates requests using Kubernetes tokens or client certificates, authorizes them through Kubernetes RBAC SubjectAccessReview, and proxies authorized requests to a configured upstream. It is therefore an operational network service rather than a reusable library, operator, or configuration-only project."
+}

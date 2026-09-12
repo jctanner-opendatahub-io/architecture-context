@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/ai-gateway-controller",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "DESIGN.md",
+    "cmd/manager/main.go",
+    "api/inference/v1alpha1/externalmodel_types.go",
+    "api/inference/v1alpha1/externalprovider_types.go",
+    "config/self/manager/manager.yaml",
+    "config/self/rbac/clusterrole.yaml"
+  ],
+  "reasoning": "This checkout is a Kubernetes controller/operator component. Its README and design describe the ai-gateway-controller control plane, which installs praxis-extproc manifests and is intended to reconcile ExternalModel and ExternalProvider resources. The Go manager bootstraps controller-runtime and the API types define Kubernetes custom resources with status and reconciliation-oriented fields; deployment and ClusterRole manifests provide the controller workload and Kubernetes permissions."
+}

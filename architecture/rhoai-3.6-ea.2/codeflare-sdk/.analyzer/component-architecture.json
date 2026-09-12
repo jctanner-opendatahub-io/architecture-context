@@ -1,8 +1,8 @@
 {
   "component": "codeflare-sdk",
   "repo": "https://github.com/project-codeflare/codeflare-sdk.git",
-  "commit_sha": "da34ef65c0b2e579163815ef5fcd05318db944d8",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "54ae6eb00c8a1af99de41491dd841be672fb26f6",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 2 services, 3 RBAC roles, 0 ingress routes, 0 controller watches, 1 registered HTTP endpoints, and 0 gRPC services.",
@@ -417,6 +417,11 @@
   ],
   "recent_changes": [
     {
+      "version": "54ae6eb",
+      "date": "2026-09-09",
+      "changes": "task(release): pre-release version bump Ray 2.58.0, SDK 0.39.0"
+    },
+    {
       "version": "da34ef6",
       "date": "2026-09-02",
       "changes": "build(deps): bump fast-uri from 3.1.5 to 3.1.7 in /ui-tests"
@@ -445,11 +450,6 @@
       "version": "f913fb1",
       "date": "2026-08-08",
       "changes": "build(deps): bump mermaid from 11.15.0 to 11.16.1 in /ui-tests"
-    },
-    {
-      "version": "77f0763",
-      "date": "2026-08-04",
-      "changes": "build(deps): bump cryptography from 46.0.7 to 50.0.0"
     }
   ],
   "component_refs": null,

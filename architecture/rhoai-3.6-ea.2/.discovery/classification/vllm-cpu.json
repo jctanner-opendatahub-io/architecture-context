@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/vllm-cpu",
+  "classification": "library",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "setup.py",
+    "vllm/__init__.py",
+    "vllm/entrypoints/cli/main.py",
+    "vllm/entrypoints/openai/api_server.py"
+  ],
+  "reasoning": "This is the vLLM Python package, described in README.md as a library for LLM inference and serving. It exposes reusable engine, model, prompt, sampling, and output APIs from vllm/__init__.py, is packaged as the vllm project in pyproject.toml, and provides a vllm console entry point. Although it includes an OpenAI-compatible FastAPI server and CLI serving commands, those are capabilities of the broader reusable inference library rather than the primary identity of a standalone service repository."
+}

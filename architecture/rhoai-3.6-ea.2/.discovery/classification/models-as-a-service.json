@@ -1,0 +1,19 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/models-as-a-service",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "deployment/component_metadata.yaml",
+    "maas-api/README.md",
+    "maas-api/go.mod",
+    "maas-api/cmd/main.go",
+    "maas-controller/README.md",
+    "maas-controller/go.mod",
+    "deployment/base/maas-controller/crd/kustomization.yaml",
+    "deployment/base/maas-controller/crd/bases/maas.opendatahub.io_aitenants.yaml",
+    "deployment/base/maas-controller/crd/bases/maas.opendatahub.io_externalmodels.yaml",
+    "deployment/base/maas-controller/manager/manager.yaml",
+    "deployment/base/maas-controller/webhook/service.yaml"
+  ],
+  "reasoning": "This checkout is primarily a Kubernetes operator/controller platform component. Its maas-controller watches and reconciles multiple custom resources, including AITenant, MaasTenantConfig, ExternalModel, MaaSAuthPolicy, MaaSModelRef, and MaaSSubscription; it ships CRDs, a controller Deployment, webhook service, and RBAC/deployment configuration. The repository also contains a Go maas-api HTTP service, but the controller is responsible for deploying and managing that API and for reconciling gateway policies and model subscriptions, making operator the best overall classification."
+}

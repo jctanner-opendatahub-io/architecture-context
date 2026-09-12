@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/argo-workflows",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/workflow-controller/main.go",
+    "config/controller.go",
+    "config/rbac.go",
+    "config/config.go",
+    "pkg/apis/workflow/v1alpha1/workflow_types.go"
+  ],
+  "reasoning": "This is Argo Workflows, a Kubernetes-native workflow engine implemented using Custom Resource Definitions. It defines Workflow custom resources and includes a workflow-controller executable that watches and operates on those resources through Kubernetes client APIs, with leader election and namespace-scoped operation. These controller and CRD behaviors make operator the best classification."
+}

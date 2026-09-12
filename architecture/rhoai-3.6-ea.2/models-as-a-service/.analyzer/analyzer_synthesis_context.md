@@ -4,57 +4,57 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 ## Coverage Findings
 
-- **crds (observed)**: 8 crds facts extracted [source: maas-controller/api/maas/v1alpha1/aitenant_types.go:49, maas-controller/api/maas/v1alpha1/config_types.go:40, maas-controller/api/maas/v1alpha1/externalmodel_types.go:34, maas-controller/api/maas/v1alpha1/maasauthpolicy_types.go:118, maas-controller/api/maas/v1alpha1/maasmodelref_types.go:32, maas-controller/api/maas/v1alpha1/maassubscription_types.go:153, maas-controller/api/maas/v1alpha1/maastenantconfig_types.go:40, maas-controller/api/maas/v1alpha1/tenant_types.go:43]
+- **crds (observed)**: 8 crds facts extracted [source: maas-controller/api/maas/v1alpha1/aitenant_types.go:49, maas-controller/api/maas/v1alpha1/config_types.go:41, maas-controller/api/maas/v1alpha1/externalmodel_types.go:34, maas-controller/api/maas/v1alpha1/maasauthpolicy_types.go:118, maas-controller/api/maas/v1alpha1/maasmodelref_types.go:32, maas-controller/api/maas/v1alpha1/maassubscription_types.go:153, maas-controller/api/maas/v1alpha1/maastenantconfig_types.go:40, maas-controller/api/maas/v1alpha1/tenant_types.go:43]
 - **grpc_services (confirmed-empty)**: 0 grpc_services facts extracted
-- **http_endpoints (observed)**: 18 http_endpoints facts extracted [source: maas-api/cmd/main.go:149, maas-api/cmd/main.go:231, maas-api/cmd/main.go:278, maas-api/cmd/main.go:282, maas-api/cmd/main.go:283, maas-api/cmd/main.go:291, maas-api/cmd/main.go:293, maas-api/cmd/main.go:294, maas-api/cmd/main.go:295, maas-api/cmd/main.go:298, maas-api/cmd/main.go:302, maas-api/cmd/main.go:308, maas-api/cmd/main.go:309, maas-api/cmd/main.go:310, maas-api/cmd/main.go:311, maas-api/internal/metrics/server.go:19, maas-controller/cmd/manager/main.go:1319, maas-controller/cmd/manager/main.go:1323]
-- **services (observed)**: 1 services facts extracted [source: deployment/base/maas-api/core/service.yaml:1]
+- **http_endpoints (observed)**: 18 http_endpoints facts extracted [source: maas-api/cmd/main.go:169, maas-api/cmd/main.go:248, maas-api/cmd/main.go:295, maas-api/cmd/main.go:299, maas-api/cmd/main.go:300, maas-api/cmd/main.go:308, maas-api/cmd/main.go:310, maas-api/cmd/main.go:311, maas-api/cmd/main.go:312, maas-api/cmd/main.go:315, maas-api/cmd/main.go:319, maas-api/cmd/main.go:325, maas-api/cmd/main.go:326, maas-api/cmd/main.go:327, maas-api/cmd/main.go:328, maas-api/internal/metrics/server.go:86, maas-controller/cmd/manager/main.go:1323, maas-controller/cmd/manager/main.go:1327]
+- **services (observed)**: 2 services facts extracted [source: deployment/base/maas-api/core/metrics_service.yaml:4, deployment/base/maas-api/core/service.yaml:1]
 - **ingress (observed)**: 1 ingress facts extracted [source: deployment/base/maas-api/networking/httproute.yaml:1]
 - **webhooks (observed)**: 4 webhooks facts extracted [source: maas-controller/pkg/webhook/aitenant_webhook.go:33, maas-controller/pkg/webhook/maasauthpolicy_webhook.go:33, maas-controller/pkg/webhook/maasmodelref_webhook.go:34, maas-controller/pkg/webhook/maassubscription_webhook.go:33]
 
 ## Deterministic Cross-References
 
-- **controller**: AITenantReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:553, maas-controller/pkg/controller/maas/aitenant_controller.go:285]
+- **controller**: AITenantReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:556, maas-controller/pkg/controller/maas/aitenant_controller.go:285]
 - **controller**: AITenantReconciler —watches-reference→ api/maas/v1alpha1/MaasTenantConfig; api/maas/v1alpha1/MaasTenantConfig [source: maas-controller/pkg/controller/maas/aitenant_controller.go:1130, maas-controller/pkg/controller/maas/aitenant_controller.go:288]
 - **controller**: AITenantReconciler —watches-reference→ gateway.networking.k8s.io/v1/Gateway; gateway.networking.k8s.io/v1/Gateway [source: maas-controller/pkg/controller/maas/aitenant_controller.go:292, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1349]
-- **controller**: LifecycleReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: maas-controller/pkg/controller/maas/aitenant_controller.go:1626, maas-controller/pkg/controller/maas/self_deployment_controller.go:952]
-- **controller**: LifecycleReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:553, maas-controller/pkg/controller/maas/self_deployment_controller.go:929]
-- **controller**: LifecycleReconciler —watches-reference→ api/maas/v1alpha1/Config; api/maas/v1alpha1/Config [source: maas-controller/cmd/manager/main.go:541, maas-controller/pkg/controller/maas/self_deployment_controller.go:909]
-- **controller**: LifecycleReconciler —watches-reference→ api/maas/v1alpha1/MaasTenantConfig; api/maas/v1alpha1/MaasTenantConfig [source: maas-controller/pkg/controller/maas/aitenant_controller.go:1130, maas-controller/pkg/controller/maas/self_deployment_controller.go:919]
-- **controller**: LifecycleReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: maas-controller/cmd/manager/main.go:478, maas-controller/pkg/controller/maas/self_deployment_controller.go:908]
-- **controller**: MaaSAuthPolicyReconciler —watches-reference→ /v1/Namespace; /v1/Namespace [source: maas-controller/cmd/manager/main.go:187, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1958]
-- **controller**: MaaSAuthPolicyReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:553, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1934]
+- **controller**: LifecycleReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: maas-controller/pkg/controller/maas/aitenant_controller.go:1626, maas-controller/pkg/controller/maas/self_deployment_controller.go:1074]
+- **controller**: LifecycleReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:556, maas-controller/pkg/controller/maas/self_deployment_controller.go:1051]
+- **controller**: LifecycleReconciler —watches-reference→ api/maas/v1alpha1/Config; api/maas/v1alpha1/Config [source: maas-controller/cmd/manager/main.go:544, maas-controller/pkg/controller/maas/self_deployment_controller.go:1031]
+- **controller**: LifecycleReconciler —watches-reference→ api/maas/v1alpha1/MaasTenantConfig; api/maas/v1alpha1/MaasTenantConfig [source: maas-controller/pkg/controller/maas/aitenant_controller.go:1130, maas-controller/pkg/controller/maas/self_deployment_controller.go:1041]
+- **controller**: LifecycleReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: maas-controller/cmd/manager/main.go:481, maas-controller/pkg/controller/maas/self_deployment_controller.go:1030]
+- **controller**: MaaSAuthPolicyReconciler —watches-reference→ /v1/Namespace; /v1/Namespace [source: maas-controller/cmd/manager/main.go:190, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1958]
+- **controller**: MaaSAuthPolicyReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:556, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1934]
 - **controller**: MaaSAuthPolicyReconciler —watches-reference→ api/maas/v1alpha1/MaaSAuthPolicy; api/maas/v1alpha1/MaaSAuthPolicy [source: maas-controller/pkg/controller/maas/helpers.go:109, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1914]
 - **controller**: MaaSAuthPolicyReconciler —watches-reference→ api/maas/v1alpha1/MaaSModelRef; api/maas/v1alpha1/MaaSModelRef [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1924, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:670]
 - **controller**: MaaSAuthPolicyReconciler —watches-reference→ gateway.networking.k8s.io/v1/HTTPRoute; gateway.networking.k8s.io/v1/HTTPRoute [source: maas-controller/pkg/controller/maas/helpers.go:341, maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1920]
-- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/MaaSAuthPolicy; api/maas/v1alpha1/MaaSAuthPolicy [source: maas-controller/pkg/controller/maas/helpers.go:109, maas-controller/pkg/controller/maas/maasmodelref_controller.go:575]
-- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/MaaSModelRef; api/maas/v1alpha1/MaaSModelRef [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:670, maas-controller/pkg/controller/maas/maasmodelref_controller.go:517]
-- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/MaaSSubscription; api/maas/v1alpha1/MaaSSubscription [source: maas-controller/pkg/controller/maas/helpers.go:91, maas-controller/pkg/controller/maas/maasmodelref_controller.go:571]
-- **controller**: MaaSModelRefReconciler —watches-reference→ gateway.networking.k8s.io/v1/HTTPRoute; gateway.networking.k8s.io/v1/HTTPRoute [source: maas-controller/pkg/controller/maas/helpers.go:341, maas-controller/pkg/controller/maas/maasmodelref_controller.go:523]
-- **controller**: MaaSSubscriptionReconciler —watches-reference→ /v1/Namespace; /v1/Namespace [source: maas-controller/cmd/manager/main.go:187, maas-controller/pkg/controller/maas/maassubscription_controller.go:1122]
-- **controller**: MaaSSubscriptionReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:553, maas-controller/pkg/controller/maas/maassubscription_controller.go:1098]
+- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:556, maas-controller/pkg/controller/maas/maasmodelref_controller.go:610]
+- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/MaaSAuthPolicy; api/maas/v1alpha1/MaaSAuthPolicy [source: maas-controller/pkg/controller/maas/helpers.go:109, maas-controller/pkg/controller/maas/maasmodelref_controller.go:604]
+- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/MaaSModelRef; api/maas/v1alpha1/MaaSModelRef [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:670, maas-controller/pkg/controller/maas/maasmodelref_controller.go:546]
+- **controller**: MaaSModelRefReconciler —watches-reference→ api/maas/v1alpha1/MaaSSubscription; api/maas/v1alpha1/MaaSSubscription [source: maas-controller/pkg/controller/maas/helpers.go:91, maas-controller/pkg/controller/maas/maasmodelref_controller.go:600]
+- **controller**: MaaSModelRefReconciler —watches-reference→ gateway.networking.k8s.io/v1/HTTPRoute; gateway.networking.k8s.io/v1/HTTPRoute [source: maas-controller/pkg/controller/maas/helpers.go:341, maas-controller/pkg/controller/maas/maasmodelref_controller.go:552]
+- **controller**: MaaSSubscriptionReconciler —watches-reference→ /v1/Namespace; /v1/Namespace [source: maas-controller/cmd/manager/main.go:190, maas-controller/pkg/controller/maas/maassubscription_controller.go:1122]
+- **controller**: MaaSSubscriptionReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:556, maas-controller/pkg/controller/maas/maassubscription_controller.go:1098]
 - **controller**: MaaSSubscriptionReconciler —watches-reference→ api/maas/v1alpha1/MaaSModelRef; api/maas/v1alpha1/MaaSModelRef [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:670, maas-controller/pkg/controller/maas/maassubscription_controller.go:1093]
 - **controller**: MaaSSubscriptionReconciler —watches-reference→ api/maas/v1alpha1/MaaSSubscription; api/maas/v1alpha1/MaaSSubscription [source: maas-controller/pkg/controller/maas/helpers.go:91, maas-controller/pkg/controller/maas/maassubscription_controller.go:1076]
 - **controller**: MaaSSubscriptionReconciler —watches-reference→ gateway.networking.k8s.io/v1/HTTPRoute; gateway.networking.k8s.io/v1/HTTPRoute [source: maas-controller/pkg/controller/maas/helpers.go:341, maas-controller/pkg/controller/maas/maassubscription_controller.go:1089]
-- **controller**: Reconciler —watches-reference→ api/maas/v1alpha1/ExternalModel; api/maas/v1alpha1/ExternalModel [source: maas-controller/pkg/controller/maas/providers_external.go:98, maas-controller/pkg/reconciler/externalmodel/reconciler.go:319]
-- **controller**: TenantReconciler —watches-reference→ /v1/Secret; /v1/Secret [source: maas-controller/cmd/manager/main.go:361, maas-controller/pkg/controller/maas/tenant_controller.go:249]
-- **controller**: TenantReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:553, maas-controller/pkg/controller/maas/tenant_controller.go:240]
-- **controller**: TenantReconciler —watches-reference→ api/maas/v1alpha1/Config; api/maas/v1alpha1/Config [source: maas-controller/cmd/manager/main.go:541, maas-controller/pkg/controller/maas/tenant_controller.go:230]
+- **controller**: Reconciler —watches-reference→ api/maas/v1alpha1/ExternalModel; api/maas/v1alpha1/ExternalModel [source: maas-controller/pkg/controller/maas/providers_external.go:98, maas-controller/pkg/reconciler/externalmodel/reconciler.go:438]
+- **controller**: TenantReconciler —watches-reference→ /v1/Secret; /v1/Secret [source: maas-controller/cmd/manager/main.go:364, maas-controller/pkg/controller/maas/tenant_controller.go:249]
+- **controller**: TenantReconciler —watches-reference→ api/maas/v1alpha1/AITenant; api/maas/v1alpha1/AITenant [source: maas-controller/cmd/manager/main.go:556, maas-controller/pkg/controller/maas/tenant_controller.go:240]
+- **controller**: TenantReconciler —watches-reference→ api/maas/v1alpha1/Config; api/maas/v1alpha1/Config [source: maas-controller/cmd/manager/main.go:544, maas-controller/pkg/controller/maas/tenant_controller.go:230]
 - **controller**: TenantReconciler —watches-reference→ api/maas/v1alpha1/MaasTenantConfig; api/maas/v1alpha1/MaasTenantConfig [source: maas-controller/pkg/controller/maas/aitenant_controller.go:1130, maas-controller/pkg/controller/maas/tenant_controller.go:229]
-- **security**: Unknown /metrics —protected-by→ Unknown; Application (maas-api): Dedicated metrics listener on port 9090; authentication not established by source [source: deployment/base/maas-api/core/deployment.yaml:1, maas-api/internal/metrics/server.go:19]
 
 ## Behavioral Evidence
 
-- **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: maas-controller/cmd/manager/main.go:1147-1147]
+- **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: maas-controller/cmd/manager/main.go:1151-1151]
 - **named-watch-predicate (unresolved)** pkg/controller/maas.AITenantReconciler: gateway.networking.k8s.io/v1/Gateway; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/aitenant_controller.go:292-296]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: maas.opendatahub.io/v1alpha1/Config; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:909-918]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: maas.opendatahub.io/v1alpha1/MaasTenantConfig; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:919-928]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: maas.opendatahub.io/v1alpha1/AITenant; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:929-938]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:941-950]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:952-964]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: rbac.authorization.k8s.io/v1/ClusterRoleBinding; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:965-976]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: networking.k8s.io/v1/NetworkPolicy; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:977-989]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: maas.opendatahub.io/v1alpha1/Config; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1031-1040]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: maas.opendatahub.io/v1alpha1/MaasTenantConfig; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1041-1050]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: maas.opendatahub.io/v1alpha1/AITenant; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1051-1060]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1063-1072]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1074-1086]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: rbac.authorization.k8s.io/v1/ClusterRoleBinding; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1087-1098]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.LifecycleReconciler: networking.k8s.io/v1/NetworkPolicy; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/self_deployment_controller.go:1099-1111]
 - **named-watch-predicate (unresolved)** pkg/controller/maas.MaaSAuthPolicyReconciler: /v1/Namespace; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:1958-1960]
-- **named-watch-predicate (unresolved)** pkg/controller/maas.MaaSModelRefReconciler: serving.kserve.io/v1alpha2/LLMInferenceService; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/maasmodelref_controller.go:559-562]
+- **named-watch-predicate (unresolved)** pkg/controller/maas.MaaSModelRefReconciler: serving.kserve.io/v1alpha2/LLMInferenceService; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/maasmodelref_controller.go:588-591]
 - **named-watch-predicate (unresolved)** pkg/controller/maas.MaaSSubscriptionReconciler: maas.opendatahub.io/v1alpha1/MaaSSubscription; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/maassubscription_controller.go:1082-1086]
 - **named-watch-predicate (unresolved)** pkg/controller/maas.MaaSSubscriptionReconciler: /v1/Namespace; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/maassubscription_controller.go:1122-1124]
 - **named-watch-predicate (unresolved)** pkg/controller/maas.TenantReconciler: maas.opendatahub.io/v1alpha1/Config; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: maas-controller/pkg/controller/maas/tenant_controller.go:230-239]
@@ -65,10 +65,6 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 ### authentication
 
-- **Question:** Where is authentication enforced for this surface, and is it conditional?
-  **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `deployment/base/maas-api/core/deployment.yaml`:1 (/metrics, Unknown)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
   **Candidate:** `deployment/base/maas-api/core/deployment.yaml`:1 (:8080/health, None)
@@ -95,19 +91,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Under which configuration branch does the metrics serving surface install authentication and authorization?
   **Expected signal:** a direct SecureServing condition and controller-runtime authn/authz FilterProvider assignment
-  **Candidate:** `maas-controller/cmd/manager/main.go`:1147-1147 (controller-runtime metrics, controller-runtime metrics serving surface)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:1151-1151 (controller-runtime metrics, controller-runtime metrics serving surface)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `maas-controller/cmd/manager/main.go`:1319 (:8081/healthz, None)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:1323 (:8081/healthz, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `maas-controller/cmd/manager/main.go`:1323 (:8081/readyz, None)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:1327 (:8081/readyz, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `maas-controller/pkg/controller/maas/maasauthpolicy_controller.go`:989 (/v1/models, /v1/subscriptions, /v1/api-keys/*, /maas-api/*, API key + Kubernetes TokenReview + OIDC JWT (optional))
+  **Candidate:** `maas-controller/pkg/controller/maas/maasauthpolicy_controller.go`:989 (/v1/models, /v1/subscriptions, /v1/api-keys/*, /maas-api/v1/*, /maas-api/health, API key + Kubernetes TokenReview + OIDC JWT (optional))
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
@@ -155,10 +151,14 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `maas-controller/cmd/manager/main.go`:959 (manager)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:963 (manager)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### egress
 
+- **Question:** Where is this external connection made and how are TLS/authentication configured?
+  **Expected signal:** request/client construction, endpoint, TLS, or credential use
+  **Candidate:** `maas-api/go.mod` (Kubernetes API, Kubernetes resource operations)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
   **Expected signal:** runtime client construction and target configuration
   **Candidate:** `maas-api/internal/config/cluster_config.go`:100 (Kubernetes API, client-go dynamic client)
@@ -173,61 +173,57 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
   **Expected signal:** runtime client construction and target configuration
-  **Candidate:** `maas-controller/cmd/manager/main.go`:1057 (Kubernetes API, client-go typed clientset)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Where is this external connection made and how are TLS/authentication configured?
-  **Expected signal:** request/client construction, endpoint, TLS, or credential use
-  **Candidate:** `maas-controller/go.mod` (Kubernetes API, Kubernetes resource operations)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:1061 (Kubernetes API, client-go typed clientset)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### http_endpoints
 
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:149 (/*path, OPTIONS, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:169 (/*path, OPTIONS, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:231 (/health, GET, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:248 (/health, GET, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:283 (/model/:model-id/subscriptions, GET, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:300 (/model/:model-id/subscriptions, GET, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:291 (/config, GET, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:308 (/config, GET, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:293 (/bulk-revoke, POST, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:310 (/bulk-revoke, POST, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:294 (/:id, GET, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:311 (/:id, GET, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:295 (/:id, DELETE, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:312 (/:id, DELETE, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:298 (/api-keys/search, POST, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:315 (/api-keys/search, POST, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:308 (/api-keys/validate, POST, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:325 (/api-keys/validate, POST, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/cmd/main.go`:309 (/api-keys/cleanup, POST, cmd)
+  **Candidate:** `maas-api/cmd/main.go`:326 (/api-keys/cleanup, POST, cmd)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-api/internal/metrics/server.go`:19 (/metrics, Unknown, internal/metrics)
+  **Candidate:** `maas-api/internal/metrics/server.go`:86 (/metrics, Unknown, internal/metrics)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `maas-controller/cmd/manager/main.go`:1319 (/healthz, GET, cmd/manager)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:1323 (/healthz, GET, cmd/manager)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### integration_points
 
@@ -255,19 +251,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `maas-controller/cmd/manager/main.go`:187 (/v1/Namespace, create, get, patch operations by AITenantReconciler, LifecycleReconciler)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:190 (/v1/Namespace, create, get, patch operations by AITenantReconciler, LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `maas-controller/cmd/manager/main.go`:361 (/v1/Secret, create, get operations)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:364 (/v1/Secret, create, get operations)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `maas-controller/cmd/manager/main.go`:541 (api/maas/v1alpha1/Config, create, delete, get, patch operations by LifecycleReconciler, TenantReconciler)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:544 (api/maas/v1alpha1/Config, create, delete, get, patch operations by LifecycleReconciler, TenantReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `maas-controller/cmd/manager/main.go`:553 (api/maas/v1alpha1/AITenant, create, get, list, patch, update operations by AITenantReconciler, AITenantValidator, LifecycleReconciler, MaaSModelRefValidator, llmisvcHandler)
+  **Candidate:** `maas-controller/cmd/manager/main.go`:556 (api/maas/v1alpha1/AITenant, create, get, list, patch, update operations by AITenantReconciler, AITenantValidator, LifecycleReconciler, MaaSModelRefReconciler, MaaSModelRefValidator)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
@@ -283,11 +279,11 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
-  **Candidate:** `maas-controller/pkg/controller/maas/maasmodelref_controller.go`:559 (Controller watch (conditional), KServe InferenceService)
+  **Candidate:** `maas-controller/pkg/controller/maas/maasmodelref_controller.go`:588 (Controller watch (conditional), KServe InferenceService)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `maas-controller/pkg/controller/maas/providers_external.go`:98 (api/maas/v1alpha1/ExternalModel, get operations by Reconciler, externalModelHandler)
+  **Candidate:** `maas-controller/pkg/controller/maas/providers_external.go`:98 (api/maas/v1alpha1/ExternalModel, get, update operations by Reconciler, externalModelHandler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
@@ -305,7 +301,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/maasmodelref_controller.go`:559-562 (pkg/controller/maas.MaaSModelRefReconciler, serving.kserve.io/v1alpha2/LLMInferenceService)
+  **Candidate:** `maas-controller/pkg/controller/maas/maasmodelref_controller.go`:588-591 (pkg/controller/maas.MaaSModelRefReconciler, serving.kserve.io/v1alpha2/LLMInferenceService)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
@@ -317,31 +313,31 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:909-918 (maas.opendatahub.io/v1alpha1/Config, pkg/controller/maas.LifecycleReconciler)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1031-1040 (maas.opendatahub.io/v1alpha1/Config, pkg/controller/maas.LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:919-928 (maas.opendatahub.io/v1alpha1/MaasTenantConfig, pkg/controller/maas.LifecycleReconciler)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1041-1050 (maas.opendatahub.io/v1alpha1/MaasTenantConfig, pkg/controller/maas.LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:929-938 (maas.opendatahub.io/v1alpha1/AITenant, pkg/controller/maas.LifecycleReconciler)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1051-1060 (maas.opendatahub.io/v1alpha1/AITenant, pkg/controller/maas.LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:941-950 (apiextensions/v1/CustomResourceDefinition, pkg/controller/maas.LifecycleReconciler)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1063-1072 (apiextensions/v1/CustomResourceDefinition, pkg/controller/maas.LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:952-964 (/v1/ConfigMap, pkg/controller/maas.LifecycleReconciler)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1074-1086 (/v1/ConfigMap, pkg/controller/maas.LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:965-976 (pkg/controller/maas.LifecycleReconciler, rbac.authorization.k8s.io/v1/ClusterRoleBinding)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1087-1098 (pkg/controller/maas.LifecycleReconciler, rbac.authorization.k8s.io/v1/ClusterRoleBinding)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:977-989 (networking.k8s.io/v1/NetworkPolicy, pkg/controller/maas.LifecycleReconciler)
+  **Candidate:** `maas-controller/pkg/controller/maas/self_deployment_controller.go`:1099-1111 (networking.k8s.io/v1/NetworkPolicy, pkg/controller/maas.LifecycleReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - 3 additional gap candidates remain in the analyzer JSON.
 ### services
@@ -349,6 +345,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **Question:** Which container listener, probe, and service mapping expose this workload?
   **Expected signal:** container port, probe, service account, or lifecycle configuration
   **Candidate:** `deployment/base/maas-api/core/deployment.yaml`:1 (maas-api)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Which workload owns this Service and does its target port match a runtime listener?
+  **Expected signal:** selector, target deployment, port mapping, or listener
+  **Candidate:** `deployment/base/maas-api/core/metrics_service.yaml`:4 (maas-api-metrics)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which workload owns this Service and does its target port match a runtime listener?
   **Expected signal:** selector, target deployment, port mapping, or listener
@@ -377,11 +377,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 ### authentication
 
-- /metrics methods=Unknown mechanism=Unknown enforcement=Application (maas-api) policy=Dedicated metrics listener on port 9090; authentication not established by source [source: deployment/base/maas-api/core/deployment.yaml:1]
-- /v1/models, /v1/subscriptions, /v1/api-keys/*, /maas-api/* methods=GET, POST, DELETE, OPTIONS mechanism=API key + Kubernetes TokenReview + OIDC JWT (optional) enforcement=Kuadrant/Authorino Gateway AuthPolicy policy=Gateway policy authenticates requests and applies policy-defined authorization rules; excludes GET /maas-api/health [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:989]
+- /v1/models, /v1/subscriptions, /v1/api-keys/*, /maas-api/v1/*, /maas-api/health methods=GET, POST, DELETE, OPTIONS mechanism=API key + Kubernetes TokenReview + OIDC JWT (optional) enforcement=Kuadrant/Authorino Gateway AuthPolicy policy=Gateway policy authenticates requests and applies policy-defined authorization rules; excludes GET /maas-api/health [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:989]
 - :8080/health methods=GET mechanism=None enforcement=N/A policy=Unauthenticated Kubernetes liveness probe endpoint [source: deployment/base/maas-api/core/deployment.yaml:1]
-- :8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1319]
-- :8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1323]
+- :8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1323]
+- :8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1327]
 - Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=RBAC enforced via maas-api ClusterRole; SA maas-api [source: maas-api/internal/config/cluster_config.go:100]
 - Kubernetes API methods=REST mechanism=kubeconfig credential chain enforcement=kube-apiserver policy=Kubeconfig-based authentication using user-provided credentials [source: maas-api/internal/config/cluster_config.go:216]
 - Named Secret access (maas-db-config) methods=Kubernetes API mechanism=RBAC with resourceNames restriction enforcement=kube-apiserver policy=maas-api restricts secret access to maas-db-config only [source: deployment/base/maas-api/rbac/clusterrole.yaml:1]
@@ -390,24 +389,24 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - Token validation methods=Kubernetes TokenReview API mechanism=Kubernetes TokenReview API enforcement=Application-level token validation via kube-apiserver policy=Validates bearer tokens against Kubernetes TokenReview API [source: maas-api/internal/auth/tenant_auth_middleware.go:20]
 ### http_endpoints
 
-- DELETE /:id on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:295]
-- DELETE /tenants/:tenant/api-keys on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:310]
-- GET /:id on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:294]
-- GET /config on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:291]
-- GET /health on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:231]
-- GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: maas-controller/cmd/manager/main.go:1319]
-- GET /model/:model-id/subscriptions on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:283]
-- GET /models on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:278]
-- GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: maas-controller/cmd/manager/main.go:1323]
-- GET /subscriptions on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:282]
-- GET /tenants on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:302]
-- OPTIONS /*path on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:149]
-- POST /api-keys/cleanup on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:309]
-- POST /api-keys/search on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:298]
-- POST /api-keys/validate on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:308]
-- POST /bulk-revoke on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:293]
-- POST /subscriptions/select on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:311]
-- Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=internal/metrics [source: maas-api/internal/metrics/server.go:19]
+- DELETE /:id on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:312]
+- DELETE /tenants/:tenant/api-keys on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:327]
+- GET /:id on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:311]
+- GET /config on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:308]
+- GET /health on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:248]
+- GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: maas-controller/cmd/manager/main.go:1323]
+- GET /model/:model-id/subscriptions on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:300]
+- GET /models on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:295]
+- GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: maas-controller/cmd/manager/main.go:1327]
+- GET /subscriptions on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:299]
+- GET /tenants on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:319]
+- OPTIONS /*path on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:169]
+- POST /api-keys/cleanup on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:326]
+- POST /api-keys/search on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:315]
+- POST /api-keys/validate on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:325]
+- POST /bulk-revoke on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:310]
+- POST /subscriptions/select on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: maas-api/cmd/main.go:328]
+- Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=internal/metrics [source: maas-api/internal/metrics/server.go:86]
 ### integrations
 
 - Gateway API (data-science-gateway) interaction=HTTPRoute role=runtime-transport protocol=HTTPS purpose=External dashboard ingress [source: deployment/base/maas-api/networking/httproute.yaml:1]
@@ -419,18 +418,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - Gateway API interaction=CRD CRUD role=unknown purpose=Manage Gateway API routing resources [source: deployment/base/maas-api/rbac/clusterrole.yaml:1]
 - Gateway API interaction=Controller watch role=runtime-integration purpose=Manage Gateway API routing resources [source: maas-controller/pkg/controller/maas/aitenant_controller.go:292]
 - Gateway API interaction=HTTPRoute CRUD role=runtime-transport purpose=Reconcile HTTPRoute resources against a configured Gateway [source: maas-controller/pkg/controller/maas/helpers.go:341]
-- KServe InferenceService interaction=Controller watch (conditional) role=runtime-integration purpose=Read model serving state [source: maas-controller/pkg/controller/maas/maasmodelref_controller.go:559]
+- KServe InferenceService interaction=Controller watch (conditional) role=runtime-integration purpose=Read model serving state [source: maas-controller/pkg/controller/maas/maasmodelref_controller.go:588]
 ### services
 
 - maas-api port=8080 target=http protocol=TCP encryption= auth= [source: deployment/base/maas-api/core/service.yaml:1]
-- maas-api port=9090 target=metrics protocol=TCP encryption= auth= [source: deployment/base/maas-api/core/service.yaml:1]
+- maas-api-metrics port=9090 target=https-metrics protocol=TCP encryption= auth= [source: deployment/base/maas-api/core/metrics_service.yaml:4]
 
 ## Cross-Cutting Evidence
 
 ### deployment_topology
 
 - **observed**: Deployment workload maas-api uses service account maas-api and 1 container(s) [source: deployment/base/maas-api/core/deployment.yaml:1]
-- **observed**: Service maas-api targets  with 2 port(s) [source: deployment/base/maas-api/core/service.yaml:1]
+- **observed**: Service maas-api targets  with 1 port(s) [source: deployment/base/maas-api/core/service.yaml:1]
+- **observed**: Service maas-api-metrics targets  with 1 port(s) [source: deployment/base/maas-api/core/metrics_service.yaml:4]
 ### disconnected_deployment
 
 - **unresolved**: No complete deterministic evidence family was extracted; targeted source/configuration review may be required [source: coverage:disconnected_deployment]
@@ -439,32 +439,32 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **unresolved**: No complete deterministic evidence family was extracted; targeted source/configuration review may be required [source: coverage:high_availability]
 ### ingress
 
-- **observed**: HTTP DELETE /:id is owned by cmd [source: maas-api/cmd/main.go:295]
-- **observed**: HTTP DELETE /tenants/:tenant/api-keys is owned by cmd [source: maas-api/cmd/main.go:310]
-- **observed**: HTTP GET /:id is owned by cmd [source: maas-api/cmd/main.go:294]
-- **observed**: HTTP GET /config is owned by cmd [source: maas-api/cmd/main.go:291]
-- **observed**: HTTP GET /health is owned by cmd [source: maas-api/cmd/main.go:231]
-- **observed**: HTTP GET /healthz is owned by cmd/manager [source: maas-controller/cmd/manager/main.go:1319]
-- **observed**: HTTP GET /model/:model-id/subscriptions is owned by cmd [source: maas-api/cmd/main.go:283]
-- **observed**: HTTP GET /models is owned by cmd [source: maas-api/cmd/main.go:278]
-- **observed**: HTTP GET /readyz is owned by cmd/manager [source: maas-controller/cmd/manager/main.go:1323]
-- **observed**: HTTP GET /subscriptions is owned by cmd [source: maas-api/cmd/main.go:282]
-- **observed**: HTTP GET /tenants is owned by cmd [source: maas-api/cmd/main.go:302]
-- **observed**: HTTP OPTIONS /*path is owned by cmd [source: maas-api/cmd/main.go:149]
-- **observed**: HTTP POST /api-keys/cleanup is owned by cmd [source: maas-api/cmd/main.go:309]
-- **observed**: HTTP POST /api-keys/search is owned by cmd [source: maas-api/cmd/main.go:298]
-- **observed**: HTTP POST /api-keys/validate is owned by cmd [source: maas-api/cmd/main.go:308]
-- **observed**: HTTP POST /bulk-revoke is owned by cmd [source: maas-api/cmd/main.go:293]
-- **observed**: HTTP POST /subscriptions/select is owned by cmd [source: maas-api/cmd/main.go:311]
-- **observed**: HTTP Unknown /metrics is owned by internal/metrics [source: maas-api/internal/metrics/server.go:19]
+- **observed**: HTTP DELETE /:id is owned by cmd [source: maas-api/cmd/main.go:312]
+- **observed**: HTTP DELETE /tenants/:tenant/api-keys is owned by cmd [source: maas-api/cmd/main.go:327]
+- **observed**: HTTP GET /:id is owned by cmd [source: maas-api/cmd/main.go:311]
+- **observed**: HTTP GET /config is owned by cmd [source: maas-api/cmd/main.go:308]
+- **observed**: HTTP GET /health is owned by cmd [source: maas-api/cmd/main.go:248]
+- **observed**: HTTP GET /healthz is owned by cmd/manager [source: maas-controller/cmd/manager/main.go:1323]
+- **observed**: HTTP GET /model/:model-id/subscriptions is owned by cmd [source: maas-api/cmd/main.go:300]
+- **observed**: HTTP GET /models is owned by cmd [source: maas-api/cmd/main.go:295]
+- **observed**: HTTP GET /readyz is owned by cmd/manager [source: maas-controller/cmd/manager/main.go:1327]
+- **observed**: HTTP GET /subscriptions is owned by cmd [source: maas-api/cmd/main.go:299]
+- **observed**: HTTP GET /tenants is owned by cmd [source: maas-api/cmd/main.go:319]
+- **observed**: HTTP OPTIONS /*path is owned by cmd [source: maas-api/cmd/main.go:169]
+- **observed**: HTTP POST /api-keys/cleanup is owned by cmd [source: maas-api/cmd/main.go:326]
+- **observed**: HTTP POST /api-keys/search is owned by cmd [source: maas-api/cmd/main.go:315]
+- **observed**: HTTP POST /api-keys/validate is owned by cmd [source: maas-api/cmd/main.go:325]
+- **observed**: HTTP POST /bulk-revoke is owned by cmd [source: maas-api/cmd/main.go:310]
+- **observed**: HTTP POST /subscriptions/select is owned by cmd [source: maas-api/cmd/main.go:328]
+- **observed**: HTTP Unknown /metrics is owned by internal/metrics [source: maas-api/internal/metrics/server.go:86]
 - **observed**: HTTPRoute maas-api-route serves host  via plaintext; backend=maas-api; transport=Unknown [source: deployment/base/maas-api/networking/httproute.yaml:1]
 ### security
 
 - **observed**: CREATE Operator webhook uses Kubernetes admission at ValidatingWebhookConfiguration; policy=Admission validation [source: maas-controller/pkg/webhook/aitenant_webhook.go:33]
 - **observed**: GET :8080/health uses None at N/A; policy=Unauthenticated Kubernetes liveness probe endpoint [source: deployment/base/maas-api/core/deployment.yaml:1]
-- **observed**: GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1319]
-- **observed**: GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1323]
-- **observed**: GET, POST, DELETE, OPTIONS /v1/models, /v1/subscriptions, /v1/api-keys/*, /maas-api/* uses API key + Kubernetes TokenReview + OIDC JWT (optional) at Kuadrant/Authorino Gateway AuthPolicy; policy=Gateway policy authenticates requests and applies policy-defined authorization rules; excludes GET /maas-api/health [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:989]
+- **observed**: GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1323]
+- **observed**: GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design [source: maas-controller/cmd/manager/main.go:1327]
+- **observed**: GET, POST, DELETE, OPTIONS /v1/models, /v1/subscriptions, /v1/api-keys/*, /maas-api/v1/*, /maas-api/health uses API key + Kubernetes TokenReview + OIDC JWT (optional) at Kuadrant/Authorino Gateway AuthPolicy; policy=Gateway policy authenticates requests and applies policy-defined authorization rules; excludes GET /maas-api/health [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:989]
 - **observed**: Kuadrant AuthPolicy controller-created Gateway AuthPolicy applies authentication API key, Kubernetes TokenReview, OIDC JWT (optional) [source: maas-controller/pkg/controller/maas/maasauthpolicy_controller.go:989]
 - **observed**: Kubernetes API Named Secret access (maas-db-config) uses RBAC with resourceNames restriction at kube-apiserver; policy=maas-api restricts secret access to maas-db-config only [source: deployment/base/maas-api/rbac/clusterrole.yaml:1]
 - **observed**: Kubernetes API Named Secret access (maas-db-config) uses RBAC with resourceNames restriction at kube-apiserver; policy=maas-api-supplemental restricts secret access to maas-db-config only [source: deployment/base/maas-api/rbac/supplemental-clusterrole.yaml:10]
@@ -473,10 +473,9 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **observed**: RBAC role maas-api-supplemental grants 5 rule(s) [source: deployment/base/maas-api/rbac/supplemental-clusterrole.yaml:10]
 - **observed**: REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=RBAC enforced via maas-api ClusterRole; SA maas-api [source: maas-api/internal/config/cluster_config.go:100]
 - **observed**: REST Kubernetes API uses kubeconfig credential chain at kube-apiserver; policy=Kubeconfig-based authentication using user-provided credentials [source: maas-api/internal/config/cluster_config.go:216]
-- **observed**: Unknown /metrics uses Unknown at Application (maas-api); policy=Dedicated metrics listener on port 9090; authentication not established by source [source: deployment/base/maas-api/core/deployment.yaml:1]
 - **literal**: rbac-ref targets SubjectAccessReviews: Token or subject access review call [source: maas-api/internal/auth/sar_admin_checker.go:58, maas-api/internal/auth/tenant_auth_middleware.go:90]
 - **literal**: rbac-ref targets TokenReviews: Token or subject access review call [source: maas-api/internal/auth/tenant_auth_middleware.go:44]
-- **dependency-signal**: tls-config targets crypto/tls: TLS configuration import [source: maas-api/cmd/main.go, maas-api/cmd/server.go, maas-api/internal/cert/cert.go, maas-api/internal/config/tls.go, maas-api/internal/models/discovery.go, maas-api/internal/tlsprofile/config.go, maas-api/internal/tlsprofile/profile.go, maas-controller/cmd/manager/main.go]
+- **dependency-signal**: tls-config targets crypto/tls: TLS configuration import [source: maas-api/cmd/main.go, maas-api/cmd/server.go, maas-api/internal/cert/cert.go, maas-api/internal/config/tls.go, maas-api/internal/metrics/server.go, maas-api/internal/models/discovery.go, maas-api/internal/tlsprofile/config.go, maas-api/internal/tlsprofile/profile.go, maas-controller/cmd/manager/main.go]
 ### supply_chain
 
 - **unresolved**: No complete deterministic evidence family was extracted; targeted source/configuration review may be required [source: coverage:supply_chain]

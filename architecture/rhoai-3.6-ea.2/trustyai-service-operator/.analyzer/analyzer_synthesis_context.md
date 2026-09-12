@@ -26,8 +26,8 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **controller**: NemoGuardrailsReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: controllers/dsc/config.go:49, controllers/nemo_guardrails/nemoguardrail_controller.go:266]
 - **controller**: NemoGuardrailsReconciler —watches-reference→ api/nemo_guardrails/v1alpha1/NemoGuardrails; api/nemo_guardrails/v1alpha1/NemoGuardrails [source: controllers/nemo_guardrails/ca.go:152, controllers/nemo_guardrails/nemoguardrail_controller.go:262]
 - **controller**: ProfileWatcher —watches-reference→ config.openshift.io/v1/APIServer; config.openshift.io/v1/APIServer [source: pkg/tls/tls.go:100, pkg/tls/watcher.go:79]
-- **controller**: TrustyAIServiceReconciler —watches-reference→ api/tas/v1/TrustyAIService; api/tas/v1/TrustyAIService [source: controllers/tas/statuses.go:34, controllers/tas/trustyaiservice_controller.go:299]
-- **controller**: TrustyAIServiceReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: controllers/evalhub/deployment.go:34, controllers/tas/trustyaiservice_controller.go:300]
+- **controller**: TrustyAIServiceReconciler —watches-reference→ api/tas/v1/TrustyAIService; api/tas/v1/TrustyAIService [source: controllers/tas/statuses.go:34, controllers/tas/trustyaiservice_controller.go:315]
+- **controller**: TrustyAIServiceReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: controllers/evalhub/deployment.go:34, controllers/tas/trustyaiservice_controller.go:316]
 
 ## Behavioral Evidence
 
@@ -139,11 +139,11 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `trustyai-operator-module/Dockerfile`:44 (trustyai-operator-module/Dockerfile:ENTRYPOINT)
+  **Candidate:** `trustyai-operator-module/Dockerfile`:45 (trustyai-operator-module/Dockerfile:ENTRYPOINT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `trustyai-operator-module/cmd/trustyai-operator-module/main.go`:33 (trustyai-operator-module)
+  **Candidate:** `trustyai-operator-module/Dockerfile.konflux`:46 (trustyai-operator-module/Dockerfile.konflux:ENTRYPOINT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### egress
 

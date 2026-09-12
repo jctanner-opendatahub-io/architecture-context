@@ -1,0 +1,16 @@
+{
+  "checkout": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-inference-payload-processor",
+  "classification": "service",
+  "files_read": [
+    "go.mod",
+    "README.md",
+    "cmd/main.go",
+    "cmd/runner/runner.go",
+    "pkg/server/runserver.go",
+    "deploy/components/ipp/deployment.yaml",
+    "deploy/components/ipp/service.yaml",
+    "config/charts/payload-processor/Chart.yaml",
+    "docs/configuration.md"
+  ],
+  "reasoning": "This repository implements the llm-d Inference Payload Processor as a standalone runtime service. The Go entry point starts a controller-runtime manager and an Envoy external-processing gRPC server; the server inspects and mutates inference request and response payloads through configurable plugins. Kubernetes Deployment and Service manifests expose the processor on gRPC, health, and metrics ports, and a Helm application chart packages its deployment configuration. It is therefore a service rather than a library, operator, or configuration-only repository."
+}

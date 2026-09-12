@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/project-codeflare.rhoai-3.6-ea.2/codeflare-sdk",
+  "classification": "library",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "src/codeflare_sdk/__init__.py",
+    "src/codeflare_sdk/ray/cluster/cluster.py",
+    "src/codeflare_sdk/ray/client/ray_jobs.py",
+    "src/codeflare_sdk/ray/rayjobs/rayjob.py"
+  ],
+  "reasoning": "This checkout is a distributable Python SDK, declared as the codeflare-sdk package in pyproject.toml and installed with pip. Its public API provides client-side abstractions for creating and managing Ray clusters, submitting Ray jobs, Kubernetes authentication, Kueue integration, and notebook widgets. The implementation is consumed by applications and notebooks and does not define an independently deployed service, operator controller, or primarily declarative configuration package."
+}

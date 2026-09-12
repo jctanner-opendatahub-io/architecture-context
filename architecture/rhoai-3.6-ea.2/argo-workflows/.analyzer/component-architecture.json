@@ -1,8 +1,8 @@
 {
   "component": "argo-workflows",
   "repo": "https://github.com/red-hat-data-services/argo-workflows.git",
-  "commit_sha": "51f9373de9f376a8d97dc7b3aba18875afb00a21",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "bf2e61af78f9a9f8066810a72a54573e9142763e",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 8 CRDs, 0 serving runtime definitions, 2 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 16 registered HTTP endpoints, and 9 gRPC services.",
@@ -1060,6 +1060,31 @@
   ],
   "recent_changes": [
     {
+      "version": "bf2e61af7",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "ccba6de47",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #819 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "c7bc05f86",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "4ff974c68",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "db5b3e44b",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#818)"
+    },
+    {
       "version": "51f9373de",
       "date": "2026-09-03",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -1068,31 +1093,6 @@
       "version": "4d1268acb",
       "date": "2026-09-03",
       "changes": "Merge pull request #813 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "f60789f55",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "75add888d",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "a0fa03554",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #811 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "9d7a01ccf",
-      "date": "2026-09-01",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "46aa3fc96",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
   "component_refs": [

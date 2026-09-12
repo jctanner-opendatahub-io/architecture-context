@@ -1,11 +1,11 @@
 {
   "component": "llm-d-batch-gateway-operator",
   "repo": "https://github.com/red-hat-data-services/llm-d-batch-gateway-operator.git",
-  "commit_sha": "08f33f3e5c71f5307f6f60206a4f9defbb30788f",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "bdd85722c0cf04857999214daef14e7bf1f0673c",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 0 services, 8 RBAC roles, 0 ingress routes, 10 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
+  "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 8 RBAC roles, 0 ingress routes, 13 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
   "crds": [
     {
       "group": "batch.llm-d.ai",
@@ -15,7 +15,22 @@
       "source": "config/crd/bases/batch.llm-d.ai_llmbatchgateways.yaml:2"
     }
   ],
-  "services": null,
+  "services": [
+    {
+      "name": "llm-d-batch-gateway-operator-metrics",
+      "source": "config/manager/metrics_service.yaml:8",
+      "type": "ClusterIP",
+      "ports": [
+        {
+          "name": "https",
+          "port": 8443,
+          "targetPort": 8443,
+          "protocol": "TCP"
+        }
+      ],
+      "target_deployment": "llm-d-batch-gateway-operator"
+    }
+  ],
   "deployments": [
     {
       "name": "llm-d-batch-gateway-operator",
@@ -101,6 +116,19 @@
               ""
             ],
             "resources": [
+              "pods"
+            ],
+            "verbs": [
+              "get",
+              "list",
+              "watch"
+            ]
+          },
+          {
+            "apiGroups": [
+              ""
+            ],
+            "resources": [
               "secrets"
             ],
             "verbs": [
@@ -116,7 +144,8 @@
               "apps"
             ],
             "resources": [
-              "deployments"
+              "deployments",
+              "statefulsets"
             ],
             "verbs": [
               "create",
@@ -257,6 +286,24 @@
               "podmonitors",
               "prometheusrules",
               "servicemonitors"
+            ],
+            "verbs": [
+              "create",
+              "delete",
+              "get",
+              "list",
+              "patch",
+              "update",
+              "watch"
+            ]
+          },
+          {
+            "apiGroups": [
+              "rbac.authorization.k8s.io"
+            ],
+            "resources": [
+              "rolebindings",
+              "roles"
             ],
             "verbs": [
               "create",
@@ -452,6 +499,19 @@
               ""
             ],
             "resources": [
+              "pods"
+            ],
+            "verbs": [
+              "get",
+              "list",
+              "watch"
+            ]
+          },
+          {
+            "apiGroups": [
+              ""
+            ],
+            "resources": [
               "secrets"
             ],
             "verbs": [
@@ -467,7 +527,8 @@
               "apps"
             ],
             "resources": [
-              "deployments"
+              "deployments",
+              "statefulsets"
             ],
             "verbs": [
               "create",
@@ -618,6 +679,24 @@
               "update",
               "watch"
             ]
+          },
+          {
+            "apiGroups": [
+              "rbac.authorization.k8s.io"
+            ],
+            "resources": [
+              "rolebindings",
+              "roles"
+            ],
+            "verbs": [
+              "create",
+              "delete",
+              "get",
+              "list",
+              "patch",
+              "update",
+              "watch"
+            ]
           }
         ]
       }
@@ -758,7 +837,17 @@
       }
     ]
   },
-  "secrets_referenced": null,
+  "secrets_referenced": [
+    {
+      "name": "llm-d-batch-gateway-operator-metrics-tls",
+      "type": "kubernetes.io/tls",
+      "referenced_by": [
+        "llm-d-batch-gateway-operator-metrics"
+      ],
+      "provisioned_by": "OpenShift service-ca operator",
+      "source": "config/manager/metrics_service.yaml:8"
+    }
+  ],
   "http_endpoints": [
     {
       "method": "GET",
@@ -768,7 +857,7 @@
       "description": "Controller manager health endpoint",
       "owner": "cmd",
       "transport": "HTTP/1.1",
-      "source": "cmd/main.go:180"
+      "source": "cmd/main.go:176"
     },
     {
       "method": "GET",
@@ -778,7 +867,7 @@
       "description": "Controller manager health endpoint",
       "owner": "cmd",
       "transport": "HTTP/1.1",
-      "source": "cmd/main.go:184"
+      "source": "cmd/main.go:180"
     }
   ],
   "dependencies": {
@@ -939,7 +1028,7 @@
         "interaction": "Controller watch (conditional)",
         "role": "runtime-integration",
         "purpose": "Manage Gateway API routing resources",
-        "source": "internal/controller/llmbatchgateway_controller.go:568"
+        "source": "internal/controller/llmbatchgateway_controller.go:595"
       },
       {
         "component": "prometheus-operator",
@@ -955,28 +1044,28 @@
       "type": "Owns",
       "gvk": "/v1/ConfigMap",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:548",
+      "source": "internal/controller/llmbatchgateway_controller.go:573",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "/v1/Secret",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:550",
+      "source": "internal/controller/llmbatchgateway_controller.go:577",
       "resource_ops": null
     },
     {
       "type": "Owns",
       "gvk": "/v1/ServiceAccount",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:549",
+      "source": "internal/controller/llmbatchgateway_controller.go:574",
       "resource_ops": null
     },
     {
       "type": "Owns",
       "gvk": "/v1/Service",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:547",
+      "source": "internal/controller/llmbatchgateway_controller.go:572",
       "resource_ops": null
     },
     {
@@ -991,21 +1080,28 @@
       "type": "For",
       "gvk": "api/v1alpha1/LLMBatchGateway",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:545",
+      "source": "internal/controller/llmbatchgateway_controller.go:569",
       "resource_ops": null
     },
     {
       "type": "Owns",
       "gvk": "apps/v1/Deployment",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:546",
+      "source": "internal/controller/llmbatchgateway_controller.go:570",
+      "resource_ops": null
+    },
+    {
+      "type": "Owns",
+      "gvk": "apps/v1/StatefulSet",
+      "controller": "LLMBatchGatewayReconciler",
+      "source": "internal/controller/llmbatchgateway_controller.go:571",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "gateway.networking.k8s.io/v1beta1/ReferenceGrant",
       "controller": "LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:568",
+      "source": "internal/controller/llmbatchgateway_controller.go:595",
       "conditional": true,
       "resource_ops": null
     },
@@ -1023,6 +1119,20 @@
       "controller": "MetricsController",
       "source": "internal/monitoring/controller.go:109",
       "conditional": true,
+      "resource_ops": null
+    },
+    {
+      "type": "Owns",
+      "gvk": "rbac.authorization.k8s.io/v1/RoleBinding",
+      "controller": "LLMBatchGatewayReconciler",
+      "source": "internal/controller/llmbatchgateway_controller.go:576",
+      "resource_ops": null
+    },
+    {
+      "type": "Owns",
+      "gvk": "rbac.authorization.k8s.io/v1/Role",
+      "controller": "LLMBatchGatewayReconciler",
+      "source": "internal/controller/llmbatchgateway_controller.go:575",
       "resource_ops": null
     }
   ],
@@ -1049,7 +1159,7 @@
       "mechanism": "None",
       "enforcement_point": "N/A",
       "policy": "Kubernetes health probe; unauthenticated by design",
-      "source": "cmd/main.go:180"
+      "source": "cmd/main.go:176"
     },
     {
       "endpoint": ":8081/readyz",
@@ -1057,7 +1167,7 @@
       "mechanism": "None",
       "enforcement_point": "N/A",
       "policy": "Kubernetes readiness probe; unauthenticated by design",
-      "source": "cmd/main.go:184"
+      "source": "cmd/main.go:180"
     }
   ],
   "integration_points": [
@@ -1091,38 +1201,38 @@
   ],
   "recent_changes": [
     {
-      "version": "08f33f3",
-      "date": "2026-09-04",
+      "version": "bdd8572",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "aed2d51",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update dockerfile digest updates (#47)"
+      "version": "7d91962",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "67e0303",
-      "date": "2026-09-03",
+      "version": "b69437c",
+      "date": "2026-09-11",
+      "changes": "fix: lint"
+    },
+    {
+      "version": "49e2c4f",
+      "date": "2026-09-11",
+      "changes": "feat: bump batch-gateway changes and align operator with new chart"
+    },
+    {
+      "version": "f422a5e",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "a653f85",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #42 from red-hat-data-services/migrate-runtime-to-pqc-main"
+      "version": "87c15a4",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 685ccca (#52)"
     },
     {
-      "version": "0b19a06",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "558bd6a",
-      "date": "2026-09-02",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 8cf8983 (#44)"
-    },
-    {
-      "version": "662ba12",
-      "date": "2026-09-01",
+      "version": "906295b",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
@@ -1138,14 +1248,21 @@
       "component": "api/v1alpha1/LLMBatchGateway",
       "type": "Kubernetes API",
       "reference": "get, list operations by LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:146",
+      "source": "internal/controller/llmbatchgateway_controller.go:153",
       "interaction": "Resource read"
     },
     {
       "component": "apps/v1/Deployment",
       "type": "Kubernetes API",
       "reference": "list operations by LLMBatchGatewayReconciler",
-      "source": "internal/controller/llmbatchgateway_controller.go:370",
+      "source": "internal/controller/llmbatchgateway_controller.go:382",
+      "interaction": "Resource read"
+    },
+    {
+      "component": "apps/v1/StatefulSet",
+      "type": "Kubernetes API",
+      "reference": "list operations by LLMBatchGatewayReconciler",
+      "source": "internal/controller/llmbatchgateway_controller.go:407",
       "interaction": "Resource read"
     },
     {
@@ -1176,7 +1293,7 @@
       "type": "Go controller-runtime operator",
       "runtime": "Go",
       "command": "cmd",
-      "source": "cmd/main.go:95"
+      "source": "cmd/main.go:93"
     }
   ],
   "security_evidence": [
@@ -1185,8 +1302,9 @@
       "target": "crypto/tls",
       "detail": "TLS configuration import",
       "status": "dependency-signal",
-      "source": "internal/tls/profile.go",
+      "source": "cmd/metrics.go",
       "sources": [
+        "cmd/metrics.go",
         "internal/tls/profile.go"
       ]
     }
@@ -1198,7 +1316,7 @@
       "status": "unresolved",
       "identity": "controller-runtime metrics",
       "serving_surface": "controller-runtime metrics serving surface",
-      "source": "cmd/main.go:133-139",
+      "source": "cmd/main.go:135-135",
       "limitations": [
         "The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition"
       ]
@@ -1208,7 +1326,7 @@
       "status": "unresolved",
       "identity": "internal/controller.LLMBatchGatewayReconciler",
       "watched_gvk": "/v1/Secret",
-      "source": "internal/controller/llmbatchgateway_controller.go:550-550",
+      "source": "internal/controller/llmbatchgateway_controller.go:577-577",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -1254,7 +1372,7 @@
     }
   ],
   "data_coverage": {
-    "agent_baseline": "sufficient: 18 runtime facts, 0 source components, and 22 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 19 runtime facts, 0 source components, and 22 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "complete: extracted 1 Kubebuilder CRD identities",
     "go_module_configs": "complete: 7 canonical Go module config objects (ClusterRole, ClusterRoleBinding, CustomResourceDefinition, Role, RoleBinding)",
@@ -1291,11 +1409,12 @@
         "security-evidence-inventory"
       ],
       "limitations": [
-        "4 inbound runtime surfaces are not fully accounted for by authentication facts"
+        "5 inbound runtime surfaces are not fully accounted for by authentication facts"
       ],
       "evidence": [
+        "cmd/main.go:176",
         "cmd/main.go:180",
-        "cmd/main.go:184",
+        "config/manager/metrics_service.yaml:8",
         "config/manager/manager.yaml:1"
       ]
     },
@@ -1389,16 +1508,17 @@
     },
     "services": {
       "status": "partial",
-      "fact_count": 0,
+      "fact_count": 1,
       "discovery_contract": "services/v1",
       "completed_checks": [
         "literal-transport-inventory"
       ],
       "limitations": [
-        "no deterministic services facts extracted",
         "dynamic services construction is not fully resolved"
       ],
-      "evidence": []
+      "evidence": [
+        "summary:1 deterministic services facts extracted"
+      ]
     }
   },
   "cross_references": [
@@ -1409,7 +1529,7 @@
       "relationship": "watches-reference",
       "details": "/v1/Secret",
       "sources": [
-        "internal/controller/llmbatchgateway_controller.go:550",
+        "internal/controller/llmbatchgateway_controller.go:577",
         "internal/controller/secret_sync.go:62"
       ]
     },
@@ -1420,8 +1540,8 @@
       "relationship": "watches-reference",
       "details": "api/v1alpha1/LLMBatchGateway",
       "sources": [
-        "internal/controller/llmbatchgateway_controller.go:146",
-        "internal/controller/llmbatchgateway_controller.go:545"
+        "internal/controller/llmbatchgateway_controller.go:153",
+        "internal/controller/llmbatchgateway_controller.go:569"
       ]
     },
     {
@@ -1431,8 +1551,19 @@
       "relationship": "watches-reference",
       "details": "apps/v1/Deployment",
       "sources": [
-        "internal/controller/llmbatchgateway_controller.go:370",
-        "internal/controller/llmbatchgateway_controller.go:546"
+        "internal/controller/llmbatchgateway_controller.go:382",
+        "internal/controller/llmbatchgateway_controller.go:570"
+      ]
+    },
+    {
+      "kind": "controller",
+      "from": "LLMBatchGatewayReconciler",
+      "to": "apps/v1/StatefulSet",
+      "relationship": "watches-reference",
+      "details": "apps/v1/StatefulSet",
+      "sources": [
+        "internal/controller/llmbatchgateway_controller.go:407",
+        "internal/controller/llmbatchgateway_controller.go:571"
       ]
     },
     {
@@ -1442,7 +1573,7 @@
       "relationship": "watches-reference",
       "details": "gateway.networking.k8s.io/v1beta1/ReferenceGrant",
       "sources": [
-        "internal/controller/llmbatchgateway_controller.go:568",
+        "internal/controller/llmbatchgateway_controller.go:595",
         "internal/controller/secret_sync.go:107"
       ]
     }
@@ -1466,14 +1597,17 @@
       "status": "observed",
       "finding": "2 http_endpoints facts extracted",
       "sources": [
-        "cmd/main.go:180",
-        "cmd/main.go:184"
+        "cmd/main.go:176",
+        "cmd/main.go:180"
       ]
     },
     {
       "category": "services",
-      "status": "not-verified",
-      "finding": "0 services facts extracted; absence is not proven by the available coverage"
+      "status": "observed",
+      "finding": "1 services facts extracted",
+      "sources": [
+        "config/manager/metrics_service.yaml:8"
+      ]
     },
     {
       "category": "ingress",
@@ -1491,13 +1625,13 @@
       {
         "claim": ":8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design",
         "sources": [
-          "cmd/main.go:180"
+          "cmd/main.go:176"
         ]
       },
       {
         "claim": ":8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design",
         "sources": [
-          "cmd/main.go:184"
+          "cmd/main.go:180"
         ]
       }
     ],
@@ -1505,13 +1639,13 @@
       {
         "claim": "GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd",
         "sources": [
-          "cmd/main.go:180"
+          "cmd/main.go:176"
         ]
       },
       {
         "claim": "GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd",
         "sources": [
-          "cmd/main.go:184"
+          "cmd/main.go:180"
         ]
       }
     ],
@@ -1545,7 +1679,7 @@
       {
         "claim": "Gateway API interaction=Controller watch (conditional) role=runtime-integration purpose=Manage Gateway API routing resources",
         "sources": [
-          "internal/controller/llmbatchgateway_controller.go:568"
+          "internal/controller/llmbatchgateway_controller.go:595"
         ]
       },
       {
@@ -1566,6 +1700,14 @@
           "internal/monitoring/controller.go:113"
         ]
       }
+    ],
+    "services": [
+      {
+        "claim": "llm-d-batch-gateway-operator-metrics port=8443 target=8443 protocol=TCP encryption= auth=",
+        "sources": [
+          "config/manager/metrics_service.yaml:8"
+        ]
+      }
     ]
   },
   "cross_cutting_evidence": {
@@ -1575,6 +1717,13 @@
         "status": "observed",
         "sources": [
           "config/manager/manager.yaml:1"
+        ]
+      },
+      {
+        "claim": "Service llm-d-batch-gateway-operator-metrics targets llm-d-batch-gateway-operator with 1 port(s)",
+        "status": "observed",
+        "sources": [
+          "config/manager/metrics_service.yaml:8"
         ]
       }
     ],
@@ -1601,14 +1750,14 @@
         "claim": "HTTP GET /healthz is owned by cmd",
         "status": "observed",
         "sources": [
-          "cmd/main.go:180"
+          "cmd/main.go:176"
         ]
       },
       {
         "claim": "HTTP GET /readyz is owned by cmd",
         "status": "observed",
         "sources": [
-          "cmd/main.go:184"
+          "cmd/main.go:180"
         ]
       }
     ],
@@ -1617,14 +1766,14 @@
         "claim": "GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design",
         "status": "observed",
         "sources": [
-          "cmd/main.go:180"
+          "cmd/main.go:176"
         ]
       },
       {
         "claim": "GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design",
         "status": "observed",
         "sources": [
-          "cmd/main.go:184"
+          "cmd/main.go:180"
         ]
       },
       {
@@ -1656,7 +1805,7 @@
         ]
       },
       {
-        "claim": "RBAC role llm-d-batch-gateway-operator grants 14 rule(s)",
+        "claim": "RBAC role llm-d-batch-gateway-operator grants 16 rule(s)",
         "status": "observed",
         "sources": [
           "config/rbac/role.yaml:2"
@@ -1670,7 +1819,7 @@
         ]
       },
       {
-        "claim": "RBAC role operator grants 14 rule(s)",
+        "claim": "RBAC role operator grants 16 rule(s)",
         "status": "observed",
         "sources": [
           "config/rbac/role.yaml:2"
@@ -1687,6 +1836,7 @@
         "claim": "tls-config targets crypto/tls: TLS configuration import",
         "status": "dependency-signal",
         "sources": [
+          "cmd/metrics.go",
           "internal/tls/profile.go"
         ]
       }
@@ -1705,7 +1855,7 @@
     "authentication": [
       {
         "source": "cmd/main.go",
-        "line_range": "133-139",
+        "line_range": "135-135",
         "symbols": [
           "controller-runtime metrics",
           "controller-runtime metrics serving surface"
@@ -1719,7 +1869,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "180",
+        "line_range": "176",
         "symbols": [
           ":8081/healthz",
           "None"
@@ -1733,7 +1883,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "184",
+        "line_range": "180",
         "symbols": [
           ":8081/readyz",
           "None"
@@ -1935,7 +2085,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "95",
+        "line_range": "93",
         "symbols": [
           "cmd"
         ],
@@ -1965,7 +2115,7 @@
     "http_endpoints": [
       {
         "source": "cmd/main.go",
-        "line_range": "180",
+        "line_range": "176",
         "symbols": [
           "/healthz",
           "GET",
@@ -1980,7 +2130,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "184",
+        "line_range": "180",
         "symbols": [
           "/readyz",
           "GET",
@@ -2083,7 +2233,7 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "146",
+        "line_range": "153",
         "symbols": [
           "api/v1alpha1/LLMBatchGateway",
           "get, list operations by LLMBatchGatewayReconciler"
@@ -2097,7 +2247,7 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "370",
+        "line_range": "382",
         "symbols": [
           "apps/v1/Deployment",
           "list operations by LLMBatchGatewayReconciler"
@@ -2111,7 +2261,21 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "568",
+        "line_range": "407",
+        "symbols": [
+          "apps/v1/StatefulSet",
+          "list operations by LLMBatchGatewayReconciler"
+        ],
+        "question": "What source-backed runtime behavior uses this component reference?",
+        "expected_signal": "client, API, watch, or configuration handoff",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "internal/controller/llmbatchgateway_controller.go",
+        "line_range": "595",
         "symbols": [
           "Controller watch (conditional)",
           "Gateway API"
@@ -2169,21 +2333,7 @@
     "kubernetes_relationships": [
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "146",
-        "symbols": [
-          "api/v1alpha1/LLMBatchGateway",
-          "get, list operations by LLMBatchGatewayReconciler"
-        ],
-        "question": "How is this Kubernetes or platform resource reference used at runtime?",
-        "expected_signal": "typed client, CRUD operation, watch, or configuration projection",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "545",
+        "line_range": "569",
         "symbols": [
           "LLMBatchGatewayReconciler",
           "api/v1alpha1/LLMBatchGateway"
@@ -2197,7 +2347,7 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "546",
+        "line_range": "570",
         "symbols": [
           "LLMBatchGatewayReconciler",
           "apps/v1/Deployment"
@@ -2211,7 +2361,21 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "547",
+        "line_range": "571",
+        "symbols": [
+          "LLMBatchGatewayReconciler",
+          "apps/v1/StatefulSet"
+        ],
+        "question": "Which client/resource relationship implements this controller watch, and under what condition?",
+        "expected_signal": "watch registration, GVK, resource operations, or conditional branch",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "internal/controller/llmbatchgateway_controller.go",
+        "line_range": "572",
         "symbols": [
           "/v1/Service",
           "LLMBatchGatewayReconciler"
@@ -2225,7 +2389,7 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "548",
+        "line_range": "573",
         "symbols": [
           "/v1/ConfigMap",
           "LLMBatchGatewayReconciler"
@@ -2239,7 +2403,7 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "549",
+        "line_range": "574",
         "symbols": [
           "/v1/ServiceAccount",
           "LLMBatchGatewayReconciler"
@@ -2253,7 +2417,21 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "550-550",
+        "line_range": "576",
+        "symbols": [
+          "LLMBatchGatewayReconciler",
+          "rbac.authorization.k8s.io/v1/RoleBinding"
+        ],
+        "question": "Which client/resource relationship implements this controller watch, and under what condition?",
+        "expected_signal": "watch registration, GVK, resource operations, or conditional branch",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "internal/controller/llmbatchgateway_controller.go",
+        "line_range": "577-577",
         "symbols": [
           "/v1/Secret",
           "internal/controller.LLMBatchGatewayReconciler"
@@ -2267,27 +2445,13 @@
       },
       {
         "source": "internal/controller/llmbatchgateway_controller.go",
-        "line_range": "568",
+        "line_range": "595",
         "symbols": [
           "LLMBatchGatewayReconciler",
           "gateway.networking.k8s.io/v1beta1/ReferenceGrant"
         ],
         "question": "Which client/resource relationship implements this controller watch, and under what condition?",
         "expected_signal": "watch registration, GVK, resource operations, or conditional branch",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "internal/controller/secret_sync.go",
-        "line_range": "62",
-        "symbols": [
-          "/v1/Secret",
-          "get operations by LLMBatchGatewayReconciler"
-        ],
-        "question": "How is this Kubernetes or platform resource reference used at runtime?",
-        "expected_signal": "typed client, CRUD operation, watch, or configuration projection",
         "status": "candidate",
         "limitations": [
           "candidate location only; source inspection is required to establish the relationship"
@@ -2349,6 +2513,20 @@
         "limitations": [
           "candidate location only; source inspection is required to establish the relationship"
         ]
+      },
+      {
+        "source": "config/manager/metrics_service.yaml",
+        "line_range": "8",
+        "symbols": [
+          "llm-d-batch-gateway-operator",
+          "llm-d-batch-gateway-operator-metrics"
+        ],
+        "question": "Which workload owns this Service and does its target port match a runtime listener?",
+        "expected_signal": "selector, target deployment, port mapping, or listener",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
       }
     ]
   },
@@ -2356,7 +2534,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 76,
+      "value": 78,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

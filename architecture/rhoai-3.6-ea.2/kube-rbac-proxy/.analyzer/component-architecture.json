@@ -1,8 +1,8 @@
 {
   "component": "kube-rbac-proxy",
   "repo": "https://github.com/red-hat-data-services/kube-rbac-proxy.git",
-  "commit_sha": "adf337a22610914a00b6af18c18e98f0841354d2",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "2f3c9c1385885d813f6ee94bec45e70ada45e875",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 2 workloads, 2 services, 8 RBAC roles, 0 ingress routes, 0 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -707,39 +707,39 @@
   ],
   "recent_changes": [
     {
-      "version": "adf337a2",
-      "date": "2026-09-04",
+      "version": "2f3c9c13",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "a20020af",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/go-toolset docker digest to 5e68f09 (#122)"
+      "version": "ff24ac50",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/go-toolset docker digest to 685ccca (#127)"
     },
     {
-      "version": "22416d8c",
-      "date": "2026-09-03",
+      "version": "e063f548",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "0f2c958a",
-      "date": "2026-09-03",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#121)"
+      "version": "4ae19844",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#126)"
     },
     {
-      "version": "447cfed5",
-      "date": "2026-09-02",
+      "version": "6d9589e3",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "ac10f193",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #116 from red-hat-data-services/migrate-runtime-to-pqc-main"
+      "version": "73a2956b",
+      "date": "2026-09-09",
+      "changes": "Merge remote-tracking branch 'upstream/master'"
     },
     {
-      "version": "3984a885",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "ed617a17",
+      "date": "2026-09-09",
+      "changes": "test: fix e2e pod cleanup deadlines and error handling"
     }
   ],
   "component_refs": null,

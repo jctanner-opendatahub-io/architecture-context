@@ -18,20 +18,20 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **controller**: AIHubReconciler —watches-reference→ api/catalog/v1alpha1/Catalog; api/catalog/v1alpha1/Catalog [source: internal/controller/aihub_controller.go:527, internal/controller/aihub_controller.go:778]
 - **controller**: AIHubReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: internal/controller/aihub_controller.go:458, internal/controller/aihub_controller.go:768]
 - **controller**: AIHubReconciler —watches-reference→ rbac.authorization.k8s.io/v1/ClusterRoleBinding; rbac.authorization.k8s.io/v1/ClusterRoleBinding [source: internal/controller/aihub_controller.go:775, internal/controller/modelregistry_oauth.go:35]
-- **controller**: AIHubReconciler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/aihub_controller.go:773, internal/controller/catalog_controller.go:1084]
-- **controller**: CatalogReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: internal/controller/aihub_controller.go:735, internal/controller/catalog_controller.go:1372]
-- **controller**: CatalogReconciler —watches-reference→ /v1/Secret; /v1/Secret [source: internal/controller/catalog_controller.go:1373, internal/controller/catalog_controller.go:903]
-- **controller**: CatalogReconciler —watches-reference→ api/catalog/v1alpha1/Catalog; api/catalog/v1alpha1/Catalog [source: internal/controller/aihub_controller.go:527, internal/controller/catalog_controller.go:1368]
-- **controller**: CatalogReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: internal/controller/aihub_controller.go:458, internal/controller/catalog_controller.go:1369]
-- **controller**: CatalogReconciler —watches-reference→ networking.k8s.io/v1/NetworkPolicy; networking.k8s.io/v1/NetworkPolicy [source: internal/controller/catalog_controller.go:1374, internal/controller/modelregistry_oauth.go:45]
-- **controller**: CatalogReconciler —watches-reference→ rbac.authorization.k8s.io/v1/ClusterRoleBinding; rbac.authorization.k8s.io/v1/ClusterRoleBinding [source: internal/controller/catalog_controller.go:1408, internal/controller/modelregistry_oauth.go:35]
-- **controller**: CatalogReconciler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/catalog_controller.go:1084, internal/controller/catalog_controller.go:1376]
-- **controller**: CatalogReconciler —watches-reference→ route.openshift.io/v1/Route; route.openshift.io/v1/Route [source: internal/controller/catalog_controller.go:1379, internal/controller/modelregistry_controller.go:768]
+- **controller**: AIHubReconciler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/aihub_controller.go:773, internal/controller/catalog_controller.go:1129]
+- **controller**: CatalogReconciler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: internal/controller/aihub_controller.go:735, internal/controller/catalog_controller.go:1476]
+- **controller**: CatalogReconciler —watches-reference→ /v1/Secret; /v1/Secret [source: internal/controller/catalog_controller.go:1477, internal/controller/catalog_controller.go:948]
+- **controller**: CatalogReconciler —watches-reference→ api/catalog/v1alpha1/Catalog; api/catalog/v1alpha1/Catalog [source: internal/controller/aihub_controller.go:527, internal/controller/catalog_controller.go:1472]
+- **controller**: CatalogReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: internal/controller/aihub_controller.go:458, internal/controller/catalog_controller.go:1473]
+- **controller**: CatalogReconciler —watches-reference→ networking.k8s.io/v1/NetworkPolicy; networking.k8s.io/v1/NetworkPolicy [source: internal/controller/catalog_controller.go:1478, internal/controller/modelregistry_oauth.go:45]
+- **controller**: CatalogReconciler —watches-reference→ rbac.authorization.k8s.io/v1/ClusterRoleBinding; rbac.authorization.k8s.io/v1/ClusterRoleBinding [source: internal/controller/catalog_controller.go:1512, internal/controller/modelregistry_oauth.go:35]
+- **controller**: CatalogReconciler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/catalog_controller.go:1129, internal/controller/catalog_controller.go:1480]
+- **controller**: CatalogReconciler —watches-reference→ route.openshift.io/v1/Route; route.openshift.io/v1/Route [source: internal/controller/catalog_controller.go:1483, internal/controller/modelregistry_controller.go:768]
 - **controller**: ModelRegistryReconciler —watches-reference→ api/v1beta1/ModelRegistry; api/v1beta1/ModelRegistry [source: api/v1beta1/modelregistry_webhook.go:246, internal/controller/modelregistry_controller.go:282]
 - **controller**: ModelRegistryReconciler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: internal/controller/aihub_controller.go:458, internal/controller/modelregistry_controller.go:285]
 - **controller**: ModelRegistryReconciler —watches-reference→ networking.k8s.io/v1/NetworkPolicy; networking.k8s.io/v1/NetworkPolicy [source: internal/controller/modelregistry_controller.go:287, internal/controller/modelregistry_oauth.go:45]
 - **controller**: ModelRegistryReconciler —watches-reference→ rbac.authorization.k8s.io/v1/ClusterRoleBinding; rbac.authorization.k8s.io/v1/ClusterRoleBinding [source: internal/controller/modelregistry_controller.go:304, internal/controller/modelregistry_oauth.go:35]
-- **controller**: ModelRegistryReconciler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/catalog_controller.go:1084, internal/controller/modelregistry_controller.go:289]
+- **controller**: ModelRegistryReconciler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/catalog_controller.go:1129, internal/controller/modelregistry_controller.go:289]
 - **controller**: ModelRegistryReconciler —watches-reference→ route.openshift.io/v1/Route; route.openshift.io/v1/Route [source: internal/controller/modelregistry_controller.go:300, internal/controller/modelregistry_controller.go:768]
 - **security**: GET /healthz —protected-by→ None; N/A: Kubernetes health probe; unauthenticated by design [source: cmd/aihub.go:186]
 - **security**: GET /readyz —protected-by→ None; N/A: Kubernetes readiness probe; unauthenticated by design [source: cmd/aihub.go:189]
@@ -41,8 +41,8 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: cmd/aihub.go:142-142]
 - **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: cmd/catalog.go:128-128]
 - **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: cmd/modelregistry.go:181-181]
-- **named-watch-predicate (unresolved)** internal/controller.CatalogReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/catalog_controller.go:1402-1406]
-- **named-watch-predicate (unresolved)** internal/controller.CatalogReconciler: rbac.authorization.k8s.io/v1/ClusterRoleBinding; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/catalog_controller.go:1408-1412]
+- **named-watch-predicate (unresolved)** internal/controller.CatalogReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/catalog_controller.go:1506-1510]
+- **named-watch-predicate (unresolved)** internal/controller.CatalogReconciler: rbac.authorization.k8s.io/v1/ClusterRoleBinding; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/catalog_controller.go:1512-1516]
 - **named-watch-predicate (unresolved)** internal/controller.ModelRegistryReconciler: route.openshift.io/v1/Route; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/modelregistry_controller.go:300-303]
 - **named-watch-predicate (unresolved)** internal/controller.ModelRegistryReconciler: rbac.authorization.k8s.io/v1/ClusterRoleBinding; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/modelregistry_controller.go:304-307]
 
@@ -198,7 +198,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
   **Expected signal:** runtime client construction and target configuration
-  **Candidate:** `internal/setup/setup.go`:86 (Kubernetes API, client-go discovery client)
+  **Candidate:** `internal/setup/setup.go`:88 (Kubernetes API, client-go discovery client)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### http_endpoints
 
@@ -276,19 +276,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `internal/controller/catalog_controller.go`:400 (/v1/PersistentVolumeClaim, delete, get operations by CatalogReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:445 (/v1/PersistentVolumeClaim, delete, get operations by CatalogReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `internal/controller/catalog_controller.go`:574 (/v1/Endpoints, get operations by CatalogReconciler, ModelRegistryReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:619 (/v1/Endpoints, get operations by CatalogReconciler, ModelRegistryReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `internal/controller/catalog_controller.go`:616 (/v1/Pod, list operations by CatalogReconciler, ModelRegistryReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:661 (/v1/Pod, list operations by CatalogReconciler, ModelRegistryReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What source-backed runtime behavior uses this component reference?
   **Expected signal:** client, API, watch, or configuration handoff
-  **Candidate:** `internal/controller/catalog_controller.go`:903 (/v1/Secret, get, update operations by CatalogReconciler, ModelRegistryReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:948 (/v1/Secret, get, list, update operations by CatalogReconciler, ModelRegistryReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
@@ -314,27 +314,27 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/catalog_controller.go`:1370 (/v1/Service, CatalogReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:1474 (/v1/Service, CatalogReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/catalog_controller.go`:1371 (/v1/ServiceAccount, CatalogReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:1475 (/v1/ServiceAccount, CatalogReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/catalog_controller.go`:1372 (/v1/ConfigMap, CatalogReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:1476 (/v1/ConfigMap, CatalogReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `internal/controller/catalog_controller.go`:1373 (/v1/Secret, CatalogReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:1477 (/v1/Secret, CatalogReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `internal/controller/catalog_controller.go`:1402-1406 (/v1/ConfigMap, internal/controller.CatalogReconciler)
+  **Candidate:** `internal/controller/catalog_controller.go`:1506-1510 (/v1/ConfigMap, internal/controller.CatalogReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `internal/controller/catalog_controller.go`:1408-1412 (internal/controller.CatalogReconciler, rbac.authorization.k8s.io/v1/ClusterRoleBinding)
+  **Candidate:** `internal/controller/catalog_controller.go`:1512-1516 (internal/controller.CatalogReconciler, rbac.authorization.k8s.io/v1/ClusterRoleBinding)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch

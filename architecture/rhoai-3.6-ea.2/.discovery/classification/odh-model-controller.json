@@ -1,0 +1,19 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/odh-model-controller",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "architecture.md",
+    "PROJECT",
+    "go.mod",
+    "cmd/main.go",
+    "server/main.go",
+    "internal/controller/core/pod_controller.go",
+    "internal/controller/core/configmap_controller.go",
+    "internal/controller/core/secret_controller.go",
+    "internal/webhook/core/v1/pod_webhook.go",
+    "Makefile",
+    "config/runtimes/kustomization.yaml"
+  ],
+  "reasoning": "This is a Kubebuilder/controller-runtime Go project whose primary function is to operate Kubernetes and OpenShift workloads. It defines and reconciles Kubernetes resources and CRDs, including InferenceService, ServingRuntime, LLMInferenceService, NIM Account, ConfigMaps, Secrets, and Pods; registers validating, defaulting, and mutating webhooks; and provides deployment, RBAC, CRD, and Kustomize configuration. Its controllers manage platform integrations such as Routes, monitoring resources, KEDA authentication, TLS secrets, and model-serving resources, which is characteristic of an operator rather than a library, standalone service, or configuration-only project."
+}

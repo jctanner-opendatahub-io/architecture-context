@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/vllm-gaudi",
+  "classification": "library",
+  "files_read": [
+    "README.md",
+    "setup.py",
+    "pyproject.toml",
+    "vllm_gaudi/__init__.py",
+    "vllm_gaudi/platform.py",
+    "Dockerfile.hpu.ubi"
+  ],
+  "reasoning": "This checkout is a Python package providing the vLLM Hardware Plugin for Intel Gaudi. It installs the vllm_gaudi package and exposes vLLM platform, utility, operation, and model entry points that extend an existing vLLM runtime. Its source is an importable collection of platform integrations, device operations, model implementations, and distributed components, with Dockerfiles supporting deployment; it is not an operator/controller or a standalone service."
+}

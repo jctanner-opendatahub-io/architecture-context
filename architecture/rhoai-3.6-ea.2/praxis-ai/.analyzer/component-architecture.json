@@ -1,8 +1,8 @@
 {
   "component": "ai",
   "repo": "https://github.com/praxis-proxy/ai.git",
-  "commit_sha": "7aeafb144c5f62d743f477e9f4bad57c09831986",
-  "extracted_at": "2026-09-10T15:09:33Z",
+  "commit_sha": "6bfbe84ddf646012524bdd19e378489d77359eba",
+  "extracted_at": "2026-09-12T16:40:01Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -307,6 +307,12 @@
         "source": "apis/Cargo.toml:31"
       },
       {
+        "name": "percent-encoding",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "filters/Cargo.toml:58"
+      },
+      {
         "name": "pingora-core",
         "version": "Unknown",
         "ecosystem": "Cargo",
@@ -334,7 +340,7 @@
         "name": "praxis-ai-apis",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:58"
+        "source": "filters/Cargo.toml:59"
       },
       {
         "name": "praxis-ai-apis",
@@ -388,7 +394,7 @@
         "name": "praxis-core",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:59"
+        "source": "filters/Cargo.toml:60"
       },
       {
         "name": "praxis-core",
@@ -418,7 +424,7 @@
         "name": "praxis-filter",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:60"
+        "source": "filters/Cargo.toml:61"
       },
       {
         "name": "praxis-filter",
@@ -491,7 +497,7 @@
         "name": "rand",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:62"
+        "source": "filters/Cargo.toml:63"
       },
       {
         "name": "rand",
@@ -509,7 +515,7 @@
         "name": "redis",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:61"
+        "source": "filters/Cargo.toml:62"
       },
       {
         "name": "reqwest",
@@ -576,7 +582,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "filters/Cargo.toml:64"
+        "source": "filters/Cargo.toml:65"
       },
       {
         "name": "serde",
@@ -616,7 +622,7 @@
         "name": "serde_json",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:65"
+        "source": "filters/Cargo.toml:66"
       },
       {
         "name": "serde_json",
@@ -640,13 +646,13 @@
         "name": "serde_json_canonicalizer",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:66"
+        "source": "filters/Cargo.toml:67"
       },
       {
         "name": "serde_json_path",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:67"
+        "source": "filters/Cargo.toml:68"
       },
       {
         "name": "serde_yaml",
@@ -658,7 +664,7 @@
         "name": "serde_yaml",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:68"
+        "source": "filters/Cargo.toml:69"
       },
       {
         "name": "serde_yaml",
@@ -688,7 +694,13 @@
         "name": "sha2",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:69"
+        "source": "apis/Cargo.toml:41"
+      },
+      {
+        "name": "sha2",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "filters/Cargo.toml:70"
       },
       {
         "name": "sha2",
@@ -700,7 +712,13 @@
         "name": "sqlx",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "apis/Cargo.toml:41"
+        "source": "apis/Cargo.toml:42"
+      },
+      {
+        "name": "sse-stream",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "apis/Cargo.toml:43"
       },
       {
         "name": "syn",
@@ -730,13 +748,13 @@
         "name": "thiserror",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "apis/Cargo.toml:42"
+        "source": "apis/Cargo.toml:44"
       },
       {
         "name": "thiserror",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:70"
+        "source": "filters/Cargo.toml:71"
       },
       {
         "name": "thiserror",
@@ -754,21 +772,21 @@
         "name": "tiktoken-rs",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "apis/Cargo.toml:43"
+        "source": "apis/Cargo.toml:45"
       },
       {
         "name": "tokio",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "apis/Cargo.toml:44"
+        "source": "apis/Cargo.toml:46"
       },
       {
         "name": "tokio",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "filters/Cargo.toml:71"
+        "source": "filters/Cargo.toml:72"
       },
       {
         "name": "tokio",
@@ -826,7 +844,7 @@
         "name": "tokio-util",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:72"
+        "source": "filters/Cargo.toml:73"
       },
       {
         "name": "tokio-util",
@@ -859,14 +877,14 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "apis/Cargo.toml:45"
+        "source": "apis/Cargo.toml:47"
       },
       {
         "name": "tracing",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "filters/Cargo.toml:73"
+        "source": "filters/Cargo.toml:74"
       },
       {
         "name": "tracing",
@@ -906,13 +924,13 @@
         "name": "url",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "apis/Cargo.toml:46"
+        "source": "apis/Cargo.toml:48"
       },
       {
         "name": "url",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:74"
+        "source": "filters/Cargo.toml:75"
       },
       {
         "name": "url",
@@ -924,13 +942,13 @@
         "name": "utoipa",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "apis/Cargo.toml:47"
+        "source": "apis/Cargo.toml:49"
       },
       {
         "name": "zeroize",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "filters/Cargo.toml:75"
+        "source": "filters/Cargo.toml:76"
       }
     ],
     "internal_odh": null
@@ -942,39 +960,39 @@
   "external_connections": null,
   "recent_changes": [
     {
-      "version": "7aeafb14",
-      "date": "2026-09-04",
-      "changes": "fix(conversations): model official input and output item unions (#747)"
+      "version": "6bfbe84d",
+      "date": "2026-09-11",
+      "changes": "feat(filter): add identity header guard filter (#709)"
     },
     {
-      "version": "2ff11b96",
-      "date": "2026-09-04",
-      "changes": "ci: remove praxis core main compatibility test (#926)"
+      "version": "579a0f0f",
+      "date": "2026-09-11",
+      "changes": "fix(validate): reject conflicting history selectors (#999)"
     },
     {
-      "version": "1fc4e17a",
-      "date": "2026-09-04",
-      "changes": "perf(responses): avoid cloning rewritten request bodies (#925)"
+      "version": "b26f359e",
+      "date": "2026-09-11",
+      "changes": "feat(tests): pinned Claude Code acceptance test harness (#871) (#978)"
     },
     {
-      "version": "d2cb0581",
-      "date": "2026-09-04",
-      "changes": "fix(mcp_client): enforce overall timeout for list_tools pagination (#836) (#912)"
+      "version": "dd04c082",
+      "date": "2026-09-11",
+      "changes": "feat(openai): emit successful mcp_list_tools lifecycle events (#1071)"
     },
     {
-      "version": "a118526a",
-      "date": "2026-09-04",
-      "changes": "refactor(callouts): standardize target and credential policy (#911)"
+      "version": "2d3fd8b2",
+      "date": "2026-09-11",
+      "changes": "fix(rehydrate): remove non-spec history limits from openai_responses_rehydrate (#1070)"
     },
     {
-      "version": "97638822",
-      "date": "2026-09-04",
-      "changes": "feat: install OpenAI error response formatter for proxy failures (#825)"
+      "version": "14c098b0",
+      "date": "2026-09-11",
+      "changes": "ci(vllm): background vLLM start to overlap cargo build (#1069)"
     },
     {
-      "version": "1ef8a53e",
-      "date": "2026-09-03",
-      "changes": "fix(conversations): atomic item mutations with transactional message cache sync (#570)"
+      "version": "3ce15c6c",
+      "date": "2026-09-11",
+      "changes": "fix(agentic_loop): dispatch status-less function calls (#955) (#972)"
     }
   ],
   "component_refs": null,
@@ -1005,9 +1023,9 @@
       "target": "tokio-rustls",
       "detail": "Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification",
       "status": "dependency-signal",
-      "source": "Cargo.toml:68",
+      "source": "Cargo.toml:69",
       "sources": [
-        "Cargo.toml:68"
+        "Cargo.toml:69"
       ]
     },
     {
@@ -1015,9 +1033,9 @@
       "target": "aws-lc-rs",
       "detail": "Cargo.lock selects this cryptographic provider; FIPS validation depends on build and runtime configuration",
       "status": "dependency-signal",
-      "source": "Cargo.lock:281",
+      "source": "Cargo.lock:298",
       "sources": [
-        "Cargo.lock:281"
+        "Cargo.lock:298"
       ]
     },
     {
@@ -1025,9 +1043,9 @@
       "target": "ring",
       "detail": "Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
       "status": "dependency-signal",
-      "source": "Cargo.lock:3950",
+      "source": "Cargo.lock:3976",
       "sources": [
-        "Cargo.lock:3950"
+        "Cargo.lock:3976"
       ]
     },
     {
@@ -1044,7 +1062,7 @@
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "partial: 0 runtime facts, 10 source components, and 137 dependencies; use bounded language-specific gap discovery",
+    "agent_baseline": "partial: 0 runtime facts, 10 source components, and 140 dependencies; use bounded language-specific gap discovery",
     "controller_templates": "not_found",
     "go_crds": "not_applicable",
     "go_module_configs": "not_found",
@@ -1102,10 +1120,10 @@
         "static signals do not prove FIPS validation or runtime provider selection"
       ],
       "evidence": [
-        "Cargo.lock:281",
-        "Cargo.lock:3950",
+        "Cargo.lock:298",
+        "Cargo.lock:3976",
         "Cargo.toml:51",
-        "Cargo.toml:68",
+        "Cargo.toml:69",
         "Containerfile",
         "coverage:fips_compliance"
       ]
@@ -1266,21 +1284,21 @@
         "claim": "crypto-library targets tokio-rustls: Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.toml:68"
+          "Cargo.toml:69"
         ]
       },
       {
         "claim": "crypto-provider targets aws-lc-rs: Cargo.lock selects this cryptographic provider; FIPS validation depends on build and runtime configuration",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.lock:281"
+          "Cargo.lock:298"
         ]
       },
       {
         "claim": "crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.lock:3950"
+          "Cargo.lock:3976"
         ]
       },
       {
@@ -1305,7 +1323,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 259,
+      "value": 282,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

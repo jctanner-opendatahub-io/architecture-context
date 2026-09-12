@@ -28,17 +28,17 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `Dockerfile.konflux.pipelines-components`:25 (Dockerfile.konflux.pipelines-components:CMD)
+  **Candidate:** `Dockerfile.konflux.pipelines-components`:29 (Dockerfile.konflux.pipelines-components:CMD)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `pyproject.toml`:196 (my-script)
+  **Candidate:** `pyproject.toml`:195 (my-script)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### integration_points
 
 - **Question:** What runtime call or protocol realizes this integration?
   **Expected signal:** client construction, request path, protocol, or failure handling
-  **Candidate:** `components/data_processing/automl/tabular_data_loader/component.py`:90 (AWS (S3-compatible storage), Python SDK client)
+  **Candidate:** `components/data_processing/automl/tabular_data_loader/component.py`:96 (AWS (S3-compatible storage), Python SDK client)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### internal_dependencies
 
@@ -55,7 +55,7 @@ No bounded behavioral evidence was extracted.
 
 ### integrations
 
-- AWS (S3-compatible storage) interaction=Python SDK client role=runtime-integration protocol=HTTPS purpose=AWS service operations via boto3 [source: components/data_processing/automl/tabular_data_loader/component.py:90]
+- AWS (S3-compatible storage) interaction=Python SDK client role=runtime-integration protocol=HTTPS purpose=AWS service operations via boto3 [source: components/data_processing/automl/tabular_data_loader/component.py:96]
 ### internal_dependencies
 
 - Kubeflow Pipelines SDK interaction=Python client library role=runtime-integration purpose=Pipeline definition and execution [source: components/data_processing/automl/tabular_data_loader/component.py:3]

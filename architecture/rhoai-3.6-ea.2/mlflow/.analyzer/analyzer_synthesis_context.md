@@ -6,7 +6,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **crds (not-verified)**: 0 crds facts extracted; absence is not proven by the available coverage
 - **grpc_services (confirmed-empty)**: 0 grpc_services facts extracted
-- **http_endpoints (observed)**: 48 http_endpoints facts extracted [source: mlflow/gateway/app.py:301, mlflow/gateway/app.py:305, mlflow/gateway/app.py:315, mlflow/gateway/app.py:419, mlflow/gateway/app.py:438, mlflow/gateway/app.py:457, mlflow/genai/agent_server/server.py:230, mlflow/genai/agent_server/server.py:237, mlflow/genai/agent_server/server.py:245, mlflow/genai/agent_server/server.py:263, mlflow/pyfunc/scoring_server/__init__.py:470, mlflow/server/assistant/api.py:117, mlflow/server/assistant/api.py:153, mlflow/server/assistant/api.py:217, mlflow/server/assistant/api.py:245, mlflow/server/assistant/api.py:266, mlflow/server/assistant/api.py:281, mlflow/server/assistant/api.py:352, mlflow/server/assistant/api.py:413, mlflow/server/gateway_api.py:1425, mlflow/server/gateway_api.py:615, mlflow/server/gateway_api.py:744, mlflow/server/job_api.py:116, mlflow/server/job_api.py:50, mlflow/server/job_api.py:70, mlflow/server/job_api.py:88, mlflow/server/mcp_server_api.py:622, mlflow/server/mcp_server_api.py:649, mlflow/server/mcp_server_api.py:659, mlflow/server/mcp_server_api.py:667, mlflow/server/mcp_server_api.py:678, mlflow/server/mcp_server_api.py:693, mlflow/server/mcp_server_api.py:701, mlflow/server/mcp_server_api.py:735, mlflow/server/mcp_server_api.py:758, mlflow/server/mcp_server_api.py:778, mlflow/server/mcp_server_api.py:790, mlflow/server/mcp_server_api.py:807, mlflow/server/mcp_server_api.py:815, mlflow/server/mcp_server_api.py:844, mlflow/server/mcp_server_api.py:852, mlflow/server/mcp_server_api.py:860, mlflow/server/mcp_server_api.py:870, mlflow/server/mcp_server_api.py:878, mlflow/server/mcp_server_api.py:887, mlflow/server/mcp_server_api.py:895, mlflow/server/mcp_server_api.py:908, mlflow/tracing/distributed/__init__.py:53]
+- **http_endpoints (observed)**: 54 http_endpoints facts extracted [source: mlflow/gateway/app.py:301, mlflow/gateway/app.py:305, mlflow/gateway/app.py:315, mlflow/gateway/app.py:419, mlflow/gateway/app.py:438, mlflow/gateway/app.py:457, mlflow/genai/agent_server/server.py:230, mlflow/genai/agent_server/server.py:237, mlflow/genai/agent_server/server.py:245, mlflow/genai/agent_server/server.py:263, mlflow/pyfunc/scoring_server/__init__.py:470, mlflow/server/artifact_router.py:135, mlflow/server/artifact_router.py:136, mlflow/server/artifact_router.py:60, mlflow/server/artifact_router.py:61, mlflow/server/assistant/api.py:325, mlflow/server/assistant/api.py:362, mlflow/server/assistant/api.py:444, mlflow/server/assistant/api.py:478, mlflow/server/assistant/api.py:506, mlflow/server/assistant/api.py:528, mlflow/server/assistant/api.py:555, mlflow/server/assistant/api.py:591, mlflow/server/assistant/api.py:668, mlflow/server/assistant/api.py:732, mlflow/server/gateway_api.py:1438, mlflow/server/gateway_api.py:626, mlflow/server/gateway_api.py:757, mlflow/server/job_api.py:116, mlflow/server/job_api.py:50, mlflow/server/job_api.py:70, mlflow/server/job_api.py:88, mlflow/server/mcp_server_api.py:622, mlflow/server/mcp_server_api.py:649, mlflow/server/mcp_server_api.py:659, mlflow/server/mcp_server_api.py:667, mlflow/server/mcp_server_api.py:678, mlflow/server/mcp_server_api.py:693, mlflow/server/mcp_server_api.py:701, mlflow/server/mcp_server_api.py:735, mlflow/server/mcp_server_api.py:758, mlflow/server/mcp_server_api.py:778, mlflow/server/mcp_server_api.py:790, mlflow/server/mcp_server_api.py:807, mlflow/server/mcp_server_api.py:815, mlflow/server/mcp_server_api.py:844, mlflow/server/mcp_server_api.py:852, mlflow/server/mcp_server_api.py:860, mlflow/server/mcp_server_api.py:870, mlflow/server/mcp_server_api.py:878, mlflow/server/mcp_server_api.py:887, mlflow/server/mcp_server_api.py:895, mlflow/server/mcp_server_api.py:908, mlflow/tracing/distributed/__init__.py:53]
 - **services (observed)**: 1 services facts extracted [source: mlflow/gateway/app.py:301]
 - **ingress (not-verified)**: 0 ingress facts extracted; absence is not proven by the available coverage
 - **webhooks (confirmed-empty)**: 0 webhooks facts extracted
@@ -24,7 +24,7 @@ No bounded behavioral evidence was extracted.
 
 - **Question:** Does this container app/plugin selection configure authentication or authorization for the serving surface?
   **Expected signal:** app/plugin selector, authentication middleware, or enforcement boundary
-  **Candidate:** `Dockerfile.konflux`:80 (Dockerfile.konflux:CMD, kubernetes-auth)
+  **Candidate:** `Dockerfile.konflux`:82 (Dockerfile.konflux:CMD, kubernetes-auth)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
@@ -34,7 +34,7 @@ No bounded behavioral evidence was extracted.
 
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `Dockerfile.konflux`:80 (Dockerfile.konflux:CMD)
+  **Candidate:** `Dockerfile.konflux`:82 (Dockerfile.konflux:CMD)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
@@ -56,7 +56,7 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this external connection made and how are TLS/authentication configured?
   **Expected signal:** request/client construction, endpoint, TLS, or credential use
-  **Candidate:** `mlflow/tracing/fluent.py`:1645 (Literal outbound HTTP endpoint, your-service-endpoint)
+  **Candidate:** `mlflow/tracing/fluent.py`:1676 (Literal outbound HTTP endpoint, your-service-endpoint)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this external connection made and how are TLS/authentication configured?
   **Expected signal:** request/client construction, endpoint, TLS, or credential use
@@ -74,23 +74,23 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `mlflow/server/assistant/api.py`:117 (/ajax-api/3.0/mlflow/assistant/message, POST)
+  **Candidate:** `mlflow/server/artifact_router.py`:136 (/ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}, PUT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `mlflow/server/assistant/api.py`:245 (/ajax-api/3.0/mlflow/assistant/providers/{provider}/health, GET)
+  **Candidate:** `mlflow/server/artifact_router.py`:61 (/ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `mlflow/server/assistant/api.py`:266 (/ajax-api/3.0/mlflow/assistant/config, GET)
+  **Candidate:** `mlflow/server/assistant/api.py`:325 (/ajax-api/3.0/mlflow/assistant/message, POST)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `mlflow/server/assistant/api.py`:281 (/ajax-api/3.0/mlflow/assistant/config, PUT)
+  **Candidate:** `mlflow/server/assistant/api.py`:555 (/ajax-api/3.0/mlflow/assistant/config, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `mlflow/server/assistant/api.py`:413 (/ajax-api/3.0/mlflow/assistant/providers/{provider}/models, GET)
+  **Candidate:** `mlflow/server/assistant/api.py`:591 (/ajax-api/3.0/mlflow/assistant/config, PUT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
@@ -128,7 +128,7 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What runtime call or protocol realizes this integration?
   **Expected signal:** client construction, request path, protocol, or failure handling
-  **Candidate:** `mlflow/tracing/fluent.py`:1645 (HTTP client, your-service-endpoint)
+  **Candidate:** `mlflow/tracing/fluent.py`:1676 (HTTP client, your-service-endpoint)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What runtime call or protocol realizes this integration?
   **Expected signal:** client construction, request path, protocol, or failure handling
@@ -156,51 +156,51 @@ No bounded behavioral evidence was extracted.
 
 - DELETE /{name:path}/aliases/{alias:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:878]
 - DELETE /{name:path}/endpoints/{endpoint_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:807]
-- DELETE /{name:path}/tags/{key:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:852]
-- DELETE /{name:path}/versions/{version:path}/tags/{key:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:659]
 - GET / on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/gateway/app.py:301]
 - GET /agent/info on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/genai/agent_server/server.py:245]
+- GET /ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/artifact_router.py:61]
 - GET /ajax-api/3.0/jobs/{job_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/job_api.py:50]
-- GET /ajax-api/3.0/mlflow/assistant/config on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:266]
-- GET /ajax-api/3.0/mlflow/assistant/providers/{provider}/health on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:245]
-- GET /ajax-api/3.0/mlflow/assistant/providers/{provider}/models on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:413]
-- GET /ajax-api/3.0/mlflow/assistant/sessions/{session_id}/stream on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:153]
+- GET /ajax-api/3.0/mlflow/assistant/config on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:555]
+- GET /ajax-api/3.0/mlflow/assistant/providers on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:528]
+- GET /ajax-api/3.0/mlflow/assistant/providers/{provider}/health on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:506]
+- GET /ajax-api/3.0/mlflow/assistant/providers/{provider}/models on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:732]
+- GET /ajax-api/3.0/mlflow/assistant/sessions/{session_id}/stream on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:362]
+- GET /api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/artifact_router.py:60]
 - GET /docs on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/gateway/app.py:315]
 - GET /endpoints on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:622]
 - GET /favicon.ico on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/gateway/app.py:305]
 - GET /health on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/genai/agent_server/server.py:263]
 - GET /version on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/pyfunc/scoring_server/__init__.py:470]
 - GET /{name:path}/aliases/{alias:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:870]
-- GET /{name:path}/endpoints on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:815]
 - GET /{name:path}/endpoints/{endpoint_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:778]
 - PATCH /ajax-api/3.0/jobs/cancel/{job_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/job_api.py:88]
-- PATCH /ajax-api/3.0/mlflow/assistant/sessions/{session_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:217]
+- PATCH /ajax-api/3.0/mlflow/assistant/sessions/{session_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:444]
 - PATCH /{name:path}/endpoints/{endpoint_id} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:790]
 - POST /agent-handler on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/tracing/distributed/__init__.py:53]
 - POST /ajax-api/3.0/jobs/ on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/job_api.py:70]
 - POST /ajax-api/3.0/jobs/search on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/job_api.py:116]
-- POST /ajax-api/3.0/mlflow/assistant/message on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:117]
-- POST /ajax-api/3.0/mlflow/assistant/skills/install on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:352]
-- POST /gateway/mlflow/v1/chat/completions on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/gateway_api.py:744]
-- POST /gateway/proxy/{endpoint_name}/{path:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/gateway_api.py:1425]
-- POST /gateway/{endpoint_name}/mlflow/invocations on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/gateway_api.py:615]
+- POST /ajax-api/3.0/mlflow/assistant/message on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:325]
+- POST /ajax-api/3.0/mlflow/assistant/sessions/{session_id}/permission on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:478]
+- POST /ajax-api/3.0/mlflow/assistant/skills/install on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:668]
+- POST /gateway/mlflow/v1/chat/completions on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/gateway_api.py:757]
+- POST /gateway/proxy/{endpoint_name}/{path:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/gateway_api.py:1438]
+- POST /gateway/{endpoint_name}/mlflow/invocations on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/gateway_api.py:626]
 - POST /invocations on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/genai/agent_server/server.py:230]
 - POST /responses on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/genai/agent_server/server.py:237]
 - POST /v1/chat/completions on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/gateway/app.py:419]
 - POST /v1/completions on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/gateway/app.py:438]
 - POST /v1/embeddings on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/gateway/app.py:457]
 - POST /{name:path}/aliases on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:860]
-- POST /{name:path}/endpoints on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:758]
-- POST /{name:path}/tags on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:844]
-- POST /{name:path}/versions/{version:path}/tags on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/mcp_server_api.py:649]
-- PUT /ajax-api/3.0/mlflow/assistant/config on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:281]
+- PUT /ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/artifact_router.py:136]
+- PUT /ajax-api/3.0/mlflow/assistant/config on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/assistant/api.py:591]
+- PUT /api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner= [source: mlflow/server/artifact_router.py:135]
 ### integrations
 
 - AWS (S3-compatible storage) interaction=Python SDK client role=runtime-integration protocol=HTTPS purpose=AWS service operations via boto3 [source: mlflow/gateway/providers/bedrock.py:212]
 - Google Cloud Storage interaction=Python SDK client role=runtime-integration protocol=HTTPS purpose=GCS operations via Python SDK [source: mlflow/store/artifact/gcs_artifact_repo.py:57]
 - api.openai.com interaction=HTTP client role=runtime-integration protocol=HTTPS purpose=Literal outbound HTTP endpoint [source: mlflow/deployments/openai/__init__.py:175]
 - www.my.images interaction=HTTP client role=runtime-integration protocol=HTTPS purpose=Literal outbound HTTP endpoint [source: mlflow/transformers/__init__.py:2950]
-- your-service-endpoint interaction=HTTP client role=runtime-integration protocol=HTTPS purpose=Literal outbound HTTP endpoint [source: mlflow/tracing/fluent.py:1645]
+- your-service-endpoint interaction=HTTP client role=runtime-integration protocol=HTTPS purpose=Literal outbound HTTP endpoint [source: mlflow/tracing/fluent.py:1676]
 ### internal_dependencies
 
 - Kubernetes API interaction=Python client library role=runtime-integration purpose=Kubernetes resource operations via Python SDK [source: mlflow/projects/kubernetes.py:9]

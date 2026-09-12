@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/feast-module-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "cmd/main.go",
+    "cmd/operator/operator.go",
+    "internal/controller/feastoperator/feastoperator_controller.go",
+    "api/components/v1alpha1/feastoperator_types.go",
+    "config/crd/bases/components.platform.opendatahub.io_feastoperators.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator implemented in Go with controller-runtime. It defines a FeastOperator custom resource and CRD, starts an operator command, reconciles FeastOperator resources, watches and owns Kubernetes workloads and supporting resources, applies kustomize manifests, manages status and finalizers, and includes generated RBAC permissions."
+}

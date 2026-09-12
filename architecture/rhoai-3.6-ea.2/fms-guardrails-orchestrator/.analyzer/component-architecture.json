@@ -1,8 +1,8 @@
 {
   "component": "fms-guardrails-orchestrator",
   "repo": "https://github.com/red-hat-data-services/fms-guardrails-orchestrator.git",
-  "commit_sha": "eec523dfe8e3351adaa5e587046620b4269661fe",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "8285df09147327ec8bf36a094fb4af1979580292",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 2 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 12 registered HTTP endpoints, and 0 gRPC services.",
@@ -623,39 +623,39 @@
   ],
   "recent_changes": [
     {
-      "version": "eec523d",
-      "date": "2026-09-04",
+      "version": "8285df0",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "307cc73",
-      "date": "2026-09-04",
-      "changes": "Refresh RPM lockfiles (#293)"
+      "version": "7ffa8b7",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #307 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "d1cb34d",
-      "date": "2026-09-03",
+      "version": "3037855",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "fdfaaa6",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #292 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "83d46c3",
+      "date": "2026-09-11",
+      "changes": "Refresh RPM lockfiles (#308)"
     },
     {
-      "version": "50883b8",
-      "date": "2026-09-03",
+      "version": "c98665b",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "58470d1",
-      "date": "2026-09-03",
+      "version": "1e99e9a",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "35bb959",
-      "date": "2026-09-03",
-      "changes": "Update registry.redhat.io/ubi9/ubi-minimal-pqc Docker digest to 3e00939 (#291)"
+      "version": "3676a58",
+      "date": "2026-09-10",
+      "changes": "Refresh RPM lockfiles (#304)"
     }
   ],
   "component_refs": null,

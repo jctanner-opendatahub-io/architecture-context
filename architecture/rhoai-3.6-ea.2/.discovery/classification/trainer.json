@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/trainer",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "Makefile",
+    "cmd/trainer-controller-manager/main.go",
+    "pkg/controller/trainjob_controller.go",
+    "manifests/base/crds/trainer.kubeflow.org_trainjobs.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator for Kubeflow Trainer. The checkout provides a controller-manager entrypoint built on controller-runtime, reconciliation logic for TrainJob resources, admission webhooks, Kubernetes API types, CustomResourceDefinitions, RBAC, and Kustomize deployment manifests. Its primary behavior is to watch and reconcile Kubernetes custom resources into distributed training workloads, so operator is the appropriate classification."
+}

@@ -1,0 +1,16 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/trainer-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "cmd/main.go",
+    "internal/controller/trainer_controller.go",
+    "api/v1alpha1/trainer_types.go",
+    "config/crd/bases/components.platform.opendatahub.io_trainers.yaml",
+    "manifests/trainer/component_metadata.yaml",
+    "config/manager/manager.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator built with Kubebuilder/controller-runtime. It defines a Trainer custom resource and CRD, runs a controller manager and reconciler, applies and cleans up Kubernetes resources, and includes operator deployment, RBAC, and Kustomize manifests."
+}

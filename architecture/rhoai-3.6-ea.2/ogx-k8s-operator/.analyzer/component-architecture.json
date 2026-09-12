@@ -1,8 +1,8 @@
 {
   "component": "ogx-k8s-operator",
   "repo": "https://github.com/red-hat-data-services/ogx-k8s-operator.git",
-  "commit_sha": "c97a97abdb2f00bdd26cef94b981bb55294dd2b6",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "97ef984e0ad583812888476ce3d27443d63b83ed",
+  "extracted_at": "2026-09-12T16:39:59Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 3 CRDs, 0 serving runtime definitions, 1 workloads, 2 services, 18 RBAC roles, 0 ingress routes, 24 controller watches, 4 registered HTTP endpoints, and 0 gRPC services.",
@@ -2365,39 +2365,39 @@
   ],
   "recent_changes": [
     {
-      "version": "c97a97a",
-      "date": "2026-09-04",
+      "version": "97ef984",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "4e3fae7",
-      "date": "2026-09-04",
+      "version": "1f76b53",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #411 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "685d7df",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "0072bc5",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "4ba4336",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#410)"
+    },
+    {
+      "version": "692dcac",
+      "date": "2026-09-09",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "43b56f6",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/odh'"
-    },
-    {
-      "version": "2a38dc2",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #149 from ugiordan/feat/secureserving-watcher"
-    },
-    {
-      "version": "37a528c",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "bfca1d3",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#403)"
-    },
-    {
-      "version": "5756a29",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "38b7064",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #390 from red-hat-data-services/migrate-runtime-to-pqc-main"
     }
   ],
   "component_refs": [

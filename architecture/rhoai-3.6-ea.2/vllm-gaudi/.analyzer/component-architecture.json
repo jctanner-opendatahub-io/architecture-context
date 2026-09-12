@@ -1,8 +1,8 @@
 {
   "component": "vllm-gaudi",
   "repo": "https://github.com/red-hat-data-services/vllm-gaudi.git",
-  "commit_sha": "7ea9c5f9df96096e7455ea064b9b9d0c15a05f04",
-  "extracted_at": "2026-09-10T15:09:35Z",
+  "commit_sha": "3292b207142bd5384c8dd57dd232eba19682eac4",
+  "extracted_at": "2026-09-12T16:40:03Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -162,6 +162,16 @@
   "external_connections": null,
   "recent_changes": [
     {
+      "version": "3292b2071",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #445 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "5d75093ea",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
       "version": "7ea9c5f9d",
       "date": "2026-09-03",
       "changes": "Merge pull request #443 from red-hat-data-services/sync-gatekeeper-main"
@@ -185,16 +195,6 @@
       "version": "0244b6e57",
       "date": "2026-08-31",
       "changes": "sync pipelineruns with konflux-central - 85bde91"
-    },
-    {
-      "version": "913c81372",
-      "date": "2026-04-17",
-      "changes": "Merge remote-tracking branch 'upstream/rhoai'"
-    },
-    {
-      "version": "38896ead4",
-      "date": "2026-04-17",
-      "changes": "Merge pull request #119 from RH-steve-grubb/stable"
     }
   ],
   "component_refs": null,

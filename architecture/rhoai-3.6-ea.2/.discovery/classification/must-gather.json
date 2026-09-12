@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/must-gather",
+  "classification": "other",
+  "files_read": [
+    "README.md",
+    "Makefile",
+    "Containerfile",
+    "collection-scripts/gather.sh",
+    "collection-scripts/common.sh",
+    ".tekton/odh-must-gather-v3-6-ea-2-push.yaml"
+  ],
+  "reasoning": "This repository is a Red Hat OpenShift AI must-gather diagnostic collection utility. Its shell scripts gather cluster resources, logs, Helm data, and component-specific information; the Containerfile packages those scripts into a must-gather image and the Tekton file builds it. It is therefore not an operator, library, runtime service, or configuration-only project, and is best classified as other."
+}

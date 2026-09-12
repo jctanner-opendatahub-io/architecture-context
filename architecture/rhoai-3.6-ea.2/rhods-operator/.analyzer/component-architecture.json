@@ -1,11 +1,11 @@
 {
   "component": "rhods-operator",
   "repo": "https://github.com/red-hat-data-services/rhods-operator.git",
-  "commit_sha": "4ada791819c522a4cda54f9029ab3e4056ed31ed",
-  "extracted_at": "2026-09-10T15:09:33Z",
+  "commit_sha": "5954401bfb11409c15d664679947b483492d295a",
+  "extracted_at": "2026-09-12T16:40:01Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 17 CRDs, 0 serving runtime definitions, 2 workloads, 3 services, 25 RBAC roles, 3 ingress routes, 69 controller watches, 4 registered HTTP endpoints, and 0 gRPC services.",
+  "summary": "Static analysis found 17 CRDs, 0 serving runtime definitions, 2 workloads, 3 services, 25 RBAC roles, 3 ingress routes, 70 controller watches, 4 registered HTTP endpoints, and 0 gRPC services.",
   "source_components": [
     {
       "name": "v2",
@@ -1895,7 +1895,7 @@
         "interaction": "Controller watch",
         "role": "runtime-integration",
         "purpose": "Manage Gateway API routing resources",
-        "source": "internal/controller/services/gateway/gateway_controller.go:77"
+        "source": "internal/controller/services/gateway/gateway_controller.go:89"
       },
       {
         "component": "prometheus-operator",
@@ -1981,7 +1981,7 @@
       "type": "Watches",
       "gvk": "/v1/ConfigMap",
       "controller": "",
-      "source": "internal/controller/modules/modules_controller.go:109",
+      "source": "internal/controller/modules/modules_controller.go:108",
       "resource_ops": null
     },
     {
@@ -2031,6 +2031,13 @@
       "gvk": "/v1/Secret",
       "controller": "ServiceHandler",
       "source": "internal/controller/services/gateway/gateway_controller.go:68",
+      "resource_ops": null
+    },
+    {
+      "type": "Watches",
+      "gvk": "/v1/Secret",
+      "controller": "ServiceHandler",
+      "source": "internal/controller/services/gateway/gateway_controller.go:80",
       "resource_ops": null
     },
     {
@@ -2177,7 +2184,7 @@
       "type": "Watches",
       "gvk": "apiextensions/v1/CustomResourceDefinition",
       "controller": "",
-      "source": "internal/controller/modules/modules_controller.go:175",
+      "source": "internal/controller/modules/modules_controller.go:174",
       "resource_ops": null
     },
     {
@@ -2226,7 +2233,7 @@
       "type": "Watches",
       "gvk": "gateway.networking.k8s.io/v1/HTTPRoute",
       "controller": "ServiceHandler",
-      "source": "internal/controller/services/gateway/gateway_controller.go:77",
+      "source": "internal/controller/services/gateway/gateway_controller.go:89",
       "resource_ops": null
     },
     {
@@ -3007,39 +3014,39 @@
   ],
   "recent_changes": [
     {
-      "version": "4ada791819",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #43071 from red-hat-data-services/konflux/component-updates/odh-operator-v3-6-ea-2-component-update-odh-trainer-v3-6-ea-2"
-    },
-    {
-      "version": "38cccf91de",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update odh-trainer-v3-6-ea-2 to bce0b70"
-    },
-    {
-      "version": "1440af15a0",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #43070 from red-hat-data-services/konflux/component-updates/odh-operator-v3-6-ea-2-component-update-odh-trainer-operator-v3-6-ea-2"
-    },
-    {
-      "version": "a1a2b58fe3",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update odh-trainer-operator-v3-6-ea-2 to 856b6ba"
-    },
-    {
-      "version": "b0c53da6b9",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "f85cfedded",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/rhoai'"
-    },
-    {
-      "version": "7bec5ddbfb",
-      "date": "2026-09-04",
+      "version": "5954401bfb",
+      "date": "2026-09-11",
       "changes": "Updating the operator repo with latest images and manifests"
+    },
+    {
+      "version": "304789056e",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #44380 from red-hat-data-services/konflux/component-updates/odh-operator-v3-6-ea-2-component-update-odh-mod-arch-notebooks-v3-6-ea-2"
+    },
+    {
+      "version": "b1903db1fa",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update odh-mod-arch-notebooks-v3-6-ea-2 to 75c1333"
+    },
+    {
+      "version": "77906d8abb",
+      "date": "2026-09-11",
+      "changes": "Updating the operator repo with latest images and manifests"
+    },
+    {
+      "version": "949ce17077",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #44379 from red-hat-data-services/konflux/component-updates/odh-operator-v3-6-ea-2-component-update-odh-dashboard-v3-6-ea-2"
+    },
+    {
+      "version": "a9b10caeb4",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update odh-dashboard-v3-6-ea-2 to 1ef13d1"
+    },
+    {
+      "version": "643c1be5db",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #44378 from red-hat-data-services/konflux/component-updates/odh-operator-v3-6-ea-2-component-update-odh-data-connect-hub-flight-v3-6-ea-2"
     }
   ],
   "component_refs": [
@@ -3089,14 +3096,14 @@
       "component": "/v1/Secret",
       "type": "Kubernetes API",
       "reference": "create, get, list, update operations by BaseServingConnectionWebhook",
-      "source": "internal/controller/services/gateway/gateway_controller_actions.go:291",
+      "source": "internal/controller/services/gateway/gateway_controller_actions.go:368",
       "interaction": "Resource CRUD"
     },
     {
       "component": "/v1/Service",
       "type": "Kubernetes API",
       "reference": "get, list operations",
-      "source": "internal/controller/services/gateway/gateway_support.go:665",
+      "source": "internal/controller/services/gateway/gateway_support.go:832",
       "interaction": "Resource read"
     },
     {
@@ -3222,7 +3229,7 @@
       "component": "gateway.networking.k8s.io/v1/Gateway",
       "type": "Kubernetes API",
       "reference": "delete, get operations",
-      "source": "internal/controller/services/gateway/gateway_controller_actions.go:430",
+      "source": "internal/controller/services/gateway/gateway_controller_actions.go:517",
       "interaction": "Resource CRUD"
     },
     {
@@ -3514,7 +3521,7 @@
       "status": "unresolved",
       "identity": "internal/controller/modules.NewModuleReconciler",
       "watched_gvk": "/v1/ConfigMap",
-      "source": "internal/controller/modules/modules_controller.go:109-117",
+      "source": "internal/controller/modules/modules_controller.go:108-116",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -3524,7 +3531,7 @@
       "status": "unresolved",
       "identity": "internal/controller/modules.addModuleCRDWatches",
       "watched_gvk": "apiextensions/v1/CustomResourceDefinition",
-      "source": "internal/controller/modules/modules_controller.go:175-179",
+      "source": "internal/controller/modules/modules_controller.go:174-178",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -3575,8 +3582,18 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller/services/gateway.ServiceHandler",
+      "watched_gvk": "/v1/Secret",
+      "source": "internal/controller/services/gateway/gateway_controller.go:80-88",
+      "limitations": [
+        "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
+      ]
+    },
+    {
+      "kind": "named-watch-predicate",
+      "status": "unresolved",
+      "identity": "internal/controller/services/gateway.ServiceHandler",
       "watched_gvk": "gateway.networking.k8s.io/v1/HTTPRoute",
-      "source": "internal/controller/services/gateway/gateway_controller.go:77-81",
+      "source": "internal/controller/services/gateway/gateway_controller.go:89-93",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -3792,7 +3809,7 @@
         "runtime-source-config-platform-alias-scan"
       ],
       "limitations": [
-        "257 active platform alias references require relationship accounting",
+        "265 active platform alias references require relationship accounting",
         "kustomize resolution is partial: missing optional kustomize resources skipped",
         "unsupported runtime source languages require platform dependency analysis"
       ],
@@ -3847,7 +3864,7 @@
       "details": "/v1/Secret",
       "sources": [
         "internal/controller/services/gateway/gateway_controller.go:68",
-        "internal/controller/services/gateway/gateway_controller_actions.go:291"
+        "internal/controller/services/gateway/gateway_controller_actions.go:368"
       ]
     },
     {
@@ -3902,7 +3919,7 @@
       "details": "/v1/Secret",
       "sources": [
         "internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:49",
-        "internal/controller/services/gateway/gateway_controller_actions.go:291"
+        "internal/controller/services/gateway/gateway_controller_actions.go:368"
       ]
     },
     {
@@ -3913,7 +3930,7 @@
       "details": "/v1/Service",
       "sources": [
         "internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:55",
-        "internal/controller/services/gateway/gateway_support.go:665"
+        "internal/controller/services/gateway/gateway_support.go:832"
       ]
     },
     {
@@ -4241,7 +4258,7 @@
       {
         "claim": "Gateway API interaction=Controller watch role=runtime-integration purpose=Manage Gateway API routing resources",
         "sources": [
-          "internal/controller/services/gateway/gateway_controller.go:77"
+          "internal/controller/services/gateway/gateway_controller.go:89"
         ]
       },
       {
@@ -5439,7 +5456,7 @@
       },
       {
         "source": "internal/controller/services/gateway/gateway_controller.go",
-        "line_range": "77",
+        "line_range": "89",
         "symbols": [
           "Controller watch",
           "Gateway API"
@@ -5651,7 +5668,7 @@
       },
       {
         "source": "internal/controller/modules/modules_controller.go",
-        "line_range": "109-117",
+        "line_range": "108-116",
         "symbols": [
           "/v1/ConfigMap",
           "internal/controller/modules.NewModuleReconciler"
@@ -5665,7 +5682,7 @@
       },
       {
         "source": "internal/controller/modules/modules_controller.go",
-        "line_range": "175-179",
+        "line_range": "174-178",
         "symbols": [
           "apiextensions/v1/CustomResourceDefinition",
           "internal/controller/modules.addModuleCRDWatches"
@@ -5707,7 +5724,21 @@
       },
       {
         "source": "internal/controller/services/gateway/gateway_controller.go",
-        "line_range": "77-81",
+        "line_range": "80-88",
+        "symbols": [
+          "/v1/Secret",
+          "internal/controller/services/gateway.ServiceHandler"
+        ],
+        "question": "Which literal resource names constrain this controller watch, and where are matching events routed?",
+        "expected_signal": "a supported literal named-resource predicate and any explicit event-handler target",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "internal/controller/services/gateway/gateway_controller.go",
+        "line_range": "89-93",
         "symbols": [
           "gateway.networking.k8s.io/v1/HTTPRoute",
           "internal/controller/services/gateway.ServiceHandler"
@@ -5978,7 +6009,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 1392,
+      "value": 1399,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

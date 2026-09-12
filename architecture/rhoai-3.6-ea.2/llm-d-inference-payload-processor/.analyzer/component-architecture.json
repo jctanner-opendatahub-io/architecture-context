@@ -1,8 +1,8 @@
 {
   "component": "llm-d-inference-payload-processor",
   "repo": "https://github.com/llm-d/llm-d-inference-payload-processor.git",
-  "commit_sha": "ff85c3dbd3811d2497cfcb46356b12a31e27b01a",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "161bfcda1ca34cb7d1c5d1a746aa33796a86ea75",
+  "extracted_at": "2026-09-12T16:39:57Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 4 workloads, 4 services, 1 RBAC roles, 0 ingress routes, 1 controller watches, 0 registered HTTP endpoints, and 2 gRPC services.",
@@ -352,7 +352,7 @@
       },
       {
         "module": "github.com/onsi/gomega",
-        "version": "v1.42.1",
+        "version": "v1.43.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -388,35 +388,35 @@
       },
       {
         "module": "go.opentelemetry.io/otel",
-        "version": "v1.45.0",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
-        "version": "v1.45.0",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "go.opentelemetry.io/otel/exporters/stdout/stdouttrace",
-        "version": "v1.45.0",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "go.opentelemetry.io/otel/sdk",
-        "version": "v1.45.0",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "go.opentelemetry.io/otel/trace",
-        "version": "v1.45.0",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -431,7 +431,7 @@
       },
       {
         "module": "google.golang.org/grpc",
-        "version": "v1.83.1",
+        "version": "v1.83.2",
         "category": "runtime-transport",
         "role": "runtime-transport",
         "purpose": "",
@@ -584,6 +584,26 @@
   ],
   "recent_changes": [
     {
+      "version": "161bfcd",
+      "date": "2026-09-10",
+      "changes": "fix(handlers): export root spans without client traceparent on ext_proc (#312)"
+    },
+    {
+      "version": "4c9f188",
+      "date": "2026-09-10",
+      "changes": "deps(actions): bump crate-ci/typos from 1.50.0 to 1.50.1 (#315)"
+    },
+    {
+      "version": "88b4be1",
+      "date": "2026-09-06",
+      "changes": "deps(go): bump the go-dependencies group across 1 directory with 7 updates (#311)"
+    },
+    {
+      "version": "2cc1624",
+      "date": "2026-09-06",
+      "changes": "deps(actions): bump crate-ci/typos from 1.48.0 to 1.50.0 (#309)"
+    },
+    {
       "version": "ff85c3d",
       "date": "2026-08-28",
       "changes": "deps(go): bump the kubernetes group across 1 directory with 4 updates (#304)"
@@ -597,26 +617,6 @@
       "version": "bf71acd",
       "date": "2026-08-14",
       "changes": "deps(go): bump google.golang.org/protobuf in the go-dependencies group (#296)"
-    },
-    {
-      "version": "3e9bd26",
-      "date": "2026-08-12",
-      "changes": "deps(go): bump the go-dependencies group across 1 directory with 7 updates (#292)"
-    },
-    {
-      "version": "a3afaac",
-      "date": "2026-08-12",
-      "changes": "feat(framework): import shared plugin types from llm-d-router (#287) (#289)"
-    },
-    {
-      "version": "1d2a792",
-      "date": "2026-08-11",
-      "changes": "bug: Fix CI tests failures in main that found during testing PR #289 (#291)"
-    },
-    {
-      "version": "0f2fab8",
-      "date": "2026-08-05",
-      "changes": "fix(handlers): populate Response.Body at EndOfStream on the streaming path (#279)"
     }
   ],
   "component_refs": [

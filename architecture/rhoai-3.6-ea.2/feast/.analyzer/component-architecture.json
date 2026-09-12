@@ -1,8 +1,8 @@
 {
   "component": "feast",
   "repo": "https://github.com/red-hat-data-services/feast.git",
-  "commit_sha": "77d574dd602e8f7078c33248fe52f421c3eacc9b",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "20edda367f6f4628bed522645e08d930cfafd793",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 2 CRDs, 0 serving runtime definitions, 1 workloads, 2 services, 12 RBAC roles, 0 ingress routes, 15 controller watches, 118 registered HTTP endpoints, and 70 gRPC services.",
@@ -4826,39 +4826,39 @@
   ],
   "recent_changes": [
     {
-      "version": "77d574dd6",
-      "date": "2026-09-03",
+      "version": "20edda367",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "3d770a5a3",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #351 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "0f050b424",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #366 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "9082df426",
-      "date": "2026-09-03",
+      "version": "e69556413",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "23fc52e3f",
-      "date": "2026-09-03",
+      "version": "59810c661",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "bc948a0ea",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #350 from patelchaitany/fix/cherry-pick-pr-348-ea2"
+      "version": "1d05c199f",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #365 from red-hat-data-services/fix-conflict"
     },
     {
-      "version": "88d246942",
-      "date": "2026-09-03",
-      "changes": "fix: Align namespaces RBAC with rhoai-3.6-ea.1"
+      "version": "90450a504",
+      "date": "2026-09-09",
+      "changes": "fix: use correct image reference"
     },
     {
-      "version": "1f624d682",
-      "date": "2026-09-03",
-      "changes": "chore: Regenerate operator bundle manifests"
+      "version": "0c53cd33e",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #364 from red-hat-data-services/fix-conflict"
     }
   ],
   "component_refs": [

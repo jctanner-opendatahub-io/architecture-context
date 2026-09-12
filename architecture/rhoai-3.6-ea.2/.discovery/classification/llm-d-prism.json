@@ -1,0 +1,17 @@
+{
+  "checkout": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-prism",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "package.json",
+    "go.mod",
+    "cmd/main.go",
+    "docker-compose.yml",
+    "deploy.sh",
+    "Makefile",
+    "server/server.js",
+    "src/components/Dashboard.jsx",
+    "src/hooks/useDashboardData.jsx"
+  ],
+  "reasoning": "This checkout implements Prism as a deployable interactive performance-analysis application. It has a React/Vite frontend, an Express backend with API routes, authentication, rate limiting, cloud storage and Google API integrations, and documentation/configuration for running the frontend and backend together and deploying the service to Google Cloud Run. The Go cmd/main.go is only a placeholder, while the primary operational implementation is the web service."
+}

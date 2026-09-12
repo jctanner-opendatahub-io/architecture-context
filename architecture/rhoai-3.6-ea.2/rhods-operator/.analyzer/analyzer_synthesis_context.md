@@ -14,13 +14,13 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 ## Deterministic Cross-References
 
 - **controller**: ServiceHandler —watches-reference→ /v1/Namespace; /v1/Namespace [source: internal/controller/components/kueue/kueue_support.go:98, internal/controller/services/auth/auth_controller.go:63]
-- **controller**: ServiceHandler —watches-reference→ /v1/Secret; /v1/Secret [source: internal/controller/services/gateway/gateway_controller.go:68, internal/controller/services/gateway/gateway_controller_actions.go:291]
+- **controller**: ServiceHandler —watches-reference→ /v1/Secret; /v1/Secret [source: internal/controller/services/gateway/gateway_controller.go:68, internal/controller/services/gateway/gateway_controller_actions.go:368]
 - **controller**: ServiceHandler —watches-reference→ rbac.authorization.k8s.io/v1/ClusterRole; rbac.authorization.k8s.io/v1/ClusterRole [source: internal/controller/components/kueue/kueue_controller_actions.go:60, internal/controller/services/auth/auth_controller.go:60]
 - **controller**: ServiceHandler —watches-reference→ rbac.authorization.k8s.io/v1/RoleBinding; rbac.authorization.k8s.io/v1/RoleBinding [source: internal/controller/services/auth/auth_controller.go:62, pkg/cluster/resources.go:245]
 - **controller**: componentHandler —watches-reference→ /v1/ConfigMap; /v1/ConfigMap [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:48, internal/controller/components/kueue/kueue_config.go:63]
 - **controller**: componentHandler —watches-reference→ /v1/Namespace; /v1/Namespace [source: internal/controller/components/kueue/kueue_controller.go:140, internal/controller/components/kueue/kueue_support.go:98]
-- **controller**: componentHandler —watches-reference→ /v1/Secret; /v1/Secret [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:49, internal/controller/services/gateway/gateway_controller_actions.go:291]
-- **controller**: componentHandler —watches-reference→ /v1/Service; /v1/Service [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:55, internal/controller/services/gateway/gateway_support.go:665]
+- **controller**: componentHandler —watches-reference→ /v1/Secret; /v1/Secret [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:49, internal/controller/services/gateway/gateway_controller_actions.go:368]
+- **controller**: componentHandler —watches-reference→ /v1/Service; /v1/Service [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:55, internal/controller/services/gateway/gateway_support.go:832]
 - **controller**: componentHandler —watches-reference→ /v1/ServiceAccount; /v1/ServiceAccount [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:54, pkg/webhook/utils.go:113]
 - **controller**: componentHandler —watches-reference→ api/services/v1alpha1/Auth; api/services/v1alpha1/Auth [source: internal/controller/components/kueue/kueue_controller.go:151, internal/controller/components/kueue/kueue_controller_actions.go:80]
 - **controller**: componentHandler —watches-reference→ apps/v1/Deployment; apps/v1/Deployment [source: internal/controller/components/datasciencepipelines/datasciencepipelines_controller.go:57, internal/controller/components/trustyai/trustyai_controller_actions.go:113]
@@ -46,8 +46,8 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **named-watch-predicate (unresolved)** internal/controller/components/trustyai.componentHandler: apiextensions/v1/CustomResourceDefinition; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/components/trustyai/trustyai_controller.go:58-66]
 - **named-watch-predicate (unresolved)** internal/controller/datasciencecluster.NewDataScienceClusterReconciler: services.platform.opendatahub.io/v1alpha1/GatewayConfig; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/datasciencecluster/datasciencecluster_controller.go:72-77]
 - **named-watch-predicate (unresolved)** internal/controller/datasciencecluster.NewDataScienceClusterReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/datasciencecluster/datasciencecluster_controller.go:78-85]
-- **named-watch-predicate (unresolved)** internal/controller/modules.NewModuleReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/modules/modules_controller.go:109-117]
-- 5 additional behavioral records remain in the analyzer JSON.
+- **named-watch-predicate (unresolved)** internal/controller/modules.NewModuleReconciler: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: internal/controller/modules/modules_controller.go:108-116]
+- 6 additional behavioral records remain in the analyzer JSON.
 
 ## Gap Evidence Index
 
@@ -291,7 +291,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
-  **Candidate:** `internal/controller/services/gateway/gateway_controller.go`:77 (Controller watch, Gateway API)
+  **Candidate:** `internal/controller/services/gateway/gateway_controller.go`:89 (Controller watch, Gateway API)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is this internal dependency invoked and what is the interaction boundary?
   **Expected signal:** import, client call, queue, or controller handoff
@@ -351,7 +351,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
   **Candidate:** `internal/controller/datasciencecluster/datasciencecluster_controller.go`:78-85 (/v1/ConfigMap, internal/controller/datasciencecluster.NewDataScienceClusterReconciler)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- 6 additional gap candidates remain in the analyzer JSON.
+- 7 additional gap candidates remain in the analyzer JSON.
 ### services
 
 - **Question:** Which container listener, probe, and service mapping expose this workload?
@@ -461,7 +461,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - DataScienceCluster CR interaction=CRD Watch role=runtime-integration purpose=Read enabled platform components [source: internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml:1]
 - Feast (feast.dev) interaction=CRD Watch role=runtime-integration purpose=Read feature store instances [source: internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml:1]
 - Gateway API (data-science-gateway) interaction=HTTPRoute role=runtime-transport purpose=Platform ingress through Gateway API [source: internal/controller/services/gateway/resources/kube-auth-proxy-httproute.tmpl.yaml:1]
-- Gateway API interaction=Controller watch role=runtime-integration purpose=Manage Gateway API routing resources [source: internal/controller/services/gateway/gateway_controller.go:77]
+- Gateway API interaction=Controller watch role=runtime-integration purpose=Manage Gateway API routing resources [source: internal/controller/services/gateway/gateway_controller.go:89]
 - HardwareProfile CR interaction=CRD CRUD role=unknown purpose=Manage hardware profile resources [source: internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml:1]
 - KServe InferenceService interaction=CRD Watch role=runtime-integration purpose=Read model serving state [source: internal/controller/services/auth/resources/data-science-admingroup-role.tmpl.yaml:1]
 - ModelRegistry (modelregistry.opendatahub.io) interaction=CRD CRUD role=unknown purpose=Manage model registry instances [source: internal/controller/services/auth/resources/data-science-admingroup-clusterrole.tmpl.yaml:1]

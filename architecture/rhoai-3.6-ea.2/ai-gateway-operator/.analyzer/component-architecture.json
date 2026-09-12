@@ -2,7 +2,7 @@
   "component": "ai-gateway-operator",
   "repo": "https://github.com/red-hat-data-services/ai-gateway-operator.git",
   "commit_sha": "4ad6a525814cfe830da982bf5443b9faa7b5f10a",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 14 RBAC roles, 0 ingress routes, 11 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",

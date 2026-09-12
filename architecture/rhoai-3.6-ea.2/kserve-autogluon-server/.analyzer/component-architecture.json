@@ -2,7 +2,7 @@
   "component": "kserve-autogluon-server",
   "repo": "https://github.com/red-hat-data-services/kserve-autogluon-server.git",
   "commit_sha": "a4ac0a63428d185ece388121b476f8674c90b57c",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 14 CRDs, 14 serving runtime definitions, 1 workloads, 4 services, 10 RBAC roles, 0 ingress routes, 51 controller watches, 15 registered HTTP endpoints, and 8 gRPC services.",

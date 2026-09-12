@@ -28,7 +28,7 @@
           ]
         },
         "initializer": {
-          "description": "initializer defines the configuration of the initializer.\nThe field is immutable.",
+          "description": "initializer defines the configuration of the initializer.",
           "properties": {
             "dataset": {
               "description": "dataset defines the configuration for the dataset initialization and pre-processing.",
@@ -401,7 +401,13 @@
               "type": "object"
             }
           },
-          "type": "object"
+          "type": "object",
+          "x-kubernetes-validations": [
+            {
+              "message": "field is immutable",
+              "rule": "self == oldSelf"
+            }
+          ]
         },
         "managedBy": {
           "default": "trainer.kubeflow.org/trainjob-controller",
@@ -1681,7 +1687,13 @@
                                                   "x-kubernetes-list-map-keys": [
                                                     "name"
                                                   ],
-                                                  "x-kubernetes-list-type": "map"
+                                                  "x-kubernetes-list-type": "map",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 },
                                                 "imagePullSecrets": {
                                                   "description": "imagePullSecrets patches the image pull secrets for the Pods in the target job templates.",
@@ -1702,7 +1714,13 @@
                                                   "x-kubernetes-list-map-keys": [
                                                     "name"
                                                   ],
-                                                  "x-kubernetes-list-type": "map"
+                                                  "x-kubernetes-list-type": "map",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 },
                                                 "initContainers": {
                                                   "description": "initContainers patches the init containers in the target job templates.",
@@ -2067,7 +2085,13 @@
                                                   "x-kubernetes-list-map-keys": [
                                                     "name"
                                                   ],
-                                                  "x-kubernetes-list-type": "map"
+                                                  "x-kubernetes-list-type": "map",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 },
                                                 "nodeSelector": {
                                                   "additionalProperties": {
@@ -2243,18 +2267,36 @@
                                                       "type": "object"
                                                     }
                                                   },
-                                                  "type": "object"
+                                                  "type": "object",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 },
                                                 "serviceAccountName": {
                                                   "description": "serviceAccountName patches the service account for the Pods in the target job templates.",
                                                   "maxLength": 253,
-                                                  "type": "string"
+                                                  "type": "string",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 },
                                                 "terminationGracePeriodSeconds": {
                                                   "description": "terminationGracePeriodSeconds patches the termination grace period for Pods\nin the target job templates.",
                                                   "format": "int64",
                                                   "minimum": 0,
-                                                  "type": "integer"
+                                                  "type": "integer",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 },
                                                 "tolerations": {
                                                   "description": "tolerations patches the Pod's tolerations.",
@@ -3788,7 +3830,13 @@
                                                   "x-kubernetes-list-map-keys": [
                                                     "name"
                                                   ],
-                                                  "x-kubernetes-list-type": "map"
+                                                  "x-kubernetes-list-type": "map",
+                                                  "x-kubernetes-validations": [
+                                                    {
+                                                      "message": "field is immutable",
+                                                      "rule": "self == oldSelf"
+                                                    }
+                                                  ]
                                                 }
                                               },
                                               "type": "object"
@@ -3876,7 +3924,7 @@
           "type": "boolean"
         },
         "trainer": {
-          "description": "trainer defines the configuration of the trainer.\nThe field is immutable.",
+          "description": "trainer defines the configuration of the trainer.",
           "properties": {
             "args": {
               "description": "args for the entrypoint for the training container.",
@@ -4133,7 +4181,13 @@
               "type": "object"
             }
           },
-          "type": "object"
+          "type": "object",
+          "x-kubernetes-validations": [
+            {
+              "message": "field is immutable",
+              "rule": "self == oldSelf"
+            }
+          ]
         }
       },
       "required": [

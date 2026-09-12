@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/model-metadata-collection",
+  "classification": "other",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/metadata-report/main.go",
+    "cmd/model-extractor/main.go",
+    "Dockerfile",
+    "Makefile"
+  ],
+  "reasoning": "This checkout is a standalone Go CLI and batch data-processing application. Its primary purpose is to extract, enrich, report, and catalog model metadata from HuggingFace collections and OCI container images, producing structured catalog files. It is not an operator, reusable library, continuously running service, or configuration-only project, so it fits the other category."
+}

@@ -1,8 +1,8 @@
 {
   "component": "distributed-workloads",
   "repo": "https://github.com/red-hat-data-services/distributed-workloads.git",
-  "commit_sha": "8dd512b732609464f74d38b83b5c50cbf7151276",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "9519b80407f90ce4a4e01ac9e550655fe1944fff",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 1 serving runtime definitions, 3 workloads, 3 services, 0 RBAC roles, 4 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -2896,39 +2896,39 @@
   ],
   "recent_changes": [
     {
-      "version": "8dd512b7",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update odh-workbench-jupyter-minimal-cpu-py312-v3-6-ea-2 to 4b3b9ec (#871)"
-    },
-    {
-      "version": "d1301f1d",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update odh-workbench-jupyter-minimal-cuda-py312-v3-6-ea-2 to 2e34d9c (#870)"
-    },
-    {
-      "version": "137e9dfc",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update odh-workbench-jupyter-minimal-rocm-py312-v3-6-ea-2 to 6d0a8ac (#869)"
-    },
-    {
-      "version": "d70f863d",
-      "date": "2026-09-03",
+      "version": "9519b804",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "ebd5c823",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #868 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "e3041a50",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #912 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "ccabd04f",
-      "date": "2026-09-03",
+      "version": "4671c4c6",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update odh-workbench-jupyter-minimal-cpu-py312-v3-6-ea-2 to 360dc98 (#915)"
+    },
+    {
+      "version": "7ad4bbf4",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update odh-workbench-jupyter-minimal-rocm-py312-v3-6-ea-2 to 9f7ea06 (#914)"
+    },
+    {
+      "version": "754fb614",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update odh-workbench-jupyter-minimal-cuda-py312-v3-6-ea-2 to 0124139 (#913)"
+    },
+    {
+      "version": "fc358b02",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "e247878e",
-      "date": "2026-09-03",
-      "changes": "chore(deps): update odh-workbench-jupyter-minimal-rocm-py312-v3-6-ea-2 to 8ce5a73 (#867)"
+      "version": "2d2b6eb7",
+      "date": "2026-09-09",
+      "changes": "chore(deps): update odh-workbench-jupyter-minimal-rocm-py312-v3-6-ea-2 to 694b2d3 (#904)"
     }
   ],
   "component_refs": null,

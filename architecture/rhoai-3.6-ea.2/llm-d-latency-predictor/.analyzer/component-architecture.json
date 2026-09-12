@@ -2,7 +2,7 @@
   "component": "llm-d-latency-predictor",
   "repo": "https://github.com/red-hat-data-services/llm-d-latency-predictor.git",
   "commit_sha": "615bf5049c505f6bd0188f835b6a55eee760f10a",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "extracted_at": "2026-09-12T16:39:57Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 2 workloads, 3 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 24 registered HTTP endpoints, and 0 gRPC services.",

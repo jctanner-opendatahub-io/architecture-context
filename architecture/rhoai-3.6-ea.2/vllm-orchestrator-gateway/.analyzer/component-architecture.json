@@ -1,8 +1,8 @@
 {
   "component": "vllm-orchestrator-gateway",
   "repo": "https://github.com/red-hat-data-services/vllm-orchestrator-gateway.git",
-  "commit_sha": "2ce646e7c8cfb12e40bbc85af2e80ce07185846e",
-  "extracted_at": "2026-09-10T15:09:35Z",
+  "commit_sha": "1e705c705881a938cca059c1a396a3dbce5df269",
+  "extracted_at": "2026-09-12T16:40:03Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -128,6 +128,21 @@
   "external_connections": null,
   "recent_changes": [
     {
+      "version": "1e705c7",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "f97e3ca",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #248 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "d3d9a54",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
       "version": "2ce646e",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -145,21 +160,6 @@
     {
       "version": "b4a44d5",
       "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "14287e0",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #244 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "7134e1d",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "64c82a7",
-      "date": "2026-09-01",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],

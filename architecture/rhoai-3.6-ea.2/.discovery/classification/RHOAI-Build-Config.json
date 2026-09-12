@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/RHOAI-Build-Config",
+  "classification": "configuration",
+  "files_read": [
+    "helm/rhai-on-openshift-chart/Chart.yaml",
+    "helm/rhai-on-openshift-chart/README.md",
+    "config/build-config.yaml",
+    "bundle/manifests/rhods-operator.clusterserviceversion.yaml",
+    "catalog/v4.22/rhods-operator/catalog.yaml",
+    ".tekton/rhai-on-openshift-chart-v3-6-ea-2-push.yaml"
+  ],
+  "reasoning": "This checkout is a build and deployment configuration repository. It defines a Helm application chart for installing ODH/RHOAI dependencies and component configurations, OLM bundle and catalog manifests, image replacement/build mappings, and Tekton pipeline triggers. It does not contain implementation source for an operator, library, or service; the operator artifacts are packaged manifests and metadata used to build and deploy the platform."
+}

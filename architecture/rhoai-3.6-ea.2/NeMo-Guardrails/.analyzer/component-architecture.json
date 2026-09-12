@@ -1,8 +1,8 @@
 {
   "component": "NeMo-Guardrails",
   "repo": "https://github.com/red-hat-data-services/NeMo-Guardrails.git",
-  "commit_sha": "0740bef72f485e79aef20b237c5903c44ff838c1",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "8e6c495ea0e411974ccc1146af0582d61ef4b9ac",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 19 registered HTTP endpoints, and 0 gRPC services.",
@@ -1444,38 +1444,38 @@
   ],
   "recent_changes": [
     {
+      "version": "8e6c495e",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "5a6f09e4",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #364 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "0a3b3b25",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "91f43000",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "aac61329",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #363 from red-hat-data-services/migrate-base-image-to-PQC"
+    },
+    {
+      "version": "b7602d10",
+      "date": "2026-09-09",
+      "changes": "migrate the base image to Post-quantum cryptography support"
+    },
+    {
       "version": "0740bef7",
       "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "83c29d76",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #359 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "5f93ce55",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "058668f9",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "51804884",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #357 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "8ba819c1",
-      "date": "2026-09-01",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "02532216",
-      "date": "2026-08-31",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],

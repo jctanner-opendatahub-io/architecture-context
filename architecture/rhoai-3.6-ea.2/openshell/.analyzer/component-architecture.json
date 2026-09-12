@@ -1,11 +1,11 @@
 {
   "component": "openshell",
   "repo": "https://github.com/red-hat-data-services/openshell.git",
-  "commit_sha": "53d4cf1c6d1d7422383908f890dad56a71d9f421",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "92fd2e8855db0bfd19cfd89d070228a0698b13f5",
+  "extracted_at": "2026-09-12T16:39:59Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 2 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 10 registered HTTP endpoints, and 102 gRPC services.",
+  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 2 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 10 registered HTTP endpoints, and 100 gRPC services.",
   "source_components": [
     {
       "name": "openshell-bootstrap",
@@ -140,12 +140,6 @@
       "source": "crates/openshell-providers/Cargo.toml:1"
     },
     {
-      "name": "openshell-router",
-      "type": "Rust Service",
-      "purpose": "Inference routing library for OpenShell",
-      "source": "crates/openshell-router/Cargo.toml:1"
-    },
-    {
       "name": "openshell-sandbox",
       "type": "Rust Service",
       "purpose": "OpenShell process sandbox and monitor",
@@ -184,7 +178,7 @@
     {
       "name": "openshell-supervisor-network",
       "type": "Rust Service",
-      "purpose": "Network component of the OpenShell supervisor: proxy, L7 enforcement, OPA, inference routing, denial aggregator",
+      "purpose": "Network component of the OpenShell supervisor: proxy, L7 enforcement, OPA, and denial aggregation",
       "source": "crates/openshell-supervisor-network/Cargo.toml:1"
     },
     {
@@ -281,7 +275,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "e2e/python/test_sandbox_providers.py:126"
+      "source": "e2e/python/test_sandbox_providers.py:329"
     },
     {
       "name": "GCP_ADC_ACCESS_TOKEN",
@@ -290,7 +284,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "e2e/python/test_sandbox_providers.py:175"
+      "source": "e2e/python/test_sandbox_providers.py:379"
     },
     {
       "name": "NVIDIA_API_KEY",
@@ -299,7 +293,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "e2e/python/test_sandbox_providers.py:248"
+      "source": "e2e/python/test_sandbox_providers.py:452"
     }
   ],
   "http_endpoints": [
@@ -532,28 +526,10 @@
       "source": "proto/gateway_interceptor.proto:20"
     },
     {
-      "service": "openshell.inference.v1.Inference/DeleteInferenceRoute",
+      "service": "openshell.middleware.v1.HttpResponsePreReturn/Evaluate",
       "protocol": "gRPC",
-      "purpose": "Protocol buffer RPC DeleteInferenceRoute",
-      "source": "proto/inference.proto:45"
-    },
-    {
-      "service": "openshell.inference.v1.Inference/GetInferenceBundle",
-      "protocol": "gRPC",
-      "purpose": "Protocol buffer RPC GetInferenceBundle",
-      "source": "proto/inference.proto:14"
-    },
-    {
-      "service": "openshell.inference.v1.Inference/GetInferenceRoute",
-      "protocol": "gRPC",
-      "purpose": "Protocol buffer RPC GetInferenceRoute",
-      "source": "proto/inference.proto:35"
-    },
-    {
-      "service": "openshell.inference.v1.Inference/SetInferenceRoute",
-      "protocol": "gRPC",
-      "purpose": "Protocol buffer RPC SetInferenceRoute",
-      "source": "proto/inference.proto:25"
+      "purpose": "Protocol buffer RPC Evaluate",
+      "source": "proto/supervisor_middleware.proto:42"
     },
     {
       "service": "openshell.middleware.v1.SupervisorMiddleware/Describe",
@@ -583,49 +559,55 @@
       "service": "openshell.v1.OpenShell/AddWorkspaceMember",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC AddWorkspaceMember",
-      "source": "proto/openshell.proto:706"
+      "source": "proto/openshell.proto:723"
     },
     {
       "service": "openshell.v1.OpenShell/ApproveAllDraftChunks",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ApproveAllDraftChunks",
-      "source": "proto/openshell.proto:595"
+      "source": "proto/openshell.proto:612"
     },
     {
       "service": "openshell.v1.OpenShell/ApproveDraftChunk",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ApproveDraftChunk",
-      "source": "proto/openshell.proto:575"
+      "source": "proto/openshell.proto:592"
     },
     {
       "service": "openshell.v1.OpenShell/AttachSandboxProvider",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC AttachSandboxProvider",
-      "source": "proto/openshell.proto:124"
+      "source": "proto/openshell.proto:141"
+    },
+    {
+      "service": "openshell.v1.OpenShell/BeginRootfsTarStaging",
+      "protocol": "gRPC",
+      "purpose": "Protocol buffer RPC BeginRootfsTarStaging",
+      "source": "proto/openshell.proto:63"
     },
     {
       "service": "openshell.v1.OpenShell/ClearDraftChunks",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ClearDraftChunks",
-      "source": "proto/openshell.proto:623"
+      "source": "proto/openshell.proto:640"
     },
     {
       "service": "openshell.v1.OpenShell/ConfigureProviderRefresh",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ConfigureProviderRefresh",
-      "source": "proto/openshell.proto:350"
+      "source": "proto/openshell.proto:367"
     },
     {
       "service": "openshell.v1.OpenShell/ConnectSupervisor",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ConnectSupervisor",
-      "source": "proto/openshell.proto:501"
+      "source": "proto/openshell.proto:518"
     },
     {
       "service": "openshell.v1.OpenShell/CreateProvider",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC CreateProvider",
-      "source": "proto/openshell.proto:254"
+      "source": "proto/openshell.proto:271"
     },
     {
       "service": "openshell.v1.OpenShell/CreateSandbox",
@@ -637,109 +619,109 @@
       "service": "openshell.v1.OpenShell/CreateSandboxTemplate",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC CreateSandboxTemplate",
-      "source": "proto/openshell.proto:74"
+      "source": "proto/openshell.proto:91"
     },
     {
       "service": "openshell.v1.OpenShell/CreateSshSession",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC CreateSshSession",
-      "source": "proto/openshell.proto:171"
+      "source": "proto/openshell.proto:188"
     },
     {
       "service": "openshell.v1.OpenShell/CreateWorkspace",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC CreateWorkspace",
-      "source": "proto/openshell.proto:670"
+      "source": "proto/openshell.proto:687"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteProvider",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteProvider",
-      "source": "proto/openshell.proto:380"
+      "source": "proto/openshell.proto:397"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteProviderProfile",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteProviderProfile",
-      "source": "proto/openshell.proto:389"
+      "source": "proto/openshell.proto:406"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteProviderRefresh",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteProviderRefresh",
-      "source": "proto/openshell.proto:370"
+      "source": "proto/openshell.proto:387"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteSandbox",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteSandbox",
-      "source": "proto/openshell.proto:144"
+      "source": "proto/openshell.proto:161"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteSandboxTemplate",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteSandboxTemplate",
-      "source": "proto/openshell.proto:104"
+      "source": "proto/openshell.proto:121"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteService",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteService",
-      "source": "proto/openshell.proto:207"
+      "source": "proto/openshell.proto:224"
     },
     {
       "service": "openshell.v1.OpenShell/DeleteWorkspace",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DeleteWorkspace",
-      "source": "proto/openshell.proto:697"
+      "source": "proto/openshell.proto:714"
     },
     {
       "service": "openshell.v1.OpenShell/DetachSandboxProvider",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC DetachSandboxProvider",
-      "source": "proto/openshell.proto:134"
+      "source": "proto/openshell.proto:151"
     },
     {
       "service": "openshell.v1.OpenShell/EditDraftChunk",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC EditDraftChunk",
-      "source": "proto/openshell.proto:605"
+      "source": "proto/openshell.proto:622"
     },
     {
       "service": "openshell.v1.OpenShell/ExchangeProviderSubjectToken",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ExchangeProviderSubjectToken",
-      "source": "proto/openshell.proto:471"
+      "source": "proto/openshell.proto:488"
     },
     {
       "service": "openshell.v1.OpenShell/ExecSandbox",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ExecSandbox",
-      "source": "proto/openshell.proto:225"
+      "source": "proto/openshell.proto:242"
     },
     {
       "service": "openshell.v1.OpenShell/ExecSandboxInteractive",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ExecSandboxInteractive",
-      "source": "proto/openshell.proto:245"
+      "source": "proto/openshell.proto:262"
     },
     {
       "service": "openshell.v1.OpenShell/ExposeService",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ExposeService",
-      "source": "proto/openshell.proto:180"
+      "source": "proto/openshell.proto:197"
     },
     {
       "service": "openshell.v1.OpenShell/FinalizeMainProcessExit",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC FinalizeMainProcessExit",
-      "source": "proto/openshell.proto:515"
+      "source": "proto/openshell.proto:532"
     },
     {
       "service": "openshell.v1.OpenShell/ForwardTcp",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ForwardTcp",
-      "source": "proto/openshell.proto:234"
+      "source": "proto/openshell.proto:251"
     },
     {
       "service": "openshell.v1.OpenShell/GetCurrentUser",
@@ -751,19 +733,19 @@
       "service": "openshell.v1.OpenShell/GetDraftHistory",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetDraftHistory",
-      "source": "proto/openshell.proto:633"
+      "source": "proto/openshell.proto:650"
     },
     {
       "service": "openshell.v1.OpenShell/GetDraftPolicy",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetDraftPolicy",
-      "source": "proto/openshell.proto:566"
+      "source": "proto/openshell.proto:583"
     },
     {
       "service": "openshell.v1.OpenShell/GetGatewayConfig",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetGatewayConfig",
-      "source": "proto/openshell.proto:415"
+      "source": "proto/openshell.proto:432"
     },
     {
       "service": "openshell.v1.OpenShell/GetGatewayInfo",
@@ -775,67 +757,67 @@
       "service": "openshell.v1.OpenShell/GetProvider",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetProvider",
-      "source": "proto/openshell.proto:263"
+      "source": "proto/openshell.proto:280"
     },
     {
       "service": "openshell.v1.OpenShell/GetProviderProfile",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetProviderProfile",
-      "source": "proto/openshell.proto:291"
+      "source": "proto/openshell.proto:308"
     },
     {
       "service": "openshell.v1.OpenShell/GetProviderRefreshStatus",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetProviderRefreshStatus",
-      "source": "proto/openshell.proto:340"
+      "source": "proto/openshell.proto:357"
     },
     {
       "service": "openshell.v1.OpenShell/GetSandbox",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetSandbox",
-      "source": "proto/openshell.proto:56"
+      "source": "proto/openshell.proto:73"
     },
     {
       "service": "openshell.v1.OpenShell/GetSandboxConfig",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetSandboxConfig",
-      "source": "proto/openshell.proto:399"
+      "source": "proto/openshell.proto:416"
     },
     {
       "service": "openshell.v1.OpenShell/GetSandboxLogs",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetSandboxLogs",
-      "source": "proto/openshell.proto:479"
+      "source": "proto/openshell.proto:496"
     },
     {
       "service": "openshell.v1.OpenShell/GetSandboxPolicyStatus",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetSandboxPolicyStatus",
-      "source": "proto/openshell.proto:434"
+      "source": "proto/openshell.proto:451"
     },
     {
       "service": "openshell.v1.OpenShell/GetSandboxProviderEnvironment",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetSandboxProviderEnvironment",
-      "source": "proto/openshell.proto:462"
+      "source": "proto/openshell.proto:479"
     },
     {
       "service": "openshell.v1.OpenShell/GetSandboxTemplate",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetSandboxTemplate",
-      "source": "proto/openshell.proto:84"
+      "source": "proto/openshell.proto:101"
     },
     {
       "service": "openshell.v1.OpenShell/GetService",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetService",
-      "source": "proto/openshell.proto:189"
+      "source": "proto/openshell.proto:206"
     },
     {
       "service": "openshell.v1.OpenShell/GetWorkspace",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC GetWorkspace",
-      "source": "proto/openshell.proto:679"
+      "source": "proto/openshell.proto:696"
     },
     {
       "service": "openshell.v1.OpenShell/Health",
@@ -847,175 +829,175 @@
       "service": "openshell.v1.OpenShell/ImportProviderProfiles",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ImportProviderProfiles",
-      "source": "proto/openshell.proto:301"
+      "source": "proto/openshell.proto:318"
     },
     {
       "service": "openshell.v1.OpenShell/IssueSandboxToken",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC IssueSandboxToken",
-      "source": "proto/openshell.proto:646"
+      "source": "proto/openshell.proto:663"
     },
     {
       "service": "openshell.v1.OpenShell/LintProviderProfiles",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC LintProviderProfiles",
-      "source": "proto/openshell.proto:321"
+      "source": "proto/openshell.proto:338"
     },
     {
       "service": "openshell.v1.OpenShell/ListProviderProfiles",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListProviderProfiles",
-      "source": "proto/openshell.proto:281"
+      "source": "proto/openshell.proto:298"
     },
     {
       "service": "openshell.v1.OpenShell/ListProviders",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListProviders",
-      "source": "proto/openshell.proto:272"
+      "source": "proto/openshell.proto:289"
     },
     {
       "service": "openshell.v1.OpenShell/ListSandboxPolicies",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListSandboxPolicies",
-      "source": "proto/openshell.proto:444"
+      "source": "proto/openshell.proto:461"
     },
     {
       "service": "openshell.v1.OpenShell/ListSandboxProviders",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListSandboxProviders",
-      "source": "proto/openshell.proto:114"
+      "source": "proto/openshell.proto:131"
     },
     {
       "service": "openshell.v1.OpenShell/ListSandboxTemplates",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListSandboxTemplates",
-      "source": "proto/openshell.proto:94"
+      "source": "proto/openshell.proto:111"
     },
     {
       "service": "openshell.v1.OpenShell/ListSandboxes",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListSandboxes",
-      "source": "proto/openshell.proto:65"
+      "source": "proto/openshell.proto:82"
     },
     {
       "service": "openshell.v1.OpenShell/ListServices",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListServices",
-      "source": "proto/openshell.proto:198"
+      "source": "proto/openshell.proto:215"
     },
     {
       "service": "openshell.v1.OpenShell/ListWorkspaceMembers",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListWorkspaceMembers",
-      "source": "proto/openshell.proto:724"
+      "source": "proto/openshell.proto:741"
     },
     {
       "service": "openshell.v1.OpenShell/ListWorkspaces",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ListWorkspaces",
-      "source": "proto/openshell.proto:688"
+      "source": "proto/openshell.proto:705"
     },
     {
       "service": "openshell.v1.OpenShell/PushSandboxLogs",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC PushSandboxLogs",
-      "source": "proto/openshell.proto:488"
+      "source": "proto/openshell.proto:505"
     },
     {
       "service": "openshell.v1.OpenShell/RefreshSandboxToken",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC RefreshSandboxToken",
-      "source": "proto/openshell.proto:658"
+      "source": "proto/openshell.proto:675"
     },
     {
       "service": "openshell.v1.OpenShell/RejectDraftChunk",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC RejectDraftChunk",
-      "source": "proto/openshell.proto:585"
+      "source": "proto/openshell.proto:602"
     },
     {
       "service": "openshell.v1.OpenShell/RelayStream",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC RelayStream",
-      "source": "proto/openshell.proto:533"
+      "source": "proto/openshell.proto:550"
     },
     {
       "service": "openshell.v1.OpenShell/RemoveWorkspaceMember",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC RemoveWorkspaceMember",
-      "source": "proto/openshell.proto:715"
+      "source": "proto/openshell.proto:732"
     },
     {
       "service": "openshell.v1.OpenShell/ReportMainProcessExit",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ReportMainProcessExit",
-      "source": "proto/openshell.proto:508"
+      "source": "proto/openshell.proto:525"
     },
     {
       "service": "openshell.v1.OpenShell/ReportPolicyStatus",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC ReportPolicyStatus",
-      "source": "proto/openshell.proto:454"
+      "source": "proto/openshell.proto:471"
     },
     {
       "service": "openshell.v1.OpenShell/RevokeSshSession",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC RevokeSshSession",
-      "source": "proto/openshell.proto:216"
+      "source": "proto/openshell.proto:233"
     },
     {
       "service": "openshell.v1.OpenShell/RotateProviderCredential",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC RotateProviderCredential",
-      "source": "proto/openshell.proto:360"
+      "source": "proto/openshell.proto:377"
     },
     {
       "service": "openshell.v1.OpenShell/StartSandbox",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC StartSandbox",
-      "source": "proto/openshell.proto:162"
+      "source": "proto/openshell.proto:179"
     },
     {
       "service": "openshell.v1.OpenShell/StopSandbox",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC StopSandbox",
-      "source": "proto/openshell.proto:153"
+      "source": "proto/openshell.proto:170"
     },
     {
       "service": "openshell.v1.OpenShell/SubmitPolicyAnalysis",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC SubmitPolicyAnalysis",
-      "source": "proto/openshell.proto:558"
+      "source": "proto/openshell.proto:575"
     },
     {
       "service": "openshell.v1.OpenShell/UndoDraftChunk",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC UndoDraftChunk",
-      "source": "proto/openshell.proto:614"
+      "source": "proto/openshell.proto:631"
     },
     {
       "service": "openshell.v1.OpenShell/UpdateConfig",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC UpdateConfig",
-      "source": "proto/openshell.proto:424"
+      "source": "proto/openshell.proto:441"
     },
     {
       "service": "openshell.v1.OpenShell/UpdateProvider",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC UpdateProvider",
-      "source": "proto/openshell.proto:331"
+      "source": "proto/openshell.proto:348"
     },
     {
       "service": "openshell.v1.OpenShell/UpdateProviderProfiles",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC UpdateProviderProfiles",
-      "source": "proto/openshell.proto:311"
+      "source": "proto/openshell.proto:328"
     },
     {
       "service": "openshell.v1.OpenShell/WatchSandbox",
       "protocol": "gRPC",
       "purpose": "Protocol buffer RPC WatchSandbox",
-      "source": "proto/openshell.proto:545"
+      "source": "proto/openshell.proto:562"
     }
   ],
   "dependencies": {
@@ -1051,7 +1033,7 @@
       },
       {
         "module": "google.golang.org/grpc",
-        "version": "v1.83.1",
+        "version": "v1.83.2",
         "category": "runtime-transport",
         "role": "runtime-transport",
         "purpose": "",
@@ -1096,13 +1078,13 @@
         "name": "apollo-parser",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:20"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:19"
       },
       {
         "name": "arc-swap",
         "version": "1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:112"
+        "source": "crates/openshell-server/Cargo.toml:113"
       },
       {
         "name": "async-trait",
@@ -1132,7 +1114,7 @@
         "name": "async-trait",
         "version": "0.1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:101"
+        "source": "crates/openshell-server/Cargo.toml:102"
       },
       {
         "name": "async-trait",
@@ -1144,31 +1126,37 @@
         "name": "aws-config",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:94"
+        "source": "crates/openshell-server/Cargo.toml:95"
       },
       {
         "name": "aws-credential-types",
         "version": "1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:22"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:21"
+      },
+      {
+        "name": "aws-lc-rs",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-driver-db-credstore/Cargo.toml:19"
       },
       {
         "name": "aws-sdk-sts",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:95"
+        "source": "crates/openshell-server/Cargo.toml:96"
       },
       {
         "name": "aws-sigv4",
         "version": "1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:21"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:20"
       },
       {
         "name": "aws-smithy-runtime-api",
         "version": "1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:23"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:22"
       },
       {
         "name": "axum",
@@ -1199,19 +1187,19 @@
         "name": "base64",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:24"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:28"
       },
       {
         "name": "base64",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:83"
+        "source": "crates/openshell-server/Cargo.toml:84"
       },
       {
         "name": "base64",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:25"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:24"
       },
       {
         "name": "base64",
@@ -1259,19 +1247,13 @@
         "name": "bytes",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-router/Cargo.toml:15"
+        "source": "crates/openshell-server/Cargo.toml:86"
       },
       {
         "name": "bytes",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:85"
-      },
-      {
-        "name": "bytes",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:26"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:25"
       },
       {
         "name": "bytes",
@@ -1379,7 +1361,7 @@
         "name": "crossterm",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:21"
+        "source": "crates/openshell-tui/Cargo.toml:22"
       },
       {
         "name": "dialoguer",
@@ -1397,13 +1379,7 @@
         "name": "flate2",
         "version": "1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:27"
-      },
-      {
-        "name": "futures",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:15"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:26"
       },
       {
         "name": "futures",
@@ -1439,7 +1415,7 @@
         "name": "futures",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:20"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:24"
       },
       {
         "name": "futures",
@@ -1475,13 +1451,19 @@
         "name": "futures",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:84"
+        "source": "crates/openshell-server/Cargo.toml:85"
       },
       {
         "name": "futures",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "source": "crates/openshell-supervisor-middleware/Cargo.toml:18"
+      },
+      {
+        "name": "futures",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-tui/Cargo.toml:20"
       },
       {
         "name": "glob",
@@ -1493,7 +1475,7 @@
         "name": "glob",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-prover/Cargo.toml:23"
+        "source": "crates/openshell-prover/Cargo.toml:24"
       },
       {
         "name": "glob",
@@ -1505,25 +1487,25 @@
         "name": "glob",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:103"
+        "source": "crates/openshell-server/Cargo.toml:104"
       },
       {
         "name": "glob",
         "version": "Unknown",
         "ecosystem": "Cargo",
+        "source": "crates/openshell-supervisor-network/Cargo.toml:27"
+      },
+      {
+        "name": "hex",
+        "version": "0.4",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-server/Cargo.toml:105"
+      },
+      {
+        "name": "hex",
+        "version": "0.4",
+        "ecosystem": "Cargo",
         "source": "crates/openshell-supervisor-network/Cargo.toml:28"
-      },
-      {
-        "name": "hex",
-        "version": "0.4",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:104"
-      },
-      {
-        "name": "hex",
-        "version": "0.4",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:29"
       },
       {
         "name": "hex",
@@ -1541,13 +1523,13 @@
         "name": "hickory-proto",
         "version": "0.26.1",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:30"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:29"
       },
       {
         "name": "hmac",
         "version": "0.12",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:97"
+        "source": "crates/openshell-server/Cargo.toml:98"
       },
       {
         "name": "http",
@@ -1583,7 +1565,7 @@
         "name": "http",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:24"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:23"
       },
       {
         "name": "http-body",
@@ -1677,13 +1659,13 @@
         "name": "include_dir",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-prover/Cargo.toml:22"
+        "source": "crates/openshell-prover/Cargo.toml:23"
       },
       {
         "name": "indexmap",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:29"
+        "source": "crates/openshell-tui/Cargo.toml:30"
       },
       {
         "name": "indicatif",
@@ -1701,13 +1683,13 @@
         "name": "ipnet",
         "version": "2",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:108"
+        "source": "crates/openshell-server/Cargo.toml:109"
       },
       {
         "name": "ipnet",
         "version": "2",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:31"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:30"
       },
       {
         "name": "ipnet",
@@ -1725,7 +1707,7 @@
         "name": "jsonwebtoken",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:99"
+        "source": "crates/openshell-server/Cargo.toml:100"
       },
       {
         "name": "k8s-openapi",
@@ -1743,7 +1725,7 @@
         "name": "k8s-openapi",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:33"
+        "source": "crates/openshell-server/Cargo.toml:32"
       },
       {
         "name": "kube",
@@ -1761,7 +1743,7 @@
         "name": "kube",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:32"
+        "source": "crates/openshell-server/Cargo.toml:31"
       },
       {
         "name": "kube-runtime",
@@ -1774,6 +1756,12 @@
         "version": "0.2",
         "ecosystem": "Cargo",
         "source": "crates/openshell-driver-vm/Cargo.toml:49"
+      },
+      {
+        "name": "libc",
+        "version": "0.2",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-server/Cargo.toml:38"
       },
       {
         "name": "libloading",
@@ -1791,19 +1779,19 @@
         "name": "metrics",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:79"
+        "source": "crates/openshell-server/Cargo.toml:80"
       },
       {
         "name": "metrics-exporter-prometheus",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:80"
+        "source": "crates/openshell-server/Cargo.toml:81"
       },
       {
         "name": "miette",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:16"
+        "source": "crates/openshell-bootstrap/Cargo.toml:15"
       },
       {
         "name": "miette",
@@ -1869,7 +1857,7 @@
         "name": "miette",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-prover/Cargo.toml:20"
+        "source": "crates/openshell-prover/Cargo.toml:21"
       },
       {
         "name": "miette",
@@ -1905,7 +1893,7 @@
         "name": "miette",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:32"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:31"
       },
       {
         "name": "miette",
@@ -1917,7 +1905,7 @@
         "name": "miette",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:25"
+        "source": "crates/openshell-tui/Cargo.toml:26"
       },
       {
         "name": "nix",
@@ -1941,7 +1929,7 @@
         "name": "nix",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:38"
+        "source": "crates/openshell-server/Cargo.toml:37"
       },
       {
         "name": "nix",
@@ -1959,7 +1947,7 @@
         "name": "notify",
         "version": "8",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:113"
+        "source": "crates/openshell-server/Cargo.toml:114"
       },
       {
         "name": "oauth2",
@@ -2091,12 +2079,6 @@
         "name": "openshell-core",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-router/Cargo.toml:14"
-      },
-      {
-        "name": "openshell-core",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
         "source": "crates/openshell-sandbox/Cargo.toml:18"
       },
       {
@@ -2200,6 +2182,12 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "source": "crates/openshell-server/Cargo.toml:20"
+      },
+      {
+        "name": "openshell-ocsf",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-driver-mxc/Cargo.toml:21"
       },
       {
         "name": "openshell-ocsf",
@@ -2346,18 +2334,6 @@
         "source": "crates/openshell-tui/Cargo.toml:17"
       },
       {
-        "name": "openshell-router",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:26"
-      },
-      {
-        "name": "openshell-router",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:17"
-      },
-      {
         "name": "openshell-sdk",
         "version": "Unknown",
         "ecosystem": "Cargo",
@@ -2379,13 +2355,13 @@
         "name": "openshell-supervisor-middleware",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:27"
+        "source": "crates/openshell-server/Cargo.toml:26"
       },
       {
         "name": "openshell-supervisor-middleware",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:18"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:17"
       },
       {
         "name": "openshell-supervisor-middleware-builtins",
@@ -2397,7 +2373,7 @@
         "name": "openshell-supervisor-middleware-builtins",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:28"
+        "source": "crates/openshell-server/Cargo.toml:27"
       },
       {
         "name": "openshell-supervisor-network",
@@ -2457,7 +2433,7 @@
         "name": "opentelemetry",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:74"
+        "source": "crates/openshell-server/Cargo.toml:75"
       },
       {
         "name": "opentelemetry-otlp",
@@ -2499,7 +2475,7 @@
         "name": "opentelemetry_sdk",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:75"
+        "source": "crates/openshell-server/Cargo.toml:76"
       },
       {
         "name": "owo-colors",
@@ -2511,25 +2487,25 @@
         "name": "owo-colors",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-prover/Cargo.toml:21"
+        "source": "crates/openshell-prover/Cargo.toml:22"
       },
       {
         "name": "owo-colors",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:26"
+        "source": "crates/openshell-tui/Cargo.toml:27"
       },
       {
         "name": "petname",
         "version": "2",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:107"
+        "source": "crates/openshell-server/Cargo.toml:108"
       },
       {
         "name": "pin-project-lite",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:86"
+        "source": "crates/openshell-server/Cargo.toml:87"
       },
       {
         "name": "proc-macro2",
@@ -2674,7 +2650,7 @@
         "name": "prost-types",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:33"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:32"
       },
       {
         "name": "quote",
@@ -2692,7 +2668,7 @@
         "name": "rand",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:106"
+        "source": "crates/openshell-server/Cargo.toml:107"
       },
       {
         "name": "rand",
@@ -2704,19 +2680,19 @@
         "name": "ratatui",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:20"
+        "source": "crates/openshell-tui/Cargo.toml:21"
       },
       {
         "name": "rcgen",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:17"
+        "source": "crates/openshell-bootstrap/Cargo.toml:16"
       },
       {
         "name": "rcgen",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:34"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:33"
       },
       {
         "name": "regex",
@@ -2728,7 +2704,7 @@
         "name": "regorus",
         "version": "0.9",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:35"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:34"
       },
       {
         "name": "reqwest",
@@ -2756,13 +2732,6 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-integration",
-        "source": "crates/openshell-router/Cargo.toml:16"
-      },
-      {
-        "name": "reqwest",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "role": "runtime-integration",
         "source": "crates/openshell-sdk/Cargo.toml:21"
       },
       {
@@ -2770,32 +2739,20 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-integration",
-        "source": "crates/openshell-server/Cargo.toml:93"
+        "source": "crates/openshell-server/Cargo.toml:94"
       },
       {
         "name": "reqwest",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-integration",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:36"
-      },
-      {
-        "name": "ring",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-db-credstore/Cargo.toml:19"
-      },
-      {
-        "name": "ring",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:87"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:35"
       },
       {
         "name": "russh",
         "version": "0.62",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:105"
+        "source": "crates/openshell-server/Cargo.toml:106"
       },
       {
         "name": "russh",
@@ -2819,7 +2776,7 @@
         "name": "rustix",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:110"
+        "source": "crates/openshell-server/Cargo.toml:111"
       },
       {
         "name": "rustls",
@@ -2834,6 +2791,13 @@
         "ecosystem": "Cargo",
         "role": "runtime-security",
         "source": "crates/openshell-core/Cargo.toml:30"
+      },
+      {
+        "name": "rustls",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "role": "runtime-security",
+        "source": "crates/openshell-driver-vault/Cargo.toml:24"
       },
       {
         "name": "rustls",
@@ -2861,13 +2825,13 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-security",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:37"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:36"
       },
       {
         "name": "rustls-native-certs",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:38"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:37"
       },
       {
         "name": "rustls-pemfile",
@@ -2891,14 +2855,14 @@
         "name": "rustls-pemfile",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:39"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:38"
       },
       {
         "name": "serde",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "crates/openshell-bootstrap/Cargo.toml:19"
+        "source": "crates/openshell-bootstrap/Cargo.toml:18"
       },
       {
         "name": "serde",
@@ -2961,7 +2925,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:22"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:26"
       },
       {
         "name": "serde",
@@ -2975,7 +2939,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "crates/openshell-driver-vault/Cargo.toml:24"
+        "source": "crates/openshell-driver-vault/Cargo.toml:25"
       },
       {
         "name": "serde",
@@ -3010,7 +2974,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "crates/openshell-prover/Cargo.toml:18"
+        "source": "crates/openshell-prover/Cargo.toml:19"
       },
       {
         "name": "serde",
@@ -3018,13 +2982,6 @@
         "ecosystem": "Cargo",
         "role": "runtime-library",
         "source": "crates/openshell-providers/Cargo.toml:17"
-      },
-      {
-        "name": "serde",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "role": "runtime-library",
-        "source": "crates/openshell-router/Cargo.toml:17"
       },
       {
         "name": "serde",
@@ -3059,14 +3016,14 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:40"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:39"
       },
       {
         "name": "serde",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-library",
-        "source": "crates/openshell-tui/Cargo.toml:27"
+        "source": "crates/openshell-tui/Cargo.toml:28"
       },
       {
         "name": "serde",
@@ -3079,7 +3036,7 @@
         "name": "serde_json",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:20"
+        "source": "crates/openshell-bootstrap/Cargo.toml:19"
       },
       {
         "name": "serde_json",
@@ -3127,7 +3084,7 @@
         "name": "serde_json",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:23"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:27"
       },
       {
         "name": "serde_json",
@@ -3139,7 +3096,7 @@
         "name": "serde_json",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-vault/Cargo.toml:25"
+        "source": "crates/openshell-driver-vault/Cargo.toml:26"
       },
       {
         "name": "serde_json",
@@ -3175,12 +3132,6 @@
         "name": "serde_json",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-router/Cargo.toml:18"
-      },
-      {
-        "name": "serde_json",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
         "source": "crates/openshell-sandbox/Cargo.toml:48"
       },
       {
@@ -3199,7 +3150,7 @@
         "name": "serde_json",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:41"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:40"
       },
       {
         "name": "serde_json",
@@ -3235,7 +3186,7 @@
         "name": "serde_yml",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-prover/Cargo.toml:19"
+        "source": "crates/openshell-prover/Cargo.toml:20"
       },
       {
         "name": "serde_yml",
@@ -3247,25 +3198,19 @@
         "name": "serde_yml",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-router/Cargo.toml:22"
-      },
-      {
-        "name": "serde_yml",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:42"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:41"
       },
       {
         "name": "sha1",
         "version": "0.10",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:43"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:42"
       },
       {
         "name": "sha2",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:18"
+        "source": "crates/openshell-bootstrap/Cargo.toml:17"
       },
       {
         "name": "sha2",
@@ -3283,7 +3228,7 @@
         "name": "sha2",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-vault/Cargo.toml:26"
+        "source": "crates/openshell-driver-vault/Cargo.toml:27"
       },
       {
         "name": "sha2",
@@ -3301,13 +3246,13 @@
         "name": "sha2",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:98"
+        "source": "crates/openshell-server/Cargo.toml:99"
       },
       {
         "name": "sha2",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:44"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:43"
       },
       {
         "name": "sha2",
@@ -3319,19 +3264,19 @@
         "name": "socket2",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:37"
+        "source": "crates/openshell-server/Cargo.toml:36"
       },
       {
         "name": "spiffe",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:100"
+        "source": "crates/openshell-server/Cargo.toml:101"
       },
       {
         "name": "spiffe",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:45"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:44"
       },
       {
         "name": "sqlx",
@@ -3340,16 +3285,16 @@
         "source": "crates/openshell-server/Cargo.toml:92"
       },
       {
+        "name": "sqlx-core",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-server/Cargo.toml:93"
+      },
+      {
         "name": "syn",
         "version": "2",
         "ecosystem": "Cargo",
         "source": "crates/openshell-server-macros/Cargo.toml:18"
-      },
-      {
-        "name": "tar",
-        "version": "0.4",
-        "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:21"
       },
       {
         "name": "tar",
@@ -3373,7 +3318,7 @@
         "name": "tempfile",
         "version": "3",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-bootstrap/Cargo.toml:22"
+        "source": "crates/openshell-bootstrap/Cargo.toml:20"
       },
       {
         "name": "tempfile",
@@ -3391,13 +3336,13 @@
         "name": "tempfile",
         "version": "3",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:109"
+        "source": "crates/openshell-server/Cargo.toml:110"
       },
       {
         "name": "terminal-colorsaurus",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:22"
+        "source": "crates/openshell-tui/Cargo.toml:23"
       },
       {
         "name": "thiserror",
@@ -3421,7 +3366,7 @@
         "name": "thiserror",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:26"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:30"
       },
       {
         "name": "thiserror",
@@ -3457,12 +3402,6 @@
         "name": "thiserror",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-router/Cargo.toml:19"
-      },
-      {
-        "name": "thiserror",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
         "source": "crates/openshell-sdk/Cargo.toml:24"
       },
       {
@@ -3475,7 +3414,7 @@
         "name": "thiserror",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:46"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:45"
       },
       {
         "name": "thiserror",
@@ -3488,7 +3427,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-bootstrap/Cargo.toml:23"
+        "source": "crates/openshell-bootstrap/Cargo.toml:21"
       },
       {
         "name": "tokio",
@@ -3544,7 +3483,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:18"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:22"
       },
       {
         "name": "tokio",
@@ -3558,7 +3497,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-driver-vault/Cargo.toml:27"
+        "source": "crates/openshell-driver-vault/Cargo.toml:28"
       },
       {
         "name": "tokio",
@@ -3600,13 +3539,6 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-router/Cargo.toml:21"
-      },
-      {
-        "name": "tokio",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "role": "runtime-framework",
         "source": "crates/openshell-sandbox/Cargo.toml:28"
       },
       {
@@ -3621,7 +3553,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-server/Cargo.toml:36"
+        "source": "crates/openshell-server/Cargo.toml:35"
       },
       {
         "name": "tokio",
@@ -3642,7 +3574,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:47"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:46"
       },
       {
         "name": "tokio",
@@ -3656,7 +3588,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-framework",
-        "source": "crates/openshell-tui/Cargo.toml:23"
+        "source": "crates/openshell-tui/Cargo.toml:24"
       },
       {
         "name": "tokio-rustls",
@@ -3680,7 +3612,7 @@
         "name": "tokio-rustls",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:48"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:47"
       },
       {
         "name": "tokio-stream",
@@ -3710,7 +3642,7 @@
         "name": "tokio-stream",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:21"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:25"
       },
       {
         "name": "tokio-stream",
@@ -3794,7 +3726,7 @@
         "name": "toml",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-vault/Cargo.toml:28"
+        "source": "crates/openshell-driver-vault/Cargo.toml:29"
       },
       {
         "name": "toml",
@@ -3849,7 +3781,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-transport",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:19"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:23"
       },
       {
         "name": "tonic",
@@ -3863,7 +3795,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-transport",
-        "source": "crates/openshell-driver-vault/Cargo.toml:29"
+        "source": "crates/openshell-driver-vault/Cargo.toml:30"
       },
       {
         "name": "tonic",
@@ -3947,7 +3879,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-transport",
-        "source": "crates/openshell-tui/Cargo.toml:24"
+        "source": "crates/openshell-tui/Cargo.toml:25"
       },
       {
         "name": "tonic-prost",
@@ -4013,14 +3945,14 @@
         "name": "tower-mcp-types",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:49"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:48"
       },
       {
         "name": "tracing",
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "crates/openshell-bootstrap/Cargo.toml:24"
+        "source": "crates/openshell-bootstrap/Cargo.toml:22"
       },
       {
         "name": "tracing",
@@ -4062,7 +3994,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:25"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:29"
       },
       {
         "name": "tracing",
@@ -4076,7 +4008,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "crates/openshell-driver-vault/Cargo.toml:30"
+        "source": "crates/openshell-driver-vault/Cargo.toml:31"
       },
       {
         "name": "tracing",
@@ -4118,13 +4050,6 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "crates/openshell-router/Cargo.toml:20"
-      },
-      {
-        "name": "tracing",
-        "version": "Unknown",
-        "ecosystem": "Cargo",
-        "role": "runtime-observability",
         "source": "crates/openshell-sandbox/Cargo.toml:52"
       },
       {
@@ -4146,7 +4071,7 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "role": "runtime-observability",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:50"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:49"
       },
       {
         "name": "tracing",
@@ -4167,6 +4092,12 @@
         "version": "Unknown",
         "ecosystem": "Cargo",
         "source": "crates/openshell-sandbox/Cargo.toml:55"
+      },
+      {
+        "name": "tracing-appender",
+        "version": "Unknown",
+        "ecosystem": "Cargo",
+        "source": "crates/openshell-server/Cargo.toml:72"
       },
       {
         "name": "tracing-opentelemetry",
@@ -4196,7 +4127,7 @@
         "name": "tracing-opentelemetry",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:76"
+        "source": "crates/openshell-server/Cargo.toml:77"
       },
       {
         "name": "tracing-subscriber",
@@ -4232,7 +4163,7 @@
         "name": "tracing-subscriber",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-vault/Cargo.toml:31"
+        "source": "crates/openshell-driver-vault/Cargo.toml:32"
       },
       {
         "name": "tracing-subscriber",
@@ -4244,7 +4175,7 @@
         "name": "tracing-subscriber",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-ocsf/Cargo.toml:19"
+        "source": "crates/openshell-ocsf/Cargo.toml:20"
       },
       {
         "name": "tracing-subscriber",
@@ -4316,25 +4247,25 @@
         "name": "url",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:102"
+        "source": "crates/openshell-server/Cargo.toml:103"
       },
       {
         "name": "url",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-tui/Cargo.toml:28"
+        "source": "crates/openshell-tui/Cargo.toml:29"
       },
       {
         "name": "uuid",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-driver-mxc/Cargo.toml:27"
+        "source": "crates/openshell-driver-mxc/Cargo.toml:31"
       },
       {
         "name": "uuid",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-router/Cargo.toml:23"
+        "source": "crates/openshell-ocsf/Cargo.toml:19"
       },
       {
         "name": "uuid",
@@ -4346,13 +4277,13 @@
         "name": "uuid",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:96"
+        "source": "crates/openshell-server/Cargo.toml:97"
       },
       {
         "name": "uuid",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:51"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:50"
       },
       {
         "name": "uuid",
@@ -4364,13 +4295,13 @@
         "name": "webpki-roots",
         "version": "Unknown",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-supervisor-network/Cargo.toml:52"
+        "source": "crates/openshell-supervisor-network/Cargo.toml:51"
       },
       {
         "name": "x509-parser",
         "version": "0.16",
         "ecosystem": "Cargo",
-        "source": "crates/openshell-server/Cargo.toml:111"
+        "source": "crates/openshell-server/Cargo.toml:112"
       },
       {
         "name": "z3",
@@ -4450,39 +4381,39 @@
   ],
   "recent_changes": [
     {
-      "version": "53d4cf1c",
-      "date": "2026-09-04",
+      "version": "92fd2e88",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "eeeb2aee",
-      "date": "2026-09-04",
+      "version": "d99f12a3",
+      "date": "2026-09-11",
+      "changes": "fix(ci): align Trivy change detection and scan baselines (#3277)"
+    },
+    {
+      "version": "9b4b63ec",
+      "date": "2026-09-11",
+      "changes": "fix(deps): update DOMPurify and runtime image packages (#3276)"
+    },
+    {
+      "version": "3eb81beb",
+      "date": "2026-09-11",
+      "changes": "ci(security): orchestrate security scans with severity gating (#3255)"
+    },
+    {
+      "version": "b92620e8",
+      "date": "2026-09-11",
+      "changes": "ci(rust): reject stale Cargo lockfiles (#3227)"
+    },
+    {
+      "version": "2098e75f",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "c93b2fa7",
-      "date": "2026-09-04",
-      "changes": "docs(gateway-config): fix stale community sandbox image path (#2800)"
-    },
-    {
-      "version": "7cc95516",
-      "date": "2026-09-04",
-      "changes": "feat(server): support EC and EdDSA keys in OIDC JWKS validation (#2593)"
-    },
-    {
-      "version": "08eac8c4",
-      "date": "2026-09-03",
-      "changes": "fix(sandbox): detect an available login shell instead of hardcoding /bin/bash (#3147)"
-    },
-    {
-      "version": "52b1d78e",
-      "date": "2026-09-03",
-      "changes": "refactor(cli): extract provider commands into commands/provider module (#2605)"
-    },
-    {
-      "version": "6583d376",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
+      "version": "02b664bb",
+      "date": "2026-09-11",
+      "changes": "refactor(config): normalize and enforce gateway schema v2 (#2814)"
     }
   ],
   "component_refs": null,
@@ -4513,35 +4444,35 @@
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/usr/local/bin/openshell\"]",
-      "source": "deploy/docker/Dockerfile.konflux.cli:95"
+      "source": "deploy/docker/Dockerfile.konflux.cli:98"
     },
     {
       "name": "deploy/docker/Dockerfile.konflux.gateway:ENTRYPOINT",
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/usr/local/bin/openshell-gateway\"]",
-      "source": "deploy/docker/Dockerfile.konflux.gateway:83"
+      "source": "deploy/docker/Dockerfile.konflux.gateway:100"
     },
     {
       "name": "deploy/docker/Dockerfile.konflux.gateway:CMD",
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"--bind-address\", \"0.0.0.0\", \"--port\", \"8080\"]",
-      "source": "deploy/docker/Dockerfile.konflux.gateway:84"
+      "source": "deploy/docker/Dockerfile.konflux.gateway:101"
     },
     {
       "name": "deploy/docker/Dockerfile.konflux.supervisor:ENTRYPOINT",
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/openshell-sandbox\"]",
-      "source": "deploy/docker/Dockerfile.konflux.supervisor:107"
+      "source": "deploy/docker/Dockerfile.konflux.supervisor:111"
     },
     {
       "name": "deploy/docker/Dockerfile.supervisor:ENTRYPOINT",
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/openshell-sandbox\"]",
-      "source": "deploy/docker/Dockerfile.supervisor:21"
+      "source": "deploy/docker/Dockerfile.supervisor:23"
     },
     {
       "name": "e2e/docker/Dockerfile.external-kubernetes-gateway:ENTRYPOINT",
@@ -4633,9 +4564,9 @@
       "target": "aws-lc-rs",
       "detail": "Cargo.lock selects this cryptographic provider; FIPS validation depends on build and runtime configuration",
       "status": "dependency-signal",
-      "source": "Cargo.lock:301",
+      "source": "Cargo.lock:335",
       "sources": [
-        "Cargo.lock:301"
+        "Cargo.lock:335"
       ]
     },
     {
@@ -4643,9 +4574,9 @@
       "target": "ring",
       "detail": "Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
       "status": "dependency-signal",
-      "source": "Cargo.lock:5726",
+      "source": "Cargo.lock:5903",
       "sources": [
-        "Cargo.lock:5726"
+        "Cargo.lock:5903"
       ]
     },
     {
@@ -4683,7 +4614,7 @@
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 117 runtime facts, 34 source components, and 544 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 115 runtime facts, 33 source components, and 536 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "not_found",
     "go_module_configs": "not_found",
@@ -4701,14 +4632,14 @@
   "category_coverage": {
     "architecture_components": {
       "status": "complete",
-      "fact_count": 52,
+      "fact_count": 51,
       "discovery_contract": "architecture-components/v1",
       "completed_checks": [
         "source-entrypoint-workload-inventory"
       ],
       "limitations": [],
       "evidence": [
-        "summary:52 runtime component/entrypoint/workload facts extracted"
+        "summary:51 runtime component/entrypoint/workload facts extracted"
       ]
     },
     "authentication": {
@@ -4720,7 +4651,7 @@
         "security-evidence-inventory"
       ],
       "limitations": [
-        "114 inbound runtime surfaces are not fully accounted for by authentication facts"
+        "112 inbound runtime surfaces are not fully accounted for by authentication facts"
       ],
       "evidence": [
         "sdk/go/openshell/v1/oidc/authcode.go:99",
@@ -4742,15 +4673,15 @@
         "static signals do not prove FIPS validation or runtime provider selection"
       ],
       "evidence": [
-        "Cargo.lock:301",
-        "Cargo.lock:5726",
+        "Cargo.lock:335",
+        "Cargo.lock:5903",
         "Cargo.toml:38",
         "coverage:fips_compliance"
       ]
     },
     "grpc_services": {
       "status": "partial",
-      "fact_count": 102,
+      "fact_count": 100,
       "discovery_contract": "grpc-services/v1",
       "completed_checks": [
         "literal-transport-inventory"
@@ -4759,7 +4690,7 @@
         "dynamic grpc_services construction is not fully resolved"
       ],
       "evidence": [
-        "summary:102 deterministic grpc_services facts extracted"
+        "summary:100 deterministic grpc_services facts extracted"
       ]
     },
     "http_endpoints": {
@@ -4797,12 +4728,12 @@
         "deploy/deb/prerm.sh (unsupported runtime source)",
         "deploy/docker/cross-build.sh (unsupported runtime source)",
         "deploy/helm/test-split-ownership.sh (unsupported runtime source)",
+        "deploy/rpm/migrate-gateway-config.sh (unsupported runtime source)",
         "install.sh (unsupported runtime source)",
         "nix/test-guest/cache-lib.sh (unsupported runtime source)",
         "nix/test-guest/cache-seal.sh (unsupported runtime source)",
         "nix/test-guest/cache.sh (unsupported runtime source)",
-        "nix/test-guest/run.sh (unsupported runtime source)",
-        "summary:1 additional evidence items omitted"
+        "summary:2 additional evidence items omitted"
       ]
     },
     "internal_dependencies": {
@@ -4826,13 +4757,13 @@
         "crates/openshell-server/src/grpc/policy.rs (gatewayconfig; runtime source/config reference)",
         "crates/openshell-tui/src/app.rs (gatewayconfig; commented configuration)",
         "crates/openshell-tui/src/lib.rs (gatewayconfig; runtime source/config reference)",
+        "deploy/helm/openshell/ci/values-openshift-scc.yaml (route.openshift.io; commented configuration)",
         "deploy/helm/openshell/templates/cert-manager-pki.yaml (cert-manager.io; unselected manifest configuration)",
         "deploy/helm/openshell/templates/gateway.yaml (gateway.networking.k8s.io; unselected manifest configuration)",
         "deploy/helm/openshell/templates/grpcroute.yaml (gateway.networking.k8s.io; unselected manifest configuration)",
         "deploy/helm/openshell/templates/route.yaml (route.openshift.io; unselected manifest configuration)",
         "deploy/kube/manifests/envoy-gateway-openshell.yaml (gateway.networking.k8s.io; unselected manifest configuration)",
-        "sdk/go/openshell/v1/config.go (gatewayconfig; naming convention (Go identifier))",
-        "summary:12 additional evidence items omitted"
+        "summary:13 additional evidence items omitted"
       ]
     },
     "services": {
@@ -4859,7 +4790,7 @@
     {
       "category": "grpc_services",
       "status": "observed",
-      "finding": "102 grpc_services facts extracted",
+      "finding": "100 grpc_services facts extracted",
       "sources": [
         "proto/compute_driver.proto:25",
         "proto/compute_driver.proto:30",
@@ -4882,87 +4813,85 @@
         "proto/gateway_interceptor.proto:16",
         "proto/gateway_interceptor.proto:20",
         "proto/gateway_interceptor.proto:25",
-        "proto/inference.proto:14",
-        "proto/inference.proto:25",
-        "proto/inference.proto:35",
-        "proto/inference.proto:45",
-        "proto/openshell.proto:104",
-        "proto/openshell.proto:114",
-        "proto/openshell.proto:124",
-        "proto/openshell.proto:134",
-        "proto/openshell.proto:144",
-        "proto/openshell.proto:153",
-        "proto/openshell.proto:162",
-        "proto/openshell.proto:171",
-        "proto/openshell.proto:180",
-        "proto/openshell.proto:189",
-        "proto/openshell.proto:198",
-        "proto/openshell.proto:207",
-        "proto/openshell.proto:216",
-        "proto/openshell.proto:225",
-        "proto/openshell.proto:234",
+        "proto/openshell.proto:101",
+        "proto/openshell.proto:111",
+        "proto/openshell.proto:121",
+        "proto/openshell.proto:131",
+        "proto/openshell.proto:141",
+        "proto/openshell.proto:151",
+        "proto/openshell.proto:161",
+        "proto/openshell.proto:170",
+        "proto/openshell.proto:179",
+        "proto/openshell.proto:188",
+        "proto/openshell.proto:197",
+        "proto/openshell.proto:206",
+        "proto/openshell.proto:215",
+        "proto/openshell.proto:224",
+        "proto/openshell.proto:233",
         "proto/openshell.proto:24",
-        "proto/openshell.proto:245",
-        "proto/openshell.proto:254",
-        "proto/openshell.proto:263",
-        "proto/openshell.proto:272",
-        "proto/openshell.proto:281",
-        "proto/openshell.proto:291",
-        "proto/openshell.proto:301",
+        "proto/openshell.proto:242",
+        "proto/openshell.proto:251",
+        "proto/openshell.proto:262",
+        "proto/openshell.proto:271",
+        "proto/openshell.proto:280",
+        "proto/openshell.proto:289",
+        "proto/openshell.proto:298",
+        "proto/openshell.proto:308",
         "proto/openshell.proto:31",
-        "proto/openshell.proto:311",
-        "proto/openshell.proto:321",
-        "proto/openshell.proto:331",
-        "proto/openshell.proto:340",
-        "proto/openshell.proto:350",
-        "proto/openshell.proto:360",
-        "proto/openshell.proto:370",
+        "proto/openshell.proto:318",
+        "proto/openshell.proto:328",
+        "proto/openshell.proto:338",
+        "proto/openshell.proto:348",
+        "proto/openshell.proto:357",
+        "proto/openshell.proto:367",
+        "proto/openshell.proto:377",
         "proto/openshell.proto:38",
-        "proto/openshell.proto:380",
-        "proto/openshell.proto:389",
-        "proto/openshell.proto:399",
-        "proto/openshell.proto:415",
-        "proto/openshell.proto:424",
-        "proto/openshell.proto:434",
-        "proto/openshell.proto:444",
-        "proto/openshell.proto:454",
-        "proto/openshell.proto:462",
+        "proto/openshell.proto:387",
+        "proto/openshell.proto:397",
+        "proto/openshell.proto:406",
+        "proto/openshell.proto:416",
+        "proto/openshell.proto:432",
+        "proto/openshell.proto:441",
+        "proto/openshell.proto:451",
+        "proto/openshell.proto:461",
         "proto/openshell.proto:47",
         "proto/openshell.proto:471",
         "proto/openshell.proto:479",
         "proto/openshell.proto:488",
-        "proto/openshell.proto:501",
-        "proto/openshell.proto:508",
-        "proto/openshell.proto:515",
-        "proto/openshell.proto:533",
-        "proto/openshell.proto:545",
-        "proto/openshell.proto:558",
-        "proto/openshell.proto:56",
-        "proto/openshell.proto:566",
+        "proto/openshell.proto:496",
+        "proto/openshell.proto:505",
+        "proto/openshell.proto:518",
+        "proto/openshell.proto:525",
+        "proto/openshell.proto:532",
+        "proto/openshell.proto:550",
+        "proto/openshell.proto:562",
         "proto/openshell.proto:575",
-        "proto/openshell.proto:585",
-        "proto/openshell.proto:595",
-        "proto/openshell.proto:605",
-        "proto/openshell.proto:614",
-        "proto/openshell.proto:623",
-        "proto/openshell.proto:633",
-        "proto/openshell.proto:646",
-        "proto/openshell.proto:65",
-        "proto/openshell.proto:658",
-        "proto/openshell.proto:670",
-        "proto/openshell.proto:679",
-        "proto/openshell.proto:688",
-        "proto/openshell.proto:697",
-        "proto/openshell.proto:706",
-        "proto/openshell.proto:715",
-        "proto/openshell.proto:724",
-        "proto/openshell.proto:74",
-        "proto/openshell.proto:84",
-        "proto/openshell.proto:94",
+        "proto/openshell.proto:583",
+        "proto/openshell.proto:592",
+        "proto/openshell.proto:602",
+        "proto/openshell.proto:612",
+        "proto/openshell.proto:622",
+        "proto/openshell.proto:63",
+        "proto/openshell.proto:631",
+        "proto/openshell.proto:640",
+        "proto/openshell.proto:650",
+        "proto/openshell.proto:663",
+        "proto/openshell.proto:675",
+        "proto/openshell.proto:687",
+        "proto/openshell.proto:696",
+        "proto/openshell.proto:705",
+        "proto/openshell.proto:714",
+        "proto/openshell.proto:723",
+        "proto/openshell.proto:73",
+        "proto/openshell.proto:732",
+        "proto/openshell.proto:741",
+        "proto/openshell.proto:82",
+        "proto/openshell.proto:91",
         "proto/supervisor_middleware.proto:16",
         "proto/supervisor_middleware.proto:19",
         "proto/supervisor_middleware.proto:23",
-        "proto/supervisor_middleware.proto:32"
+        "proto/supervisor_middleware.proto:32",
+        "proto/supervisor_middleware.proto:42"
       ]
     },
     {
@@ -5146,14 +5075,14 @@
         "claim": "crypto-provider targets aws-lc-rs: Cargo.lock selects this cryptographic provider; FIPS validation depends on build and runtime configuration",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.lock:301"
+          "Cargo.lock:335"
         ]
       },
       {
         "claim": "crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.lock:5726"
+          "Cargo.lock:5903"
         ]
       },
       {
@@ -5262,7 +5191,7 @@
       },
       {
         "source": "deploy/docker/Dockerfile.konflux.cli",
-        "line_range": "95",
+        "line_range": "98",
         "symbols": [
           "deploy/docker/Dockerfile.konflux.cli:ENTRYPOINT"
         ],
@@ -5275,7 +5204,7 @@
       },
       {
         "source": "deploy/docker/Dockerfile.konflux.gateway",
-        "line_range": "83",
+        "line_range": "100",
         "symbols": [
           "deploy/docker/Dockerfile.konflux.gateway:ENTRYPOINT"
         ],
@@ -5288,7 +5217,7 @@
       },
       {
         "source": "deploy/docker/Dockerfile.konflux.gateway",
-        "line_range": "84",
+        "line_range": "101",
         "symbols": [
           "deploy/docker/Dockerfile.konflux.gateway:CMD"
         ],
@@ -5301,7 +5230,7 @@
       },
       {
         "source": "deploy/docker/Dockerfile.konflux.supervisor",
-        "line_range": "107",
+        "line_range": "111",
         "symbols": [
           "deploy/docker/Dockerfile.konflux.supervisor:ENTRYPOINT"
         ],
@@ -5314,7 +5243,7 @@
       },
       {
         "source": "deploy/docker/Dockerfile.supervisor",
-        "line_range": "21",
+        "line_range": "23",
         "symbols": [
           "deploy/docker/Dockerfile.supervisor:ENTRYPOINT"
         ],
@@ -5699,7 +5628,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 783,
+      "value": 802,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

@@ -1,0 +1,20 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/models-perf-benchmark-data",
+  "classification": "configuration",
+  "files_read": [
+    "README.md",
+    "Makefile",
+    "Dockerfile",
+    "Dockerfile.konflux",
+    ".gitlab-ci.yml",
+    "api-client/pyproject.toml",
+    "api-client/run.py",
+    "api-client/src/config.py",
+    "api-client/src/client.py",
+    "api-client/src/pipeline.py",
+    "api-client/src/serializer.py",
+    "api-client/src/writer.py",
+    "api-client/src/postprocess.py"
+  ],
+  "reasoning": "The repository primarily packages model benchmark and validation data for consumption by the model catalog. Its Dockerfiles copy a data payload into a container, and the README describes distributing that catalog data as an image. The included Python api-client is an ingestion and serialization utility that fetches API records into the data payload; it is not a long-running service or an operator/controller. No operator manifests or reconciliation logic are present, so configuration is the closest classification."
+}

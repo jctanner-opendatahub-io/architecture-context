@@ -1,0 +1,12 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/kube-auth-proxy",
+  "classification": "service",
+  "files_read": [
+    "go.mod",
+    "README.md",
+    "main.go",
+    "Dockerfile.redhat",
+    "examples/openshift/service-account/deployment.yaml"
+  ],
+  "reasoning": "This checkout is a deployable Go authentication reverse-proxy service. It has an executable main package, runtime authentication and proxy logic, container build definitions, and Kubernetes/OpenShift Deployment and Service manifests. It is therefore a service rather than a library, configuration-only project, or operator."
+}

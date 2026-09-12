@@ -1,8 +1,8 @@
 {
   "component": "eval-hub",
   "repo": "https://github.com/red-hat-data-services/eval-hub.git",
-  "commit_sha": "592b5f6475fdb942860926e97bb94a049eccaf2c",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "366ed50938a9ac72077751dc06d6ac3778899c34",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 4 registered HTTP endpoints, and 0 gRPC services.",
@@ -85,35 +85,35 @@
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2",
-        "version": "v1.45.1",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/config",
-        "version": "v1.33.1",
+        "version": "v1.33.3",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/credentials",
-        "version": "v1.20.1",
+        "version": "v1.20.3",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager",
-        "version": "v0.4.1",
+        "version": "v0.4.4",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/service/s3",
-        "version": "v1.109.1",
+        "version": "v1.112.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -149,7 +149,7 @@
       },
       {
         "module": "github.com/go-playground/validator/v10",
-        "version": "v10.30.3",
+        "version": "v10.30.4",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -177,7 +177,7 @@
       },
       {
         "module": "github.com/jackc/pgx/v5",
-        "version": "v5.10.0",
+        "version": "v5.11.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -194,6 +194,13 @@
         "version": "v1.24.1",
         "category": "runtime-observability",
         "role": "runtime-observability",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
+        "module": "github.com/prometheus/client_model",
+        "version": "v0.6.3",
+        "category": "",
         "purpose": "",
         "source": "go.mod"
       },
@@ -436,7 +443,7 @@
       },
       {
         "module": "modernc.org/sqlite",
-        "version": "v1.57.0",
+        "version": "v1.58.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -560,39 +567,39 @@
   ],
   "recent_changes": [
     {
-      "version": "592b5f6",
-      "date": "2026-09-04",
+      "version": "366ed50",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "007af5d",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 5e68f09 (#346)"
+      "version": "d3bc5c7",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "fe72cd9",
-      "date": "2026-09-03",
+      "version": "4e711f2",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #175 from eval-hub/main"
+    },
+    {
+      "version": "4048729",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "0fb07c3",
-      "date": "2026-09-03",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#344)"
+      "version": "86f4e2f",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 685ccca (#351)"
     },
     {
-      "version": "a548b69",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "bc37c9a",
+      "date": "2026-09-10",
+      "changes": "fix(runtime): include primary_score in job spec for adapters (#976)"
     },
     {
-      "version": "1d7c15a",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #335 from red-hat-data-services/migrate-runtime-to-pqc-main"
-    },
-    {
-      "version": "d9ccff7",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "a65b7f0",
+      "date": "2026-09-10",
+      "changes": "Add NeMo Guardrails provider.yaml (#966)"
     }
   ],
   "component_refs": [
@@ -737,7 +744,7 @@
   ],
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 14 runtime facts, 1 source components, and 54 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 14 runtime facts, 1 source components, and 55 dependencies; broad repository discovery is not required",
     "controller_templates": "partial: conditional template branches represented as possible resources",
     "go_crds": "not_found",
     "go_module_configs": "not_found",
@@ -1647,7 +1654,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 198,
+      "value": 208,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

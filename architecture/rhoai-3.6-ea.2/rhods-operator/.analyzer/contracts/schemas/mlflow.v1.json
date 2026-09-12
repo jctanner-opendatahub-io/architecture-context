@@ -771,8 +771,131 @@
           "type": "object"
         },
         "artifactsDestination": {
-          "description": "ArtifactsDestination is the server-side destination for MLflow artifacts (models, plots, files).\nThis setting only applies when ServeArtifacts is enabled. When ServeArtifacts is disabled,\nthis field is ignored and clients access artifact storage directly.\nSupported schemes: file://, s3://, gs://, wasbs://, hdfs://, etc.\nExamples:\n  - \"file:///mlflow/artifacts\" (requires Storage to be configured)\n  - \"s3://my-bucket/mlflow/artifacts\" (no Storage needed)\n  - \"gs://my-bucket/mlflow/artifacts\" (no Storage needed)\nIf not specified when ServeArtifacts is enabled, defaults to \"file:///mlflow/artifacts\"\n\nFor cloud storage authentication, use EnvFrom to inject credentials from secrets or configmaps.\nExample for S3:\n  envFrom:\n  - secretRef:\n      name: aws-credentials  # Contains AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY\nExample for GCS:\n  envFrom:\n  - secretRef:\n      name: gcp-credentials  # Contains GOOGLE_APPLICATION_CREDENTIALS path",
+          "description": "ArtifactsDestination is the server-side destination for MLflow artifacts (models, plots, files).\nThis setting applies when ServeArtifacts or ArtifactsServer is enabled. When neither\nserving mode is enabled, this field is ignored and clients access artifact storage directly.\nSupported schemes: file://, s3://, gs://, wasbs://, hdfs://, etc.\nExamples:\n  - \"file:///mlflow/artifacts\" (requires Storage to be configured)\n  - \"s3://my-bucket/mlflow/artifacts\" (no Storage needed)\n  - \"gs://my-bucket/mlflow/artifacts\" (no Storage needed)\nThis field is required when ArtifactsServer is enabled. When only ServeArtifacts is\nenabled and this field is omitted, it defaults to \"file:///mlflow/artifacts\".\nIn split mode, the tracking Deployment does not mount Storage. One file-backed artifact\nreplica may use ReadWriteOnce; multiple replicas require ReadWriteMany as the first access mode.\n\nFor cloud storage authentication, use EnvFrom to inject credentials from secrets or configmaps.\nExample for S3:\n  envFrom:\n  - secretRef:\n      name: aws-credentials  # Contains AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY\nExample for GCS:\n  envFrom:\n  - secretRef:\n      name: gcp-credentials  # Contains GOOGLE_APPLICATION_CREDENTIALS path",
           "type": "string"
+        },
+        "artifactsServer": {
+          "description": "ArtifactsServer configures a dedicated metadata-aware MLflow artifact-serving deployment. When enabled,\nthe tracking server advertises the dedicated server's HTTPRoute as its artifact root and\ndoes not serve artifacts itself. The artifact server connects to the same metadata stores,\nruns with server-side job execution disabled, and inherits the image, environment, workspace,\nsecurity, scheduling, and storage settings from this MLflow spec.",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enabled controls whether the dedicated artifact-serving Deployment, Service, and HTTPRoute\nare created.",
+              "type": "boolean"
+            },
+            "replicas": {
+              "default": 1,
+              "description": "Replicas is the number of artifact-serving server pods to run.",
+              "format": "int32",
+              "minimum": 1,
+              "type": "integer"
+            },
+            "resourceClaims": {
+              "description": "ResourceClaims defines the Dynamic Resource Allocation claims available to artifact pods.\nContainer claim references must be configured separately in Resources.Claims.",
+              "items": {
+                "description": "PodResourceClaim references exactly one ResourceClaim, either directly\nor by naming a ResourceClaimTemplate which is then turned into a ResourceClaim\nfor the pod.\n\nIt adds a name to it that uniquely identifies the ResourceClaim inside the Pod.\nContainers that need access to the ResourceClaim reference it with this name.",
+                "properties": {
+                  "name": {
+                    "description": "Name uniquely identifies this resource claim inside the pod.\nThis must be a DNS_LABEL.",
+                    "type": "string"
+                  },
+                  "resourceClaimName": {
+                    "description": "ResourceClaimName is the name of a ResourceClaim object in the same\nnamespace as this pod.\n\nExactly one of ResourceClaimName and ResourceClaimTemplateName must\nbe set.",
+                    "type": "string"
+                  },
+                  "resourceClaimTemplateName": {
+                    "description": "ResourceClaimTemplateName is the name of a ResourceClaimTemplate\nobject in the same namespace as this pod.\n\nThe template will be used to create a new ResourceClaim, which will\nbe bound to this pod. When this pod is deleted, the ResourceClaim\nwill also be deleted. The pod name and resource name, along with a\ngenerated component, will be used to form a unique name for the\nResourceClaim, which will be recorded in pod.status.resourceClaimStatuses.\n\nThis field is immutable and no changes will be made to the\ncorresponding ResourceClaim by the control plane after creating the\nResourceClaim.\n\nExactly one of ResourceClaimName and ResourceClaimTemplateName must\nbe set.",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              },
+              "type": "array",
+              "x-kubernetes-list-map-keys": [
+                "name"
+              ],
+              "x-kubernetes-list-type": "map"
+            },
+            "resources": {
+              "description": "Resources specifies the compute resources for the artifact-serving server container.\nWhen omitted, the main MLflow server requests and limits are used, but claims are not inherited.",
+              "properties": {
+                "claims": {
+                  "description": "Claims lists the names of resources, defined in spec.resourceClaims,\nthat are used by this container.\n\nThis field depends on the\nDynamicResourceAllocation feature gate.\n\nThis field is immutable. It can only be set for containers.",
+                  "items": {
+                    "description": "ResourceClaim references one entry in PodSpec.ResourceClaims.",
+                    "properties": {
+                      "name": {
+                        "description": "Name must match the name of one entry in pod.spec.resourceClaims of\nthe Pod where this field is used. It makes that resource available\ninside a container.",
+                        "type": "string"
+                      },
+                      "request": {
+                        "description": "Request is the name chosen for a request in the referenced claim.\nIf empty, everything from the claim is made available, otherwise\nonly the result of this request.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "name"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "x-kubernetes-list-map-keys": [
+                    "name"
+                  ],
+                  "x-kubernetes-list-type": "map"
+                },
+                "limits": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "pattern": "^(\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))))?$",
+                    "x-kubernetes-int-or-string": true
+                  },
+                  "description": "Limits describes the maximum amount of compute resources allowed.\nMore info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+                  "type": "object"
+                },
+                "requests": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "integer"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ],
+                    "pattern": "^(\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\\+|-)?(([0-9]+(\\.[0-9]*)?)|(\\.[0-9]+))))?$",
+                    "x-kubernetes-int-or-string": true
+                  },
+                  "description": "Requests describes the minimum amount of compute resources required.\nIf Requests is omitted for a container, it defaults to Limits if that is explicitly specified,\notherwise to an implementation-defined value. Requests cannot exceed Limits.\nMore info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "workers": {
+              "default": 1,
+              "description": "Workers is the number of uvicorn worker processes in each artifact-serving server pod.",
+              "format": "int32",
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "type": "object",
+          "x-kubernetes-validations": [
+            {
+              "message": "each artifactsServer.resourceClaims entry must set exactly one non-empty value: resourceClaimName or resourceClaimTemplateName",
+              "rule": "!has(self.resourceClaims) || self.resourceClaims.all(c, ((has(c.resourceClaimName) \u0026\u0026 size(c.resourceClaimName) \u003e 0) != (has(c.resourceClaimTemplateName) \u0026\u0026 size(c.resourceClaimTemplateName) \u003e 0)))"
+            }
+          ]
         },
         "backendStoreUri": {
           "description": "BackendStoreURI is the URI for the MLflow backend store (metadata).\nInline backendStoreUri values intentionally support only sqlite:// and\npostgresql://.\nExamples:\n  - \"sqlite:////mlflow/mlflow.db\" (requires Storage to be configured)\nOperator-managed migration only supports SQL backend store URIs.\nNote: For URIs containing credentials, prefer using BackendStoreURIFrom for security.\nThis must be set explicitly unless BackendStoreURIFrom is provided.",
@@ -816,7 +939,7 @@
           "type": "object"
         },
         "defaultArtifactRoot": {
-          "description": "DefaultArtifactRoot is the default artifact root path for MLflow runs on the server.\nThis is required when serveArtifacts is false.\nSupported schemes: file://, s3://, gs://, wasbs://, hdfs://, etc.\nExamples:\n  - \"s3://my-bucket/mlflow/artifacts\"\n  - \"gs://my-bucket/mlflow/artifacts\"\n  - \"file:///mlflow/artifacts\"",
+          "description": "DefaultArtifactRoot is the default artifact root path for MLflow runs on the server.\nThis is required when both ServeArtifacts and ArtifactsServer are disabled. When the\ndedicated artifact server is enabled, this field must be omitted because the operator\ngenerates the URL from MLFLOW_URL.\nSupported schemes: file://, s3://, gs://, wasbs://, hdfs://, etc.\nExamples:\n  - \"s3://my-bucket/mlflow/artifacts\"\n  - \"gs://my-bucket/mlflow/artifacts\"\n  - \"file:///mlflow/artifacts\"",
           "type": "string"
         },
         "env": {
@@ -1953,7 +2076,7 @@
         },
         "serveArtifacts": {
           "default": false,
-          "description": "ServeArtifacts determines whether MLflow should serve artifacts.\nWhen enabled, adds the --serve-artifacts flag to the MLflow server and uses ArtifactsDestination\nto configure where artifacts are stored. This allows clients to log and retrieve artifacts\nthrough the MLflow server's REST API instead of directly accessing the artifact storage.\nWhen disabled, ArtifactsDestination is ignored and clients must have direct access to artifact storage.",
+          "description": "ServeArtifacts determines whether MLflow should serve artifacts.\nWhen enabled, adds the --serve-artifacts flag to the MLflow server and uses ArtifactsDestination\nto configure where artifacts are stored. This allows clients to log and retrieve artifacts\nthrough the MLflow server's REST API instead of directly accessing the artifact storage.\nWhen both this field and ArtifactsServer are disabled, ArtifactsDestination is ignored and\nclients must have direct access to artifact storage.",
           "type": "boolean"
         },
         "serviceAccountAnnotations": {
@@ -2131,7 +2254,7 @@
           "type": "object"
         },
         "temporaryStorage": {
-          "description": "TemporaryStorage configures the writable /tmp emptyDir shared by the MLflow pod\ncontainers and related Jobs rendered from the chart.\nThis is especially relevant when serving artifacts from remote storage because\nproxied upload/download flows can use temporary local disk space.",
+          "description": "TemporaryStorage configures the writable /tmp emptyDir used by the MLflow tracking\nand dedicated artifact-server pods and related Jobs rendered from the chart.\nThis is especially relevant when serving artifacts from remote storage because\nproxied upload/download flows can use temporary local disk space.",
           "properties": {
             "sizeLimit": {
               "anyOf": [
@@ -2189,7 +2312,7 @@
               "type": "boolean"
             },
             "location": {
-              "description": "Location is the artifact repository URI where archived span payloads\nare stored. Supports s3:// and file:// (file:// requires Storage).\nRequired when enabled is true.",
+              "description": "Location is the artifact repository URI where archived span payloads\nare stored. Supports s3:// and file://. File-based storage requires\nStorage, with ReadWriteMany as its first access mode when enabled.\nRequired when enabled is true.",
               "maxLength": 2048,
               "type": "string"
             },
@@ -2343,12 +2466,40 @@
       "type": "object",
       "x-kubernetes-validations": [
         {
-          "message": "defaultArtifactRoot must be set when serveArtifacts is not true",
-          "rule": "has(self.defaultArtifactRoot) || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts)"
+          "message": "defaultArtifactRoot must be set when neither serveArtifacts nor artifactsServer is enabled",
+          "rule": "has(self.defaultArtifactRoot) || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts) || (has(self.artifactsServer) \u0026\u0026 self.artifactsServer.enabled)"
         },
         {
-          "message": "serveArtifacts must be enabled when defaultArtifactRoot uses file-based storage (file:// prefix)",
-          "rule": "!has(self.defaultArtifactRoot) || !self.defaultArtifactRoot.startsWith('file://') || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts)"
+          "message": "serveArtifacts or artifactsServer must be enabled when defaultArtifactRoot uses file-based storage (file:// prefix)",
+          "rule": "!has(self.defaultArtifactRoot) || !self.defaultArtifactRoot.startsWith('file://') || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts) || (has(self.artifactsServer) \u0026\u0026 self.artifactsServer.enabled)"
+        },
+        {
+          "message": "serveArtifacts and artifactsServer.enabled are mutually exclusive",
+          "rule": "!(has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts \u0026\u0026 has(self.artifactsServer) \u0026\u0026 self.artifactsServer.enabled)"
+        },
+        {
+          "message": "defaultArtifactRoot and artifactsServer.enabled are mutually exclusive",
+          "rule": "!has(self.artifactsServer) || !self.artifactsServer.enabled || !has(self.defaultArtifactRoot)"
+        },
+        {
+          "message": "artifactsDestination must be set when artifactsServer is enabled",
+          "rule": "!has(self.artifactsServer) || !self.artifactsServer.enabled || (has(self.artifactsDestination) \u0026\u0026 size(self.artifactsDestination) \u003e 0)"
+        },
+        {
+          "message": "multiple artifact server replicas with a file-based artifactsDestination require storage with ReadWriteMany as its first access mode",
+          "rule": "!has(self.artifactsServer) || !self.artifactsServer.enabled || !has(self.artifactsDestination) || !self.artifactsDestination.startsWith('file://') || !has(self.artifactsServer.replicas) || self.artifactsServer.replicas \u003c= 1 || (has(self.storage) \u0026\u0026 size(self.storage.accessModes) \u003e 0 \u0026\u0026 self.storage.accessModes[0] == 'ReadWriteMany')"
+        },
+        {
+          "message": "artifactsServer cannot be enabled with an inline SQLite backendStoreUri",
+          "rule": "!has(self.artifactsServer) || !self.artifactsServer.enabled || !has(self.backendStoreUri) || (!self.backendStoreUri.startsWith('sqlite://') \u0026\u0026 !self.backendStoreUri.startsWith('sqlite+'))"
+        },
+        {
+          "message": "artifactsServer cannot be enabled with an inline SQLite registryStoreUri",
+          "rule": "!has(self.artifactsServer) || !self.artifactsServer.enabled || !has(self.registryStoreUri) || (!self.registryStoreUri.startsWith('sqlite://') \u0026\u0026 !self.registryStoreUri.startsWith('sqlite+'))"
+        },
+        {
+          "message": "artifactsServer cannot be enabled with an inline SQLite readReplicaBackendStoreUri",
+          "rule": "!has(self.artifactsServer) || !self.artifactsServer.enabled || !has(self.readReplicaBackendStoreUri) || (!self.readReplicaBackendStoreUri.startsWith('sqlite://') \u0026\u0026 !self.readReplicaBackendStoreUri.startsWith('sqlite+'))"
         },
         {
           "message": "backendStoreUri or backendStoreUriFrom must be set",
@@ -2403,8 +2554,8 @@
           "rule": "!has(self.artifactsDestination) || !self.artifactsDestination.startsWith('file://') || has(self.storage)"
         },
         {
-          "message": "serveArtifacts must be enabled when artifactsDestination uses file-based storage (file:// prefix)",
-          "rule": "!has(self.artifactsDestination) || !self.artifactsDestination.startsWith('file://') || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts)"
+          "message": "serveArtifacts or artifactsServer must be enabled when artifactsDestination uses file-based storage (file:// prefix)",
+          "rule": "!has(self.artifactsDestination) || !self.artifactsDestination.startsWith('file://') || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts) || (has(self.artifactsServer) \u0026\u0026 self.artifactsServer.enabled)"
         },
         {
           "message": "setting the MLFLOW_SERVER_DISABLE_SECURITY_MIDDLEWARE environment variable is not allowed",
@@ -2427,8 +2578,8 @@
           "rule": "!has(self.resourceClaims) || self.resourceClaims.all(c, ((has(c.resourceClaimName) \u0026\u0026 size(c.resourceClaimName) \u003e 0) != (has(c.resourceClaimTemplateName) \u0026\u0026 size(c.resourceClaimTemplateName) \u003e 0)))"
         },
         {
-          "message": "storage must be configured when traceArchival.location uses file-based storage (file:// prefix)",
-          "rule": "!has(self.traceArchival) || !has(self.traceArchival.location) || !self.traceArchival.location.startsWith('file://') || has(self.storage)"
+          "message": "enabled file-based traceArchival.location requires storage with ReadWriteMany as its first access mode",
+          "rule": "!has(self.traceArchival) || !self.traceArchival.enabled || !has(self.traceArchival.location) || !self.traceArchival.location.startsWith('file://') || (has(self.storage) \u0026\u0026 size(self.storage.accessModes) \u003e 0 \u0026\u0026 self.storage.accessModes[0] == 'ReadWriteMany')"
         },
         {
           "message": "traceArchival.schedule is required when traceArchival.enabled is true",
@@ -2441,6 +2592,18 @@
         {
           "message": "traceArchival.retention is required when traceArchival.enabled is true",
           "rule": "!has(self.traceArchival) || !has(self.traceArchival.enabled) || self.traceArchival.enabled == false || (has(self.traceArchival.retention) \u0026\u0026 size(self.traceArchival.retention) \u003e 0)"
+        },
+        {
+          "message": "multiple tracking replicas that use persistent storage require ReadWriteMany as its first access mode",
+          "rule": "!has(self.replicas) || self.replicas \u003c= 1 || !has(self.storage) || (has(self.artifactsServer) \u0026\u0026 self.artifactsServer.enabled) || !((has(self.backendStoreUri) \u0026\u0026 (self.backendStoreUri.startsWith('sqlite://') || self.backendStoreUri.startsWith('sqlite+'))) || has(self.backendStoreUriFrom) || (has(self.registryStoreUri) \u0026\u0026 (self.registryStoreUri.startsWith('sqlite://') || self.registryStoreUri.startsWith('sqlite+'))) || has(self.registryStoreUriFrom) || (has(self.readReplicaBackendStoreUri) \u0026\u0026 (self.readReplicaBackendStoreUri.startsWith('sqlite://') || self.readReplicaBackendStoreUri.startsWith('sqlite+'))) || has(self.readReplicaBackendStoreUriFrom) || (has(self.serveArtifacts) \u0026\u0026 self.serveArtifacts \u0026\u0026 has(self.artifactsDestination) \u0026\u0026 self.artifactsDestination.startsWith('file://'))) || (size(self.storage.accessModes) \u003e 0 \u0026\u0026 self.storage.accessModes[0] == 'ReadWriteMany')"
+        },
+        {
+          "message": "trace archival with persistent metadata storage requires ReadWriteMany as its first access mode",
+          "rule": "!has(self.traceArchival) || !self.traceArchival.enabled || !has(self.storage) || !((has(self.backendStoreUri) \u0026\u0026 (self.backendStoreUri.startsWith('sqlite://') || self.backendStoreUri.startsWith('sqlite+'))) || has(self.backendStoreUriFrom) || (has(self.registryStoreUri) \u0026\u0026 (self.registryStoreUri.startsWith('sqlite://') || self.registryStoreUri.startsWith('sqlite+'))) || has(self.registryStoreUriFrom)) || (size(self.storage.accessModes) \u003e 0 \u0026\u0026 self.storage.accessModes[0] == 'ReadWriteMany')"
+        },
+        {
+          "message": "storage and its accessModes are immutable once configured; an omitted legacy access mode may only be set to ReadWriteOnce",
+          "rule": "!has(oldSelf.storage) || (has(self.storage) \u0026\u0026 ((!has(oldSelf.storage.accessModes) \u0026\u0026 (!has(self.storage.accessModes) || self.storage.accessModes == ['ReadWriteOnce'])) || (has(oldSelf.storage.accessModes) \u0026\u0026 has(self.storage.accessModes) \u0026\u0026 self.storage.accessModes == oldSelf.storage.accessModes)))"
         }
       ]
     },
@@ -2457,6 +2620,11 @@
             }
           },
           "type": "object"
+        },
+        "artifactsUrl": {
+          "description": "artifactsUrl is the externally reachable API root for the dedicated artifacts server.\nIt is set only when dedicated artifact serving is enabled.",
+          "maxLength": 2048,
+          "type": "string"
         },
         "conditions": {
           "description": "conditions represent the current state of the MLflow resource.\nEach condition has a unique type and reflects the status of a specific aspect of the resource.\n\nStandard condition types include:\n- \"Available\": the resource is fully functional\n- \"Progressing\": the resource is being created or updated\n- \"Degraded\": the resource failed to reach or maintain its desired state\n- \"Migration\": the operator-managed migration state for the current observed generation\n\nThe status of each condition is one of True, False, or Unknown.",

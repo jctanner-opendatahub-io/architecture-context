@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/odh-gitops",
+  "classification": "configuration",
+  "files_read": [
+    "README.md",
+    "Makefile",
+    "kustomization.yaml",
+    "CLASSIFICATION.md",
+    "charts/rhai-on-openshift-chart/Chart.yaml",
+    "components/operators/kueue-operator/kustomization.yaml"
+  ],
+  "reasoning": "This is a GitOps infrastructure-as-code repository for deploying and managing the OpenDataHub/RHOAI stack and its dependencies. The root Kustomization composes dependency and configuration manifests, while the repository contains Kubernetes YAML, Kustomize components, Helm charts, and deployment scripts. It does not contain application service code, a reusable library, or an operator implementation; its primary output is declarative platform configuration."
+}

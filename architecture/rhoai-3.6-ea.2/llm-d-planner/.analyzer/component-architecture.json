@@ -2,7 +2,7 @@
   "component": "llm-d-planner",
   "repo": "https://github.com/llm-d-incubation/llm-d-planner.git",
   "commit_sha": "89edc1007c4edf2054c59c776ad6b438332ed02c",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "extracted_at": "2026-09-12T16:39:57Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 3 workloads, 4 services, 1 RBAC roles, 2 ingress routes, 0 controller watches, 37 registered HTTP endpoints, and 0 gRPC services.",

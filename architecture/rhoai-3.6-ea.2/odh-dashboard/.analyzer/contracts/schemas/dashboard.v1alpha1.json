@@ -53,7 +53,7 @@
           "type": "object"
         },
         "maasConsumerPortal": {
-          "description": "MaasConsumerPortal configures the MaaS Consumer Portal.",
+          "description": "MaaSConsumerPortal configures the MaaS Consumer Portal.",
           "properties": {
             "managementState": {
               "default": "Removed",
@@ -153,23 +153,28 @@
           "items": {
             "description": "Condition represents an observation of a module's state at a point in time.\nModule controllers set conditions to communicate health signals to the\norchestrator and to human operators.",
             "properties": {
+              "lastHeartbeatTime": {
+                "description": "Deprecated: LastHeartbeatTime is present only for backward\ncompatibility with existing CRDs. New code should not set this field.",
+                "format": "date-time",
+                "type": "string"
+              },
               "lastTransitionTime": {
-                "description": "LastTransitionTime is the last time the condition transitioned from one\nstatus to another.",
+                "description": "lastTransitionTime is the last time the condition transitioned from\none status to another.",
                 "format": "date-time",
                 "type": "string"
               },
               "message": {
-                "description": "Message is a human-readable description providing details about the\ncondition's last transition.",
+                "description": "message is a human-readable message indicating details about the\ntransition.",
                 "type": "string"
               },
               "observedGeneration": {
-                "description": "ObservedGeneration is the .metadata.generation of the resource that\nthe condition was set based upon. If this does not match the resource's\ncurrent generation, the condition is likely stale.",
+                "description": "observedGeneration represents the .metadata.generation that the\ncondition was set based upon. If this does not match the resource's\ncurrent generation, the condition is likely stale.",
                 "format": "int64",
                 "minimum": 0,
                 "type": "integer"
               },
               "reason": {
-                "description": "Reason is a programmatic, one-word CamelCase identifier for the\ncondition's last transition, suitable for machine consumption.",
+                "description": "reason contains a programmatic identifier indicating the reason for\nthe condition's last transition. The value should be a CamelCase\nstring.",
                 "type": "string"
               },
               "severity": {
@@ -177,17 +182,22 @@
                 "type": "string"
               },
               "status": {
-                "description": "Status is the status of the condition (True, False, Unknown).",
+                "description": "status of the condition, one of True, False, Unknown.",
+                "enum": [
+                  "True",
+                  "False",
+                  "Unknown"
+                ],
                 "type": "string"
               },
               "type": {
-                "description": "Type is the condition type, e.g. ConditionTypeReady, ConditionTypeDegraded.",
-                "minLength": 1,
+                "description": "type of condition in CamelCase or in foo.example.com/CamelCase.",
+                "maxLength": 316,
+                "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$",
                 "type": "string"
               }
             },
             "required": [
-              "lastTransitionTime",
               "status",
               "type"
             ],
@@ -209,6 +219,10 @@
             }
           },
           "type": "object"
+        },
+        "maasConsumerPortalUrl": {
+          "description": "MaaSConsumerPortalURL is the externally-reachable MaaS Consumer Portal URL (last known good).\nIt is cleared when the portal operand is removed.",
+          "type": "string"
         },
         "moduleStatuses": {
           "additionalProperties": {

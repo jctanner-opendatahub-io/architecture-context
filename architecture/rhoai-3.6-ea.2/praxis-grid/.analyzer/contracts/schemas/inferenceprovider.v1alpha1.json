@@ -91,6 +91,14 @@
           "description": "Backend deployment category.",
           "type": "string"
         },
+        "capacityWeight": {
+          "description": "Relative capacity used by an opt-in placement policy.",
+          "format": "uint32",
+          "maximum": 1000,
+          "minimum": 1,
+          "nullable": true,
+          "type": "integer"
+        },
         "cost": {
           "description": "Cost information.",
           "nullable": true,
@@ -112,6 +120,12 @@
         },
         "endpoint": {
           "description": "HTTP endpoint URL.",
+          "type": "string"
+        },
+        "gatewayRef": {
+          "description": "Stable provider-gateway identity used by administrative operations.\n\nProviders with the same value are drained together by the gateway-wide\noperation. It is an explicit control-plane relationship; the operator\nnever infers it from endpoint URLs.",
+          "minLength": 1,
+          "nullable": true,
           "type": "string"
         },
         "gridNetworkRef": {
@@ -426,6 +440,18 @@
               "default": {},
               "description": "Label key-value pairs that must match.",
               "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "trafficPolicy": {
+          "description": "Optional administrative traffic policy.",
+          "nullable": true,
+          "properties": {
+            "drain": {
+              "default": false,
+              "description": "Stop new sessions while preserving existing affinity sessions.",
+              "type": "boolean"
             }
           },
           "type": "object"

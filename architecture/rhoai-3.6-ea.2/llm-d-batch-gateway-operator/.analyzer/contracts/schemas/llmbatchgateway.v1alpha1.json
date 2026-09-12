@@ -623,10 +623,20 @@
                       "format": "int32",
                       "type": "integer"
                     },
+                    "requestQueueName": {
+                      "description": "RequestQueueName is the Redis request queue used in async dispatch mode.\nSet together with resultQueueName to override the queue derived from inferencePoolName.",
+                      "maxLength": 253,
+                      "type": "string"
+                    },
                     "requestTimeout": {
                       "description": "RequestTimeout is the maximum time to wait for a single inference response (e.g. \"5m\").",
                       "maxLength": 32,
                       "pattern": "^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$",
+                      "type": "string"
+                    },
+                    "resultQueueName": {
+                      "description": "ResultQueueName is the Redis result queue base used in async dispatch mode.\nSet together with requestQueueName.",
+                      "maxLength": 253,
                       "type": "string"
                     },
                     "tlsCACertFile": {
@@ -1024,11 +1034,9 @@
                   "description": "EnablePprof enables the Go pprof profiling HTTP endpoints.",
                   "type": "boolean"
                 },
-                "heartbeatInterval": {
-                  "default": "5m",
-                  "description": "HeartbeatInterval is how often the processor refreshes in-flight job entries\nto signal liveness. Must be shorter than gc.config.reconciler.interval to\nprevent active jobs from being misidentified as orphans.",
-                  "maxLength": 32,
-                  "pattern": "^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$",
+                "inferenceObjective": {
+                  "description": "InferenceObjective is applied to globalInferenceGateway and to every\nmodelGateways entry that does not set its own inferenceObjective.\n\nDeprecated: set inferenceObjective on the gateway instead.",
+                  "maxLength": 253,
                   "type": "string"
                 },
                 "logging": {
@@ -1051,6 +1059,14 @@
                   "description": "ProgressTTLSeconds is how long in-progress job state is retained before being considered stale.",
                   "format": "int64",
                   "type": "integer"
+                },
+                "routeKeyMethod": {
+                  "description": "RouteKeyMethod controls how modelGateways lookup keys are built.\nEmpty uses the model ID. \"tenant\" uses \"\u003ctenantID\u003e/\u003cmodelID\u003e\".",
+                  "enum": [
+                    "",
+                    "tenant"
+                  ],
+                  "type": "string"
                 },
                 "sendFairnessHeader": {
                   "description": "SendFairnessHeader controls whether the processor sends a fairness header\nto the inference gateway for fair scheduling across tenants.",
@@ -1098,10 +1114,20 @@
                   "format": "int32",
                   "type": "integer"
                 },
+                "requestQueueName": {
+                  "description": "RequestQueueName is the Redis request queue used in async dispatch mode.\nSet together with resultQueueName to override the queue derived from inferencePoolName.",
+                  "maxLength": 253,
+                  "type": "string"
+                },
                 "requestTimeout": {
                   "description": "RequestTimeout is the maximum time to wait for a single inference response (e.g. \"5m\").",
                   "maxLength": 32,
                   "pattern": "^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$",
+                  "type": "string"
+                },
+                "resultQueueName": {
+                  "description": "ResultQueueName is the Redis result queue base used in async dispatch mode.\nSet together with requestQueueName.",
+                  "maxLength": 253,
                   "type": "string"
                 },
                 "tlsCACertFile": {
@@ -1178,10 +1204,20 @@
                     "format": "int32",
                     "type": "integer"
                   },
+                  "requestQueueName": {
+                    "description": "RequestQueueName is the Redis request queue used in async dispatch mode.\nSet together with resultQueueName to override the queue derived from inferencePoolName.",
+                    "maxLength": 253,
+                    "type": "string"
+                  },
                   "requestTimeout": {
                     "description": "RequestTimeout is the maximum time to wait for a single inference response (e.g. \"5m\").",
                     "maxLength": 32,
                     "pattern": "^([0-9]+(\\.[0-9]+)?(ms|s|m|h))+$",
+                    "type": "string"
+                  },
+                  "resultQueueName": {
+                    "description": "ResultQueueName is the Redis result queue base used in async dispatch mode.\nSet together with requestQueueName.",
+                    "maxLength": 253,
                     "type": "string"
                   },
                   "tlsCACertFile": {
@@ -1422,10 +1458,6 @@
         {
           "message": "spec.secretRef.name is required",
           "rule": "size(self.secretRef.name) \u003e 0"
-        },
-        {
-          "message": "processor.config.heartbeatInterval must be shorter than gc.config.reconciler.interval",
-          "rule": "!has(self.processor.config) || !has(self.processor.config.heartbeatInterval) || !has(self.gc.config) || !has(self.gc.config.reconciler) || !has(self.gc.config.reconciler.interval) || duration(self.processor.config.heartbeatInterval) \u003c duration(self.gc.config.reconciler.interval)"
         }
       ]
     },
@@ -1496,7 +1528,7 @@
               "type": "object"
             },
             "processor": {
-              "description": "Processor reports the replica status of the processor Deployment.",
+              "description": "Processor reports the replica status of the processor StatefulSet.",
               "properties": {
                 "readyReplicas": {
                   "description": "ReadyReplicas is the number of pods that have passed their readiness checks.",

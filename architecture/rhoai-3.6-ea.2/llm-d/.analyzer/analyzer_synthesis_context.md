@@ -42,12 +42,6 @@ No bounded behavioral evidence was extracted.
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
   **Candidate:** `helpers/interactive-pod/build/Dockerfile`:84 (helpers/interactive-pod/build/Dockerfile:ENTRYPOINT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-### services
-
-- **Question:** Which container listener, probe, and service mapping expose this workload?
-  **Expected signal:** container port, probe, service account, or lifecycle configuration
-  **Candidate:** `guides/recipes/modelserver/base/single-host/default/decode-deployment.yaml`:1 (decode, sa)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 
 ## Section Evidence
 
@@ -56,7 +50,7 @@ No bounded behavioral evidence was extracted.
 
 ### deployment_topology
 
-- **observed**: Deployment workload decode uses service account sa and 1 container(s) [source: guides/recipes/modelserver/base/single-host/default/decode-deployment.yaml:1]
+- **unresolved**: No complete deterministic evidence family was extracted; targeted source/configuration review may be required [source: coverage:deployment_topology]
 ### disconnected_deployment
 
 - **unresolved**: No complete deterministic evidence family was extracted; targeted source/configuration review may be required [source: coverage:disconnected_deployment]

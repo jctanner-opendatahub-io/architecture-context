@@ -1,8 +1,8 @@
 {
   "component": "llm-d-batch-gateway",
   "repo": "https://github.com/llm-d/llm-d-batch-gateway.git",
-  "commit_sha": "d4a215baa3716c0d6996d7018a76a70a8f2d5513",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "03e09353abe817db57edaa3b72cbb4c1bfe8905e",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 16 registered HTTP endpoints, and 0 gRPC services.",
@@ -29,7 +29,7 @@
       "name": "Metrics Server",
       "type": "HTTP Service",
       "purpose": "Standalone Prometheus metrics service backed by a runtime HTTP listener",
-      "source": "cmd/batch-gc/main.go:196"
+      "source": "cmd/batch-gc/main.go:204"
     }
   ],
   "crds": [],
@@ -210,7 +210,7 @@
       "description": "Registered Go HTTP route",
       "owner": "cmd/batch-gc",
       "transport": "HTTP/1.1",
-      "source": "cmd/batch-gc/main.go:164"
+      "source": "cmd/batch-gc/main.go:172"
     },
     {
       "method": "Unknown",
@@ -230,7 +230,7 @@
       "description": "Registered Go HTTP route",
       "owner": "cmd/batch-gc",
       "transport": "HTTP/1.1",
-      "source": "cmd/batch-gc/main.go:163"
+      "source": "cmd/batch-gc/main.go:171"
     },
     {
       "method": "Unknown",
@@ -248,7 +248,7 @@
     "go_modules": [
       {
         "module": "github.com/alicebob/miniredis/v2",
-        "version": "v2.38.0",
+        "version": "v2.39.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -262,28 +262,28 @@
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/config",
-        "version": "v1.33.1",
+        "version": "v1.33.2",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/credentials",
-        "version": "v1.20.1",
+        "version": "v1.20.2",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/feature/s3/manager",
-        "version": "v1.23.1",
+        "version": "v1.23.2",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/aws/aws-sdk-go-v2/service/s3",
-        "version": "v1.109.1",
+        "version": "v1.110.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -362,7 +362,7 @@
       },
       {
         "module": "github.com/prometheus/client_model",
-        "version": "v0.6.2",
+        "version": "v0.6.3",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -411,7 +411,7 @@
       },
       {
         "module": "go.opentelemetry.io/otel/exporters/stdout/stdouttrace",
-        "version": "v1.45.0",
+        "version": "v1.46.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -445,8 +445,39 @@
         "source": "go.mod"
       },
       {
+        "module": "k8s.io/api",
+        "version": "v0.36.2",
+        "category": "runtime-integration",
+        "role": "runtime-integration",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
+        "module": "k8s.io/apimachinery",
+        "version": "v0.36.2",
+        "category": "runtime-integration",
+        "role": "runtime-integration",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
+        "module": "k8s.io/client-go",
+        "version": "v0.36.2",
+        "category": "runtime-integration",
+        "role": "runtime-integration",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
         "module": "k8s.io/klog/v2",
         "version": "v2.140.0",
+        "category": "",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
+        "module": "k8s.io/utils",
+        "version": "v0.0.0-20260210185600-b8788abfbbc2",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -482,7 +513,19 @@
   "webhooks": null,
   "external_webhooks": null,
   "ingress_routing": [],
-  "external_connections": null,
+  "external_connections": [
+    {
+      "type": "REST + WebSocket",
+      "service": "Kubernetes API",
+      "target": "Kubernetes API",
+      "protocol": "HTTPS/WSS",
+      "encryption": "TLS 1.2+",
+      "auth": "ServiceAccount",
+      "port": 6443,
+      "source": "go.mod",
+      "function": "Kubernetes resource operations"
+    }
+  ],
   "authentication": [
     {
       "endpoint": "API server routes",
@@ -491,6 +534,14 @@
       "enforcement_point": "N/A",
       "policy": "Closed route inventory has no authentication or authorization enforcement; every local middleware wrapper was inspected",
       "source": "internal/apiserver/server/server.go:99"
+    },
+    {
+      "endpoint": "Kubernetes API",
+      "methods": "REST",
+      "mechanism": "ServiceAccount token (in-cluster)",
+      "enforcement_point": "kube-apiserver",
+      "policy": "In-cluster configuration provides automatic ServiceAccount token authentication",
+      "source": "internal/gc/podwatcher/watcher.go:57"
     },
     {
       "endpoint": "Observability endpoints (/health, /ready, /metrics)",
@@ -555,39 +606,39 @@
   ],
   "recent_changes": [
     {
-      "version": "d4a215b",
-      "date": "2026-09-02",
-      "changes": "test(e2e): resolve the objective the way the processor does (#668)"
+      "version": "03e0935",
+      "date": "2026-09-11",
+      "changes": "test(e2e): cover async hard-kill recovery (#678)"
     },
     {
-      "version": "b6bf5a0",
-      "date": "2026-09-02",
-      "changes": "fix(otel): support OTEL_TRACES_EXPORTER=none|otlp|console in InitTracer (#664)"
+      "version": "c692d1f",
+      "date": "2026-09-11",
+      "changes": "fix: flaky unit test should use TmpDir() instead of os.RemoveAll() (#684)"
     },
     {
-      "version": "18e0736",
-      "date": "2026-08-31",
-      "changes": "deps(go): bump the go-dependencies group with 10 updates (#663)"
+      "version": "eeac694",
+      "date": "2026-09-09",
+      "changes": "fix(processor): reserve unique model plan filenames (#679)"
     },
     {
-      "version": "229674c",
-      "date": "2026-08-26",
-      "changes": "test(e2e): run inference on vllm-vcr, shed batch traffic via the EPP (#661)"
+      "version": "d9889a9",
+      "date": "2026-09-09",
+      "changes": "fix(benchmarks): correct pluginsConfigFile selection and InferenceObjective API groups (#669)"
     },
     {
-      "version": "7569190",
-      "date": "2026-08-26",
-      "changes": "fix(processor): isolate async result queues by replica (#662)"
+      "version": "61518be",
+      "date": "2026-09-09",
+      "changes": "feat: replace Redis queue with Postgres-native atomic job ownership (#582)"
     },
     {
-      "version": "18e19ff",
-      "date": "2026-08-24",
-      "changes": "deps(docker): bump projectquay/golang from 1.26 to 1.27 in /docker (#659)"
+      "version": "402744b",
+      "date": "2026-09-07",
+      "changes": "deps(go): bump the go-dependencies group with 7 updates (#675)"
     },
     {
-      "version": "6333d4d",
-      "date": "2026-08-24",
-      "changes": "deps(go): bump the go-dependencies group with 5 updates (#660)"
+      "version": "5d58123",
+      "date": "2026-09-04",
+      "changes": "test(e2e): cover composed batch dispatch gate (#666)"
     }
   ],
   "component_refs": null,
@@ -604,7 +655,7 @@
       "type": "Go executable",
       "runtime": "Go",
       "command": "cmd/batch-gc",
-      "source": "cmd/batch-gc/main.go:49"
+      "source": "cmd/batch-gc/main.go:50"
     },
     {
       "name": "batch-processor",
@@ -653,6 +704,12 @@
   ],
   "dockerfiles": null,
   "runtime_clients": [
+    {
+      "target": "Kubernetes API",
+      "client": "client-go typed clientset",
+      "configuration": "runtime Kubernetes configuration",
+      "source": "internal/gc/podwatcher/watcher.go:63"
+    },
     {
       "target": "OpenTelemetry Collector",
       "client": "OTLP/gRPC trace exporter",
@@ -705,7 +762,7 @@
       "surface": "metrics",
       "protocol": "HTTP",
       "lifecycle": "Serve",
-      "source": "cmd/batch-gc/main.go:196"
+      "source": "cmd/batch-gc/main.go:204"
     }
   ],
   "behavioral_evidence": [],
@@ -718,7 +775,7 @@
     }
   ],
   "data_coverage": {
-    "agent_baseline": "sufficient: 24 runtime facts, 4 source components, and 32 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 26 runtime facts, 4 source components, and 36 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "not_found",
     "go_module_configs": "not_found",
@@ -748,7 +805,7 @@
     },
     "authentication": {
       "status": "partial",
-      "fact_count": 3,
+      "fact_count": 4,
       "discovery_contract": "authentication/v1",
       "completed_checks": [
         "normalized-authentication-facts",
@@ -813,16 +870,16 @@
       "discovery_contract": "integration-points/v1",
       "completed_checks": [
         "normalized-integration-point-facts",
-        "outbound-runtime-client-accounting",
-        "external-connection-accounting",
         "supported-language-surface-inventory"
       ],
       "limitations": [
+        "1 outbound runtime client constructions are not accounted for by integration point facts",
+        "1 external connections are not accounted for by integration point facts",
         "kustomize resolution is partial: image transforms not resolved"
       ],
       "evidence": [
-        "summary:6 outbound runtime clients accounted for by integration point facts",
-        "summary:no analyzer-discovered external connections"
+        "internal/gc/podwatcher/watcher.go:63 (unaccounted runtime client: Kubernetes API)",
+        "go.mod (unaccounted external connection: Kubernetes API)"
       ]
     },
     "internal_dependencies": {
@@ -876,8 +933,8 @@
       "status": "observed",
       "finding": "16 http_endpoints facts extracted",
       "sources": [
-        "cmd/batch-gc/main.go:163",
-        "cmd/batch-gc/main.go:164",
+        "cmd/batch-gc/main.go:171",
+        "cmd/batch-gc/main.go:172",
         "cmd/batch-processor/main.go:196",
         "cmd/batch-processor/main.go:197",
         "cmd/batch-processor/main.go:202",
@@ -916,6 +973,12 @@
         "claim": "API server routes methods=POST, GET, DELETE mechanism=None enforcement=N/A policy=Closed route inventory has no authentication or authorization enforcement; every local middleware wrapper was inspected",
         "sources": [
           "internal/apiserver/server/server.go:99"
+        ]
+      },
+      {
+        "claim": "Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=In-cluster configuration provides automatic ServiceAccount token authentication",
+        "sources": [
+          "internal/gc/podwatcher/watcher.go:57"
         ]
       },
       {
@@ -995,7 +1058,7 @@
       {
         "claim": "Unknown /health on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-gc",
         "sources": [
-          "cmd/batch-gc/main.go:164"
+          "cmd/batch-gc/main.go:172"
         ]
       },
       {
@@ -1007,7 +1070,7 @@
       {
         "claim": "Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-gc",
         "sources": [
-          "cmd/batch-gc/main.go:163"
+          "cmd/batch-gc/main.go:171"
         ]
       },
       {
@@ -1180,7 +1243,7 @@
         "claim": "HTTP Unknown /health is owned by cmd/batch-gc",
         "status": "observed",
         "sources": [
-          "cmd/batch-gc/main.go:164"
+          "cmd/batch-gc/main.go:172"
         ]
       },
       {
@@ -1194,7 +1257,7 @@
         "claim": "HTTP Unknown /metrics is owned by cmd/batch-gc",
         "status": "observed",
         "sources": [
-          "cmd/batch-gc/main.go:163"
+          "cmd/batch-gc/main.go:171"
         ]
       },
       {
@@ -1225,6 +1288,13 @@
         "status": "observed",
         "sources": [
           "internal/apiserver/server/server.go:99"
+        ]
+      },
+      {
+        "claim": "REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=In-cluster configuration provides automatic ServiceAccount token authentication",
+        "status": "observed",
+        "sources": [
+          "internal/gc/podwatcher/watcher.go:57"
         ]
       },
       {
@@ -1278,6 +1348,20 @@
         "limitations": [
           "candidate location only; source inspection is required to establish the relationship"
         ]
+      },
+      {
+        "source": "internal/gc/podwatcher/watcher.go",
+        "line_range": "57",
+        "symbols": [
+          "Kubernetes API",
+          "ServiceAccount token (in-cluster)"
+        ],
+        "question": "Where is authentication enforced for this surface, and is it conditional?",
+        "expected_signal": "middleware, filter, policy, or enforcement branch",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
       }
     ],
     "configuration_lifecycle": [
@@ -1296,7 +1380,7 @@
       },
       {
         "source": "cmd/batch-gc/main.go",
-        "line_range": "49",
+        "line_range": "50",
         "symbols": [
           "batch-gc"
         ],
@@ -1362,6 +1446,19 @@
     ],
     "egress": [
       {
+        "source": "go.mod",
+        "symbols": [
+          "Kubernetes API",
+          "Kubernetes resource operations"
+        ],
+        "question": "Where is this external connection made and how are TLS/authentication configured?",
+        "expected_signal": "request/client construction, endpoint, TLS, or credential use",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
         "source": "internal/database/postgresql/db_postgresql.go",
         "line_range": "116",
         "symbols": [
@@ -1381,6 +1478,20 @@
         "symbols": [
           "AWS SDK S3 client",
           "S3-compatible storage"
+        ],
+        "question": "What target, credentials, TLS settings, and failure behavior does this client use?",
+        "expected_signal": "runtime client construction and target configuration",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "internal/gc/podwatcher/watcher.go",
+        "line_range": "63",
+        "symbols": [
+          "Kubernetes API",
+          "client-go typed clientset"
         ],
         "question": "What target, credentials, TLS settings, and failure behavior does this client use?",
         "expected_signal": "runtime client construction and target configuration",
@@ -1751,7 +1862,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 151,
+      "value": 154,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

@@ -1,46 +1,14 @@
 {
   "component": "llm-d",
   "repo": "https://github.com/llm-d/llm-d.git",
-  "commit_sha": "080c14d957755da4cc363745638619fc748558f1",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "f97c2c5bc9cb8c094a5f1e4df97ae023f824f35b",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
+  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
   "crds": [],
   "services": null,
-  "deployments": [
-    {
-      "name": "decode",
-      "kind": "Deployment",
-      "source": "guides/recipes/modelserver/base/single-host/default/decode-deployment.yaml:1",
-      "service_account": "sa",
-      "containers": [
-        {
-          "name": "modelserver",
-          "image": "REPLACE_MODEL_SERVER_IMAGE",
-          "ports": [
-            {
-              "name": "modelserver",
-              "containerPort": 8000,
-              "protocol": "TCP"
-            }
-          ],
-          "env_from_secrets": null,
-          "env_from_configmaps": null,
-          "liveness_probe": {
-            "type": "httpGet",
-            "path": "/health",
-            "port": "modelserver"
-          },
-          "readiness_probe": {
-            "type": "httpGet",
-            "path": "/v1/models",
-            "port": "modelserver"
-          }
-        }
-      ]
-    }
-  ],
+  "deployments": null,
   "rbac": {
     "cluster_roles": null,
     "roles": null,
@@ -61,39 +29,39 @@
   "external_connections": null,
   "recent_changes": [
     {
-      "version": "080c14d9",
-      "date": "2026-09-03",
-      "changes": "docs: describe flow control for optimized baseline (#2333)"
+      "version": "f97c2c5b",
+      "date": "2026-09-11",
+      "changes": "add guides for ROCm tiered prefix cache (native + lmcache, cpu + fs) (#2464)"
     },
     {
-      "version": "3ecec5b6",
-      "date": "2026-09-01",
-      "changes": "Add diffusion-serving image-to-image guide (#2350)"
+      "version": "3a82b818",
+      "date": "2026-09-11",
+      "changes": "docs(api): document requestHandler.parsers as a list (#2382)"
     },
     {
-      "version": "251de8eb",
-      "date": "2026-09-01",
-      "changes": "fix: add shared HF cache and disable Xet for vLLM GKE PD overlay (#2424)"
+      "version": "bcf51c07",
+      "date": "2026-09-11",
+      "changes": "feat(guides): add diffusion-serving text-to-speech guide (#2425)"
     },
     {
-      "version": "f5ddf597",
-      "date": "2026-09-01",
-      "changes": "ci: verify rendered guide READMEs (#2384)"
+      "version": "311cd294",
+      "date": "2026-09-11",
+      "changes": "Add GKE TPU7x dynamic sub-slicing provider docs and dynamic-slice recipes (#2335)"
     },
     {
-      "version": "1e02cae2",
-      "date": "2026-09-01",
-      "changes": "ci(async-e2e): dump pod diagnostics when the kind e2e fails (#2421)"
+      "version": "e2b3068e",
+      "date": "2026-09-11",
+      "changes": "docs(README): fix stale version badge and theme count mismatch (#2367)"
     },
     {
-      "version": "3057320a",
-      "date": "2026-08-31",
-      "changes": "FMA release upgraded to 0.6.5 and CRDs consolidated (#2419)"
+      "version": "affcac35",
+      "date": "2026-09-11",
+      "changes": "docs(observability): add batch-gateway dashboards and alerts to llm-d (#2390)"
     },
     {
-      "version": "fe70e221",
-      "date": "2026-08-31",
-      "changes": "Cover prometheus-operated in the Prometheus serving certificate (#2309)"
+      "version": "b2271cc7",
+      "date": "2026-09-11",
+      "changes": "docs: add graceful shutdown \u0026 request draining ops guide (#2444)"
     }
   ],
   "component_refs": null,
@@ -145,7 +113,7 @@
     }
   ],
   "data_coverage": {
-    "agent_baseline": "partial: 1 runtime facts, 0 source components, and 0 dependencies; use bounded language-specific gap discovery",
+    "agent_baseline": "insufficient: no high-value source or deployment facts; use legacy repository discovery",
     "controller_templates": "not_found",
     "go_crds": "not_applicable",
     "go_module_configs": "not_found",
@@ -163,14 +131,14 @@
   "category_coverage": {
     "architecture_components": {
       "status": "complete",
-      "fact_count": 6,
+      "fact_count": 5,
       "discovery_contract": "architecture-components/v1",
       "completed_checks": [
         "source-entrypoint-workload-inventory"
       ],
       "limitations": [],
       "evidence": [
-        "summary:6 runtime component/entrypoint/workload facts extracted"
+        "summary:5 runtime component/entrypoint/workload facts extracted"
       ]
     },
     "authentication": {
@@ -178,13 +146,28 @@
       "fact_count": 0,
       "discovery_contract": "authentication/v1",
       "completed_checks": [
-        "normalized-authentication-facts"
+        "normalized-authentication-facts",
+        "no-inbound-runtime-surfaces",
+        "credential-reference-inventory",
+        "applicable-language-runtime-inventory"
       ],
       "limitations": [
-        "2 inbound runtime surfaces are not fully accounted for by authentication facts"
+        "unsupported runtime source languages require authentication analysis"
       ],
       "evidence": [
-        "guides/recipes/modelserver/base/single-host/default/decode-deployment.yaml:1"
+        "summary:no analyzer-discovered inbound runtime surfaces",
+        "guides/batch-serving/asynchronous-processing/multitenant/diagram/capture.sh (unsupported runtime source)",
+        "guides/env.sh (unsupported runtime source)",
+        "guides/recipes/gateway/install-gateway-crds.sh (unsupported runtime source)",
+        "guides/recipes/observability/generate-prometheus-tls-certs.sh (unsupported runtime source)",
+        "guides/recipes/observability/generate-traffic-basic.sh (unsupported runtime source)",
+        "guides/recipes/observability/generate-traffic-pd.sh (unsupported runtime source)",
+        "guides/recipes/observability/install-otel-collector-jaeger.sh (unsupported runtime source)",
+        "guides/recipes/observability/install-prometheus-grafana.sh (unsupported runtime source)",
+        "guides/recipes/observability/load-llm-d-dashboards.sh (unsupported runtime source)",
+        "guides/recipes/router/calibration/calibrate-min-cached-token-delta.sh (unsupported runtime source)",
+        "guides/recipes/router/calibration/calibrate.sh (unsupported runtime source)",
+        "summary:1 additional evidence items omitted"
       ]
     },
     "fips_compliance": {
@@ -264,7 +247,7 @@
         "dependency-impacting-manifest-resolution"
       ],
       "limitations": [
-        "33 active platform alias references require relationship accounting",
+        "34 active platform alias references require relationship accounting",
         "unsupported runtime source languages require platform dependency analysis"
       ],
       "evidence": [
@@ -331,10 +314,10 @@
   "cross_cutting_evidence": {
     "deployment_topology": [
       {
-        "claim": "Deployment workload decode uses service account sa and 1 container(s)",
-        "status": "observed",
+        "claim": "No complete deterministic evidence family was extracted; targeted source/configuration review may be required",
+        "status": "unresolved",
         "sources": [
-          "guides/recipes/modelserver/base/single-host/default/decode-deployment.yaml:1"
+          "coverage:deployment_topology"
         ]
       }
     ],
@@ -451,29 +434,13 @@
           "candidate location only; source inspection is required to establish the relationship"
         ]
       }
-    ],
-    "services": [
-      {
-        "source": "guides/recipes/modelserver/base/single-host/default/decode-deployment.yaml",
-        "line_range": "1",
-        "symbols": [
-          "decode",
-          "sa"
-        ],
-        "question": "Which container listener, probe, and service mapping expose this workload?",
-        "expected_signal": "container port, probe, service account, or lifecycle configuration",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      }
     ]
   },
   "scan_statistics": [
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 601,
+      "value": 656,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

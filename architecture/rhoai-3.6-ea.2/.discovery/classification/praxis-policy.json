@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2/praxis-policy",
+  "classification": "service",
+  "files_read": [
+    "Cargo.toml",
+    "Makefile",
+    "docs/content/vision.md",
+    "docs/content/crates.md",
+    "docs/content/pipeline.md",
+    "AGENTS.md",
+    "builtins/pdps/cel/src/lib.rs",
+    "builtins/plugins/identity-jwt/src/lib.rs"
+  ],
+  "reasoning": "This checkout is a Rust workspace implementing the Praxis Policy Engine, a runtime reference monitor that evaluates authorization policies for AI-agent operations and orchestrates hooks, plugins, identity resolution, delegation, PDPs, and session handling. Its workspace includes the policy-engine facade, core/runtime crates, built-in plugin and PDP implementations, and integration-oriented execution pipeline documentation. That makes it a service component providing policy-enforcement behavior, rather than a standalone library, configuration-only project, or operator."
+}

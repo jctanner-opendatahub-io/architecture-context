@@ -50,7 +50,7 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `requirements-cpu.txt`:245 (uvicorn)
+  **Candidate:** `requirements-cpu.txt`:263 (uvicorn)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### integration_points
 
@@ -140,8 +140,8 @@ No bounded behavioral evidence was extracted.
 ### security
 
 - **observed**: RBAC role rhoai-mcp grants 13 rule(s) [source: deploy/kustomize/base/clusterrole.yaml:1]
-- **dependency-signal**: auth-middleware targets pyjwt: JWT/OAuth authentication library dependency [source: pyproject.toml:33]
-- **dependency-signal**: rbac-ref targets kubernetes: Kubernetes client library (RBAC capable) [source: pyproject.toml:28]
+- **dependency-signal**: auth-middleware targets pyjwt: JWT/OAuth authentication library dependency [source: pyproject.toml:32]
+- **dependency-signal**: rbac-ref targets kubernetes: Kubernetes client library (RBAC capable) [source: pyproject.toml:27]
 - **dependency-signal**: tls-config targets cryptography: TLS/cryptography library dependency [source: requirements-cpu.txt:47]
 ### supply_chain
 

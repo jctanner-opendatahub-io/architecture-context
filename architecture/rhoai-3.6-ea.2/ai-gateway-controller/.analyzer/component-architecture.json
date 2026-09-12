@@ -1,12 +1,27 @@
 {
   "component": "ai-gateway-controller",
   "repo": "https://github.com/red-hat-data-services/ai-gateway-controller.git",
-  "commit_sha": "bc55d800047a372368fddea76602fae460b64049",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "6f8542b90bc4453326b78582032ad5c548beb00a",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 0 services, 1 RBAC roles, 0 ingress routes, 0 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
-  "crds": [],
+  "summary": "Static analysis found 2 CRDs, 0 serving runtime definitions, 1 workloads, 0 services, 1 RBAC roles, 0 ingress routes, 0 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
+  "crds": [
+    {
+      "group": "inference.opendatahub.io",
+      "version": "v1alpha1",
+      "kind": "ExternalModel",
+      "scope": "Namespaced",
+      "source": "api/inference/v1alpha1/externalmodel_types.go:31"
+    },
+    {
+      "group": "inference.opendatahub.io",
+      "version": "v1alpha1",
+      "kind": "ExternalProvider",
+      "scope": "Namespaced",
+      "source": "api/inference/v1alpha1/externalprovider_types.go:32"
+    }
+  ],
   "services": null,
   "deployments": [
     {
@@ -357,6 +372,20 @@
         "source": "go.mod"
       },
       {
+        "module": "github.com/gowebpki/jcs",
+        "version": "v1.0.1",
+        "category": "",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
+        "module": "github.com/stretchr/testify",
+        "version": "v1.11.1",
+        "category": "",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
         "module": "k8s.io/apimachinery",
         "version": "v0.35.3",
         "category": "runtime-integration",
@@ -456,6 +485,14 @@
       "source": "cmd/manager/main.go:105"
     },
     {
+      "endpoint": "Ai Gateway Controller (CRD-configured)",
+      "methods": "ALL",
+      "mechanism": "Configurable: apikey;sigv4;oauth2",
+      "enforcement_point": "CRD-specified authentication configuration",
+      "policy": "Authentication type selected by CRD enum with credential secret reference",
+      "source": "api/inference/v1alpha1/common_types.go:20"
+    },
+    {
       "endpoint": "Kubernetes API",
       "methods": "REST",
       "mechanism": "ServiceAccount token (in-cluster)",
@@ -477,42 +514,50 @@
   ],
   "recent_changes": [
     {
-      "version": "bc55d80",
-      "date": "2026-09-02",
+      "version": "6f8542b",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "4c7a530",
-      "date": "2026-09-02",
-      "changes": "sync config with renovate-central"
-    },
-    {
-      "version": "caaafcf",
-      "date": "2026-09-02",
+      "version": "89a5ff1",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "4fb4608",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
+      "version": "76fcb49",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #6 from yossiovadia/feat/external-model-reconciler"
     },
     {
-      "version": "304a99e",
-      "date": "2026-09-02",
-      "changes": "ci: tekton pipeline sync (#3)"
+      "version": "ddeb1b5",
+      "date": "2026-09-11",
+      "changes": "ci: restore vendored-manifests exclusion clobbered by previous commit"
     },
     {
-      "version": "28a5906",
-      "date": "2026-09-01",
-      "changes": "ci: dockerfile for konflux (#1)"
+      "version": "b7b79e6",
+      "date": "2026-09-11",
+      "changes": "ci: whitelist contributor name 'Noy' in typos check"
     },
     {
-      "version": "c98d66b",
-      "date": "2026-08-27",
-      "changes": "fix: go version (#4)"
+      "version": "eb01c30",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "69edbe0",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 685ccca (#6)"
     }
   ],
-  "component_refs": null,
+  "component_refs": [
+    {
+      "component": "/v1/ConfigMap",
+      "type": "Kubernetes API",
+      "reference": "get operations by Publisher",
+      "source": "pkg/publisher/publisher.go:140",
+      "interaction": "Resource read"
+    }
+  ],
   "entrypoints": [
     {
       "name": "Dockerfile.konflux:ENTRYPOINT",
@@ -567,9 +612,9 @@
     }
   ],
   "data_coverage": {
-    "agent_baseline": "sufficient: 9 runtime facts, 0 source components, and 9 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 12 runtime facts, 0 source components, and 11 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
-    "go_crds": "not_found",
+    "go_crds": "complete: extracted 2 Kubebuilder CRD identities",
     "go_module_configs": "not_found",
     "istio_access_policies": "not_found",
     "kustomize": "partial: configMapGenerator not resolved; image transforms not resolved; replacements not resolved",
@@ -597,7 +642,7 @@
     },
     "authentication": {
       "status": "partial",
-      "fact_count": 3,
+      "fact_count": 4,
       "discovery_contract": "authentication/v1",
       "completed_checks": [
         "normalized-authentication-facts"
@@ -705,8 +750,12 @@
   "coverage_findings": [
     {
       "category": "crds",
-      "status": "not-verified",
-      "finding": "0 crds facts extracted; absence is not proven by the available coverage"
+      "status": "observed",
+      "finding": "2 crds facts extracted",
+      "sources": [
+        "api/inference/v1alpha1/externalmodel_types.go:31",
+        "api/inference/v1alpha1/externalprovider_types.go:32"
+      ]
     },
     {
       "category": "grpc_services",
@@ -750,6 +799,12 @@
         "claim": ":8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design",
         "sources": [
           "cmd/manager/main.go:105"
+        ]
+      },
+      {
+        "claim": "Ai Gateway Controller (CRD-configured) methods=ALL mechanism=Configurable: apikey;sigv4;oauth2 enforcement=CRD-specified authentication configuration policy=Authentication type selected by CRD enum with credential secret reference",
+        "sources": [
+          "api/inference/v1alpha1/common_types.go:20"
         ]
       },
       {
@@ -836,6 +891,13 @@
     ],
     "security": [
       {
+        "claim": "ALL Ai Gateway Controller (CRD-configured) uses Configurable: apikey;sigv4;oauth2 at CRD-specified authentication configuration; policy=Authentication type selected by CRD enum with credential secret reference",
+        "status": "observed",
+        "sources": [
+          "api/inference/v1alpha1/common_types.go:20"
+        ]
+      },
+      {
         "claim": "GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design",
         "status": "observed",
         "sources": [
@@ -876,6 +938,20 @@
   },
   "gap_evidence_index": {
     "authentication": [
+      {
+        "source": "api/inference/v1alpha1/common_types.go",
+        "line_range": "20",
+        "symbols": [
+          "Ai Gateway Controller (CRD-configured)",
+          "Configurable: apikey;sigv4;oauth2"
+        ],
+        "question": "Where is authentication enforced for this surface, and is it conditional?",
+        "expected_signal": "middleware, filter, policy, or enforcement branch",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
       {
         "source": "cmd/manager/main.go",
         "line_range": "101",
@@ -1094,6 +1170,36 @@
         "limitations": [
           "candidate location only; source inspection is required to establish the relationship"
         ]
+      },
+      {
+        "source": "pkg/publisher/publisher.go",
+        "line_range": "140",
+        "symbols": [
+          "/v1/ConfigMap",
+          "get operations by Publisher"
+        ],
+        "question": "What source-backed runtime behavior uses this component reference?",
+        "expected_signal": "client, API, watch, or configuration handoff",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      }
+    ],
+    "kubernetes_relationships": [
+      {
+        "source": "pkg/publisher/publisher.go",
+        "line_range": "140",
+        "symbols": [
+          "/v1/ConfigMap",
+          "get operations by Publisher"
+        ],
+        "question": "How is this Kubernetes or platform resource reference used at runtime?",
+        "expected_signal": "typed client, CRUD operation, watch, or configuration projection",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
       }
     ],
     "services": [
@@ -1116,7 +1222,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 33,
+      "value": 40,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

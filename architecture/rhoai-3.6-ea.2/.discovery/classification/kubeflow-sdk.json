@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/opendatahub-io.rhoai-3.6-ea.2/kubeflow-sdk",
+  "classification": "library",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "requirements.txt",
+    "kubeflow/__init__.py",
+    "kubeflow/pipelines/api/pipelines_client.py",
+    "kubeflow/trainer/api/__init__.py"
+  ],
+  "reasoning": "This checkout is a reusable Python SDK/library rather than an operator or deployable service. Its project metadata describes the Kubeflow Python SDK, publishes the kubeflow package, declares Python library dependencies and optional integrations, and the source contains client APIs for interacting with Kubeflow workloads and APIs. It has no operator control-plane implementation or service deployment as its primary purpose."
+}

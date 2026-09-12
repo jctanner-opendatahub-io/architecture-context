@@ -1,8 +1,8 @@
 {
   "component": "ai4rag",
   "repo": "https://github.com/IBM/ai4rag.git",
-  "commit_sha": "f72be657a4d62946345d70979cfa6263d99a2dc3",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "7562d74741ce0b1c79c7516ba851be450929cced",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -31,7 +31,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "ai4rag/rag/vector_store/config.py:175"
+      "source": "ai4rag/rag/vector_store/config.py:156"
     },
     {
       "name": "PGVECTOR_PASSWORD",
@@ -40,7 +40,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "ai4rag/rag/vector_store/config.py:248"
+      "source": "ai4rag/rag/vector_store/config.py:309"
     },
     {
       "name": "AWS_SECRET_ACCESS_KEY",
@@ -49,7 +49,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "ai4rag/utils/data/text_extraction.py:360"
+      "source": "ai4rag/utils/data/text_extraction.py:361"
     }
   ],
   "http_endpoints": null,
@@ -62,14 +62,21 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:59"
+        "source": "pyproject.toml:58"
+      },
+      {
+        "name": "asyncpg",
+        "version": "\u003e=0.29",
+        "ecosystem": "PyPI",
+        "purpose": "Python package dependency",
+        "source": "pyproject.toml:37"
       },
       {
         "name": "beautifulsoup4",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:62"
+        "source": "pyproject.toml:61"
       },
       {
         "name": "black",
@@ -77,7 +84,7 @@
         "ecosystem": "PyPI",
         "role": "build-tool",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:69"
+        "source": "pyproject.toml:75"
       },
       {
         "name": "boto3",
@@ -88,15 +95,8 @@
         "source": "pyproject.toml:31"
       },
       {
-        "name": "chromadb",
-        "version": "\u003e=1.5,\u003c2",
-        "ecosystem": "PyPI",
-        "purpose": "Python package dependency",
-        "source": "pyproject.toml:33"
-      },
-      {
         "name": "docling-slim",
-        "version": "~=2.107.0",
+        "version": "~=2.121.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "pyproject.toml:32"
@@ -106,91 +106,91 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:63"
+        "source": "pyproject.toml:62"
       },
       {
         "name": "ipykernel",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:64"
+        "source": "pyproject.toml:63"
       },
       {
         "name": "isort",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:69"
+        "source": "pyproject.toml:75"
       },
       {
         "name": "langchain-community",
         "version": "\u003c0.4.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:44"
+        "source": "pyproject.toml:43"
       },
       {
         "name": "langchain-text-splitters",
         "version": "~=1.1.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:34"
+        "source": "pyproject.toml:33"
       },
       {
         "name": "mkdocs",
         "version": "~=1.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:74"
+        "source": "pyproject.toml:82"
       },
       {
         "name": "mkdocs-git-revision-date-localized-plugin",
         "version": "\u003e=1.2.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:77"
+        "source": "pyproject.toml:85"
       },
       {
         "name": "mkdocs-material",
         "version": "~=9.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:75"
+        "source": "pyproject.toml:83"
       },
       {
         "name": "mkdocs-minify-plugin",
         "version": "\u003e=0.8.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:78"
+        "source": "pyproject.toml:86"
       },
       {
         "name": "mkdocstrings",
         "version": "\u003e=0.25.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:76"
+        "source": "pyproject.toml:84"
       },
       {
         "name": "multiprocess",
         "version": "\u003e=0.70",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:35"
+        "source": "pyproject.toml:34"
       },
       {
         "name": "nbformat",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:67"
+        "source": "pyproject.toml:72"
       },
       {
         "name": "openai",
         "version": "~=2.53.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:36"
+        "source": "pyproject.toml:35"
       },
       {
         "name": "pandas",
@@ -198,7 +198,7 @@
         "ecosystem": "PyPI",
         "role": "runtime-library",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:37"
+        "source": "pyproject.toml:36"
       },
       {
         "name": "pgvector",
@@ -212,42 +212,35 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:67"
-      },
-      {
-        "name": "psycopg",
-        "version": "\u003e=3.1",
-        "ecosystem": "PyPI",
-        "purpose": "Python package dependency",
-        "source": "pyproject.toml:39"
+        "source": "pyproject.toml:71"
       },
       {
         "name": "pydantic",
         "version": "==2.11.*",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:40"
+        "source": "pyproject.toml:39"
       },
       {
         "name": "pygam",
         "version": "~=0.12.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:41"
+        "source": "pyproject.toml:40"
       },
       {
         "name": "pylint",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:69"
+        "source": "pyproject.toml:75"
       },
       {
         "name": "pymilvus",
         "version": "~=3.0.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:42"
+        "source": "pyproject.toml:41"
       },
       {
         "name": "pytest",
@@ -255,21 +248,21 @@
         "ecosystem": "PyPI",
         "role": "build-tool",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:67"
+        "source": "pyproject.toml:68"
       },
       {
         "name": "pytest-cov",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:67"
+        "source": "pyproject.toml:69"
       },
       {
         "name": "pytest-mock",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:67"
+        "source": "pyproject.toml:70"
       },
       {
         "name": "Python",
@@ -283,7 +276,7 @@
         "version": "\u003e=0.3,\u003c0.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:43"
+        "source": "pyproject.toml:42"
       },
       {
         "name": "scikit-learn",
@@ -291,14 +284,14 @@
         "ecosystem": "PyPI",
         "role": "runtime-library",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:45"
+        "source": "pyproject.toml:44"
       },
       {
         "name": "unitxt",
         "version": "~=1.26.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:46"
+        "source": "pyproject.toml:45"
       }
     ],
     "internal_odh": null
@@ -332,46 +325,46 @@
   ],
   "recent_changes": [
     {
-      "version": "f72be65",
-      "date": "2026-09-02",
-      "changes": "Release 0.14.0 (#144)"
+      "version": "7562d74",
+      "date": "2026-09-11",
+      "changes": "feat(vector_store)!: replace ChromaDB with Milvus Lite (#154)"
     },
     {
-      "version": "ad7b10a",
-      "date": "2026-09-02",
-      "changes": "refactor(components)split ai4rag.components into ai4rag.utils and pipelines-components (#142)"
+      "version": "04249e5",
+      "date": "2026-09-10",
+      "changes": "fix(ci): use role_name for maintainer check in publish-pypi workflow"
     },
     {
-      "version": "930b948",
-      "date": "2026-08-27",
-      "changes": "Release 0.13.0 (#139)"
+      "version": "adb44b0",
+      "date": "2026-09-10",
+      "changes": "Release 0.16.0 (#152)"
     },
     {
-      "version": "f6d6951",
-      "date": "2026-08-27",
-      "changes": "refactor(vector_store)!: isolate backend client imports (#138)"
+      "version": "a50e641",
+      "date": "2026-09-10",
+      "changes": "fix(search_space): log root cause when MaaS model validation fails (#151)"
     },
     {
-      "version": "43015fd",
-      "date": "2026-08-26",
-      "changes": "fix: lazy table creation for pgvector (#135)"
+      "version": "40e6504",
+      "date": "2026-09-10",
+      "changes": "feat: change the keys for paths"
     },
     {
-      "version": "245fad8",
-      "date": "2026-08-26",
-      "changes": "build(deps): split docling's extraction stack into a text-extraction extra (#137)"
+      "version": "9c0af9a",
+      "date": "2026-09-09",
+      "changes": "Prepare ai4rag for starter kits integration (#149)"
     },
     {
-      "version": "6a8b7a7",
-      "date": "2026-08-26",
-      "changes": "Fix/improve base url handling (#136)"
+      "version": "b5baaac",
+      "date": "2026-09-08",
+      "changes": "feat: introduce .msg extension for autorag (#147)"
     }
   ],
   "component_refs": null,
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 2 runtime facts, 1 source components, and 34 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 2 runtime facts, 1 source components, and 33 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "not_applicable",
     "go_module_configs": "not_found",
@@ -379,7 +372,7 @@
     "kustomize": "not_used",
     "manifests": "complete",
     "platform_semantics": "partial: ODH/RHOAI semantic aliases from manifest API groups, direct modules, proxy route trees, federation configuration, and literal security middleware",
-    "python": "partial: structured Python package metadata, literal FastAPI/Flask/Starlette routes, ASGI auth middleware posture, SDK client credential construction, literal outbound URLs, environment-backed secrets, and protobuf service definitions; Python import analysis: 16 imported in shipped source, 1 test-only, 16 declared but unused; literal gRPC server registration scan: no runtime registration detected",
+    "python": "partial: structured Python package metadata, literal FastAPI/Flask/Starlette routes, ASGI auth middleware posture, SDK client credential construction, literal outbound URLs, environment-backed secrets, and protobuf service definitions; Python import analysis: 15 imported in shipped source, 1 test-only, 16 declared but unused; literal gRPC server registration scan: no runtime registration detected",
     "rust": "not_applicable",
     "serving_runtime_definitions": "not_found",
     "source": "not_applicable",
@@ -414,9 +407,9 @@
       "limitations": [],
       "evidence": [
         "summary:no analyzer-discovered inbound runtime surfaces",
-        "ai4rag/rag/vector_store/config.py:175 (credential MILVUS_TOKEN)",
-        "ai4rag/rag/vector_store/config.py:248 (credential PGVECTOR_PASSWORD)",
-        "ai4rag/utils/data/text_extraction.py:360 (credential AWS_SECRET_ACCESS_KEY)"
+        "ai4rag/rag/vector_store/config.py:156 (credential MILVUS_TOKEN)",
+        "ai4rag/rag/vector_store/config.py:309 (credential PGVECTOR_PASSWORD)",
+        "ai4rag/utils/data/text_extraction.py:361 (credential AWS_SECRET_ACCESS_KEY)"
       ]
     },
     "fips_compliance": {
@@ -641,14 +634,14 @@
     {
       "category": "authentication",
       "metric": "files_scanned",
-      "value": 86,
+      "value": 85,
       "unit": "files",
       "scope": "Python source files for authentication constructions"
     },
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 89,
+      "value": 88,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

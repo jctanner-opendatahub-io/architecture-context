@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/model-registry",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "main.go",
+    "cmd/config.go",
+    "manifests/kustomize/base/model-registry-deployment.yaml",
+    "manifests/kustomize/base/model-registry-service.yaml",
+    "Dockerfile"
+  ],
+  "reasoning": "This checkout is a deployable Model Registry backend service. README.md describes an OpenAPI proxy server and a model-registry server binary; main.go starts the command-line server; cmd/config.go defines network hostname and port configuration with a default port of 8080; the Kubernetes manifests define a Deployment running the model-registry proxy and a ClusterIP Service exposing its HTTP API; and Dockerfile builds and packages the model-registry executable. Although the repository also contains reusable core and client libraries, its primary artifact is a networked service."
+}

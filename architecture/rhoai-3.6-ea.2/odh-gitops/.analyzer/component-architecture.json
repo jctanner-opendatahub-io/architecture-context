@@ -1,8 +1,8 @@
 {
   "component": "odh-gitops",
   "repo": "https://github.com/red-hat-data-services/odh-gitops.git",
-  "commit_sha": "96fedc9507b39bd38d999fdf5c9183a8f12d809b",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "267e35eb5cc058d53daf38a8cf9b4b26fc704c3e",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -29,6 +29,16 @@
   "external_connections": null,
   "recent_changes": [
     {
+      "version": "267e35e",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
+    },
+    {
+      "version": "1b4afd5",
+      "date": "2026-09-11",
+      "changes": "helm upgrade fails upgrading (#164)"
+    },
+    {
       "version": "96fedc9",
       "date": "2026-08-27",
       "changes": "Merge remote-tracking branch 'upstream/main'"
@@ -50,16 +60,6 @@
     },
     {
       "version": "082bf0d",
-      "date": "2026-08-20",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
-    },
-    {
-      "version": "afa4d1a",
-      "date": "2026-08-20",
-      "changes": "fix: auto-build chart dependencies in chart-snapshots script (#160)"
-    },
-    {
-      "version": "6a02d5c",
       "date": "2026-08-20",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     }
@@ -112,7 +112,8 @@
       "evidence": [
         "summary:no analyzer-discovered inbound runtime surfaces",
         "charts/rhai-on-xks-chart/files/create-gateway.sh (unsupported runtime source)",
-        "charts/rhai-on-xks-chart/files/create-maas-gateway.sh (unsupported runtime source)"
+        "charts/rhai-on-xks-chart/files/create-maas-gateway.sh (unsupported runtime source)",
+        "charts/rhai-on-xks-chart/files/pre-upgrade-migrate-certmanager.sh (unsupported runtime source)"
       ]
     },
     "fips_compliance": {
@@ -170,7 +171,8 @@
         "summary:no analyzer-discovered outbound runtime clients",
         "summary:no analyzer-discovered external connections",
         "charts/rhai-on-xks-chart/files/create-gateway.sh (unsupported runtime source)",
-        "charts/rhai-on-xks-chart/files/create-maas-gateway.sh (unsupported runtime source)"
+        "charts/rhai-on-xks-chart/files/create-maas-gateway.sh (unsupported runtime source)",
+        "charts/rhai-on-xks-chart/files/pre-upgrade-migrate-certmanager.sh (unsupported runtime source)"
       ]
     },
     "internal_dependencies": {
@@ -199,7 +201,7 @@
         "charts/dependencies/cert-manager-operator/crds/customresourcedefinition-istiocsrs-operator-openshift-io.yaml (cert-manager.io; unselected manifest configuration)",
         "charts/dependencies/cert-manager-operator/crds/customresourcedefinition-istiocsrs-operator-openshift-io.yaml (operator.openshift.io; unselected manifest configuration)",
         "charts/dependencies/cert-manager-operator/crds/customresourcedefinition-orders-acme-cert-manager-io.yaml (cert-manager.io; unselected manifest configuration)",
-        "summary:3 additional evidence items omitted"
+        "summary:4 additional evidence items omitted"
       ]
     },
     "services": {

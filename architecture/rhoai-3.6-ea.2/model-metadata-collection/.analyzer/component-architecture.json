@@ -1,8 +1,8 @@
 {
   "component": "model-metadata-collection",
   "repo": "https://github.com/red-hat-data-services/model-metadata-collection.git",
-  "commit_sha": "b157615b815d1df40a3c65b8e63c35c759bafda8",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "042a5bd2eff7ebe1c1decd1830750578b8713876",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -67,39 +67,39 @@
   "external_connections": null,
   "recent_changes": [
     {
-      "version": "b157615",
-      "date": "2026-09-03",
+      "version": "042a5bd",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "cbcd95c",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #321 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "2a72883",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/stable'"
     },
     {
-      "version": "48de86e",
-      "date": "2026-09-03",
+      "version": "227963e",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #215 from opendatahub-io/main"
+    },
+    {
+      "version": "68cb8c5",
+      "date": "2026-09-11",
+      "changes": "Add secured property to models with security data (#214)"
+    },
+    {
+      "version": "1b917f8",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "a2449d1",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #322 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "f5d6b4d",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "c4f298a",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "649c92b",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #320 from red-hat-data-services/migrate-main-pqc"
-    },
-    {
-      "version": "eef3cbb",
-      "date": "2026-09-02",
-      "changes": "Migrate base runtime to pqc in main"
-    },
-    {
-      "version": "b816b66",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
   "component_refs": null,
@@ -418,7 +418,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 78,
+      "value": 80,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

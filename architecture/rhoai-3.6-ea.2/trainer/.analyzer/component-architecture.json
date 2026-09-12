@@ -1,8 +1,8 @@
 {
   "component": "trainer",
   "repo": "https://github.com/red-hat-data-services/trainer.git",
-  "commit_sha": "8cdcdd4903a3c01abd01b02953f70780dfa9a3dc",
-  "extracted_at": "2026-09-10T15:09:33Z",
+  "commit_sha": "4f07881bca2a096bf454d27b42055bdfc5710606",
+  "extracted_at": "2026-09-12T16:40:01Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 4 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 6 RBAC roles, 0 ingress routes, 7 controller watches, 3 registered HTTP endpoints, and 0 gRPC services.",
@@ -929,7 +929,7 @@
           "type": "kubebuilder_marker",
           "file": "pkg/webhooks/trainjob_webhook.go",
           "repo": "",
-          "line": 37
+          "line": 36
         }
       ],
       "purpose": ""
@@ -1049,7 +1049,7 @@
           "type": "kubebuilder_marker",
           "file": "pkg/webhooks/trainjob_webhook.go",
           "repo": "",
-          "line": 95
+          "line": 94
         }
       ],
       "purpose": ""
@@ -1122,38 +1122,38 @@
   ],
   "recent_changes": [
     {
-      "version": "8cdcdd49",
-      "date": "2026-09-04",
+      "version": "4f07881b",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "31ef9e60",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
+      "version": "202911c8",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #222 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "8a235664",
-      "date": "2026-09-04",
-      "changes": "fix(ci): suppress semgrep TLS false-positive for status-server probe"
-    },
-    {
-      "version": "2649640a",
-      "date": "2026-09-04",
+      "version": "715d882c",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "9cf573f4",
-      "date": "2026-09-04",
-      "changes": "Update registry.access.redhat.com/ubi9/go-toolset Docker digest to 5e68f09 (#211)"
+      "version": "696e762c",
+      "date": "2026-09-11",
+      "changes": "Update registry.access.redhat.com/ubi9/go-toolset Docker digest to 685ccca (#223)"
     },
     {
-      "version": "e4d4c354",
-      "date": "2026-09-03",
+      "version": "95993b4d",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "8b8758ed",
-      "date": "2026-09-03",
+      "version": "bc875d17",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "11a54d03",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     }
   ],
@@ -1529,7 +1529,7 @@
       "sources": [
         "manifests/base/manager/manager.yaml:92",
         "manifests/base/webhook/patch_mutating.yaml:1",
-        "pkg/webhooks/trainjob_webhook.go:37"
+        "pkg/webhooks/trainjob_webhook.go:36"
       ]
     },
     {
@@ -1565,7 +1565,7 @@
       "sources": [
         "manifests/base/manager/manager.yaml:92",
         "manifests/base/webhook/patch_validating.yaml:1",
-        "pkg/webhooks/trainjob_webhook.go:95"
+        "pkg/webhooks/trainjob_webhook.go:94"
       ]
     }
   ],
@@ -1618,8 +1618,8 @@
         "manifests/base/webhook/patch_validating.yaml:1",
         "pkg/webhooks/clustertrainingruntime_webhook.go:32",
         "pkg/webhooks/trainingruntime_webhook.go:47",
-        "pkg/webhooks/trainjob_webhook.go:37",
-        "pkg/webhooks/trainjob_webhook.go:95"
+        "pkg/webhooks/trainjob_webhook.go:36",
+        "pkg/webhooks/trainjob_webhook.go:94"
       ]
     }
   ],
@@ -2672,7 +2672,7 @@
       },
       {
         "source": "pkg/webhooks/trainjob_webhook.go",
-        "line_range": "37",
+        "line_range": "36",
         "symbols": [
           "/mutate-trainer-kubeflow-org-v1alpha1-trainjob",
           "defaulter.trainjob.trainer.kubeflow.org"
@@ -2686,7 +2686,7 @@
       },
       {
         "source": "pkg/webhooks/trainjob_webhook.go",
-        "line_range": "95",
+        "line_range": "94",
         "symbols": [
           "/validate-trainer-kubeflow-org-v1alpha1-trainjob",
           "validator.trainjob.trainer.kubeflow.org"

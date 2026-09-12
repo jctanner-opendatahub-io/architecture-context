@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/lm-evaluation-harness",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "setup.py",
+    "main.py",
+    "Dockerfile.lmes-job",
+    "Dockerfile.konflux.lmes-job",
+    ".tekton/odh-ta-lmes-job-v3-6-ea-2-push.yaml"
+  ],
+  "reasoning": "This checkout packages the lm-evaluation-harness Python code as a batch-oriented LMEval/EvalHub job runtime. main.py implements a job adapter that loads a job specification, runs benchmark evaluations, reports status and results through callbacks, and persists artifacts; the container Dockerfile runs the packaged runtime and the Tekton definition builds its deployable image. Although it also exposes the reusable lm_eval Python package and CLI, its RHOAI component role is an executable evaluation service/job rather than an operator, configuration-only repository, or library-only component."
+}

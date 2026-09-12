@@ -1,0 +1,17 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/rhaii-cluster-validation",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "ARCHITECTURE.md",
+    "go.mod",
+    "pkg/checks/operator/operator.go",
+    "pkg/controller/controller.go",
+    "pkg/runner/runner.go",
+    "deploy/rbac.go",
+    "deploy/node-check-job.yaml",
+    "manifests/image-references/image-references.yaml",
+    "examples/configmap.yaml"
+  ],
+  "reasoning": "This is a Go-based Kubernetes validation service and kubectl plugin. Its controller orchestrates cluster validation by creating namespaces, RBAC resources, ConfigMaps, and per-node or multi-node Jobs, while runner and checks packages execute GPU, RDMA, networking, CRD, and operator-health checks. Although it includes checks for required operators, it does not implement a CRD-backed operator or a reconciliation loop, and it is not primarily a reusable library or static configuration project."
+}

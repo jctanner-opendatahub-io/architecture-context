@@ -1,8 +1,8 @@
 {
   "component": "workbenches-operator",
   "repo": "https://github.com/red-hat-data-services/workbenches-operator.git",
-  "commit_sha": "cf32d166fe9d67b656735ee263fe50d9d9379ec3",
-  "extracted_at": "2026-09-10T15:09:35Z",
+  "commit_sha": "47cdcf2273c4248d6ceacfb2d3ed14a5f2f898cc",
+  "extracted_at": "2026-09-12T16:40:03Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 8 RBAC roles, 0 ingress routes, 13 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -1634,6 +1634,26 @@
   ],
   "recent_changes": [
     {
+      "version": "47cdcf2",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "ec429cf",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/go-toolset docker digest to 685ccca (#76)"
+    },
+    {
+      "version": "a54db70",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "bf32073",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#75)"
+    },
+    {
       "version": "cf32d16",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -1647,26 +1667,6 @@
       "version": "a962666",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "064ba59",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #71 from red-hat-data-services/migrate-runtime-to-pqc-main"
-    },
-    {
-      "version": "212f860",
-      "date": "2026-09-03",
-      "changes": "Migrate runtime base image to PQC variant for main"
-    },
-    {
-      "version": "417f7f0",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "88d435f",
-      "date": "2026-09-02",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/go-toolset docker digest to 8cf8983 (#69)"
     }
   ],
   "component_refs": [
@@ -3303,7 +3303,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 198,
+      "value": 199,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

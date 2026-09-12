@@ -1,8 +1,8 @@
 {
   "component": "openvino_model_server",
   "repo": "https://github.com/red-hat-data-services/openvino_model_server.git",
-  "commit_sha": "4260dc6a0dddc9020832ca97367c35b9bb2b1a65",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "0b4bd462e5105b909fe5d0afc3e64035762db789",
+  "extracted_at": "2026-09-12T16:40:00Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 2 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -115,39 +115,39 @@
   "external_connections": null,
   "recent_changes": [
     {
+      "version": "0b4bd462",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "e5412142",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #564 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "aa57da39",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "e0b89923",
+      "date": "2026-09-04",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "814e5e15",
+      "date": "2026-09-04",
+      "changes": "Merge pull request #563 from red-hat-data-services/migrate-runtime-to-pqc-main"
+    },
+    {
+      "version": "73c0a839",
+      "date": "2026-09-04",
+      "changes": "Migrate runtime base image to PQC variant for main"
+    },
+    {
       "version": "4260dc6a",
       "date": "2026-09-03",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "c4384d8a",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #561 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "096db87c",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "8fa0fedf",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "7aa49cef",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #559 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "f987e3e0",
-      "date": "2026-09-01",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "04aac53a",
-      "date": "2026-08-19",
-      "changes": "sync pipelineruns with konflux-central - 37ff31f, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/32232733784"
     }
   ],
   "component_refs": null,

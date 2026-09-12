@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/ogx-distribution",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "distribution/README.md",
+    "distribution/config.yaml",
+    "distribution/entrypoint.sh",
+    "Containerfile.in",
+    "build/build.yaml",
+    "build/build.env",
+    "distribution/requirements-lock.txt"
+  ],
+  "reasoning": "This repository builds and runs an OGX distribution container that exposes a configurable HTTP/API server. The entrypoint executes `ogx run`, the runtime configuration declares APIs and providers, and the container/build files assemble the locked Python runtime and launch image. It is therefore a deployable service rather than an operator, reusable library, or configuration-only repository."
+}

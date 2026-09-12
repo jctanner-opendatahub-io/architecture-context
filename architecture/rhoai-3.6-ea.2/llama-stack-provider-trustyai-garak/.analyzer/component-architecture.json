@@ -1,8 +1,8 @@
 {
   "component": "llama-stack-provider-trustyai-garak",
   "repo": "https://github.com/red-hat-data-services/llama-stack-provider-trustyai-garak.git",
-  "commit_sha": "e98a719e743701b400ec6e92ecc07f1b3efc976e",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "7b2e1573f25a4ae794757670063c67affe1804cf",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -1587,38 +1587,38 @@
   ],
   "recent_changes": [
     {
-      "version": "e98a719",
-      "date": "2026-09-03",
+      "version": "7b2e157",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "cc65207",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #462 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "11dd957",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #479 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "eb351eb",
-      "date": "2026-09-03",
+      "version": "44954d2",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "9fd8b39",
-      "date": "2026-09-02",
+      "version": "3f075e7",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "19bd465",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #461 from red-hat-data-services/fix/rhoaieng-84701-thrift-base-image"
+      "version": "69ff89d",
+      "date": "2026-09-08",
+      "changes": "Merge pull request #472 from red-hat-data-services/migrate-pqc-runtime-in-main"
     },
     {
-      "version": "2ababc8",
-      "date": "2026-09-02",
-      "changes": "fix: bump aipcc base image to 3.5.1 to resolve libthrift mismatch"
+      "version": "7500c9b",
+      "date": "2026-09-08",
+      "changes": "Migrate runtime base image to PQC variant for main"
     },
     {
-      "version": "f4dc6bf",
-      "date": "2026-09-01",
+      "version": "e98a719",
+      "date": "2026-09-03",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],

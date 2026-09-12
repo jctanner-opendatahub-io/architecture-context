@@ -1,8 +1,8 @@
 {
   "component": "pipelines-components",
   "repo": "https://github.com/red-hat-data-services/pipelines-components.git",
-  "commit_sha": "cb5c1ad458823ad63368d972fc7db9508ce24abc",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "bbbae3e853e57f94bc59b11e93ff3bc12cca846b",
+  "extracted_at": "2026-09-12T16:40:00Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -25,15 +25,6 @@
   },
   "secrets_referenced": [
     {
-      "name": "AWS_SECRET_ACCESS_KEY",
-      "type": "environment variable",
-      "referenced_by": [
-        "Python application"
-      ],
-      "provisioned_by": "runtime environment",
-      "source": "components/data_processing/automl/tabular_data_loader/component.py:162"
-    },
-    {
       "name": "TEST_DATA_AWS_SECRET_ACCESS_KEY",
       "type": "environment variable",
       "referenced_by": [
@@ -50,6 +41,15 @@
       ],
       "provisioned_by": "runtime environment",
       "source": "components/data_processing/autorag/documents_discovery/component.py:123"
+    },
+    {
+      "name": "AWS_SECRET_ACCESS_KEY",
+      "type": "environment variable",
+      "referenced_by": [
+        "Python application"
+      ],
+      "provisioned_by": "runtime environment",
+      "source": "components/data_processing/autorag/text_extraction/component.py:98"
     },
     {
       "name": "HF_TOKEN",
@@ -122,7 +122,7 @@
     "packages": [
       {
         "name": "ai4rag",
-        "version": "==0.14.0",
+        "version": "==0.15.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "components/training/autorag/rag_templates_optimization/requirements.txt:1"
@@ -137,28 +137,28 @@
       },
       {
         "name": "certifi",
-        "version": "==2026.6.17 \\",
+        "version": "==2026.7.22 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:3"
       },
       {
         "name": "cffi",
-        "version": "==2.1.0 \\",
+        "version": "==2.1.1 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:5"
       },
       {
         "name": "charset-normalizer",
-        "version": "==3.4.9 \\",
+        "version": "==3.5.1 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:10"
       },
       {
         "name": "click",
-        "version": "==8.4.2 \\",
+        "version": "==8.5.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:12"
@@ -172,7 +172,7 @@
       },
       {
         "name": "cryptography",
-        "version": "==49.0.0 \\",
+        "version": "==50.0.1 \\",
         "ecosystem": "PyPI",
         "role": "runtime-security",
         "purpose": "Python package dependency",
@@ -183,7 +183,7 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:26"
+        "source": "pyproject.toml:25"
       },
       {
         "name": "docling",
@@ -208,35 +208,35 @@
       },
       {
         "name": "durationpy",
-        "version": "==0.10 \\",
+        "version": "==0.11 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:23"
       },
       {
         "name": "google-api-core",
-        "version": "==2.32.0 \\",
+        "version": "==2.36.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:25"
       },
       {
         "name": "google-auth",
-        "version": "==2.56.0 \\",
+        "version": "==2.57.1 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:27"
       },
       {
         "name": "google-cloud-core",
-        "version": "==2.6.0 \\",
+        "version": "==2.7.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:29"
       },
       {
         "name": "google-cloud-storage",
-        "version": "==3.13.0 \\",
+        "version": "==3.13.1 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:31"
@@ -250,14 +250,14 @@
       },
       {
         "name": "google-resumable-media",
-        "version": "==2.10.0 \\",
+        "version": "==2.10.2 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:35"
       },
       {
         "name": "googleapis-common-protos",
-        "version": "==1.75.0 \\",
+        "version": "==1.75.3 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:37"
@@ -271,7 +271,7 @@
       },
       {
         "name": "idna",
-        "version": "==3.18 \\",
+        "version": "==3.19 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements.txt:39"
@@ -281,14 +281,14 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:28"
+        "source": "pyproject.toml:27"
       },
       {
         "name": "jsonschema",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:44"
+        "source": "pyproject.toml:43"
       },
       {
         "name": "kfp",
@@ -302,7 +302,7 @@
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:54"
+        "source": "pyproject.toml:53"
       },
       {
         "name": "kfp-kubernetes",
@@ -363,8 +363,16 @@
         "source": "components/training/autorag/rag_templates_optimization/requirements.txt:7"
       },
       {
+        "name": "opentelemetry-api",
+        "version": "==1.44.0 \\",
+        "ecosystem": "PyPI",
+        "role": "runtime-observability",
+        "purpose": "Python package dependency",
+        "source": "requirements.txt:53"
+      },
+      {
         "name": "packaging",
-        "version": "==26.2 \\",
+        "version": "==26.3 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements-build.txt:3"
@@ -379,46 +387,46 @@
       },
       {
         "name": "pip",
-        "version": "==26.1.2 \\",
+        "version": "==26.2.1 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements-build.txt:5"
       },
       {
         "name": "proto-plus",
-        "version": "==1.28.1 \\",
+        "version": "==1.28.4 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:53"
+        "source": "requirements.txt:55"
       },
       {
         "name": "protobuf",
-        "version": "\u003c6.32",
+        "version": "==6.33.6 \\",
         "ecosystem": "PyPI",
         "role": "runtime-transport",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:16"
+        "source": "requirements.txt:57"
       },
       {
         "name": "pyasn1",
         "version": "==0.6.4 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:60"
+        "source": "requirements.txt:62"
       },
       {
         "name": "pyasn1-modules",
         "version": "==0.4.2 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:62"
+        "source": "requirements.txt:64"
       },
       {
         "name": "pycparser",
         "version": "==3.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:64"
+        "source": "requirements.txt:66"
       },
       {
         "name": "pytest",
@@ -426,21 +434,21 @@
         "ecosystem": "PyPI",
         "role": "build-tool",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:32"
+        "source": "pyproject.toml:31"
       },
       {
         "name": "pytest-cov",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:33"
+        "source": "pyproject.toml:32"
       },
       {
         "name": "pytest-timeout",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:34"
+        "source": "pyproject.toml:33"
       },
       {
         "name": "Python",
@@ -454,21 +462,21 @@
         "version": "==2.9.0.post0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:66"
+        "source": "requirements.txt:68"
       },
       {
         "name": "python-dotenv",
         "version": "Unknown",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:51"
+        "source": "pyproject.toml:50"
       },
       {
         "name": "pyyaml",
         "version": "==6.0.3 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:68"
+        "source": "requirements.txt:70"
       },
       {
         "name": "requests",
@@ -476,21 +484,21 @@
         "ecosystem": "PyPI",
         "role": "runtime-integration",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:73"
+        "source": "requirements.txt:75"
       },
       {
         "name": "requests-oauthlib",
         "version": "==2.0.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:75"
+        "source": "requirements.txt:77"
       },
       {
         "name": "requests-toolbelt",
         "version": "==1.0.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:77"
+        "source": "requirements.txt:79"
       },
       {
         "name": "ruff",
@@ -498,18 +506,18 @@
         "ecosystem": "PyPI",
         "role": "build-tool",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:22"
+        "source": "pyproject.toml:21"
       },
       {
         "name": "sdg-hub",
         "version": "\u003e=0.7.0,\u003c1.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:41"
+        "source": "pyproject.toml:40"
       },
       {
         "name": "setuptools",
-        "version": "==83.0.0 \\",
+        "version": "==84.0.0 \\",
         "ecosystem": "PyPI",
         "role": "build-tool",
         "purpose": "Python package dependency",
@@ -520,32 +528,39 @@
         "version": "==1.17.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:79"
+        "source": "requirements.txt:81"
       },
       {
         "name": "tabulate",
         "version": "==0.10.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:81"
+        "source": "requirements.txt:83"
+      },
+      {
+        "name": "typing-extensions",
+        "version": "==4.16.0 \\",
+        "ecosystem": "PyPI",
+        "purpose": "Python package dependency",
+        "source": "requirements.txt:85"
       },
       {
         "name": "urllib3",
         "version": "==2.7.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:83"
+        "source": "requirements.txt:87"
       },
       {
         "name": "websocket-client",
-        "version": "==1.9.0 \\",
+        "version": "==1.9.2 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "requirements.txt:85"
+        "source": "requirements.txt:89"
       },
       {
         "name": "wheel",
-        "version": "==0.47.0 \\",
+        "version": "==0.48.0 \\",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "requirements-build.txt:9"
@@ -555,7 +570,7 @@
         "version": "==1.38.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "pyproject.toml:23"
+        "source": "pyproject.toml:22"
       }
     ],
     "internal_odh": [
@@ -589,44 +604,44 @@
       "protocol": "HTTPS",
       "encryption": "TLS",
       "purpose": "AWS service operations via boto3",
-      "source": "components/data_processing/automl/tabular_data_loader/component.py:90"
+      "source": "components/data_processing/automl/tabular_data_loader/component.py:96"
     }
   ],
   "recent_changes": [
     {
-      "version": "cb5c1ad",
-      "date": "2026-09-04",
+      "version": "bbbae3e",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "1e43172",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/python-312 docker digest to 414e82a (#178)"
-    },
-    {
-      "version": "218a05e",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "17c11ea",
-      "date": "2026-09-03",
+      "version": "1b6078e",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "10186c5",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #206 from Wojciech-Rebisz/dev-timeseries-synthetic-column"
+      "version": "597c111",
+      "date": "2026-09-11",
+      "changes": "CI: update Tekton pipelines (#239)"
     },
     {
-      "version": "66360af",
-      "date": "2026-09-03",
-      "changes": "fix: autogluon_timeseries_training_pipeline docstrings"
+      "version": "09d38be",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "83ac723",
-      "date": "2026-09-03",
-      "changes": "fix: workspace path \u0026 READMEs"
+      "version": "786c179",
+      "date": "2026-09-11",
+      "changes": "feat: PQC base image switch for pipelines-components (#192)"
+    },
+    {
+      "version": "90e5424",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "abff9b1",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/python-312 docker digest to b29b44b (#193)"
     }
   ],
   "component_refs": null,
@@ -636,7 +651,7 @@
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"python\", \"-m\", \"scripts.init_managed_pipelines.init_managed_pipelines\"]",
-      "source": "Dockerfile.konflux.pipelines-components:25"
+      "source": "Dockerfile.konflux.pipelines-components:29"
     },
     {
       "name": "Dockerfile:CMD",
@@ -650,7 +665,7 @@
       "type": "Python console script",
       "runtime": "Python",
       "command": "scripts.generate_readme.cli:main",
-      "source": "pyproject.toml:196"
+      "source": "pyproject.toml:195"
     }
   ],
   "security_evidence": [
@@ -678,7 +693,7 @@
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 1 runtime facts, 1 source components, and 63 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 1 runtime facts, 1 source components, and 65 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "not_applicable",
     "go_module_configs": "not_found",
@@ -686,7 +701,7 @@
     "kustomize": "not_used",
     "manifests": "partial: unparseable or templated YAML skipped during repository-wide discovery: components/data_processing/sdg/tests/test_data/prompts/generate_question.yaml; unparseable or templated YAML skipped during repository-wide discovery: pipelines/data_processing/sdg/tests/data/prompts/generate_question.yaml",
     "platform_semantics": "partial: ODH/RHOAI semantic aliases from manifest API groups, direct modules, proxy route trees, federation configuration, and literal security middleware",
-    "python": "partial: structured Python package metadata, literal FastAPI/Flask/Starlette routes, ASGI auth middleware posture, SDK client credential construction, literal outbound URLs, environment-backed secrets, and protobuf service definitions; Python import analysis: 11 imported in shipped source, 2 test-only, 8 declared but unused; literal gRPC server registration scan: no runtime registration detected",
+    "python": "partial: structured Python package metadata, literal FastAPI/Flask/Starlette routes, ASGI auth middleware posture, SDK client credential construction, literal outbound URLs, environment-backed secrets, and protobuf service definitions; Python import analysis: 11 imported in shipped source, 2 test-only, 7 declared but unused; literal gRPC server registration scan: no runtime registration detected",
     "rust": "not_applicable",
     "serving_runtime_definitions": "not_found",
     "source": "not_applicable",
@@ -723,9 +738,9 @@
       "evidence": [
         "summary:2 literal security evidence items extracted",
         "summary:no analyzer-discovered inbound runtime surfaces",
-        "components/data_processing/automl/tabular_data_loader/component.py:162 (credential AWS_SECRET_ACCESS_KEY)",
         "components/data_processing/autorag/documents_discovery/component.py:123 (credential INPUT_DATA_AWS_SECRET_ACCESS_KEY)",
         "components/data_processing/autorag/documents_discovery/component.py:99 (credential TEST_DATA_AWS_SECRET_ACCESS_KEY)",
+        "components/data_processing/autorag/text_extraction/component.py:98 (credential AWS_SECRET_ACCESS_KEY)",
         "components/data_processing/dataset_download/component.py:48 (credential HF_TOKEN)",
         "components/data_processing/parse_and_chunk/component.py:114 (credential CHUNK_MAX_TOKENS)",
         "components/data_processing/parse_and_chunk/component.py:115 (credential TOKENIZER)",
@@ -869,7 +884,7 @@
       {
         "claim": "AWS (S3-compatible storage) interaction=Python SDK client role=runtime-integration protocol=HTTPS purpose=AWS service operations via boto3",
         "sources": [
-          "components/data_processing/automl/tabular_data_loader/component.py:90"
+          "components/data_processing/automl/tabular_data_loader/component.py:96"
         ]
       }
     ],
@@ -968,7 +983,7 @@
       },
       {
         "source": "Dockerfile.konflux.pipelines-components",
-        "line_range": "25",
+        "line_range": "29",
         "symbols": [
           "Dockerfile.konflux.pipelines-components:CMD"
         ],
@@ -981,7 +996,7 @@
       },
       {
         "source": "pyproject.toml",
-        "line_range": "196",
+        "line_range": "195",
         "symbols": [
           "my-script"
         ],
@@ -996,7 +1011,7 @@
     "integration_points": [
       {
         "source": "components/data_processing/automl/tabular_data_loader/component.py",
-        "line_range": "90",
+        "line_range": "96",
         "symbols": [
           "AWS (S3-compatible storage)",
           "Python SDK client"
@@ -1044,14 +1059,14 @@
     {
       "category": "authentication",
       "metric": "files_scanned",
-      "value": 209,
+      "value": 210,
       "unit": "files",
       "scope": "Python source files for authentication constructions"
     },
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 275,
+      "value": 276,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

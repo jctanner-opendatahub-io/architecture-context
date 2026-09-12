@@ -1,0 +1,16 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/workbenches",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "workspaces/backend/README.md",
+    "workspaces/backend/cmd/main.go",
+    "workspaces/controller/README.md",
+    "workspaces/controller/cmd/main.go",
+    "workspaces/frontend/README.md",
+    "developing/DEVELOPMENT_GUIDE.md",
+    "developing/manifests/rbac/kustomization.yaml",
+    "releasing/version/VERSION"
+  ],
+  "reasoning": "This checkout is Kubeflow Notebooks v2 and contains a deployable Kubernetes application composed of a workspace controller, a backend API server, and a frontend UI. The controller reconciles Workspace and WorkspaceKind resources, the backend exposes notebook-management APIs, and the frontend provides the user interface; manifests and development workbenches support deploying and operating these components. Its primary role is therefore a service rather than a library or configuration-only project."
+}

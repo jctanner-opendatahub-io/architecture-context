@@ -1,0 +1,18 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/spark-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "cmd/operator/main.go",
+    "cmd/operator/controller/start.go",
+    "cmd/operator/webhook/start.go",
+    "api/v1beta2/sparkapplication_types.go",
+    "config/crd/bases/sparkoperator.k8s.io_sparkapplications.yaml",
+    "config/default/kustomization.yaml",
+    "charts/spark-operator-chart/Chart.yaml",
+    "charts/spark-operator-chart/templates/controller/deployment.yaml"
+  ],
+  "reasoning": "This project is a Kubernetes operator for Apache Spark. The README describes declarative SparkApplication resources and reconciliation of Spark workloads, PROJECT declares controller-managed namespaced custom resources (SparkConnect, SparkApplication, and ScheduledSparkApplication), and the Go entrypoints start the controller and admission webhook. The API types and generated CRD define the Spark custom-resource schema, while Kustomize and Helm manifests deploy the controller, webhook, RBAC, and CRDs. These are defining characteristics of an operator rather than a standalone service, library, or configuration-only project."
+}

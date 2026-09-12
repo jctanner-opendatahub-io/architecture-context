@@ -1,11 +1,11 @@
 {
   "component": "mcp-lifecycle-operator",
   "repo": "https://github.com/red-hat-data-services/mcp-lifecycle-operator.git",
-  "commit_sha": "65324e739e82d64b82939c231424754205442129",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "8941f2db9ecc00e43389de6ad70b2a7d9fa11bbc",
+  "extracted_at": "2026-09-12T16:39:57Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 14 RBAC roles, 0 ingress routes, 6 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
+  "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 14 RBAC roles, 0 ingress routes, 4 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
   "crds": [
     {
       "group": "mcp.x-k8s.io",
@@ -848,7 +848,7 @@
       "description": "Controller manager health endpoint",
       "owner": "cmd",
       "transport": "HTTP/1.1",
-      "source": "cmd/main.go:205"
+      "source": "cmd/main.go:206"
     },
     {
       "method": "GET",
@@ -858,7 +858,7 @@
       "description": "Controller manager health endpoint",
       "owner": "cmd",
       "transport": "HTTP/1.1",
-      "source": "cmd/main.go:209"
+      "source": "cmd/main.go:210"
     }
   ],
   "dependencies": {
@@ -967,45 +967,31 @@
   },
   "controller_watches": [
     {
-      "type": "Watches",
-      "gvk": "/v1/ConfigMap",
-      "controller": "MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:662",
-      "resource_ops": null
-    },
-    {
-      "type": "Watches",
-      "gvk": "/v1/Secret",
-      "controller": "MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:667",
-      "resource_ops": null
-    },
-    {
       "type": "Owns",
       "gvk": "/v1/Service",
       "controller": "MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:660",
+      "source": "internal/controller/mcpserver_controller.go:680",
       "resource_ops": null
     },
     {
       "type": "For",
       "gvk": "api/v1alpha1/MCPServer",
       "controller": "MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:654",
+      "source": "internal/controller/mcpserver_controller.go:674",
       "resource_ops": null
     },
     {
       "type": "Owns",
       "gvk": "apps/v1/Deployment",
       "controller": "MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:659",
+      "source": "internal/controller/mcpserver_controller.go:679",
       "resource_ops": null
     },
     {
       "type": "Owns",
       "gvk": "networking.k8s.io/v1/NetworkPolicy",
       "controller": "MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:661",
+      "source": "internal/controller/mcpserver_controller.go:681",
       "resource_ops": null
     }
   ],
@@ -1032,7 +1018,7 @@
       "mechanism": "None",
       "enforcement_point": "N/A",
       "policy": "Kubernetes health probe; unauthenticated by design",
-      "source": "cmd/main.go:205"
+      "source": "cmd/main.go:206"
     },
     {
       "endpoint": ":8081/readyz",
@@ -1040,7 +1026,7 @@
       "mechanism": "None",
       "enforcement_point": "N/A",
       "policy": "Kubernetes readiness probe; unauthenticated by design",
-      "source": "cmd/main.go:209"
+      "source": "cmd/main.go:210"
     },
     {
       "endpoint": "RBAC-aggregated resources (mcp.x-k8s.io)",
@@ -1069,39 +1055,39 @@
   ],
   "recent_changes": [
     {
-      "version": "65324e7",
-      "date": "2026-09-03",
+      "version": "8941f2d",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "317a582",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #39 from red-hat-data-services/pqc-image-update-main"
+      "version": "4213cc6",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "8c55718",
-      "date": "2026-09-02",
-      "changes": "Migrate runtime base image to pqc for main"
+      "version": "d6e7e98",
+      "date": "2026-09-11",
+      "changes": "Backport/tls handshake odh/main (#78)"
     },
     {
-      "version": "8a636c4",
-      "date": "2026-08-31",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "a58105b",
+      "date": "2026-09-11",
+      "changes": "RHOAIENG-82694: use metadata-only watches for ConfigMap and Secret (#77)"
     },
     {
-      "version": "f781e3b",
-      "date": "2026-08-31",
-      "changes": "sync pipelineruns with konflux-central - 85bde91"
+      "version": "11c8e85",
+      "date": "2026-09-11",
+      "changes": "fix: re-run TLS handshake on CA bundle Secret rotation (#333)"
     },
     {
-      "version": "f782cb7",
-      "date": "2026-08-19",
-      "changes": "sync pipelineruns with konflux-central - 954b713, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/32273026277"
+      "version": "f9b3590",
+      "date": "2026-09-11",
+      "changes": "feat: add TLS support for operator-to-MCP-server handshake (#295)"
     },
     {
-      "version": "5d8417f",
-      "date": "2026-08-19",
-      "changes": "sync pipelineruns with konflux-central - 37ff31f, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/32232733784"
+      "version": "fc84f5d",
+      "date": "2026-09-11",
+      "changes": "fix: use metadata-only watches for ConfigMap and Secret (#305) (#33)"
     }
   ],
   "component_refs": [
@@ -1109,7 +1095,7 @@
       "component": "/v1/ConfigMap",
       "type": "Kubernetes API",
       "reference": "get operations by MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller_confighash.go:77",
+      "source": "internal/controller/mcpserver_controller_confighash.go:79",
       "interaction": "Resource read"
     },
     {
@@ -1123,7 +1109,7 @@
       "component": "/v1/Secret",
       "type": "Kubernetes API",
       "reference": "get operations by MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller_confighash.go:109",
+      "source": "internal/controller/mcpserver_controller_confighash.go:111",
       "interaction": "Resource read"
     },
     {
@@ -1137,7 +1123,7 @@
       "component": "api/v1alpha1/MCPServer",
       "type": "Kubernetes API",
       "reference": "get, list operations by MCPServerReconciler",
-      "source": "internal/controller/mcpserver_controller.go:191",
+      "source": "internal/controller/mcpserver_controller.go:201",
       "interaction": "Resource read"
     },
     {
@@ -1229,7 +1215,9 @@
       "source": "cmd/main.go",
       "sources": [
         "cmd/main.go",
-        "cmd/tlsconfig.go"
+        "cmd/tlsconfig.go",
+        "internal/controller/mcpserver_controller.go",
+        "internal/controller/mcpserver_controller_tls.go"
       ]
     }
   ],
@@ -1265,26 +1253,6 @@
       "source": "cmd/main.go:166-166",
       "limitations": [
         "The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition"
-      ]
-    },
-    {
-      "kind": "named-watch-predicate",
-      "status": "unresolved",
-      "identity": "internal/controller.MCPServerReconciler",
-      "watched_gvk": "/v1/ConfigMap",
-      "source": "internal/controller/mcpserver_controller.go:662-666",
-      "limitations": [
-        "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
-      ]
-    },
-    {
-      "kind": "named-watch-predicate",
-      "status": "unresolved",
-      "identity": "internal/controller.MCPServerReconciler",
-      "watched_gvk": "/v1/Secret",
-      "source": "internal/controller/mcpserver_controller.go:667-671",
-      "limitations": [
-        "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
     }
   ],
@@ -1345,8 +1313,8 @@
         "5 inbound runtime surfaces are not fully accounted for by authentication facts"
       ],
       "evidence": [
-        "cmd/main.go:205",
-        "cmd/main.go:209",
+        "cmd/main.go:206",
+        "cmd/main.go:210",
         "config/default/metrics_service.yaml:4",
         "config/default/manager_metrics_patch.yaml:1"
       ]
@@ -1446,33 +1414,11 @@
     {
       "kind": "controller",
       "from": "MCPServerReconciler",
-      "to": "/v1/ConfigMap",
-      "relationship": "watches-reference",
-      "details": "/v1/ConfigMap",
-      "sources": [
-        "internal/controller/mcpserver_controller.go:662",
-        "internal/controller/mcpserver_controller_confighash.go:77"
-      ]
-    },
-    {
-      "kind": "controller",
-      "from": "MCPServerReconciler",
-      "to": "/v1/Secret",
-      "relationship": "watches-reference",
-      "details": "/v1/Secret",
-      "sources": [
-        "internal/controller/mcpserver_controller.go:667",
-        "internal/controller/mcpserver_controller_confighash.go:109"
-      ]
-    },
-    {
-      "kind": "controller",
-      "from": "MCPServerReconciler",
       "to": "/v1/Service",
       "relationship": "watches-reference",
       "details": "/v1/Service",
       "sources": [
-        "internal/controller/mcpserver_controller.go:660",
+        "internal/controller/mcpserver_controller.go:680",
         "internal/controller/mcpserver_controller_service.go:49"
       ]
     },
@@ -1483,8 +1429,8 @@
       "relationship": "watches-reference",
       "details": "api/v1alpha1/MCPServer",
       "sources": [
-        "internal/controller/mcpserver_controller.go:191",
-        "internal/controller/mcpserver_controller.go:654"
+        "internal/controller/mcpserver_controller.go:201",
+        "internal/controller/mcpserver_controller.go:674"
       ]
     },
     {
@@ -1494,7 +1440,7 @@
       "relationship": "watches-reference",
       "details": "apps/v1/Deployment",
       "sources": [
-        "internal/controller/mcpserver_controller.go:659",
+        "internal/controller/mcpserver_controller.go:679",
         "internal/controller/mcpserver_controller_deployment.go:59"
       ]
     },
@@ -1505,7 +1451,7 @@
       "relationship": "watches-reference",
       "details": "networking.k8s.io/v1/NetworkPolicy",
       "sources": [
-        "internal/controller/mcpserver_controller.go:661",
+        "internal/controller/mcpserver_controller.go:681",
         "internal/controller/mcpserver_controller_networkpolicy.go:50"
       ]
     }
@@ -1529,8 +1475,8 @@
       "status": "observed",
       "finding": "2 http_endpoints facts extracted",
       "sources": [
-        "cmd/main.go:205",
-        "cmd/main.go:209"
+        "cmd/main.go:206",
+        "cmd/main.go:210"
       ]
     },
     {
@@ -1557,13 +1503,13 @@
       {
         "claim": ":8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design",
         "sources": [
-          "cmd/main.go:205"
+          "cmd/main.go:206"
         ]
       },
       {
         "claim": ":8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design",
         "sources": [
-          "cmd/main.go:209"
+          "cmd/main.go:210"
         ]
       },
       {
@@ -1589,13 +1535,13 @@
       {
         "claim": "GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd",
         "sources": [
-          "cmd/main.go:205"
+          "cmd/main.go:206"
         ]
       },
       {
         "claim": "GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd",
         "sources": [
-          "cmd/main.go:209"
+          "cmd/main.go:210"
         ]
       }
     ],
@@ -1648,14 +1594,14 @@
         "claim": "HTTP GET /healthz is owned by cmd",
         "status": "observed",
         "sources": [
-          "cmd/main.go:205"
+          "cmd/main.go:206"
         ]
       },
       {
         "claim": "HTTP GET /readyz is owned by cmd",
         "status": "observed",
         "sources": [
-          "cmd/main.go:209"
+          "cmd/main.go:210"
         ]
       }
     ],
@@ -1664,14 +1610,14 @@
         "claim": "GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design",
         "status": "observed",
         "sources": [
-          "cmd/main.go:205"
+          "cmd/main.go:206"
         ]
       },
       {
         "claim": "GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design",
         "status": "observed",
         "sources": [
-          "cmd/main.go:209"
+          "cmd/main.go:210"
         ]
       },
       {
@@ -1798,7 +1744,9 @@
         "status": "dependency-signal",
         "sources": [
           "cmd/main.go",
-          "cmd/tlsconfig.go"
+          "cmd/tlsconfig.go",
+          "internal/controller/mcpserver_controller.go",
+          "internal/controller/mcpserver_controller_tls.go"
         ]
       }
     ],
@@ -1872,7 +1820,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "205",
+        "line_range": "206",
         "symbols": [
           ":8081/healthz",
           "None"
@@ -1886,7 +1834,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "209",
+        "line_range": "210",
         "symbols": [
           ":8081/readyz",
           "None"
@@ -2222,7 +2170,7 @@
     "http_endpoints": [
       {
         "source": "cmd/main.go",
-        "line_range": "205",
+        "line_range": "206",
         "symbols": [
           "/healthz",
           "GET",
@@ -2237,7 +2185,7 @@
       },
       {
         "source": "cmd/main.go",
-        "line_range": "209",
+        "line_range": "210",
         "symbols": [
           "/readyz",
           "GET",
@@ -2254,7 +2202,7 @@
     "internal_dependencies": [
       {
         "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "191",
+        "line_range": "201",
         "symbols": [
           "api/v1alpha1/MCPServer",
           "get, list operations by MCPServerReconciler"
@@ -2282,7 +2230,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller_confighash.go",
-        "line_range": "109",
+        "line_range": "111",
         "symbols": [
           "/v1/Secret",
           "get operations by MCPServerReconciler"
@@ -2296,7 +2244,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller_confighash.go",
-        "line_range": "77",
+        "line_range": "79",
         "symbols": [
           "/v1/ConfigMap",
           "get operations by MCPServerReconciler"
@@ -2354,7 +2302,7 @@
     "kubernetes_relationships": [
       {
         "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "191",
+        "line_range": "201",
         "symbols": [
           "api/v1alpha1/MCPServer",
           "get, list operations by MCPServerReconciler"
@@ -2368,7 +2316,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "654",
+        "line_range": "674",
         "symbols": [
           "MCPServerReconciler",
           "api/v1alpha1/MCPServer"
@@ -2382,7 +2330,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "659",
+        "line_range": "679",
         "symbols": [
           "MCPServerReconciler",
           "apps/v1/Deployment"
@@ -2396,7 +2344,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "660",
+        "line_range": "680",
         "symbols": [
           "/v1/Service",
           "MCPServerReconciler"
@@ -2410,41 +2358,13 @@
       },
       {
         "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "661",
+        "line_range": "681",
         "symbols": [
           "MCPServerReconciler",
           "networking.k8s.io/v1/NetworkPolicy"
         ],
         "question": "Which client/resource relationship implements this controller watch, and under what condition?",
         "expected_signal": "watch registration, GVK, resource operations, or conditional branch",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "662-666",
-        "symbols": [
-          "/v1/ConfigMap",
-          "internal/controller.MCPServerReconciler"
-        ],
-        "question": "Which literal resource names constrain this controller watch, and where are matching events routed?",
-        "expected_signal": "a supported literal named-resource predicate and any explicit event-handler target",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "internal/controller/mcpserver_controller.go",
-        "line_range": "667-671",
-        "symbols": [
-          "/v1/Secret",
-          "internal/controller.MCPServerReconciler"
-        ],
-        "question": "Which literal resource names constrain this controller watch, and where are matching events routed?",
-        "expected_signal": "a supported literal named-resource predicate and any explicit event-handler target",
         "status": "candidate",
         "limitations": [
           "candidate location only; source inspection is required to establish the relationship"
@@ -2466,7 +2386,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller_confighash.go",
-        "line_range": "109",
+        "line_range": "111",
         "symbols": [
           "/v1/Secret",
           "get operations by MCPServerReconciler"
@@ -2480,7 +2400,7 @@
       },
       {
         "source": "internal/controller/mcpserver_controller_confighash.go",
-        "line_range": "77",
+        "line_range": "79",
         "symbols": [
           "/v1/ConfigMap",
           "get operations by MCPServerReconciler"
@@ -2498,6 +2418,20 @@
         "symbols": [
           "apps/v1/Deployment",
           "get, update operations by MCPServerReconciler"
+        ],
+        "question": "How is this Kubernetes or platform resource reference used at runtime?",
+        "expected_signal": "typed client, CRUD operation, watch, or configuration projection",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "internal/controller/mcpserver_controller_networkpolicy.go",
+        "line_range": "50",
+        "symbols": [
+          "get, update operations by MCPServerReconciler",
+          "networking.k8s.io/v1/NetworkPolicy"
         ],
         "question": "How is this Kubernetes or platform resource reference used at runtime?",
         "expected_signal": "typed client, CRUD operation, watch, or configuration projection",
@@ -2555,7 +2489,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 77,
+      "value": 81,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

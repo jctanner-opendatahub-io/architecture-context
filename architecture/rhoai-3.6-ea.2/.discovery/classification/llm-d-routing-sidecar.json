@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-routing-sidecar",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/llm-d-routing-sidecar/main.go",
+    "internal/proxy/proxy.go",
+    "deploy/common/statefulset.yaml",
+    "deploy/common/service.yaml"
+  ],
+  "reasoning": "This is a Go HTTP reverse-proxy sidecar that runs as a network service, exposes health and inference endpoints, routes requests between decoder and prefiller workers, and includes Kubernetes StatefulSet and Service deployment manifests. It is therefore a service rather than an operator, library, or configuration-only project."
+}

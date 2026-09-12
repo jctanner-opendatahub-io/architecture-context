@@ -1,8 +1,8 @@
 {
   "component": "odh-observability",
   "repo": "https://github.com/red-hat-data-services/odh-observability.git",
-  "commit_sha": "4551e8dec12aa748af2c645a600aeaec7381b9bb",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "1936c2adcbdfb7a496ff395f1f5ec58dcc7c6685",
+  "extracted_at": "2026-09-12T16:39:59Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 2 workloads, 7 services, 5 RBAC roles, 3 ingress routes, 16 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -1074,6 +1074,26 @@
   ],
   "recent_changes": [
     {
+      "version": "1936c2a",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "0dad223",
+      "date": "2026-09-11",
+      "changes": "Update registry.redhat.io/ubi9/go-toolset Docker digest to 685ccca (#32)"
+    },
+    {
+      "version": "6314421",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "34f6107",
+      "date": "2026-09-10",
+      "changes": "Update registry.redhat.io/ubi9/ubi-minimal-pqc Docker digest to 3809cd5 (#31)"
+    },
+    {
       "version": "4551e8d",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -1087,26 +1107,6 @@
       "version": "ab01df9",
       "date": "2026-09-03",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "9446adc",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #20 from red-hat-data-services/migrate-runtime-to-pqc-main"
-    },
-    {
-      "version": "950a14c",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'origin/main' into pr20-merge-fix"
-    },
-    {
-      "version": "bc85fa6",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "629a0f4",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
     }
   ],
   "component_refs": [

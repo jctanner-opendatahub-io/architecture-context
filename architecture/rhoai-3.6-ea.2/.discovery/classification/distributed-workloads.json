@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/distributed-workloads",
+  "classification": "other",
+  "files_read": [
+    "README.md",
+    "ARCHITECTURE.md",
+    "go.mod",
+    "Makefile",
+    "rhods-installation.md",
+    "tests/odh/mnist_ray_test.go",
+    "tests/common/support/client.go"
+  ],
+  "reasoning": "This is a Go-based end-to-end and integration test suite for distributed workloads on RHOAI, with shared Kubernetes client/test support, benchmark and example content, and image/build tooling. It validates KFTO, Kubeflow Trainer v2, KubeRay, Kueue, and related workloads rather than implementing a deployable operator or service, serving as a reusable runtime library, or consisting only of configuration. Therefore it is best classified as other."
+}

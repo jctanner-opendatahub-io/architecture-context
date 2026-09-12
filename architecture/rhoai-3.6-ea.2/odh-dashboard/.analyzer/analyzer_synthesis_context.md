@@ -6,7 +6,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **crds (observed)**: 3 crds facts extracted [source: dashboard-operator/config/crd/bases/components.platform.opendatahub.io_dashboards.yaml:2, packages/notebooks/upstream/workspaces/controller/api/v1beta1/workspace_types.go:301, packages/notebooks/upstream/workspaces/controller/api/v1beta1/workspacekind_types.go:650]
 - **grpc_services (not-verified)**: 0 grpc_services facts extracted; absence is not proven by the available coverage
-- **http_endpoints (observed)**: 29 http_endpoints facts extracted [source: backend/src/app.ts:4, backend/src/routes/module-federation.ts:1, backend/src/routes/root.ts:1, backend/src/routes/wss/k8s/index.ts:73, dashboard-operator/cmd/manager/main.go:130, dashboard-operator/cmd/manager/main.go:134, distributions/core-bff/bff/internal/api/routes.go:1, distributions/core-bff/bff/internal/api/routes.go:95, packages/agent-ops/bff/internal/api/app.go:271, packages/agent-ops/bff/internal/api/app.go:305, packages/automl/bff/internal/api/app.go:375, packages/automl/bff/internal/api/app.go:401, packages/autorag/bff/internal/api/app.go:357, packages/autorag/bff/internal/api/app.go:383, packages/data-registry/bff/internal/api/app.go:263, packages/data-registry/bff/internal/api/app.go:288, packages/eval-hub/bff/internal/api/app.go:294, packages/eval-hub/bff/internal/api/app.go:331, packages/gen-ai/bff/internal/api/app.go:582, packages/gen-ai/bff/internal/api/app.go:628, packages/maas/bff/internal/api/app.go:317, packages/maas/bff/internal/api/app.go:345, packages/mlflow/bff/internal/api/app.go:334, packages/mlflow/bff/internal/api/app.go:362, packages/model-registry/upstream/bff/internal/api/app.go:510, packages/model-registry/upstream/bff/internal/api/app.go:534, packages/notebooks/upstream/workspaces/backend/api/app.go:137, packages/notebooks/upstream/workspaces/controller/cmd/main.go:271, packages/notebooks/upstream/workspaces/controller/cmd/main.go:275]
+- **http_endpoints (observed)**: 31 http_endpoints facts extracted [source: backend/src/app.ts:4, backend/src/routes/module-federation.ts:1, backend/src/routes/root.ts:1, backend/src/routes/wss/k8s/index.ts:77, dashboard-operator/cmd/manager/main.go:138, dashboard-operator/cmd/manager/main.go:142, distributions/core-bff/bff/internal/api/routes.go:1, distributions/core-bff/bff/internal/api/routes.go:102, packages/agent-ops/bff/internal/api/app.go:271, packages/agent-ops/bff/internal/api/app.go:305, packages/automl/bff/internal/api/app.go:375, packages/automl/bff/internal/api/app.go:401, packages/autorag/bff/internal/api/app.go:355, packages/autorag/bff/internal/api/app.go:381, packages/data-connect-hub/bff/internal/api/app.go:197, packages/data-connect-hub/bff/internal/api/app.go:222, packages/data-registry/bff/internal/api/app.go:263, packages/data-registry/bff/internal/api/app.go:288, packages/eval-hub/bff/internal/api/app.go:294, packages/eval-hub/bff/internal/api/app.go:331, packages/gen-ai/bff/internal/api/app.go:582, packages/gen-ai/bff/internal/api/app.go:628, packages/maas/bff/internal/api/app.go:317, packages/maas/bff/internal/api/app.go:345, packages/mlflow/bff/internal/api/app.go:334, packages/mlflow/bff/internal/api/app.go:362, packages/model-registry/upstream/bff/internal/api/app.go:512, packages/model-registry/upstream/bff/internal/api/app.go:536, packages/notebooks/upstream/workspaces/backend/api/app.go:137, packages/notebooks/upstream/workspaces/controller/cmd/main.go:271, packages/notebooks/upstream/workspaces/controller/cmd/main.go:275]
 - **services (observed)**: 2 services facts extracted [source: dashboard-operator/config/webhook/manifests.yaml:29, dashboard-operator/config/webhook/manifests.yaml:64]
 - **ingress (confirmed-empty)**: 0 ingress facts extracted
 - **webhooks (observed)**: 5 webhooks facts extracted [source: dashboard-operator/config/webhook/manifests.yaml:1, packages/notebooks/upstream/workspaces/controller/internal/webhook/workspace_webhook.go:44, packages/notebooks/upstream/workspaces/controller/internal/webhook/workspacekind_webhook.go:52, packages/notebooks/upstream/workspaces/controller/manifests/kustomize/base/crd/workspacekinds_webhook_patch.yaml:3, packages/notebooks/upstream/workspaces/controller/manifests/kustomize/base/crd/workspaces_webhook_patch.yaml:3]
@@ -16,14 +16,14 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **controller**: WorkspaceKindReconciler —watches-reference→ api/v1beta1/Workspace; api/v1beta1/Workspace [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:143, packages/notebooks/upstream/workspaces/controller/internal/controller/workspacekind_controller.go:286]
 - **controller**: WorkspaceKindReconciler —watches-reference→ api/v1beta1/WorkspaceKind; api/v1beta1/WorkspaceKind [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:219, packages/notebooks/upstream/workspaces/controller/internal/controller/workspacekind_controller.go:285]
 - **controller**: WorkspaceReconciler —watches-reference→ /v1/Pod; /v1/Pod [source: packages/notebooks/upstream/workspaces/backend/internal/repositories/pvcs/repo.go:71, packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:770]
-- **controller**: WorkspaceReconciler —watches-reference→ /v1/Service; /v1/Service [source: dashboard-operator/internal/controller/actions.go:86, packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:755]
+- **controller**: WorkspaceReconciler —watches-reference→ /v1/Service; /v1/Service [source: dashboard-operator/internal/controller/actions.go:71, packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:755]
 - **controller**: WorkspaceReconciler —watches-reference→ api/v1beta1/Workspace; api/v1beta1/Workspace [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:143, packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:753]
 - **controller**: WorkspaceReconciler —watches-reference→ api/v1beta1/WorkspaceKind; api/v1beta1/WorkspaceKind [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:219, packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:765]
 - **controller**: WorkspaceReconciler —watches-reference→ apps/v1/StatefulSet; apps/v1/StatefulSet [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:754, packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:820]
 - **network**: HTTP ALL /_mf/:name/* —served-by→ odh-dashboard-operator-metrics-service; endpoint and service share an explicit owner or port [source: backend/src/routes/module-federation.ts:1, dashboard-operator/config/webhook/manifests.yaml:64]
 - **network**: HTTP ALL /api/* —served-by→ odh-dashboard-operator-metrics-service; endpoint and service share an explicit owner or port [source: backend/src/app.ts:4, dashboard-operator/config/webhook/manifests.yaml:64]
 - **network**: HTTP GET / —served-by→ odh-dashboard-operator-metrics-service; endpoint and service share an explicit owner or port [source: backend/src/routes/root.ts:1, dashboard-operator/config/webhook/manifests.yaml:64]
-- **network**: HTTP WS /wss/k8s/* —served-by→ odh-dashboard-operator-metrics-service; endpoint and service share an explicit owner or port [source: backend/src/routes/wss/k8s/index.ts:73, dashboard-operator/config/webhook/manifests.yaml:64]
+- **network**: HTTP WS /wss/k8s/* —served-by→ odh-dashboard-operator-metrics-service; endpoint and service share an explicit owner or port [source: backend/src/routes/wss/k8s/index.ts:77, dashboard-operator/config/webhook/manifests.yaml:64]
 - **security**: ALL /api/* —protected-by→ Bearer Token (Authorization header) or internal ServiceAccount token; Go BFF authentication configuration: auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: backend/src/app.ts:4, packages/agent-ops/bff/cmd/main.go:42]
 - **webhook**: validate.dashboards.components.platform.opendatahub.io —served-by→ odh-dashboard-operator-webhook-service; admission webhook declares an explicit service reference [source: dashboard-operator/config/webhook/manifests.yaml:1, dashboard-operator/config/webhook/manifests.yaml:29]
 
@@ -31,7 +31,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: packages/notebooks/upstream/workspaces/backend/internal/helper/k8s.go:67-69]
 - **conditional-metrics-enforcement (unresolved)** controller-runtime metrics: controller-runtime metrics serving surface; limitations=The controller-runtime manager Metrics binding does not use one direct lexical options object with a stable SecureServing condition [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:176-180]
-- **named-watch-predicate (unresolved)** internal/controller.SetupWithManager: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: dashboard-operator/internal/controller/dashboard_reconciler.go:1050-1054]
+- **named-watch-predicate (unresolved)** internal/controller.SetupWithManager: /v1/ConfigMap; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: dashboard-operator/internal/controller/dashboard_reconciler.go:1039-1043]
 - **named-watch-predicate (unresolved)** internal/controller.WorkspaceKindReconciler: kubeflow.org/v1beta1/Workspace; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspacekind_controller.go:286-290]
 - **named-watch-predicate (unresolved)** internal/controller.WorkspaceReconciler: kubeflow.org/v1beta1/WorkspaceKind; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:765-769]
 - **named-watch-predicate (unresolved)** internal/controller.WorkspaceReconciler: /v1/Pod; literal names=; limitations=Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:770-774]
@@ -42,23 +42,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `backend/src/utils/constants.ts`:18 (/api/* (backend), Bearer Token (x-forwarded-access-token))
+  **Candidate:** `dashboard-operator/cmd/manager/main.go`:138 (:8081/healthz, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `dashboard-operator/cmd/manager/main.go`:101 (Kubernetes API, ServiceAccount token (in-cluster))
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Where is authentication enforced for this surface, and is it conditional?
-  **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `dashboard-operator/cmd/manager/main.go`:130 (:8081/healthz, None)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Where is authentication enforced for this surface, and is it conditional?
-  **Expected signal:** middleware, filter, policy, or enforcement branch
-  **Candidate:** `dashboard-operator/cmd/manager/main.go`:134 (:8081/readyz, None)
+  **Candidate:** `dashboard-operator/cmd/manager/main.go`:142 (:8081/readyz, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
   **Candidate:** `packages/agent-ops/bff/cmd/main.go`:42 (/api/*, Bearer Token (Authorization header) or internal ServiceAccount token)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is authentication enforced for this surface, and is it conditional?
+  **Expected signal:** middleware, filter, policy, or enforcement branch
+  **Candidate:** `packages/data-connect-hub/bff/cmd/main.go`:42 (/api/*, Bearer Token (Authorization header) or internal ServiceAccount token)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
@@ -83,6 +79,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **Question:** Under which configuration branch does the metrics serving surface install authentication and authorization?
   **Expected signal:** a direct SecureServing condition and controller-runtime authn/authz FilterProvider assignment
   **Candidate:** `packages/notebooks/upstream/workspaces/backend/internal/helper/k8s.go`:67-69 (controller-runtime metrics, controller-runtime metrics serving surface)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is authentication enforced for this surface, and is it conditional?
+  **Expected signal:** middleware, filter, policy, or enforcement branch
+  **Candidate:** `packages/notebooks/upstream/workspaces/controller/cmd/main.go`:163 (Kubernetes API, ServiceAccount token (in-cluster))
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Under which configuration branch does the metrics serving surface install authentication and authorization?
   **Expected signal:** a direct SecureServing condition and controller-runtime authn/authz FilterProvider assignment
@@ -210,7 +210,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `distributions/core-bff/bff/internal/api/routes.go`:95 (/, Unknown, internal/api)
+  **Candidate:** `distributions/core-bff/bff/internal/api/routes.go`:102 (/, Unknown, internal/api)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
@@ -230,11 +230,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `packages/autorag/bff/internal/api/app.go`:357 (/, Unknown, internal/api)
+  **Candidate:** `packages/autorag/bff/internal/api/app.go`:355 (/, Unknown, internal/api)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `packages/autorag/bff/internal/api/app.go`:383 (/, Unknown, internal/api)
+  **Candidate:** `packages/autorag/bff/internal/api/app.go`:381 (/, Unknown, internal/api)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
+  **Expected signal:** route registration, handler binding, middleware, or owner symbol
+  **Candidate:** `packages/data-connect-hub/bff/internal/api/app.go`:197 (/, Unknown, internal/api)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
+  **Expected signal:** route registration, handler binding, middleware, or owner symbol
+  **Candidate:** `packages/data-connect-hub/bff/internal/api/app.go`:222 (/, Unknown, internal/api)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
@@ -246,15 +254,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `packages/eval-hub/bff/internal/api/app.go`:294 (/, Unknown, internal/api)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
-  **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `packages/eval-hub/bff/internal/api/app.go`:331 (/, Unknown, internal/api)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
-  **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `packages/notebooks/upstream/workspaces/backend/api/app.go`:137 (/, Unknown, api)
+  **Candidate:** `packages/model-registry/upstream/bff/internal/api/app.go`:536 (/, Unknown, internal/api)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### integration_points
 
@@ -360,31 +360,31 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1045 (api/v1alpha1/Dashboard)
+  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1029 (api/v1alpha1/Dashboard)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1046 (apps/v1/Deployment)
+  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1031 (/v1/Service)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1047 (/v1/Service)
+  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1032 (/v1/ConfigMap)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1048 (/v1/ConfigMap)
+  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1033 (/v1/ServiceAccount)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
+  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
+  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1034 (/v1/Secret)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which literal resource names constrain this controller watch, and where are matching events routed?
   **Expected signal:** a supported literal named-resource predicate and any explicit event-handler target
-  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1050-1054 (/v1/ConfigMap, internal/controller.SetupWithManager)
+  **Candidate:** `dashboard-operator/internal/controller/dashboard_reconciler.go`:1039-1043 (/v1/ConfigMap, internal/controller.SetupWithManager)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
   **Candidate:** `packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go`:753 (WorkspaceReconciler, api/v1beta1/Workspace)
-  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
-- **Question:** Which client/resource relationship implements this controller watch, and under what condition?
-  **Expected signal:** watch registration, GVK, resource operations, or conditional branch
-  **Candidate:** `packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go`:754 (WorkspaceReconciler, apps/v1/StatefulSet)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which client/resource relationship implements this controller watch, and under what condition?
   **Expected signal:** watch registration, GVK, resource operations, or conditional branch
@@ -449,18 +449,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - /agent-ops/api/v1/agents/* methods=GET mechanism=Bearer Token + SubjectAccessReview enforcement=Go BFF middleware (RequireAccessToAgent) policy=Per-agent RBAC via SSAR [source: packages/agent-ops/bff/internal/api/middleware.go:1]
 - /api/* (backend) methods=ALL mechanism=Bearer Token (x-forwarded-access-token) enforcement=Node.js backend middleware policy=Route-specific user or admin authorization [source: backend/src/utils/constants.ts:18]
-- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/eval-hub/bff/cmd/main.go:44]
-- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/agent-ops/bff/cmd/main.go:42]
-- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/data-registry/bff/cmd/main.go:43]
 - /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/maas/bff/cmd/main.go:41]
+- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/agent-ops/bff/cmd/main.go:42]
+- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/data-connect-hub/bff/cmd/main.go:42]
+- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/data-registry/bff/cmd/main.go:43]
+- /api/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/eval-hub/bff/cmd/main.go:44]
 - /api/k8s/* methods=ALL mechanism=Bearer Token to K8s Impersonation enforcement=Node.js proxy to K8s API policy=User Kubernetes RBAC [source: backend/src/utils/proxy.ts:39]
 - /api/v1/* methods=ALL mechanism=Bearer Token (Authorization header) or internal ServiceAccount token enforcement=Go BFF authentication configuration policy=auth-method flag accepts internal or user_token; token header and Bearer prefix are configurable [source: packages/model-registry/upstream/bff/cmd/main.go:59]
 - /gen-ai/api/v1/* methods=ALL mechanism=Bearer Token (x-forwarded-access-token) enforcement=Go BFF middleware (RequireAccessToService) policy=RBAC and namespace access [source: packages/gen-ai/bff/internal/api/middleware.go:169]
 - /maas/api/v1/* methods=ALL mechanism=Bearer Token (x-forwarded-access-token or internal) enforcement=Go BFF middleware policy=Internal service account or user token [source: packages/maas/bff/internal/config/environment.go:21]
-- :8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:130]
-- :8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:134]
+- :8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:138]
+- :8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:142]
 - Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=In-cluster configuration provides automatic ServiceAccount token authentication [source: packages/gen-ai/bff/internal/integrations/kubernetes/otel_config_manager.go:65]
-- Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=RBAC enforced via odh-dashboard-operator-role ClusterRole; SA odh-dashboard-operator [source: dashboard-operator/cmd/manager/main.go:101]
+- Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=RBAC enforced via odh-dashboard-operator-role ClusterRole; SA odh-dashboard-operator [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:163]
 - Operator webhook methods=CREATE mechanism=Kubernetes admission enforcement=ValidatingWebhookConfiguration policy=Admission validation [source: dashboard-operator/config/webhook/manifests.yaml:1]
 ### http_endpoints
 
@@ -469,30 +470,32 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - GET / on port 8443; transport= encryption=TLS (kube-rbac-proxy) auth=OpenShift project list owner= [source: backend/src/routes/root.ts:1]
 - GET /healthcheck on port 8080; transport= encryption=None auth=None owner= [source: distributions/core-bff/bff/internal/api/routes.go:1]
 - GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:271]
-- GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: dashboard-operator/cmd/manager/main.go:130]
+- GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: dashboard-operator/cmd/manager/main.go:138]
 - GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:275]
-- GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: dashboard-operator/cmd/manager/main.go:134]
+- GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/manager [source: dashboard-operator/cmd/manager/main.go:142]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=api [source: packages/notebooks/upstream/workspaces/backend/api/app.go:137]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/autorag/bff/internal/api/app.go:357]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/mlflow/bff/internal/api/app.go:362]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/data-registry/bff/internal/api/app.go:288]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/maas/bff/internal/api/app.go:345]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/mlflow/bff/internal/api/app.go:362]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/data-registry/bff/internal/api/app.go:263]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/data-connect-hub/bff/internal/api/app.go:197]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/eval-hub/bff/internal/api/app.go:294]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/data-registry/bff/internal/api/app.go:288]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/gen-ai/bff/internal/api/app.go:582]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/gen-ai/bff/internal/api/app.go:628]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/maas/bff/internal/api/app.go:317]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/model-registry/upstream/bff/internal/api/app.go:534]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/mlflow/bff/internal/api/app.go:334]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/data-registry/bff/internal/api/app.go:263]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/model-registry/upstream/bff/internal/api/app.go:510]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/autorag/bff/internal/api/app.go:383]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/eval-hub/bff/internal/api/app.go:331]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/eval-hub/bff/internal/api/app.go:294]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/mlflow/bff/internal/api/app.go:334]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/data-connect-hub/bff/internal/api/app.go:222]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/model-registry/upstream/bff/internal/api/app.go:512]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/autorag/bff/internal/api/app.go:381]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/autorag/bff/internal/api/app.go:355]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/automl/bff/internal/api/app.go:401]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/automl/bff/internal/api/app.go:375]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/agent-ops/bff/internal/api/app.go:305]
 - Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/agent-ops/bff/internal/api/app.go:271]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: distributions/core-bff/bff/internal/api/routes.go:95]
-- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/automl/bff/internal/api/app.go:401]
-- WS /wss/k8s/* on port 8443; transport= encryption=TLS (kube-rbac-proxy) auth=user_token owner= [source: backend/src/routes/wss/k8s/index.ts:73]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: distributions/core-bff/bff/internal/api/routes.go:102]
+- Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=internal/api [source: packages/model-registry/upstream/bff/internal/api/app.go:536]
+- WS /wss/k8s/* on port 8443; transport= encryption=TLS (kube-rbac-proxy) auth=user_token owner= [source: backend/src/routes/wss/k8s/index.ts:77]
 ### integrations
 
 - AcceleratorProfile CR interaction=CRD CRUD role=unknown protocol=HTTPS purpose=Manage hardware accelerator profiles [source: dashboard-operator/config/rbac/role.yaml:1]
@@ -524,7 +527,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - DataScienceCluster CR interaction=CRD Watch role=runtime-integration purpose=Read enabled platform components [source: dashboard-operator/config/rbac/role.yaml:1]
 - Feast (feast.dev) interaction=CRD Watch role=runtime-integration purpose=Read feature store instances [source: dashboard-operator/config/rbac/role.yaml:1]
 - Gateway API interaction=CRD CRUD role=unknown purpose=Manage Gateway API routing resources [source: dashboard-operator/config/rbac/role.yaml:1]
-- Gateway API interaction=HTTPRoute CRUD role=runtime-transport purpose=Reconcile HTTPRoute resources against a configured Gateway [source: packages/notebooks/upstream/workspaces/controller/internal/controller/workspace_controller.go:179]
+- Gateway API interaction=HTTPRoute CRUD role=runtime-transport purpose=Reconcile HTTPRoute resources against a configured Gateway [source: dashboard-operator/internal/controller/maas_consumer_portal.go:133]
 - HardwareProfile CR interaction=CRD CRUD role=unknown purpose=Manage hardware profile resources [source: dashboard-operator/config/rbac/role.yaml:1]
 - KServe InferenceService interaction=CRD Watch role=runtime-integration purpose=Read model serving state [source: packages/eval-hub/bff/internal/api/inferenceservices_handler.go:101]
 - KServe InferenceService interaction=CRD Watch role=runtime-integration purpose=Read model serving state [source: dashboard-operator/config/rbac/role.yaml:1]
@@ -535,6 +538,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - MLflow (mlflow.opendatahub.io) interaction=CRD Watch role=runtime-integration purpose=Read MLflow instances [source: dashboard-operator/config/rbac/role.yaml:1]
 - ModelRegistry (modelregistry.opendatahub.io) interaction=CRD CRUD role=unknown purpose=Manage model registry instances [source: dashboard-operator/config/rbac/role.yaml:1]
 - ModelRegistry (modelregistry.opendatahub.io) interaction=CRD CRUD role=unknown purpose=Manage model registry instances [source: packages/model-registry/upstream/bff/internal/redhat/repositories/model_registry_settings_repository.go:110]
+- OpenShift Cluster Configuration interaction=APIServer resource read role=runtime-integration purpose=Read cluster-wide API server configuration [source: dashboard-operator/internal/tls/resolve.go:155]
 - TrustyAI (trustyai.opendatahub.io) interaction=CRD Watch role=runtime-integration purpose=Read TrustyAI service resources [source: dashboard-operator/config/rbac/role.yaml:1]
 - TrustyAI (trustyai.opendatahub.io) interaction=CRD Watch role=runtime-integration purpose=Read TrustyAI service resources [source: packages/eval-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:269]
 - mlflow-go interaction=Go library role=runtime-library purpose=Use runtime packages from github.com/opendatahub-io/mlflow-go [source: packages/gen-ai/bff/internal/integrations/mlflow/client.go:6]
@@ -563,11 +567,11 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 ### ingress
 
 - **observed**: HTTP GET /healthz is owned by cmd [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:271]
-- **observed**: HTTP GET /healthz is owned by cmd/manager [source: dashboard-operator/cmd/manager/main.go:130]
+- **observed**: HTTP GET /healthz is owned by cmd/manager [source: dashboard-operator/cmd/manager/main.go:138]
 - **observed**: HTTP GET /readyz is owned by cmd [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:275]
-- **observed**: HTTP GET /readyz is owned by cmd/manager [source: dashboard-operator/cmd/manager/main.go:134]
+- **observed**: HTTP GET /readyz is owned by cmd/manager [source: dashboard-operator/cmd/manager/main.go:142]
 - **observed**: HTTP Unknown / is owned by api [source: packages/notebooks/upstream/workspaces/backend/api/app.go:137]
-- **observed**: HTTP Unknown / is owned by internal/api [source: packages/eval-hub/bff/internal/api/app.go:331]
+- **observed**: HTTP Unknown / is owned by internal/api [source: packages/data-registry/bff/internal/api/app.go:288]
 ### security
 
 - **observed**: ALL /api/* (backend) uses Bearer Token (x-forwarded-access-token) at Node.js backend middleware; policy=Route-specific user or admin authorization [source: backend/src/utils/constants.ts:18]
@@ -578,19 +582,19 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **observed**: ALL /maas/api/v1/* uses Bearer Token (x-forwarded-access-token or internal) at Go BFF middleware; policy=Internal service account or user token [source: packages/maas/bff/internal/config/environment.go:21]
 - **observed**: CREATE Operator webhook uses Kubernetes admission at ValidatingWebhookConfiguration; policy=Admission validation [source: dashboard-operator/config/webhook/manifests.yaml:1]
 - **observed**: GET /agent-ops/api/v1/agents/* uses Bearer Token + SubjectAccessReview at Go BFF middleware (RequireAccessToAgent); policy=Per-agent RBAC via SSAR [source: packages/agent-ops/bff/internal/api/middleware.go:1]
-- **observed**: GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:130]
-- **observed**: GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:134]
-- **observed**: RBAC role dashboard-operator-role grants 59 rule(s) [source: dashboard-operator/config/rbac/role.yaml:1]
-- **observed**: RBAC role odh-dashboard-operator-role grants 59 rule(s) [source: dashboard-operator/config/rbac/role.yaml:1]
+- **observed**: GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:138]
+- **observed**: GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design [source: dashboard-operator/cmd/manager/main.go:142]
+- **observed**: RBAC role dashboard-operator-role grants 61 rule(s) [source: dashboard-operator/config/rbac/role.yaml:1]
+- **observed**: RBAC role odh-dashboard-operator-role grants 61 rule(s) [source: dashboard-operator/config/rbac/role.yaml:1]
 - **observed**: REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=In-cluster configuration provides automatic ServiceAccount token authentication [source: packages/gen-ai/bff/internal/integrations/kubernetes/otel_config_manager.go:65]
-- **observed**: REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=RBAC enforced via odh-dashboard-operator-role ClusterRole; SA odh-dashboard-operator [source: dashboard-operator/cmd/manager/main.go:101]
-- **literal**: rbac-ref targets SelfSubjectAccessReviews: Token or subject access review call [source: distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:134, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:165, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:260, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:283, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:44, packages/agent-ops/bff/internal/integrations/kubernetes/agent_rbac.go:72, packages/agent-ops/bff/internal/integrations/kubernetes/token_k8s_client.go:129, packages/agent-ops/bff/internal/integrations/kubernetes/token_k8s_client.go:160, packages/agent-ops/bff/internal/integrations/kubernetes/token_k8s_client.go:43, packages/autox-core/services/kubernetes/client_base.go:125, packages/autox-core/services/kubernetes/client_base.go:149, packages/data-registry/bff/internal/integrations/kubernetes/token_k8s_client.go:117, packages/data-registry/bff/internal/integrations/kubernetes/token_k8s_client.go:148, packages/data-registry/bff/internal/integrations/kubernetes/token_k8s_client.go:42, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:121, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:152, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:284, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:46, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:186, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:399, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:443, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:487, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:117, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:148, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:235, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:45, packages/mlflow/bff/internal/integrations/kubernetes/token_k8s_client.go:177, packages/mlflow/bff/internal/integrations/kubernetes/token_k8s_client.go:43, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:109, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:139, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:220, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:252, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:42]
-- **literal**: rbac-ref targets SubjectAccessReviews: Token or subject access review call [source: packages/agent-ops/bff/internal/integrations/kubernetes/agent_rbac.go:40, packages/agent-ops/bff/internal/integrations/kubernetes/internal_k8s_client.go:142, packages/agent-ops/bff/internal/integrations/kubernetes/internal_k8s_client.go:257, packages/data-registry/bff/internal/integrations/kubernetes/internal_k8s_client.go:119, packages/eval-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:121, packages/eval-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:241, packages/maas/bff/internal/integrations/kubernetes/internal_k8s_client.go:128, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:129, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:169, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:261, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:65, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:97, packages/model-registry/upstream/bff/internal/integrations/kubernetes/namespace_registry_access.go:46]
+- **observed**: REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=RBAC enforced via odh-dashboard-operator-role ClusterRole; SA odh-dashboard-operator [source: packages/notebooks/upstream/workspaces/controller/cmd/main.go:163]
+- **literal**: rbac-ref targets SelfSubjectAccessReviews: Token or subject access review call [source: distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:134, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:165, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:260, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:283, distributions/core-bff/bff/internal/integrations/kubernetes/token_k8s_client.go:44, packages/agent-ops/bff/internal/integrations/kubernetes/agent_rbac.go:72, packages/agent-ops/bff/internal/integrations/kubernetes/token_k8s_client.go:129, packages/agent-ops/bff/internal/integrations/kubernetes/token_k8s_client.go:160, packages/agent-ops/bff/internal/integrations/kubernetes/token_k8s_client.go:43, packages/autox-core/services/kubernetes/client_base.go:125, packages/autox-core/services/kubernetes/client_base.go:149, packages/data-connect-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:117, packages/data-connect-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:148, packages/data-connect-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:42, packages/data-registry/bff/internal/integrations/kubernetes/token_k8s_client.go:117, packages/data-registry/bff/internal/integrations/kubernetes/token_k8s_client.go:148, packages/data-registry/bff/internal/integrations/kubernetes/token_k8s_client.go:42, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:121, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:152, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:284, packages/eval-hub/bff/internal/integrations/kubernetes/token_k8s_client.go:46, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:186, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:399, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:443, packages/gen-ai/bff/internal/integrations/kubernetes/token_k8s_client.go:487, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:117, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:148, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:235, packages/maas/bff/internal/integrations/kubernetes/token_k8s_client.go:45, packages/mlflow/bff/internal/integrations/kubernetes/token_k8s_client.go:177, packages/mlflow/bff/internal/integrations/kubernetes/token_k8s_client.go:43, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:109, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:139, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:220, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:252, packages/model-registry/upstream/bff/internal/integrations/kubernetes/token_k8s_client.go:42]
+- **literal**: rbac-ref targets SubjectAccessReviews: Token or subject access review call [source: packages/agent-ops/bff/internal/integrations/kubernetes/agent_rbac.go:40, packages/agent-ops/bff/internal/integrations/kubernetes/internal_k8s_client.go:142, packages/agent-ops/bff/internal/integrations/kubernetes/internal_k8s_client.go:257, packages/data-connect-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:119, packages/data-connect-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:207, packages/data-registry/bff/internal/integrations/kubernetes/internal_k8s_client.go:119, packages/eval-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:121, packages/eval-hub/bff/internal/integrations/kubernetes/internal_k8s_client.go:241, packages/maas/bff/internal/integrations/kubernetes/internal_k8s_client.go:128, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:129, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:169, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:261, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:65, packages/model-registry/upstream/bff/internal/integrations/kubernetes/internal_k8s_client.go:97, packages/model-registry/upstream/bff/internal/integrations/kubernetes/namespace_registry_access.go:46]
 - **dependency-signal**: rbac-ref targets k8s.io/apiserver/pkg/authorization/authorizer: RBAC/authorization API import [source: packages/notebooks/upstream/workspaces/backend/api/app.go, packages/notebooks/upstream/workspaces/backend/api/auth.go, packages/notebooks/upstream/workspaces/backend/internal/auth/authorization.go]
 - **dependency-signal**: rbac-ref targets k8s.io/client-go/kubernetes/typed/authorization/v1: RBAC/authorization API import [source: packages/notebooks/upstream/workspaces/backend/internal/auth/authorization.go]
 - **literal**: rbac-ref targets selfSubjectAccessReviewGroup: Token or subject access review call [source: packages/agent-ops/bff/internal/integrations/kubernetes/agent_enrichment_rbac.go:44]
 - **literal**: rbac-ref targets subjectAccessReviewGroup: Token or subject access review call [source: packages/agent-ops/bff/internal/integrations/kubernetes/agent_enrichment_rbac.go:28]
-- **dependency-signal**: tls-config targets crypto/tls: TLS configuration import [source: dashboard-operator/cmd/manager/main.go, distributions/core-bff/bff/cmd/main.go, distributions/core-bff/bff/internal/api/app_proxy.go, distributions/core-bff/bff/internal/api/app_tls.go, distributions/core-bff/bff/internal/api/connection_test_probes.go, distributions/core-bff/bff/internal/integrations/bffclient/client.go, distributions/core-bff/bff/internal/integrations/httpclient/http.go, distributions/core-bff/bff/internal/proxy/factory.go, distributions/core-bff/bff/internal/proxy/k8s_proxy.go, distributions/core-bff/bff/internal/proxy/ws_proxy.go, distributions/core-bff/bff/internal/repositories/prometheus.go, packages/agent-ops/bff/cmd/main.go, packages/agent-ops/bff/internal/integrations/bffclient/client.go, packages/agent-ops/bff/internal/integrations/httpclient/http.go, packages/automl/bff/cmd/main.go, packages/automl/bff/internal/integrations/modelregistry/client.go, packages/autorag/bff/cmd/main.go, packages/autorag/bff/internal/integrations/ogx/ogx_client.go, packages/autox-core/services/pipelines/client.go, packages/autox-core/services/s3/client.go, packages/data-registry/bff/cmd/main.go, packages/data-registry/bff/internal/integrations/bffclient/client.go, packages/data-registry/bff/internal/integrations/httpclient/http.go, packages/data-registry/bff/internal/proxy/tls.go, packages/data-registry/bff/internal/proxy/websocket.go, packages/eval-hub/bff/cmd/main.go, packages/eval-hub/bff/internal/integrations/bffclient/client.go, packages/eval-hub/bff/internal/integrations/connectionprobe/client.go, packages/eval-hub/bff/internal/integrations/evalhub/evalhub_client.go, packages/eval-hub/bff/internal/integrations/httpclient/http.go, packages/gen-ai/bff/cmd/main.go, packages/gen-ai/bff/internal/api/app.go, packages/gen-ai/bff/internal/integrations/bffclient/client.go, packages/gen-ai/bff/internal/integrations/externalmodels/client.go, packages/gen-ai/bff/internal/integrations/http.go, packages/gen-ai/bff/internal/integrations/kubernetes/otel_config_manager.go, packages/gen-ai/bff/internal/integrations/llamastack/llamastack_client.go, packages/gen-ai/bff/internal/integrations/mcp/transport_factory.go, packages/gen-ai/bff/internal/integrations/mlflow/factory.go, packages/gen-ai/bff/internal/integrations/mlflow/mlflowmocks/mlflow_process.go, packages/gen-ai/bff/internal/integrations/nemo/nemo_client.go, packages/maas/bff/cmd/main.go, packages/maas/bff/internal/helpers/maas_discovery.go, packages/maas/bff/internal/integrations/httpclient/http.go, packages/maas/bff/internal/integrations/maas/maas_client.go, packages/mlflow/bff/cmd/main.go, packages/mlflow/bff/internal/integrations/bffclient/client.go, packages/mlflow/bff/internal/integrations/mlflow/factory.go, packages/model-registry/upstream/bff/cmd/main.go, packages/model-registry/upstream/bff/internal/integrations/bffclient/client.go, packages/model-registry/upstream/bff/internal/integrations/bffclient/factory.go, packages/model-registry/upstream/bff/internal/integrations/httpclient/http.go, packages/notebooks/upstream/workspaces/backend/internal/server/server.go, packages/notebooks/upstream/workspaces/controller/cmd/main.go]
+- **dependency-signal**: tls-config targets crypto/tls: TLS configuration import [source: dashboard-operator/internal/tls/resolve.go, distributions/core-bff/bff/internal/api/app_proxy.go, distributions/core-bff/bff/internal/api/app_tls.go, distributions/core-bff/bff/internal/api/connection_test_probes.go, distributions/core-bff/bff/internal/integrations/bffclient/client.go, distributions/core-bff/bff/internal/integrations/httpclient/http.go, distributions/core-bff/bff/internal/proxy/factory.go, distributions/core-bff/bff/internal/proxy/k8s_proxy.go, distributions/core-bff/bff/internal/proxy/ws_proxy.go, distributions/core-bff/bff/internal/repositories/prometheus.go, packages/agent-ops/bff/internal/integrations/bffclient/client.go, packages/agent-ops/bff/internal/integrations/httpclient/http.go, packages/automl/bff/internal/integrations/modelregistry/client.go, packages/autorag/bff/internal/integrations/maas/maas_client.go, packages/autox-core/services/pipelines/client.go, packages/autox-core/services/s3/client.go, packages/data-connect-hub/bff/cmd/main.go, packages/data-connect-hub/bff/internal/integrations/bffclient/client.go, packages/data-connect-hub/bff/internal/integrations/httpclient/http.go, packages/data-connect-hub/bff/internal/proxy/tls.go, packages/data-connect-hub/bff/internal/proxy/websocket.go, packages/data-registry/bff/internal/integrations/bffclient/client.go, packages/data-registry/bff/internal/integrations/httpclient/http.go, packages/data-registry/bff/internal/proxy/tls.go, packages/data-registry/bff/internal/proxy/websocket.go, packages/eval-hub/bff/internal/integrations/bffclient/client.go, packages/eval-hub/bff/internal/integrations/connectionprobe/client.go, packages/eval-hub/bff/internal/integrations/evalhub/evalhub_client.go, packages/eval-hub/bff/internal/integrations/httpclient/http.go, packages/gen-ai/bff/internal/api/app.go, packages/gen-ai/bff/internal/integrations/bffclient/client.go, packages/gen-ai/bff/internal/integrations/externalmodels/client.go, packages/gen-ai/bff/internal/integrations/http.go, packages/gen-ai/bff/internal/integrations/kubernetes/otel_config_manager.go, packages/gen-ai/bff/internal/integrations/llamastack/llamastack_client.go, packages/gen-ai/bff/internal/integrations/mcp/transport_factory.go, packages/gen-ai/bff/internal/integrations/mlflow/factory.go, packages/gen-ai/bff/internal/integrations/mlflow/mlflowmocks/mlflow_process.go, packages/gen-ai/bff/internal/integrations/nemo/nemo_client.go, packages/maas/bff/internal/helpers/maas_discovery.go, packages/maas/bff/internal/integrations/httpclient/http.go, packages/maas/bff/internal/integrations/maas/maas_client.go, packages/mlflow/bff/internal/integrations/bffclient/client.go, packages/mlflow/bff/internal/integrations/mlflow/factory.go, packages/model-registry/upstream/bff/internal/integrations/bffclient/client.go, packages/model-registry/upstream/bff/internal/integrations/bffclient/factory.go, packages/model-registry/upstream/bff/internal/integrations/httpclient/http.go, packages/notebooks/upstream/workspaces/backend/internal/server/server.go, packages/notebooks/upstream/workspaces/controller/cmd/main.go, pkg/tls/tls.go]
 ### supply_chain
 
 - **unresolved**: No complete deterministic evidence family was extracted; targeted source/configuration review may be required [source: coverage:supply_chain]

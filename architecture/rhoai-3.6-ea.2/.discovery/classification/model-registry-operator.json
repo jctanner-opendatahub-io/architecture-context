@@ -1,0 +1,18 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/model-registry-operator",
+  "classification": "operator",
+  "files_read": [
+    "PROJECT",
+    "README.md",
+    "main.go",
+    "api/v1beta1/modelregistry_types.go",
+    "internal/controller/modelregistry_controller.go",
+    "internal/controller/catalog_controller.go",
+    "internal/controller/aihub_controller.go",
+    "config/crd/bases/modelregistry.opendatahub.io_modelregistries.yaml",
+    "config/manager/manager.yaml",
+    "config/rbac/role.yaml",
+    "config/webhook/manifests.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator built with Kubebuilder and controller-runtime. PROJECT declares ModelRegistry, AIHub, and Catalog custom resources; the README explicitly describes the Model Registry Operator reconciling ModelRegistry custom resources to deploy model registry instances; and the Go sources implement ModelRegistry, Catalog, and AIHub reconcilers. The repository also contains CRD, manager Deployment, RBAC, and webhook manifests, confirming that its primary role is to watch custom resources and manage cluster resources."
+}

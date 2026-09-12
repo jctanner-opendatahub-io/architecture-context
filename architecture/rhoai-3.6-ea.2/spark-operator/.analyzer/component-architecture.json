@@ -1,8 +1,8 @@
 {
   "component": "spark-operator",
   "repo": "https://github.com/red-hat-data-services/spark-operator.git",
-  "commit_sha": "595695c77cbbfa6aee1e39d0019abb87776de9d5",
-  "extracted_at": "2026-09-10T15:09:33Z",
+  "commit_sha": "c701bd94987420c37b0748e9aaf1b8da465e2378",
+  "extracted_at": "2026-09-12T16:40:01Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 4 CRDs, 0 serving runtime definitions, 2 workloads, 1 services, 20 RBAC roles, 0 ingress routes, 23 controller watches, 6 registered HTTP endpoints, and 0 gRPC services.",
@@ -2840,39 +2840,39 @@
   ],
   "recent_changes": [
     {
-      "version": "595695c",
-      "date": "2026-09-04",
+      "version": "c701bd9",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "31bb82c",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 5e68f09 (#263)"
+      "version": "05b5cd9",
+      "date": "2026-09-11",
+      "changes": "Migrate runtime to pqc in main (#271)"
     },
     {
-      "version": "432e723",
-      "date": "2026-09-04",
+      "version": "c9dc01c",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "5353841",
-      "date": "2026-09-04",
+      "version": "178327d",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#270)"
+    },
+    {
+      "version": "cefab2a",
+      "date": "2026-09-09",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "8009223",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "ba4f90e",
-      "date": "2026-09-03",
-      "changes": "Add Slack failure notifications for scheduled CI runs (#178)"
-    },
-    {
-      "version": "3068aa7",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "301a28d",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
+      "version": "c94052f",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #179 from alinaryan/fix-missing-main-branch"
     }
   ],
   "component_refs": [

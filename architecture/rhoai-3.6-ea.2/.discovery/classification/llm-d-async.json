@@ -1,0 +1,17 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/llm-d-async",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "go.work",
+    "Dockerfile",
+    "cmd/main.go",
+    "api/api.go",
+    "pkg/asyncworker/worker.go",
+    "deploy/install.sh",
+    "charts/llm-d-async/Chart.yaml",
+    "charts/llm-d-async/values.yaml"
+  ],
+  "reasoning": "This project is a deployable asynchronous processor service. Its Go entrypoint parses server options and runs a controller-runtime server; the worker implementation consumes queued requests, applies gates, dispatches HTTP inference requests, and publishes results. The README describes it as an Async Processor service backed by message queues, while the Dockerfile and Helm chart provide containerized Kubernetes deployment. Although it exposes reusable API and pipeline packages, the checkout's primary purpose is a running service rather than a standalone library, operator/controller, or configuration-only project."
+}

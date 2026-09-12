@@ -1,0 +1,16 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/batch-gateway",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/apiserver/main.go",
+    "cmd/batch-processor/main.go",
+    "cmd/batch-gc/main.go",
+    "charts/batch-gateway/Chart.yaml",
+    "charts/batch-gateway/README.md",
+    "charts/batch-gateway/values.yaml",
+    "docs/design/batch_inference_architecture.md"
+  ],
+  "reasoning": "This is a deployable batch-inference service rather than a library or configuration-only project. The repository defines API-server, batch-processor, and garbage-collector executables, exposes an OpenAI-compatible HTTP API, integrates with PostgreSQL, Redis/Valkey, S3 or filesystem storage, and includes a Helm chart for Kubernetes/OpenShift deployment. Its public client packages and configuration files support the service but are not the primary product."
+}

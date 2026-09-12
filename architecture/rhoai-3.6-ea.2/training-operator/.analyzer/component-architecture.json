@@ -1,8 +1,8 @@
 {
   "component": "training-operator",
   "repo": "https://github.com/red-hat-data-services/training-operator.git",
-  "commit_sha": "1a74b8ffb9b485b09120cc35f5ec3e27771925aa",
-  "extracted_at": "2026-09-10T15:09:34Z",
+  "commit_sha": "672659c002930b246bf9dbf4b846389a07dcafb6",
+  "extracted_at": "2026-09-12T16:40:02Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 6 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 2 RBAC roles, 0 ingress routes, 0 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -1146,6 +1146,26 @@
   ],
   "recent_changes": [
     {
+      "version": "672659c0",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1442 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "5d6cbc49",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 685ccca (#1443)"
+    },
+    {
+      "version": "a28e0a4f",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "9c6a0f6b",
+      "date": "2026-09-09",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/ubi-minimal docker digest to d235f60 (#1436)"
+    },
+    {
       "version": "1a74b8ff",
       "date": "2026-09-04",
       "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 5e68f09 (#1424)"
@@ -1159,26 +1179,6 @@
       "version": "f4dfb565",
       "date": "2026-09-03",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "6f94f697",
-      "date": "2026-09-02",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 8cf8983 (#1412)"
-    },
-    {
-      "version": "54d568e9",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #1410 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "b83c2d52",
-      "date": "2026-09-01",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "14085d69",
-      "date": "2026-08-31",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/ubi-minimal docker digest to 7fbeae1 (#1404)"
     }
   ],
   "component_refs": [

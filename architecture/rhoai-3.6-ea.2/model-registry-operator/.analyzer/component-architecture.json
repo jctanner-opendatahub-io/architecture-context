@@ -1,8 +1,8 @@
 {
   "component": "model-registry-operator",
   "repo": "https://github.com/red-hat-data-services/model-registry-operator.git",
-  "commit_sha": "114ec55e6cd2316d6d61da1508927800efd34420",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "7fe6f0e6e8c2b7e4dd5ef9e8957eeca815feb383",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 4 CRDs, 0 serving runtime definitions, 5 workloads, 5 services, 14 RBAC roles, 5 ingress routes, 33 controller watches, 6 registered HTTP endpoints, and 0 gRPC services.",
@@ -23,7 +23,7 @@
       "name": "Catalog controller",
       "type": "Controller",
       "purpose": "Reconciles Catalog resources",
-      "source": "internal/controller/catalog_controller.go:1368"
+      "source": "internal/controller/catalog_controller.go:1472"
     },
     {
       "name": "ModelRegistry controller",
@@ -214,7 +214,8 @@
             }
           ],
           "env_from_secrets": [
-            "model-catalog-postgres"
+            "model-catalog-postgres",
+            "{template-value}"
           ],
           "env_from_configmaps": null,
           "liveness_probe": {
@@ -1646,18 +1647,19 @@
       "name": "{template-value}",
       "type": "referenced",
       "referenced_by": [
+        "model-catalog/catalog",
         "{registry-name}/rest-container",
         "{registry-name}"
       ],
       "provisioned_by": "controller template",
-      "source": "internal/controller/config/templates/deployment.yaml.tmpl:1"
+      "source": "internal/controller/config/templates/catalog/catalog-deployment.yaml.tmpl:1"
     },
     {
       "name": "{name}-postgres",
       "type": "Opaque",
       "referenced_by": null,
       "provisioned_by": "controller Go source",
-      "source": "internal/controller/catalog_controller.go:1004"
+      "source": "internal/controller/catalog_controller.go:1049"
     }
   ],
   "http_endpoints": [
@@ -1837,7 +1839,7 @@
       },
       {
         "module": "sigs.k8s.io/controller-runtime",
-        "version": "v0.24.1",
+        "version": "v0.25.0",
         "category": "runtime-framework",
         "role": "runtime-framework",
         "purpose": "",
@@ -1845,7 +1847,7 @@
       },
       {
         "module": "sigs.k8s.io/gateway-api",
-        "version": "v1.6.1",
+        "version": "v1.6.2",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -1868,7 +1870,7 @@
       },
       {
         "name": "controller-runtime",
-        "version": "0.24.1",
+        "version": "0.25.0",
         "ecosystem": "go",
         "purpose": "Operator framework",
         "source": "go.mod"
@@ -1931,21 +1933,21 @@
       "type": "Owns",
       "gvk": "/v1/ConfigMap",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1372",
+      "source": "internal/controller/catalog_controller.go:1476",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "/v1/ConfigMap",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1402",
+      "source": "internal/controller/catalog_controller.go:1506",
       "resource_ops": null
     },
     {
       "type": "Owns",
       "gvk": "/v1/Secret",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1373",
+      "source": "internal/controller/catalog_controller.go:1477",
       "resource_ops": null
     },
     {
@@ -1959,7 +1961,7 @@
       "type": "Owns",
       "gvk": "/v1/ServiceAccount",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1371",
+      "source": "internal/controller/catalog_controller.go:1475",
       "resource_ops": null
     },
     {
@@ -1980,7 +1982,7 @@
       "type": "Owns",
       "gvk": "/v1/Service",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1370",
+      "source": "internal/controller/catalog_controller.go:1474",
       "resource_ops": null
     },
     {
@@ -2015,7 +2017,7 @@
       "type": "For",
       "gvk": "api/catalog/v1alpha1/Catalog",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1368",
+      "source": "internal/controller/catalog_controller.go:1472",
       "resource_ops": null
     },
     {
@@ -2043,7 +2045,7 @@
       "type": "Owns",
       "gvk": "apps/v1/Deployment",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1369",
+      "source": "internal/controller/catalog_controller.go:1473",
       "resource_ops": null
     },
     {
@@ -2057,7 +2059,7 @@
       "type": "Owns",
       "gvk": "networking.k8s.io/v1/NetworkPolicy",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1374",
+      "source": "internal/controller/catalog_controller.go:1478",
       "resource_ops": null
     },
     {
@@ -2078,7 +2080,7 @@
       "type": "Watches",
       "gvk": "rbac.authorization.k8s.io/v1/ClusterRoleBinding",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1408",
+      "source": "internal/controller/catalog_controller.go:1512",
       "resource_ops": null
     },
     {
@@ -2107,7 +2109,7 @@
       "type": "Owns",
       "gvk": "rbac.authorization.k8s.io/v1/RoleBinding",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1376",
+      "source": "internal/controller/catalog_controller.go:1480",
       "resource_ops": null
     },
     {
@@ -2129,7 +2131,7 @@
       "type": "Owns",
       "gvk": "rbac.authorization.k8s.io/v1/Role",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1375",
+      "source": "internal/controller/catalog_controller.go:1479",
       "resource_ops": null
     },
     {
@@ -2143,7 +2145,7 @@
       "type": "Owns",
       "gvk": "route.openshift.io/v1/Route",
       "controller": "CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1379",
+      "source": "internal/controller/catalog_controller.go:1483",
       "conditional": true,
       "resource_ops": null
     },
@@ -2524,39 +2526,39 @@
   ],
   "recent_changes": [
     {
-      "version": "114ec55",
-      "date": "2026-09-04",
+      "version": "7fe6f0e",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "8627566",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update dockerfile digest updates (#1087)"
+      "version": "104fe38",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1097 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "877fc18",
-      "date": "2026-09-03",
+      "version": "06d316f",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "4f87a26",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/stable'"
+      "version": "0748b98",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 685ccca (#1098)"
     },
     {
-      "version": "48f94f5",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1086 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "fceb6b9",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #669 from opendatahub-io/main"
-    },
-    {
-      "version": "b2faa31",
-      "date": "2026-09-03",
+      "version": "b5df41c",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "c25afd6",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "4232b6f",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#1096)"
     }
   ],
   "component_refs": [
@@ -2571,28 +2573,28 @@
       "component": "/v1/Endpoints",
       "type": "Kubernetes API",
       "reference": "get operations by CatalogReconciler, ModelRegistryReconciler",
-      "source": "internal/controller/catalog_controller.go:574",
+      "source": "internal/controller/catalog_controller.go:619",
       "interaction": "Resource read"
     },
     {
       "component": "/v1/PersistentVolumeClaim",
       "type": "Kubernetes API",
       "reference": "delete, get operations by CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:400",
+      "source": "internal/controller/catalog_controller.go:445",
       "interaction": "Resource CRUD"
     },
     {
       "component": "/v1/Pod",
       "type": "Kubernetes API",
       "reference": "list operations by CatalogReconciler, ModelRegistryReconciler",
-      "source": "internal/controller/catalog_controller.go:616",
+      "source": "internal/controller/catalog_controller.go:661",
       "interaction": "Resource read"
     },
     {
       "component": "/v1/Secret",
       "type": "Kubernetes API",
-      "reference": "get, update operations by CatalogReconciler, ModelRegistryReconciler",
-      "source": "internal/controller/catalog_controller.go:903",
+      "reference": "get, list, update operations by CatalogReconciler, ModelRegistryReconciler",
+      "source": "internal/controller/catalog_controller.go:948",
       "interaction": "Resource CRUD"
     },
     {
@@ -2676,7 +2678,7 @@
       "component": "rbac.authorization.k8s.io/v1/RoleBinding",
       "type": "Kubernetes API",
       "reference": "delete, get operations by CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1084",
+      "source": "internal/controller/catalog_controller.go:1129",
       "interaction": "Resource CRUD"
     },
     {
@@ -2690,7 +2692,7 @@
       "component": "services.platform.opendatahub.io/v1alpha1/Auth",
       "type": "Kubernetes API",
       "reference": "get operations by CatalogReconciler",
-      "source": "internal/controller/catalog_controller.go:1037",
+      "source": "internal/controller/catalog_controller.go:1082",
       "interaction": "Resource read"
     },
     {
@@ -2765,7 +2767,7 @@
       "target": "Kubernetes API",
       "client": "client-go discovery client",
       "configuration": "runtime Kubernetes configuration",
-      "source": "internal/setup/setup.go:86"
+      "source": "internal/setup/setup.go:88"
     },
     {
       "target": "Kubernetes API",
@@ -2834,7 +2836,7 @@
       "status": "unresolved",
       "identity": "internal/controller.CatalogReconciler",
       "watched_gvk": "/v1/ConfigMap",
-      "source": "internal/controller/catalog_controller.go:1402-1406",
+      "source": "internal/controller/catalog_controller.go:1506-1510",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -2844,7 +2846,7 @@
       "status": "unresolved",
       "identity": "internal/controller.CatalogReconciler",
       "watched_gvk": "rbac.authorization.k8s.io/v1/ClusterRoleBinding",
-      "source": "internal/controller/catalog_controller.go:1408-1412",
+      "source": "internal/controller/catalog_controller.go:1512-1516",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -3032,7 +3034,7 @@
         "kustomize resolution is partial: image transforms not resolved"
       ],
       "evidence": [
-        "internal/setup/setup.go:86 (unaccounted runtime client: Kubernetes API)",
+        "internal/setup/setup.go:88 (unaccounted runtime client: Kubernetes API)",
         "cmd/modelregistry.go:215 (unaccounted runtime client: Kubernetes API)",
         "cmd/aihub.go:125 (unaccounted runtime client: Kubernetes API)",
         "cmd/catalog.go:120 (unaccounted runtime client: Kubernetes API)",
@@ -3148,7 +3150,7 @@
       "details": "rbac.authorization.k8s.io/v1/RoleBinding",
       "sources": [
         "internal/controller/aihub_controller.go:773",
-        "internal/controller/catalog_controller.go:1084"
+        "internal/controller/catalog_controller.go:1129"
       ]
     },
     {
@@ -3159,7 +3161,7 @@
       "details": "/v1/ConfigMap",
       "sources": [
         "internal/controller/aihub_controller.go:735",
-        "internal/controller/catalog_controller.go:1372"
+        "internal/controller/catalog_controller.go:1476"
       ]
     },
     {
@@ -3169,8 +3171,8 @@
       "relationship": "watches-reference",
       "details": "/v1/Secret",
       "sources": [
-        "internal/controller/catalog_controller.go:1373",
-        "internal/controller/catalog_controller.go:903"
+        "internal/controller/catalog_controller.go:1477",
+        "internal/controller/catalog_controller.go:948"
       ]
     },
     {
@@ -3181,7 +3183,7 @@
       "details": "api/catalog/v1alpha1/Catalog",
       "sources": [
         "internal/controller/aihub_controller.go:527",
-        "internal/controller/catalog_controller.go:1368"
+        "internal/controller/catalog_controller.go:1472"
       ]
     },
     {
@@ -3192,7 +3194,7 @@
       "details": "apps/v1/Deployment",
       "sources": [
         "internal/controller/aihub_controller.go:458",
-        "internal/controller/catalog_controller.go:1369"
+        "internal/controller/catalog_controller.go:1473"
       ]
     },
     {
@@ -3202,7 +3204,7 @@
       "relationship": "watches-reference",
       "details": "networking.k8s.io/v1/NetworkPolicy",
       "sources": [
-        "internal/controller/catalog_controller.go:1374",
+        "internal/controller/catalog_controller.go:1478",
         "internal/controller/modelregistry_oauth.go:45"
       ]
     },
@@ -3213,7 +3215,7 @@
       "relationship": "watches-reference",
       "details": "rbac.authorization.k8s.io/v1/ClusterRoleBinding",
       "sources": [
-        "internal/controller/catalog_controller.go:1408",
+        "internal/controller/catalog_controller.go:1512",
         "internal/controller/modelregistry_oauth.go:35"
       ]
     },
@@ -3224,8 +3226,8 @@
       "relationship": "watches-reference",
       "details": "rbac.authorization.k8s.io/v1/RoleBinding",
       "sources": [
-        "internal/controller/catalog_controller.go:1084",
-        "internal/controller/catalog_controller.go:1376"
+        "internal/controller/catalog_controller.go:1129",
+        "internal/controller/catalog_controller.go:1480"
       ]
     },
     {
@@ -3235,7 +3237,7 @@
       "relationship": "watches-reference",
       "details": "route.openshift.io/v1/Route",
       "sources": [
-        "internal/controller/catalog_controller.go:1379",
+        "internal/controller/catalog_controller.go:1483",
         "internal/controller/modelregistry_controller.go:768"
       ]
     },
@@ -3290,7 +3292,7 @@
       "relationship": "watches-reference",
       "details": "rbac.authorization.k8s.io/v1/RoleBinding",
       "sources": [
-        "internal/controller/catalog_controller.go:1084",
+        "internal/controller/catalog_controller.go:1129",
         "internal/controller/modelregistry_controller.go:289"
       ]
     },
@@ -4392,7 +4394,7 @@
       },
       {
         "source": "internal/setup/setup.go",
-        "line_range": "86",
+        "line_range": "88",
         "symbols": [
           "Kubernetes API",
           "client-go discovery client"
@@ -4655,7 +4657,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "400",
+        "line_range": "445",
         "symbols": [
           "/v1/PersistentVolumeClaim",
           "delete, get operations by CatalogReconciler"
@@ -4669,7 +4671,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "574",
+        "line_range": "619",
         "symbols": [
           "/v1/Endpoints",
           "get operations by CatalogReconciler, ModelRegistryReconciler"
@@ -4683,7 +4685,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "616",
+        "line_range": "661",
         "symbols": [
           "/v1/Pod",
           "list operations by CatalogReconciler, ModelRegistryReconciler"
@@ -4697,10 +4699,10 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "903",
+        "line_range": "948",
         "symbols": [
           "/v1/Secret",
-          "get, update operations by CatalogReconciler, ModelRegistryReconciler"
+          "get, list, update operations by CatalogReconciler, ModelRegistryReconciler"
         ],
         "question": "What source-backed runtime behavior uses this component reference?",
         "expected_signal": "client, API, watch, or configuration handoff",
@@ -4783,7 +4785,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "1370",
+        "line_range": "1474",
         "symbols": [
           "/v1/Service",
           "CatalogReconciler"
@@ -4797,7 +4799,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "1371",
+        "line_range": "1475",
         "symbols": [
           "/v1/ServiceAccount",
           "CatalogReconciler"
@@ -4811,7 +4813,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "1372",
+        "line_range": "1476",
         "symbols": [
           "/v1/ConfigMap",
           "CatalogReconciler"
@@ -4825,7 +4827,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "1373",
+        "line_range": "1477",
         "symbols": [
           "/v1/Secret",
           "CatalogReconciler"
@@ -4839,7 +4841,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "1402-1406",
+        "line_range": "1506-1510",
         "symbols": [
           "/v1/ConfigMap",
           "internal/controller.CatalogReconciler"
@@ -4853,7 +4855,7 @@
       },
       {
         "source": "internal/controller/catalog_controller.go",
-        "line_range": "1408-1412",
+        "line_range": "1512-1516",
         "symbols": [
           "internal/controller.CatalogReconciler",
           "rbac.authorization.k8s.io/v1/ClusterRoleBinding"

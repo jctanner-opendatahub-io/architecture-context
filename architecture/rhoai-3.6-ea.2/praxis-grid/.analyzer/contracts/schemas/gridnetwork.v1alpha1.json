@@ -247,6 +247,23 @@
           "pattern": "^([1-9][0-9]*s|[1-9][0-9]{3,}ms)$",
           "type": "string"
         },
+        "placementPolicy": {
+          "description": "Static provider-capacity placement policy.",
+          "nullable": true,
+          "properties": {
+            "strategy": {
+              "description": "Placement strategy.",
+              "enum": [
+                "static"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "strategy"
+          ],
+          "type": "object"
+        },
         "region": {
           "description": "Region where this site is deployed.",
           "nullable": true,
@@ -282,7 +299,7 @@
         },
         "seeds": {
           "default": [],
-          "description": "Initial SWIM seed peer addresses.",
+          "description": "Initial SWIM seed peer endpoints in host:port form. Literal IPv4, bracketed IPv6, and DNS hostnames are accepted.",
           "items": {
             "type": "string"
           },
@@ -297,7 +314,8 @@
               "enum": [
                 "deterministic",
                 "roundRobin",
-                "random"
+                "random",
+                "weightedRandom"
               ],
               "type": "string"
             }
@@ -440,7 +458,13 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": "object",
+      "x-kubernetes-validations": [
+        {
+          "message": "placementPolicy must be set if and only if selectionPolicy.mode is weightedRandom",
+          "rule": "has(self.placementPolicy) == (has(self.selectionPolicy) \u0026\u0026 self.selectionPolicy.mode == 'weightedRandom')"
+        }
+      ]
     },
     "status": {
       "description": "Observed status of a [`GridNetwork`].",

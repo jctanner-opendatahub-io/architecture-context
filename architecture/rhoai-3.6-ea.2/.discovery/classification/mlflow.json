@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/mlflow",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "ARCHITECTURE.md",
+    "mlflow/server/__init__.py",
+    "mlflow/server/handlers.py",
+    "charts/Chart.yaml",
+    "charts/README.md",
+    "Dockerfile.konflux"
+  ],
+  "reasoning": "MLflow is primarily a deployable tracking and model/AI platform service. The repository implements a web server with Flask/FastAPI applications and numerous HTTP API handlers, provides a Kubernetes Helm chart for deployment, and builds a container whose default command runs `mlflow server` listening on port 5000. Although it also ships a Python client and SDK libraries, the checkout's principal runtime and RHOAI integration are the shared MLflow server and its Kubernetes deployment."
+}

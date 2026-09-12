@@ -1,8 +1,8 @@
 {
   "component": "workload-variant-autoscaler",
   "repo": "https://github.com/red-hat-data-services/workload-variant-autoscaler.git",
-  "commit_sha": "1b08f0ab11041bab67a6ffcb49606baff373c773",
-  "extracted_at": "2026-09-10T15:09:35Z",
+  "commit_sha": "643e2619653cbdb88677b72765e0376c5bfdaae9",
+  "extracted_at": "2026-09-12T16:40:03Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 5 RBAC roles, 0 ingress routes, 5 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -835,39 +835,39 @@
   ],
   "recent_changes": [
     {
-      "version": "1b08f0ab",
-      "date": "2026-09-04",
+      "version": "643e2619",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "f06b01ab",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#239)"
-    },
-    {
-      "version": "bab6a36f",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "311d9997",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #232 from red-hat-data-services/migrate-runtime-to-pqc-main"
-    },
-    {
-      "version": "20580e79",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "560cf78d",
-      "date": "2026-09-03",
+      "version": "2f43653a",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "33e8dd11",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #205 from zdtsw-forking/sync/upstream-099b6a56"
+      "version": "848f1e50",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #213 from zdtsw-forking/sync/upstream-0a926fab"
+    },
+    {
+      "version": "d812c063",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "ad71ad5e",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
+    },
+    {
+      "version": "4734ae46",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #212 from zdtsw-forking/sync/upstream-be94e044"
+    },
+    {
+      "version": "ad9e17ed",
+      "date": "2026-09-10",
+      "changes": "Sync upstream llm-d/llm-d-autoscaling be94e044"
     }
   ],
   "component_refs": [
@@ -2250,7 +2250,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 217,
+      "value": 218,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

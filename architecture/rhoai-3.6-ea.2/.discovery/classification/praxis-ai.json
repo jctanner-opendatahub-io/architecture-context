@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/praxis-proxy.rhoai-3.6-ea.2/praxis-ai",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "Cargo.toml",
+    "server/src/main.rs",
+    "server/Cargo.toml",
+    "Containerfile",
+    "server/src/default.yaml",
+    "server/src/lib.rs"
+  ],
+  "reasoning": "This checkout implements the Praxis AI gateway as a runnable proxy server. The server crate defines the praxis-ai binary and main entry point, loads runtime YAML configuration, starts listeners and an admin endpoint, and registers request filters for routing and AI gateway behavior. The Containerfile packages and runs the binary as an OCI service exposing ports 8080 and 9901. It is therefore a service rather than a library, operator, or configuration-only project."
+}

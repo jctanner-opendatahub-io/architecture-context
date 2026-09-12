@@ -30,7 +30,7 @@ No bounded behavioral evidence was extracted.
 
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu`:396 (codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:CMD)
+  **Candidate:** `codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu`:403 (codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:CMD)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
@@ -42,7 +42,7 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu`:114 (jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:ENTRYPOINT)
+  **Candidate:** `jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu`:118 (jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:ENTRYPOINT)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping

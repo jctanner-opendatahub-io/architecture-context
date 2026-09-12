@@ -1,0 +1,16 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/kserve-autogluon-server",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "Makefile",
+    "kserve-images.env",
+    "kserve-images.sh",
+    "Dockerfile",
+    "pkg/controller/v1beta1/inferenceservice/controller.go",
+    "config/components/kserve/kustomization.yaml",
+    "config/runtimes/kserve-autogluonserver.yaml"
+  ],
+  "reasoning": "This is the KServe Kubernetes operator/control plane, not merely an inference-serving library or standalone service. The repository contains controller-runtime reconcilers for InferenceService resources, SetupWithManager wiring, Kubernetes RBAC markers, deployment/ingress/autoscaling reconciliation, Kustomize installation configuration, and ClusterServingRuntime definitions. The Dockerfile builds and packages a manager binary, while the Autogluon runtime YAML configures a model-serving container managed by the operator."
+}

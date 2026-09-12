@@ -1,8 +1,8 @@
 {
   "component": "policy",
   "repo": "https://github.com/praxis-proxy/policy.git",
-  "commit_sha": "9ee972ff37dfd7771650540eeffd8edab04b1a49",
-  "extracted_at": "2026-09-10T15:09:33Z",
+  "commit_sha": "753d3c7b1d867aea75573079d473e4b83d050a52",
+  "extracted_at": "2026-09-12T16:40:00Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -1001,6 +1001,11 @@
   "external_connections": null,
   "recent_changes": [
     {
+      "version": "753d3c7",
+      "date": "2026-09-08",
+      "changes": "docs: add PPE documentation (#82)"
+    },
+    {
       "version": "9ee972f",
       "date": "2026-09-03",
       "changes": "chore(release): v0.2.0 (#80)"
@@ -1029,11 +1034,6 @@
       "version": "8288be9",
       "date": "2026-09-01",
       "changes": "feat: `assertions:` to control http headers propagation (#56)"
-    },
-    {
-      "version": "819c380",
-      "date": "2026-09-01",
-      "changes": "build(deps): bump crypto, JWT, and GitHub Action deps (#57)"
     }
   ],
   "component_refs": null,
@@ -1053,9 +1053,9 @@
       "target": "ring",
       "detail": "Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
       "status": "dependency-signal",
-      "source": "Cargo.lock:2904",
+      "source": "Cargo.lock:2906",
       "sources": [
-        "Cargo.lock:2904"
+        "Cargo.lock:2906"
       ]
     },
     {
@@ -1063,9 +1063,9 @@
       "target": "FIPS validation",
       "detail": "FIPS validation and runtime provider selection are not fully determined by static dependency/build signals",
       "status": "not-extracted",
-      "source": "Cargo.lock:2904",
+      "source": "Cargo.lock:2906",
       "sources": [
-        "Cargo.lock:2904"
+        "Cargo.lock:2906"
       ]
     }
   ],
@@ -1131,7 +1131,7 @@
       ],
       "evidence": [
         "Cargo.lock:174",
-        "Cargo.lock:2904",
+        "Cargo.lock:2906",
         "coverage:fips_compliance"
       ]
     },
@@ -1283,14 +1283,14 @@
         "claim": "crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.lock:2904"
+          "Cargo.lock:2906"
         ]
       },
       {
         "claim": "fips-posture targets FIPS validation: FIPS validation and runtime provider selection are not fully determined by static dependency/build signals",
         "status": "not-extracted",
         "sources": [
-          "Cargo.lock:2904"
+          "Cargo.lock:2906"
         ]
       }
     ],

@@ -6,7 +6,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **crds (not-verified)**: 0 crds facts extracted; absence is not proven by the available coverage
 - **grpc_services (confirmed-empty)**: 0 grpc_services facts extracted
-- **http_endpoints (observed)**: 16 http_endpoints facts extracted [source: cmd/batch-gc/main.go:163, cmd/batch-gc/main.go:164, cmd/batch-processor/main.go:196, cmd/batch-processor/main.go:197, cmd/batch-processor/main.go:202, cmd/batch-processor/main.go:203, cmd/batch-processor/main.go:204, cmd/batch-processor/main.go:205, cmd/batch-processor/main.go:206, cmd/batch-processor/main.go:210, internal/apiserver/common/rest.go:74, internal/apiserver/server/server.go:113, internal/apiserver/server/server.go:114, internal/apiserver/server/server.go:115, internal/apiserver/server/server.go:116, internal/apiserver/server/server.go:117]
+- **http_endpoints (observed)**: 16 http_endpoints facts extracted [source: cmd/batch-gc/main.go:171, cmd/batch-gc/main.go:172, cmd/batch-processor/main.go:196, cmd/batch-processor/main.go:197, cmd/batch-processor/main.go:202, cmd/batch-processor/main.go:203, cmd/batch-processor/main.go:204, cmd/batch-processor/main.go:205, cmd/batch-processor/main.go:206, cmd/batch-processor/main.go:210, internal/apiserver/common/rest.go:74, internal/apiserver/server/server.go:113, internal/apiserver/server/server.go:114, internal/apiserver/server/server.go:115, internal/apiserver/server/server.go:116, internal/apiserver/server/server.go:117]
 - **services (not-verified)**: 0 services facts extracted; absence is not proven by the available coverage
 - **ingress (confirmed-empty)**: 0 ingress facts extracted
 - **webhooks (not-verified)**: 0 webhooks facts extracted; absence is not proven by the available coverage
@@ -30,6 +30,10 @@ No bounded behavioral evidence was extracted.
   **Expected signal:** middleware, filter, policy, or enforcement branch
   **Candidate:** `internal/apiserver/server/server.go`:99 (API server routes, None)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** Where is authentication enforced for this surface, and is it conditional?
+  **Expected signal:** middleware, filter, policy, or enforcement branch
+  **Candidate:** `internal/gc/podwatcher/watcher.go`:57 (Kubernetes API, ServiceAccount token (in-cluster))
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### configuration_lifecycle
 
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
@@ -38,7 +42,7 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `cmd/batch-gc/main.go`:49 (batch-gc)
+  **Candidate:** `cmd/batch-gc/main.go`:50 (batch-gc)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
@@ -70,6 +74,10 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### egress
 
+- **Question:** Where is this external connection made and how are TLS/authentication configured?
+  **Expected signal:** request/client construction, endpoint, TLS, or credential use
+  **Candidate:** `go.mod` (Kubernetes API, Kubernetes resource operations)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
   **Expected signal:** runtime client construction and target configuration
   **Candidate:** `internal/database/postgresql/db_postgresql.go`:116 (PostgreSQL, pgx connection pool)
@@ -77,6 +85,10 @@ No bounded behavioral evidence was extracted.
 - **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
   **Expected signal:** runtime client construction and target configuration
   **Candidate:** `internal/files_store/s3/client.go`:119 (AWS SDK S3 client, S3-compatible storage)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
+  **Expected signal:** runtime client construction and target configuration
+  **Candidate:** `internal/gc/podwatcher/watcher.go`:63 (Kubernetes API, client-go typed clientset)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What target, credentials, TLS settings, and failure behavior does this client use?
   **Expected signal:** runtime client construction and target configuration
@@ -188,6 +200,7 @@ No bounded behavioral evidence was extracted.
 ### authentication
 
 - API server routes methods=POST, GET, DELETE mechanism=None enforcement=N/A policy=Closed route inventory has no authentication or authorization enforcement; every local middleware wrapper was inspected [source: internal/apiserver/server/server.go:99]
+- Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=In-cluster configuration provides automatic ServiceAccount token authentication [source: internal/gc/podwatcher/watcher.go:57]
 - Observability endpoints (/health, /ready, /metrics) methods=GET, HEAD mechanism=None enforcement=N/A policy=Closed route inventory has no authentication or authorization enforcement; no middleware is applied [source: internal/apiserver/server/server.go:109]
 ### http_endpoints
 
@@ -202,9 +215,9 @@ No bounded behavioral evidence was extracted.
 - Unknown /debug/pprof/symbol on port ; transport=HTTP/1.1 encryption= auth= owner=internal/apiserver/server [source: internal/apiserver/server/server.go:116]
 - Unknown /debug/pprof/trace on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-processor [source: cmd/batch-processor/main.go:206]
 - Unknown /debug/pprof/trace on port ; transport=HTTP/1.1 encryption= auth= owner=internal/apiserver/server [source: internal/apiserver/server/server.go:117]
-- Unknown /health on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-gc [source: cmd/batch-gc/main.go:164]
+- Unknown /health on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-gc [source: cmd/batch-gc/main.go:172]
 - Unknown /health on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-processor [source: cmd/batch-processor/main.go:197]
-- Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-gc [source: cmd/batch-gc/main.go:163]
+- Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-gc [source: cmd/batch-gc/main.go:171]
 - Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-processor [source: cmd/batch-processor/main.go:196]
 - Unknown /ready on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/batch-processor [source: cmd/batch-processor/main.go:210]
 ### integrations
@@ -243,15 +256,16 @@ No bounded behavioral evidence was extracted.
 - **observed**: HTTP Unknown /debug/pprof/symbol is owned by internal/apiserver/server [source: internal/apiserver/server/server.go:116]
 - **observed**: HTTP Unknown /debug/pprof/trace is owned by cmd/batch-processor [source: cmd/batch-processor/main.go:206]
 - **observed**: HTTP Unknown /debug/pprof/trace is owned by internal/apiserver/server [source: internal/apiserver/server/server.go:117]
-- **observed**: HTTP Unknown /health is owned by cmd/batch-gc [source: cmd/batch-gc/main.go:164]
+- **observed**: HTTP Unknown /health is owned by cmd/batch-gc [source: cmd/batch-gc/main.go:172]
 - **observed**: HTTP Unknown /health is owned by cmd/batch-processor [source: cmd/batch-processor/main.go:197]
-- **observed**: HTTP Unknown /metrics is owned by cmd/batch-gc [source: cmd/batch-gc/main.go:163]
+- **observed**: HTTP Unknown /metrics is owned by cmd/batch-gc [source: cmd/batch-gc/main.go:171]
 - **observed**: HTTP Unknown /metrics is owned by cmd/batch-processor [source: cmd/batch-processor/main.go:196]
 - **observed**: HTTP Unknown /ready is owned by cmd/batch-processor [source: cmd/batch-processor/main.go:210]
 ### security
 
 - **observed**: GET, HEAD Observability endpoints (/health, /ready, /metrics) uses None at N/A; policy=Closed route inventory has no authentication or authorization enforcement; no middleware is applied [source: internal/apiserver/server/server.go:109]
 - **observed**: POST, GET, DELETE API server routes uses None at N/A; policy=Closed route inventory has no authentication or authorization enforcement; every local middleware wrapper was inspected [source: internal/apiserver/server/server.go:99]
+- **observed**: REST Kubernetes API uses ServiceAccount token (in-cluster) at kube-apiserver; policy=In-cluster configuration provides automatic ServiceAccount token authentication [source: internal/gc/podwatcher/watcher.go:57]
 - **dependency-signal**: tls-config targets crypto/tls: TLS configuration import [source: internal/apiserver/server/server.go, internal/tls/tls.go, internal/util/redis/redis_client.go, internal/util/tls/tls.go, pkg/clients/http/http_client.go]
 ### supply_chain
 

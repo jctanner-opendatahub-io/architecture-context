@@ -1,8 +1,8 @@
 {
   "component": "kubeflow",
   "repo": "https://github.com/red-hat-data-services/kubeflow.git",
-  "commit_sha": "a16cff87ccc5875bca7bd4970d73c8298406e9c6",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "56e9a981e729e2eeaf550b6db33ff1757a31d2b4",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 3 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 14 RBAC roles, 0 ingress routes, 16 controller watches, 4 registered HTTP endpoints, and 0 gRPC services.",
@@ -1496,39 +1496,39 @@
   ],
   "recent_changes": [
     {
-      "version": "a16cff87",
-      "date": "2026-09-04",
+      "version": "56e9a981",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "1d12aba7",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 5e68f09 (#1775)"
+      "version": "dc085bf8",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1786 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "6dd29edb",
-      "date": "2026-09-03",
+      "version": "9d74fca8",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "02d1acd1",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1774 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "b619c021",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 685ccca (#1787)"
     },
     {
-      "version": "67edfd30",
-      "date": "2026-09-03",
+      "version": "86254dfb",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "9525dc31",
-      "date": "2026-09-03",
+      "version": "a5d6bc52",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "f4fb8176",
-      "date": "2026-09-03",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#1773)"
+      "version": "4a9e6399",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#1785)"
     }
   ],
   "component_refs": [

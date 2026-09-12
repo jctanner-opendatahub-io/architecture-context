@@ -1,8 +1,8 @@
 {
   "component": "ai-gateway-payload-processing",
   "repo": "https://github.com/red-hat-data-services/ai-gateway-payload-processing.git",
-  "commit_sha": "284e5a75898db9c5852830509920bd65272dd477",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "bdf32b6e43e513a52ab6166a51c6b4bd8ccbd795",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 2 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 11 controller watches, 0 registered HTTP endpoints, and 2 gRPC services.",
@@ -426,39 +426,39 @@
   ],
   "recent_changes": [
     {
-      "version": "284e5a7",
-      "date": "2026-09-03",
+      "version": "bdf32b6",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "582c80e",
-      "date": "2026-09-03",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#117)"
+      "version": "8130c23",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/stable'"
     },
     {
-      "version": "2d8a70c",
-      "date": "2026-09-02",
+      "version": "a9e4d19",
+      "date": "2026-09-11",
+      "changes": "chore: promote main to stable (1 commits)"
+    },
+    {
+      "version": "20be1d3",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "ec6f9e9",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #114 from red-hat-data-services/migrate-runtime-to-pqc"
+      "version": "44bdd24",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#123)"
     },
     {
-      "version": "d6bd0c2",
-      "date": "2026-09-01",
-      "changes": "Migrate runtime base image to PQC variant for main"
-    },
-    {
-      "version": "d6fcb8e",
-      "date": "2026-09-01",
+      "version": "19757e9",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "25b7107",
-      "date": "2026-08-31",
-      "changes": "Merge pull request #113 from chaitanya1731/fix/dockerfile-konflux-go-version"
+      "version": "09d0916",
+      "date": "2026-09-09",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/ubi-minimal docker digest to d235f60 (#121)"
     }
   ],
   "component_refs": [

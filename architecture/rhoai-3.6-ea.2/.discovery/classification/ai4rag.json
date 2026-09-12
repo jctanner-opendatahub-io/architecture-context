@@ -1,0 +1,16 @@
+{
+  "checkout": "/data/checkouts/IBM.rhoai-3.6-ea.2/ai4rag",
+  "classification": "library",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "AGENTS.md",
+    "ai4rag/__init__.py",
+    "ai4rag/core/experiment/experiment.py",
+    "ai4rag/rag/foundation_models/base_model.py",
+    "ai4rag/rag/embedding/base_model.py",
+    "ai4rag/rag/vector_store/get_vector_store.py",
+    "dev_utils/run_experiment.py"
+  ],
+  "reasoning": "The project is packaged as the reusable Python distribution ai4rag and provides importable APIs for RAG experiment orchestration, model and embedding abstractions, vector-store selection, evaluation, and optimization. Its README describes an optimization engine intended to be embedded in user workflows, while pyproject.toml defines package metadata and dependencies rather than a deployable service. No Kubernetes/operator manifests or long-running service entry point were found; the included experiment runner is a development/example script."
+}

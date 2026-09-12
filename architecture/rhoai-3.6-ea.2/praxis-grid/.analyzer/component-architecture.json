@@ -1,8 +1,8 @@
 {
   "component": "grid",
   "repo": "https://github.com/praxis-proxy/grid.git",
-  "commit_sha": "ee69e74f2ba8cdcff7a2b838679d727c59acb579",
-  "extracted_at": "2026-09-10T15:09:33Z",
+  "commit_sha": "e39e4c734f2efd01a0967c16eb09e16179e0cf23",
+  "extracted_at": "2026-09-12T16:40:00Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 3 CRDs, 0 serving runtime definitions, 1 workloads, 2 services, 2 RBAC roles, 0 ingress routes, 0 controller watches, 13 registered HTTP endpoints, and 0 gRPC services.",
@@ -314,7 +314,7 @@
       "encryption": "TLS 1.2+ (optional)",
       "auth": "Passthrough headers",
       "description": "health handler",
-      "source": "operator/src/main.rs:589"
+      "source": "operator/src/main.rs:606"
     },
     {
       "method": "GET",
@@ -364,7 +364,7 @@
       "encryption": "TLS 1.2+ (optional)",
       "auth": "Passthrough headers",
       "description": "health handler",
-      "source": "operator/src/main.rs:590"
+      "source": "operator/src/main.rs:607"
     },
     {
       "method": "GET",
@@ -1060,39 +1060,39 @@
   ],
   "recent_changes": [
     {
-      "version": "ee69e74",
-      "date": "2026-09-04",
-      "changes": "test(quota): wait for serving overlay revision (#120)"
+      "version": "e39e4c7",
+      "date": "2026-09-11",
+      "changes": "feat(routing): add static weighted provider selection (#142)"
     },
     {
-      "version": "8e48524",
-      "date": "2026-09-04",
-      "changes": "ci: remove isolated GLB release check (#118)"
+      "version": "f6678da",
+      "date": "2026-09-10",
+      "changes": "feat(operator): add administrative provider drain (#126)"
     },
     {
-      "version": "65b989d",
-      "date": "2026-09-03",
-      "changes": "chore(release): prepare Grid v0.1.4 (#115)"
+      "version": "d9da1e2",
+      "date": "2026-09-10",
+      "changes": "feat(swim): resolve DNS endpoint hostnames (#138)"
     },
     {
-      "version": "e682624",
-      "date": "2026-09-03",
-      "changes": "test: qualify single-cluster multi-gateway routing (#117)"
+      "version": "6ec9563",
+      "date": "2026-09-08",
+      "changes": "docs: update README.md"
     },
     {
-      "version": "8a8c044",
-      "date": "2026-09-02",
-      "changes": "  feat(token-quota): add distributed quota topology (#84)"
+      "version": "412c080",
+      "date": "2026-09-08",
+      "changes": "chore(license): relicense to Apache-2.0"
     },
     {
-      "version": "66a1d33",
-      "date": "2026-09-01",
-      "changes": "feat(routing): publish provider selection modes (#65)"
+      "version": "093b9a3",
+      "date": "2026-09-07",
+      "changes": "build(deps): upgrade aes-gcm to 0.11.1 (#130)"
     },
     {
-      "version": "791360d",
-      "date": "2026-08-31",
-      "changes": "test(swim): cover impersonation, tampering, and key rotation for signed state broadcasts (#99)"
+      "version": "4cb8e6b",
+      "date": "2026-09-07",
+      "changes": "build(deps): align kube with k8s-openapi 0.28 (#129)"
     }
   ],
   "component_refs": null,
@@ -1132,9 +1132,9 @@
       "target": "ring",
       "detail": "Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
       "status": "dependency-signal",
-      "source": "Cargo.lock:2212",
+      "source": "Cargo.lock:2339",
       "sources": [
-        "Cargo.lock:2212"
+        "Cargo.lock:2339"
       ]
     },
     {
@@ -1201,7 +1201,7 @@
       ],
       "evidence": [
         "mock-providers/src/anthropic.rs:26",
-        "operator/src/main.rs:589",
+        "operator/src/main.rs:606",
         "overlay-sync/src/main.rs:265",
         "mock-providers/src/openai.rs:40",
         "mock-providers/src/bedrock.rs:27",
@@ -1219,7 +1219,7 @@
         "static signals do not prove FIPS validation or runtime provider selection"
       ],
       "evidence": [
-        "Cargo.lock:2212",
+        "Cargo.lock:2339",
         "Cargo.toml:33",
         "Cargo.toml:60",
         "coverage:fips_compliance"
@@ -1324,8 +1324,8 @@
         "mock-providers/src/openai.rs:39",
         "mock-providers/src/openai.rs:40",
         "mock-providers/src/vertex.rs:31",
-        "operator/src/main.rs:589",
-        "operator/src/main.rs:590",
+        "operator/src/main.rs:606",
+        "operator/src/main.rs:607",
         "overlay-sync/src/main.rs:265",
         "overlay-sync/src/main.rs:267"
       ]
@@ -1383,7 +1383,7 @@
       {
         "claim": "GET /healthz on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner=",
         "sources": [
-          "operator/src/main.rs:589"
+          "operator/src/main.rs:606"
         ]
       },
       {
@@ -1401,7 +1401,7 @@
       {
         "claim": "GET /readyz on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner=",
         "sources": [
-          "operator/src/main.rs:590"
+          "operator/src/main.rs:607"
         ]
       },
       {
@@ -1559,7 +1559,7 @@
         "claim": "crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider",
         "status": "dependency-signal",
         "sources": [
-          "Cargo.lock:2212"
+          "Cargo.lock:2339"
         ]
       },
       {
@@ -1808,7 +1808,7 @@
       },
       {
         "source": "operator/src/main.rs",
-        "line_range": "589",
+        "line_range": "606",
         "symbols": [
           "/healthz",
           "GET"
@@ -1822,7 +1822,7 @@
       },
       {
         "source": "operator/src/main.rs",
-        "line_range": "590",
+        "line_range": "607",
         "symbols": [
           "/readyz",
           "GET"
@@ -1883,7 +1883,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 201,
+      "value": 204,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

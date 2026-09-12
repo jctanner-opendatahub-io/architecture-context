@@ -1,0 +1,18 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/ai-gateway-payload-processing",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/main.go",
+    "cmd/controllers.go",
+    "cmd/runner.go",
+    "pkg/plugins/plugins.go",
+    "config/crd/bases/inference.opendatahub.io_externalmodels.yaml",
+    "config/crd/bases/inference.opendatahub.io_externalproviders.yaml",
+    "deploy/payload-processing/Chart.yaml",
+    "deploy/payload-processing/values.yaml",
+    "deploy/payload-processing/templates/rbac.yaml"
+  ],
+  "reasoning": "This is primarily a long-running AI Gateway payload-processing service. It implements an Envoy external-processing gRPC server, loads and executes request/response plugins, exposes health and metrics endpoints, and is deployed as a Helm application. It also embeds controller-runtime reconcilers for ExternalModel and ExternalProvider resources and creates related Kubernetes networking resources, but those controllers support the service's gateway integration rather than making this a standalone operator."
+}

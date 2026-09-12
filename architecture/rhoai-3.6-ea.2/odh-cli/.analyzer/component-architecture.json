@@ -1,8 +1,8 @@
 {
   "component": "odh-cli",
   "repo": "https://github.com/red-hat-data-services/odh-cli.git",
-  "commit_sha": "32fde163743948c731069b83496cb18bd540e08c",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "55ff50de978de2badecc7e2ba87d154d622c6f6b",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -278,6 +278,26 @@
   ],
   "recent_changes": [
     {
+      "version": "55ff50d",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "4cd4e65",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 685ccca (#407)"
+    },
+    {
+      "version": "e3a0a35",
+      "date": "2026-09-09",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "9927e0f",
+      "date": "2026-09-09",
+      "changes": "chore(deps): update registry.redhat.io/openshift4/ose-cli-rhel9 docker digest to cb5c5f7 (#401)"
+    },
+    {
       "version": "32fde16",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -291,26 +311,6 @@
       "version": "37d822f",
       "date": "2026-09-02",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "8f0c6c6",
-      "date": "2026-09-02",
-      "changes": "chore(deps): update dockerfile digest updates (#389)"
-    },
-    {
-      "version": "e58e09c",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "0d149cf",
-      "date": "2026-09-01",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
-    },
-    {
-      "version": "8b152d1",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #387 from red-hat-data-services/fix/rhoaieng-89121-cli-name-fix"
     }
   ],
   "component_refs": [

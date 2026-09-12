@@ -1,8 +1,8 @@
 {
   "component": "kuberay",
   "repo": "https://github.com/red-hat-data-services/kuberay.git",
-  "commit_sha": "5d9f6bf2dda4e318522ccb6d1a90087788381e9e",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "acfc5924a8b9c56eed18df416d587e29e0826bd9",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 8 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 18 RBAC roles, 0 ingress routes, 21 controller watches, 32 registered HTTP endpoints, and 5 gRPC services.",
@@ -3233,39 +3233,39 @@
   ],
   "recent_changes": [
     {
-      "version": "5d9f6bf2",
-      "date": "2026-09-04",
+      "version": "acfc5924",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "92bd0612",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update dockerfile digest updates (#1514)"
+      "version": "56243755",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1530 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "544b4f39",
-      "date": "2026-09-03",
+      "version": "bd4476d6",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "556a8d67",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/stable'"
+      "version": "44f581a9",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/go-toolset docker digest to 685ccca (#1538)"
     },
     {
-      "version": "553c62a3",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1521 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "eba3ee82",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 685ccca (#1531)"
     },
     {
-      "version": "491dc10f",
-      "date": "2026-09-03",
+      "version": "c75f5b69",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "ad38262c",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #234 from pawelpaszki/RHOAIENG-23497-fix"
+      "version": "53678eae",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
   "component_refs": [

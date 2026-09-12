@@ -9,7 +9,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **http_endpoints (observed)**: 3 http_endpoints facts extracted [source: cmd/trainer-controller-manager/main.go:205, cmd/trainer-controller-manager/main.go:216, pkg/statusserver/server.go:88]
 - **services (observed)**: 1 services facts extracted [source: manifests/base/manager/manager.yaml:92]
 - **ingress (confirmed-empty)**: 0 ingress facts extracted
-- **webhooks (observed)**: 4 webhooks facts extracted [source: manifests/base/webhook/patch_mutating.yaml:1, manifests/base/webhook/patch_validating.yaml:1, pkg/webhooks/clustertrainingruntime_webhook.go:32, pkg/webhooks/trainingruntime_webhook.go:47, pkg/webhooks/trainjob_webhook.go:37, pkg/webhooks/trainjob_webhook.go:95]
+- **webhooks (observed)**: 4 webhooks facts extracted [source: manifests/base/webhook/patch_mutating.yaml:1, manifests/base/webhook/patch_validating.yaml:1, pkg/webhooks/clustertrainingruntime_webhook.go:32, pkg/webhooks/trainingruntime_webhook.go:47, pkg/webhooks/trainjob_webhook.go:36, pkg/webhooks/trainjob_webhook.go:94]
 
 ## Deterministic Cross-References
 
@@ -19,10 +19,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **controller**: MPI —watches-reference→ /v1/Secret; /v1/Secret [source: pkg/runtime/framework/plugins/mpi/mpi.go:246, pkg/runtime/framework/plugins/mpi/mpi.go:266]
 - **security**: GET /healthz —protected-by→ None; N/A: Kubernetes health probe; unauthenticated by design [source: cmd/trainer-controller-manager/main.go:205]
 - **security**: GET /readyz —protected-by→ None; N/A: Kubernetes readiness probe; unauthenticated by design [source: cmd/trainer-controller-manager/main.go:216]
-- **webhook**: defaulter.trainjob.trainer.kubeflow.org —served-by→ kubeflow-trainer-controller-manager; admission webhook declares an explicit service reference [source: manifests/base/manager/manager.yaml:92, manifests/base/webhook/patch_mutating.yaml:1, pkg/webhooks/trainjob_webhook.go:37]
+- **webhook**: defaulter.trainjob.trainer.kubeflow.org —served-by→ kubeflow-trainer-controller-manager; admission webhook declares an explicit service reference [source: manifests/base/manager/manager.yaml:92, manifests/base/webhook/patch_mutating.yaml:1, pkg/webhooks/trainjob_webhook.go:36]
 - **webhook**: validator.clustertrainingruntime.trainer.kubeflow.org —served-by→ kubeflow-trainer-controller-manager; admission webhook declares an explicit service reference [source: manifests/base/manager/manager.yaml:92, manifests/base/webhook/patch_validating.yaml:1, pkg/webhooks/clustertrainingruntime_webhook.go:32]
 - **webhook**: validator.trainingruntime.trainer.kubeflow.org —served-by→ kubeflow-trainer-controller-manager; admission webhook declares an explicit service reference [source: manifests/base/manager/manager.yaml:92, manifests/base/webhook/patch_validating.yaml:1, pkg/webhooks/trainingruntime_webhook.go:47]
-- **webhook**: validator.trainjob.trainer.kubeflow.org —served-by→ kubeflow-trainer-controller-manager; admission webhook declares an explicit service reference [source: manifests/base/manager/manager.yaml:92, manifests/base/webhook/patch_validating.yaml:1, pkg/webhooks/trainjob_webhook.go:95]
+- **webhook**: validator.trainjob.trainer.kubeflow.org —served-by→ kubeflow-trainer-controller-manager; admission webhook declares an explicit service reference [source: manifests/base/manager/manager.yaml:92, manifests/base/webhook/patch_validating.yaml:1, pkg/webhooks/trainjob_webhook.go:94]
 
 ## Behavioral Evidence
 
@@ -270,11 +270,11 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which handler implements this webhook and what admission/resource semantics does it enforce?
   **Expected signal:** handler registration, rules, failure policy, or service binding
-  **Candidate:** `pkg/webhooks/trainjob_webhook.go`:37 (/mutate-trainer-kubeflow-org-v1alpha1-trainjob, defaulter.trainjob.trainer.kubeflow.org)
+  **Candidate:** `pkg/webhooks/trainjob_webhook.go`:36 (/mutate-trainer-kubeflow-org-v1alpha1-trainjob, defaulter.trainjob.trainer.kubeflow.org)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Which handler implements this webhook and what admission/resource semantics does it enforce?
   **Expected signal:** handler registration, rules, failure policy, or service binding
-  **Candidate:** `pkg/webhooks/trainjob_webhook.go`:95 (/validate-trainer-kubeflow-org-v1alpha1-trainjob, validator.trainjob.trainer.kubeflow.org)
+  **Candidate:** `pkg/webhooks/trainjob_webhook.go`:94 (/validate-trainer-kubeflow-org-v1alpha1-trainjob, validator.trainjob.trainer.kubeflow.org)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 
 ## Section Evidence

@@ -1,0 +1,18 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/mlflow-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "Makefile",
+    "cmd/main.go",
+    "api/v1/mlflow_types.go",
+    "api/v1/groupversion_info.go",
+    "api/mlflowoperator/v1alpha1/mlflowoperator_types.go",
+    "api/mlflowoperator/v1alpha1/groupversion_info.go",
+    "config/crd/bases/mlflow.opendatahub.io_mlflows.yaml",
+    "internal/controller/mlflow_controller.go",
+    "internal/controller/mlflowoperator_controller.go"
+  ],
+  "reasoning": "This repository is a Kubernetes operator for managing MLflow deployments. README.md explicitly identifies it as a Kubernetes operator and describes declarative management through Custom Resources. The Go module depends on controller-runtime and Kubernetes APIs; cmd/main.go creates the controller manager, registers MLflow APIs, and starts reconcilers. The API type definitions and generated CRD define MLflow and MLflowOperator custom resources, while the controller files implement reconciliation and lifecycle management."
+}

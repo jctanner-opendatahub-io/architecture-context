@@ -44,7 +44,7 @@
           "type": "object"
         },
         "tenantRef": {
-          "description": "TenantRef is the name of the AITenant this model belongs to.\nWhen omitted, the model is assigned to the default tenant.",
+          "description": "TenantRef is the name of the AITenant this model belongs to.\nWhen omitted, the controller auto-resolves the tenant from the\nHTTPRoute's gateway parentRef via reverse lookup against AITenants.\nSet this only as an advanced override; prefer letting the controller\nresolve the tenant automatically.",
           "maxLength": 253,
           "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?$",
           "type": "string"
@@ -156,7 +156,7 @@
           "type": "string"
         },
         "resolvedTenantRef": {
-          "description": "ResolvedTenantRef is the name of the AITenant this model was resolved to.\nSet from spec.tenantRef when provided, or left empty for models using the\ndefault tenant.",
+          "description": "ResolvedTenantRef is the name of the AITenant this model was resolved to.\nSet from spec.tenantRef when provided explicitly, or auto-resolved from\nthe HTTPRoute's gateway parentRef via reverse lookup against AITenants.",
           "type": "string"
         }
       },

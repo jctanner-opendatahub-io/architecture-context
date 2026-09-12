@@ -1,0 +1,18 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/ai-gateway-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "cmd/main.go",
+    "cmd/operator/operator.go",
+    "internal/controller/aigateway/aigateway_controller.go",
+    "api/components/v1alpha1/aigateway_types.go",
+    "config/crd/bases/components.platform.opendatahub.io_aigateways.yaml",
+    "config/manager/manager.yaml",
+    "config/rbac/role.yaml",
+    "docs/architecture.md"
+  ],
+  "reasoning": "This checkout is a Kubernetes operator. The README explicitly describes ai-gateway-operator as a module operator for Open Data Hub. PROJECT defines a controller-backed AIGateway custom resource, and the source starts a controller-runtime manager and registers an AIGateway reconciler. The controller renders and deploys sub-component manifests, watches the AIGateway CR and related Kubernetes resources, and updates status. The repository also contains the corresponding CustomResourceDefinition, manager Deployment, and RBAC manifests."
+}

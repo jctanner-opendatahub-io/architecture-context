@@ -1,0 +1,11 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/MLServer",
+  "classification": "service",
+  "files_read": [
+    "README.md",
+    "pyproject.toml",
+    "mlserver/server.py",
+    "mlserver/model.py"
+  ],
+  "reasoning": "MLServer is an installable Python inference server application. The README describes serving machine-learning models through REST and gRPC interfaces, while mlserver/server.py implements the MLServer process, model registry, model repository, and REST/gRPC server lifecycle. mlserver/model.py defines the model-serving interface for loading, predicting, streaming predictions, and unloading models. These runtime endpoints and lifecycle responsibilities make the checkout a service rather than a reusable library, operator, or configuration-only project."
+}

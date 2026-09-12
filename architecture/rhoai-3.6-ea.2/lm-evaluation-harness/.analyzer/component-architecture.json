@@ -1,8 +1,8 @@
 {
   "component": "lm-evaluation-harness",
   "repo": "https://github.com/red-hat-data-services/lm-evaluation-harness.git",
-  "commit_sha": "e363623b0d513e0f2a4aca42c1901f37f34b1a22",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "62a411915dfb68f58abfda201fbbd41b7c19fb30",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -1110,39 +1110,39 @@
   ],
   "recent_changes": [
     {
-      "version": "e363623b",
-      "date": "2026-09-03",
+      "version": "62a41191",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "f53a58d7",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #661 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "5e158643",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #669 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "e1760a2d",
-      "date": "2026-09-03",
+      "version": "14cf8dc1",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "ac5c73de",
-      "date": "2026-09-02",
+      "version": "063733ac",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "e1373eda",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/stable'"
+      "version": "24fc509a",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #668 from red-hat-data-services/migrate-runtime-pqc-in-main"
     },
     {
-      "version": "08173caf",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #193 from scheruku-rh/cherry-pick/eval-hub-sdk-1.0.x"
+      "version": "28650845",
+      "date": "2026-09-08",
+      "changes": "Migrate runtime base image to PQC variant for main"
     },
     {
-      "version": "fc9fc537",
-      "date": "2026-09-02",
-      "changes": "chore: restrict eval-hub-sdk to compatible 1.0.x versions"
+      "version": "e363623b",
+      "date": "2026-09-03",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
   "component_refs": null,

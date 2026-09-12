@@ -1,0 +1,20 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/trustyai-service-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "trustyai-operator-module/go.mod",
+    "controllers/controllers.go",
+    "controllers/tas.go",
+    "controllers/evalhub.go",
+    "controllers/lmes.go",
+    "controllers/nemo_guardrails.go",
+    "controllers/job_mgr.go",
+    "api/tas/v1/trustyaiservice_types.go",
+    "api/evalhub/v1/evalhub_types.go",
+    "config/samples/trustyai_v1_trustyaiservice.yaml"
+  ],
+  "reasoning": "This is a Kubebuilder/Operator SDK Kubernetes operator. PROJECT declares multiple namespaced custom resources with controllers, including TrustyAIService, LMEvalJob, GuardrailsOrchestrator, and NemoGuardrails. The controllers package registers reconcilers for these services, while the API type definitions and config samples provide CRDs and example custom resources. README.md also explicitly identifies the project as the TrustyAI Kubernetes Operator and describes deployment to a Kubernetes or OpenShift cluster."
+}

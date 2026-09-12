@@ -1,8 +1,8 @@
 {
   "component": "odh-model-controller",
   "repo": "https://github.com/red-hat-data-services/odh-model-controller.git",
-  "commit_sha": "8ff72dd9da97b577d1bc33a3cce6e1cd3e4b89b5",
-  "extracted_at": "2026-09-10T15:09:32Z",
+  "commit_sha": "7680398bc87bf5cabc9a5f4e8a3478a9ef66d825",
+  "extracted_at": "2026-09-12T16:39:59Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 27 serving runtime definitions, 2 workloads, 3 services, 16 RBAC roles, 0 ingress routes, 50 controller watches, 7 registered HTTP endpoints, and 0 gRPC services.",
@@ -3720,6 +3720,31 @@
   ],
   "recent_changes": [
     {
+      "version": "7680398",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "f37ef06",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1700 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "bbbfc1f",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
+      "version": "b3d31da",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "d340aef",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#1699)"
+    },
+    {
       "version": "8ff72dd",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -3728,31 +3753,6 @@
       "version": "5fe45b4",
       "date": "2026-09-04",
       "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#1691)"
-    },
-    {
-      "version": "abc2784",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "05751b7",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1690 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "11134c7",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "ef4fb34",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "3c8fa98",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1673 from red-hat-data-services/migrate-runtime-to-pqc-main"
     }
   ],
   "component_refs": [

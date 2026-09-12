@@ -1,8 +1,8 @@
 {
   "component": "llm-d-async",
   "repo": "https://github.com/red-hat-data-services/llm-d-async.git",
-  "commit_sha": "3939245affd3bcd44616c3e2fb7fe3b259ab85ce",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "05b85ba72fa723ee9a6b6b7efebf0a64066cdc86",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -114,7 +114,7 @@
       },
       {
         "module": "github.com/alicebob/miniredis/v2",
-        "version": "v2.38.0",
+        "version": "v2.39.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -129,21 +129,21 @@
       },
       {
         "module": "github.com/llm-d/llm-d-async/api",
-        "version": "v0.9.0",
+        "version": "v0.9.1",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/llm-d/llm-d-async/pipeline",
-        "version": "v0.9.0",
+        "version": "v0.9.1",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/llm-d/llm-d-async/producer",
-        "version": "v0.9.0",
+        "version": "v0.9.1",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -172,14 +172,14 @@
       },
       {
         "module": "github.com/prometheus/client_model",
-        "version": "v0.6.2",
+        "version": "v0.6.3",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "github.com/prometheus/common",
-        "version": "v0.70.1",
+        "version": "v0.71.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -271,7 +271,7 @@
       },
       {
         "module": "google.golang.org/api",
-        "version": "v0.295.0",
+        "version": "v0.297.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -379,39 +379,39 @@
   ],
   "recent_changes": [
     {
-      "version": "3939245",
-      "date": "2026-09-04",
+      "version": "05b85ba",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "4325a40",
-      "date": "2026-09-04",
+      "version": "fcfea3a",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "f3c08ed",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #39 from zdtsw-forking/sync/upstream-9099179"
+      "version": "263ecf9",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #45 from zdtsw-forking/sync/upstream-1975f7f"
     },
     {
-      "version": "ee070e6",
-      "date": "2026-09-04",
+      "version": "7f331f7",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "e4a430d",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#25)"
+      "version": "c2e57d0",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#27)"
     },
     {
-      "version": "354281f",
-      "date": "2026-09-04",
-      "changes": "Sync upstream llm-d/llm-d-async 9099179"
+      "version": "367a1e1",
+      "date": "2026-09-10",
+      "changes": "Sync upstream llm-d/llm-d-async 1975f7f"
     },
     {
-      "version": "9099179",
-      "date": "2026-09-03",
-      "changes": "test(e2e): fix nightly e2e test failures and timeouts (#428)"
+      "version": "1975f7f",
+      "date": "2026-09-09",
+      "changes": "feat(producer): add durable Redis result delivery (#437)"
     }
   ],
   "component_refs": null,
@@ -958,7 +958,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 80,
+      "value": 81,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

@@ -1246,6 +1246,40 @@
               "rule": "self.type == 'ContainerImage' ? has(self.containerImage) : !has(self.containerImage)"
             }
           ]
+        },
+        "transport": {
+          "description": "Transport configures transport-layer settings for\noperator-to-MCP-server communication.",
+          "properties": {
+            "tls": {
+              "description": "TLS configures TLS for operator-to-MCP-server communication\nduring handshake and discovery probes.",
+              "properties": {
+                "caBundleSecret": {
+                  "description": "CABundleSecret references a Secret containing a CA certificate bundle\nunder the key \"ca.crt\". Used to verify the MCP server's TLS certificate.\nWhen unset and enabled is true, system CA certificates are used.",
+                  "properties": {
+                    "name": {
+                      "description": "Name of the Secret.",
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name"
+                  ],
+                  "type": "object"
+                },
+                "enabled": {
+                  "description": "Enabled controls whether the operator uses HTTPS for handshake/discovery.\nWhen true, the operator connects to the MCP server using TLS.",
+                  "type": "boolean"
+                },
+                "insecureSkipVerify": {
+                  "description": "InsecureSkipVerify disables TLS certificate verification.\nFor development and testing only.",
+                  "type": "boolean"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
         }
       },
       "required": [

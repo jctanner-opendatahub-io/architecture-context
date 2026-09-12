@@ -1,0 +1,18 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/llm-d-batch-gateway-operator",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "cmd/main.go",
+    "api/v1alpha1/llmbatchgateway_types.go",
+    "api/v1alpha1/llmdasync_types.go",
+    "internal/controller/llmbatchgateway_controller.go",
+    "internal/controller/helm.go",
+    "config/crd/bases/batch.llm-d.ai_llmbatchgateways.yaml",
+    "config/component_metadata.yaml",
+    "config/rbac/role.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator built with Kubebuilder. It defines the namespaced LLMBatchGateway custom resource and generated CRD, declares controller and RBAC metadata, and runs a controller-runtime reconciliation loop that converts custom-resource specifications into Helm-rendered Deployments, Services, ConfigMaps, monitoring resources, and related Kubernetes objects, then applies them and updates status conditions."
+}

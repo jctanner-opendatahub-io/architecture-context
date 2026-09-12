@@ -1,8 +1,8 @@
 {
   "component": "notebooks",
   "repo": "https://github.com/red-hat-data-services/notebooks.git",
-  "commit_sha": "bbd8aeafa8f9606957c2e43417bd3313967bb345",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "386565021c34c2c21dd0bb4d30b22189ea02f567",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 1 registered HTTP endpoints, and 0 gRPC services.",
@@ -268,7 +268,7 @@
       },
       {
         "name": "alembic",
-        "version": "==1.19.1",
+        "version": "==1.19.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:13"
@@ -289,7 +289,7 @@
       },
       {
         "name": "anyio",
-        "version": "==4.15.0",
+        "version": "==4.15.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver-baseline/ubi9-python-3.12/requirements.cpu.txt:2"
@@ -317,7 +317,7 @@
       },
       {
         "name": "ast-serialize",
-        "version": "==0.8.0",
+        "version": "==0.9.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:30"
@@ -369,7 +369,7 @@
         "version": "==0.14.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:43"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:44"
       },
       {
         "name": "autopep8",
@@ -437,7 +437,7 @@
       },
       {
         "name": "boto3",
-        "version": "==1.43.72",
+        "version": "==1.43.89",
         "ecosystem": "PyPI",
         "role": "runtime-integration",
         "purpose": "Python package dependency",
@@ -445,14 +445,14 @@
       },
       {
         "name": "botocore",
-        "version": "==1.43.72",
+        "version": "==1.43.89",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:56"
       },
       {
         "name": "cachetools",
-        "version": "==7.1.7",
+        "version": "==7.1.8",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:58"
@@ -476,7 +476,7 @@
         "version": "==6.0.0.post1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:75"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:76"
       },
       {
         "name": "charset-normalizer",
@@ -487,7 +487,7 @@
       },
       {
         "name": "click",
-        "version": "==8.4.2",
+        "version": "==8.5.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:69"
@@ -539,7 +539,7 @@
         "version": "==0.18.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:93"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:94"
       },
       {
         "name": "contourpy",
@@ -550,7 +550,7 @@
       },
       {
         "name": "cryptography",
-        "version": "==49.0.0",
+        "version": "==50.0.1",
         "ecosystem": "PyPI",
         "role": "runtime-security",
         "purpose": "Python package dependency",
@@ -565,14 +565,14 @@
       },
       {
         "name": "dask",
-        "version": "==2026.7.1",
+        "version": "==2026.8.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:95"
       },
       {
         "name": "databricks-sdk",
-        "version": "==0.131.0",
+        "version": "==0.135.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:97"
@@ -582,14 +582,14 @@
         "version": "==1.1.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:107"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:108"
       },
       {
         "name": "datasets",
         "version": "==5.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:109"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:110"
       },
       {
         "name": "debugpy",
@@ -627,13 +627,6 @@
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:108"
       },
       {
-        "name": "distro",
-        "version": "==1.9.0",
-        "ecosystem": "PyPI",
-        "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:122"
-      },
-      {
         "name": "dnspython",
         "version": "==2.8.0",
         "ecosystem": "PyPI",
@@ -663,7 +656,7 @@
       },
       {
         "name": "durationpy",
-        "version": "==0.10",
+        "version": "==0.11",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:114"
@@ -680,7 +673,7 @@
         "version": "==0.4.6",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:136"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:135"
       },
       {
         "name": "executing",
@@ -706,14 +699,14 @@
       },
       {
         "name": "feast",
-        "version": "==0.65.0",
+        "version": "==0.66.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:122"
       },
       {
         "name": "filelock",
-        "version": "==3.32.3",
+        "version": "==3.32.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:124"
@@ -749,7 +742,7 @@
       },
       {
         "name": "fonttools",
-        "version": "==4.63.0",
+        "version": "==4.64.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:130"
@@ -791,28 +784,28 @@
       },
       {
         "name": "gitpython",
-        "version": "==3.1.59",
+        "version": "==3.1.61",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:143"
       },
       {
         "name": "google-api-core",
-        "version": "==2.34.0",
+        "version": "==2.36.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:145"
       },
       {
         "name": "google-auth",
-        "version": "==2.56.3",
+        "version": "==2.57.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:147"
       },
       {
         "name": "google-cloud-core",
-        "version": "==2.6.1",
+        "version": "==2.7.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:149"
@@ -840,14 +833,14 @@
       },
       {
         "name": "google-resumable-media",
-        "version": "==2.10.1",
+        "version": "==2.10.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:155"
       },
       {
         "name": "googleapis-common-protos",
-        "version": "==1.75.1",
+        "version": "==1.75.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:157"
@@ -861,7 +854,7 @@
       },
       {
         "name": "graphql-core",
-        "version": "==3.2.11",
+        "version": "==3.2.12",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:161"
@@ -882,7 +875,7 @@
       },
       {
         "name": "grpcio",
-        "version": "==1.83.0",
+        "version": "==1.83.1",
         "ecosystem": "PyPI",
         "role": "runtime-transport",
         "purpose": "Python package dependency",
@@ -890,7 +883,7 @@
       },
       {
         "name": "gunicorn",
-        "version": "==26.0.0",
+        "version": "==26.2.0",
         "ecosystem": "PyPI",
         "role": "runtime-transport",
         "purpose": "Python package dependency",
@@ -915,7 +908,7 @@
         "version": "==1.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:197"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:196"
       },
       {
         "name": "httpcore",
@@ -926,10 +919,10 @@
       },
       {
         "name": "httpcore2",
-        "version": "==2.10.0",
+        "version": "==2.12.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:202"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:201"
       },
       {
         "name": "httptools",
@@ -948,24 +941,24 @@
       },
       {
         "name": "httpx2",
-        "version": "==2.10.0",
+        "version": "==2.12.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:209"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:208"
       },
       {
         "name": "huey",
-        "version": "==3.3.4",
+        "version": "==3.4.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:185"
       },
       {
         "name": "huggingface-hub",
-        "version": "==1.27.0",
+        "version": "==1.30.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:213"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:212"
       },
       {
         "name": "idna",
@@ -976,7 +969,7 @@
       },
       {
         "name": "importlib-metadata",
-        "version": "==9.0.0",
+        "version": "==9.0.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:189"
@@ -1063,7 +1056,7 @@
         "version": "==0.16.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:239"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:238"
       },
       {
         "name": "jmespath",
@@ -1074,7 +1067,7 @@
       },
       {
         "name": "joblib",
-        "version": "==1.5.3",
+        "version": "==1.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:211"
@@ -1084,7 +1077,7 @@
         "version": "==1.5.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/trustyai/ubi9-python-3.12/requirements.cpu.txt:244"
+        "source": "jupyter/trustyai/ubi9-python-3.12/requirements.cpu.txt:245"
       },
       {
         "name": "json5",
@@ -1098,7 +1091,7 @@
         "version": "==4.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:248"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:247"
       },
       {
         "name": "jsonpointer",
@@ -1137,7 +1130,7 @@
       },
       {
         "name": "jupyter-builder",
-        "version": "==1.2.2",
+        "version": "==1.2.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver-baseline/ubi9-python-3.12/requirements.cpu.txt:87"
@@ -1305,7 +1298,7 @@
       },
       {
         "name": "kiwisolver",
-        "version": "==1.5.0",
+        "version": "==1.5.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:255"
@@ -1351,14 +1344,14 @@
         "version": "==0.13.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:314"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:313"
       },
       {
         "name": "lm-eval",
         "version": "==0.4.12",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:316"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:315"
       },
       {
         "name": "locket",
@@ -1372,14 +1365,14 @@
         "version": "==0.7.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:320"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:319"
       },
       {
         "name": "lxml",
-        "version": "==6.1.1",
+        "version": "==6.1.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:322"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:321"
       },
       {
         "name": "mako",
@@ -1393,7 +1386,7 @@
         "version": "==3.10.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:327"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:326"
       },
       {
         "name": "markdown-it-py",
@@ -1428,7 +1421,7 @@
         "version": "==1.1.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:339"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:338"
       },
       {
         "name": "mccabe",
@@ -1474,28 +1467,28 @@
       },
       {
         "name": "mlflow",
-        "version": "==3.15.1",
+        "version": "==3.16.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:300"
       },
       {
         "name": "mlflow-skinny",
-        "version": "==3.15.1",
+        "version": "==3.16.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:302"
       },
       {
         "name": "mlflow-tracing",
-        "version": "==3.15.1",
+        "version": "==3.16.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:304"
       },
       {
         "name": "mmh3",
-        "version": "==5.2.1",
+        "version": "==5.3.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:306"
@@ -1505,18 +1498,18 @@
         "version": "==11.1.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:363"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:362"
       },
       {
         "name": "mpmath",
         "version": "==1.3.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:365"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:364"
       },
       {
         "name": "msgpack",
-        "version": "==1.2.1",
+        "version": "==1.2.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:311"
@@ -1533,7 +1526,7 @@
         "version": "==0.70.16",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:373"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:372"
       },
       {
         "name": "mypy",
@@ -1566,7 +1559,7 @@
       },
       {
         "name": "narwhals",
-        "version": "==2.24.0",
+        "version": "==2.25.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:323"
@@ -1625,7 +1618,7 @@
         "version": "==3.10.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:398"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:397"
       },
       {
         "name": "notebook",
@@ -1643,7 +1636,7 @@
       },
       {
         "name": "numpy",
-        "version": "==2.5.2",
+        "version": "==2.5.3",
         "ecosystem": "PyPI",
         "role": "runtime-library",
         "purpose": "Python package dependency",
@@ -1654,7 +1647,7 @@
         "version": "==13.610.43",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:407"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:406"
       },
       {
         "name": "oauthlib",
@@ -1731,7 +1724,7 @@
         "version": "==1.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:420"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:419"
       },
       {
         "name": "onnxconverter-common",
@@ -1745,14 +1738,14 @@
         "version": "==0.7.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:424"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:423"
       },
       {
         "name": "openai",
-        "version": "==3.1.0",
+        "version": "==3.8.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:426"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:425"
       },
       {
         "name": "opencensus",
@@ -1822,7 +1815,7 @@
       },
       {
         "name": "optree",
-        "version": "==0.19.1",
+        "version": "==0.20.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "jupyter/rocm/tensorflow/ubi9-python-3.12/requirements.rocm.txt:382"
@@ -1861,7 +1854,7 @@
         "version": "==2.7.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:277"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:279"
       },
       {
         "name": "paramiko",
@@ -1896,7 +1889,7 @@
         "version": "==3.3.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:466"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:465"
       },
       {
         "name": "pexpect",
@@ -1921,14 +1914,14 @@
       },
       {
         "name": "platformdirs",
-        "version": "==4.11.7",
+        "version": "==4.11.8",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver-baseline/ubi9-python-3.12/requirements.cpu.txt:146"
       },
       {
         "name": "plotly",
-        "version": "==6.9.0",
+        "version": "==7.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:399"
@@ -1938,14 +1931,14 @@
         "version": "==1.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:294"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:296"
       },
       {
         "name": "portalocker",
-        "version": "==4.1.0",
+        "version": "==4.3.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:481"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:480"
       },
       {
         "name": "prettytable",
@@ -1959,7 +1952,7 @@
         "version": "==1.6.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:296"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:298"
       },
       {
         "name": "prometheus-client",
@@ -1985,7 +1978,7 @@
       },
       {
         "name": "proto-plus",
-        "version": "==1.28.3",
+        "version": "==1.28.4",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:412"
@@ -2007,7 +2000,7 @@
       },
       {
         "name": "psycopg",
-        "version": "==3.3.4",
+        "version": "==3.3.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "jupyter/datascience/ubi9-python-3.12/requirements.cpu.txt:490"
@@ -2031,7 +2024,7 @@
         "version": "==9.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:508"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:507"
       },
       {
         "name": "pyarrow",
@@ -2059,7 +2052,7 @@
         "version": "==2.12.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:327"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:329"
       },
       {
         "name": "pycparser",
@@ -2073,18 +2066,18 @@
         "version": "==3.23.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:331"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:333"
       },
       {
         "name": "pydantic",
-        "version": "==2.13.4",
+        "version": "==2.13.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:439"
       },
       {
         "name": "pydantic-core",
-        "version": "==2.46.4",
+        "version": "==2.46.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:441"
@@ -2094,28 +2087,28 @@
         "version": "==2.15.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:529"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:528"
       },
       {
         "name": "pydocstyle",
         "version": "==6.3.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:336"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:338"
       },
       {
         "name": "pyflakes",
         "version": "==3.2.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:338"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:340"
       },
       {
         "name": "pygithub",
         "version": "==2.10.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:340"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:342"
       },
       {
         "name": "pygments",
@@ -2137,11 +2130,11 @@
         "version": "==4.0.8",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:346"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:348"
       },
       {
         "name": "pymongo",
-        "version": "==4.17.0",
+        "version": "==4.18.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "jupyter/datascience/ubi9-python-3.12/requirements.cpu.txt:533"
@@ -2172,7 +2165,7 @@
         "version": "==1.2.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:554"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:553"
       },
       {
         "name": "Python",
@@ -2190,7 +2183,7 @@
       },
       {
         "name": "python-discovery",
-        "version": "==1.5.2",
+        "version": "==1.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:457"
@@ -2214,28 +2207,28 @@
         "version": "==1.1.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:361"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:363"
       },
       {
         "name": "python-lsp-server",
         "version": "==1.15.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:363"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:365"
       },
       {
         "name": "pytokens",
         "version": "==0.4.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:365"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:367"
       },
       {
         "name": "pytoolconfig",
         "version": "==1.3.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:370"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:372"
       },
       {
         "name": "pytz",
@@ -2274,10 +2267,10 @@
       },
       {
         "name": "regex",
-        "version": "==2026.7.19",
+        "version": "==2026.9.3",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:586"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:585"
       },
       {
         "name": "requests",
@@ -2341,14 +2334,14 @@
         "version": "==1.14.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:396"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:398"
       },
       {
         "name": "rouge-score",
         "version": "==0.1.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:605"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:604"
       },
       {
         "name": "rpds-py",
@@ -2369,14 +2362,14 @@
         "version": "==2.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:612"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:611"
       },
       {
         "name": "safetensors",
         "version": "==0.8.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:614"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:613"
       },
       {
         "name": "scikit-learn",
@@ -2388,7 +2381,7 @@
       },
       {
         "name": "scipy",
-        "version": "==1.18.0",
+        "version": "==1.18.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:511"
@@ -2413,14 +2406,14 @@
         "version": "==1.5.4",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:627"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:626"
       },
       {
         "name": "simpervisor",
         "version": "==1.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:407"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:409"
       },
       {
         "name": "six",
@@ -2462,14 +2455,14 @@
         "version": "==1.3.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:641"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:640"
       },
       {
         "name": "snowballstemmer",
         "version": "==3.1.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:413"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:415"
       },
       {
         "name": "soupsieve",
@@ -2480,10 +2473,10 @@
       },
       {
         "name": "speculators",
-        "version": "==0.7.0.1",
+        "version": "\u003c0.8",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:647"
+        "source": "runtimes/pytorch+llmcompressor/ubi9-python-3.12/pyproject.toml:17"
       },
       {
         "name": "sqlalchemy",
@@ -2498,7 +2491,7 @@
         "version": "==2.1.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:652"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:651"
       },
       {
         "name": "sqlparse",
@@ -2527,14 +2520,14 @@
         "version": "==1.14.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:660"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:659"
       },
       {
         "name": "tabledata",
         "version": "==1.3.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:662"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:661"
       },
       {
         "name": "tabulate",
@@ -2548,7 +2541,7 @@
         "version": "==0.1.7",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:666"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:665"
       },
       {
         "name": "tenacity",
@@ -2562,14 +2555,14 @@
         "version": "==2.20.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:670"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:669"
       },
       {
         "name": "tensorboard-data-server",
         "version": "==0.7.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:672"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:671"
       },
       {
         "name": "tensorflow",
@@ -2591,7 +2584,7 @@
         "version": "==3.3.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:423"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:425"
       },
       {
         "name": "terminado",
@@ -2619,7 +2612,7 @@
         "version": "==0.22.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:682"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:681"
       },
       {
         "name": "toml",
@@ -2633,7 +2626,7 @@
         "version": "==0.15.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:429"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:431"
       },
       {
         "name": "toolz",
@@ -2648,21 +2641,21 @@
         "ecosystem": "PyPI",
         "role": "runtime-library",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:691"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:690"
       },
       {
         "name": "torchaudio",
         "version": "==2.11.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:696"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:695"
       },
       {
         "name": "torchvision",
         "version": "==0.26.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:701"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:700"
       },
       {
         "name": "tornado",
@@ -2691,28 +2684,28 @@
         "ecosystem": "PyPI",
         "role": "runtime-library",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:713"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:712"
       },
       {
         "name": "triton",
         "version": "==3.6.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:715"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:714"
       },
       {
         "name": "truststore",
         "version": "==0.10.4",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:720"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:719"
       },
       {
         "name": "trustyai",
         "version": "==0.6.4",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/trustyai/ubi9-python-3.12/requirements.cpu.txt:720"
+        "source": "jupyter/trustyai/ubi9-python-3.12/requirements.cpu.txt:721"
       },
       {
         "name": "typeguard",
@@ -2726,14 +2719,14 @@
         "version": "==1.3.5",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:724"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:723"
       },
       {
         "name": "typer",
-        "version": "==0.27.1",
+        "version": "==0.27.2",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:726"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:725"
       },
       {
         "name": "typing-extensions",
@@ -2758,10 +2751,10 @@
       },
       {
         "name": "ujson",
-        "version": "==5.13.0",
+        "version": "==6.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:444"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:446"
       },
       {
         "name": "uri-template",
@@ -2786,7 +2779,7 @@
       },
       {
         "name": "uvicorn",
-        "version": "==0.34.0",
+        "version": "==0.52.4",
         "ecosystem": "PyPI",
         "role": "runtime-transport",
         "purpose": "Python package dependency",
@@ -2808,7 +2801,7 @@
       },
       {
         "name": "virtualenv",
-        "version": "==21.7.4",
+        "version": "==21.7.8",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:592"
@@ -2818,7 +2811,7 @@
         "version": "==6.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:473"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:475"
       },
       {
         "name": "watchfiles",
@@ -2857,7 +2850,7 @@
       },
       {
         "name": "websockets",
-        "version": "==17.0.1",
+        "version": "==17.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:607"
@@ -2874,7 +2867,7 @@
         "version": "==1.0.7",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:484"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:486"
       },
       {
         "name": "wheel",
@@ -2895,35 +2888,35 @@
         "version": "==1.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:777"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:776"
       },
       {
         "name": "wrapt",
-        "version": "==2.3.0",
+        "version": "==2.4.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "codeserver/ubi9-python-3.12/requirements.cpu.txt:618"
       },
       {
         "name": "xxhash",
-        "version": "==4.0.0",
+        "version": "==4.0.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:782"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:781"
       },
       {
         "name": "xyzservices",
-        "version": "==2026.3.0",
+        "version": "==2026.9.1",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:490"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:492"
       },
       {
         "name": "yapf",
         "version": "==0.43.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:492"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:494"
       },
       {
         "name": "yarl",
@@ -2934,10 +2927,10 @@
       },
       {
         "name": "yaspin",
-        "version": "==3.4.0",
+        "version": "==3.5.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:500"
+        "source": "jupyter/baseline/ubi9-python-3.12/requirements.cpu.txt:502"
       },
       {
         "name": "zipp",
@@ -2951,7 +2944,7 @@
         "version": "==0.25.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
-        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:796"
+        "source": "jupyter/pytorch+llmcompressor/ubi9-python-3.12/requirements.cuda.txt:795"
       }
     ],
     "internal_odh": null
@@ -2973,39 +2966,39 @@
   ],
   "recent_changes": [
     {
-      "version": "bbd8aeafa",
-      "date": "2026-09-04",
+      "version": "386565021",
+      "date": "2026-09-11",
+      "changes": "Merged upstream"
+    },
+    {
+      "version": "3914ac413",
+      "date": "2026-09-11",
+      "changes": "Merged upstream"
+    },
+    {
+      "version": "7ed998eea",
+      "date": "2026-09-11",
+      "changes": "NO-JIRA: ci(.tekton/): remove obsolete sbom-syft-generate step override (#4569)"
+    },
+    {
+      "version": "e967cb743",
+      "date": "2026-09-11",
+      "changes": "NO-JIRA: ci(.tekton/): remove obsolete sbom-syft-generate step override (#2871)"
+    },
+    {
+      "version": "753f3aff7",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "3e656c75f",
-      "date": "2026-09-04",
+      "version": "102c96f42",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "83a7db390",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #4189 from opendatahub-io/security/sync-configs"
-    },
-    {
-      "version": "2056ebe55",
-      "date": "2026-09-04",
-      "changes": "chore: make .agents/skills the source of truth and symlink Claude/Cursor skills (#4404) (#4533)"
-    },
-    {
-      "version": "39fc23a60",
-      "date": "2026-09-04",
-      "changes": "NO-JIRA: ci: stop prefetch-all.sh from re-locking pip dependencies (#4515)"
-    },
-    {
-      "version": "09eeef491",
-      "date": "2026-09-04",
-      "changes": "NO-JIRA: docs: fix CONTRIBUTING.md push example to use upstream remote (#4529)"
-    },
-    {
-      "version": "a3b3a6307",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #4541 from opendatahub-io/rpms-lockfile-rhds-update-20260904-0907"
+      "version": "5e4ecb59e",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #4568 from opendatahub-io/fix/pqc-crypto-policies"
     }
   ],
   "component_refs": null,
@@ -3015,7 +3008,7 @@
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/opt/app-root/bin/run-code-server.sh\"]",
-      "source": "codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:396"
+      "source": "codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:403"
     },
     {
       "name": "codeserver/ubi9-python-3.12/Dockerfile.konflux.cpu:CMD",
@@ -3048,7 +3041,7 @@
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"start-notebook.sh\"]",
-      "source": "jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:114"
+      "source": "jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:118"
     },
     {
       "name": "jupyter/datascience/ubi9-python-3.12/Dockerfile.konflux.cpu:ENTRYPOINT",
@@ -3197,7 +3190,7 @@
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 3 runtime facts, 11 source components, and 393 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 3 runtime facts, 11 source components, and 392 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "not_found",
     "go_module_configs": "not_found",
@@ -3507,7 +3500,7 @@
     "configuration_lifecycle": [
       {
         "source": "codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu",
-        "line_range": "396",
+        "line_range": "403",
         "symbols": [
           "codeserver-baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:CMD"
         ],
@@ -3546,7 +3539,7 @@
       },
       {
         "source": "jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu",
-        "line_range": "114",
+        "line_range": "118",
         "symbols": [
           "jupyter/baseline/ubi9-python-3.12/Dockerfile.konflux.cpu:ENTRYPOINT"
         ],
@@ -3698,7 +3691,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 358,
+      "value": 361,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

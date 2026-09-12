@@ -36,11 +36,11 @@ No bounded behavioral evidence was extracted.
 
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `detectors/Dockerfile.builtIn`:25 (detectors/Dockerfile.builtIn:CMD)
+  **Candidate:** `detectors/Dockerfile.builtIn`:26 (detectors/Dockerfile.builtIn:CMD)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping
-  **Candidate:** `detectors/Dockerfile.hf`:23 (detectors/Dockerfile.hf:CMD)
+  **Candidate:** `detectors/Dockerfile.hf`:24 (detectors/Dockerfile.hf:CMD)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** What lifecycle, command, probes, and deployment configuration surround this entrypoint?
   **Expected signal:** main command, startup path, probe, signal handling, or workload mapping

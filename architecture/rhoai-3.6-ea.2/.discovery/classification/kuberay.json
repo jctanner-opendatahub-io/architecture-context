@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/kuberay",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "ray-operator/PROJECT",
+    "ray-operator/main.go",
+    "helm-chart/kuberay-operator/Chart.yaml",
+    "helm-chart/kuberay-operator/templates/deployment.yaml",
+    "helm-chart/kuberay-operator/crds/ray.io_rayclusters.yaml"
+  ],
+  "reasoning": "This checkout is KubeRay, a Kubernetes operator for deploying and managing Ray workloads. The README explicitly describes KubeRay as an open-source Kubernetes operator; ray-operator/PROJECT declares Kubebuilder controller-managed RayCluster, RayService, RayJob, and RayCronJob custom resources; ray-operator/main.go sets up the controller manager and Kubernetes scheme; and the Helm chart packages an operator deployment and Ray custom resource definitions."
+}

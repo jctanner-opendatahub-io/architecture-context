@@ -1,8 +1,8 @@
 {
   "component": "trustyai-service-operator",
   "repo": "https://github.com/red-hat-data-services/trustyai-service-operator.git",
-  "commit_sha": "487c79a587a12e9ea2116b273fce8f322252dec8",
-  "extracted_at": "2026-09-10T15:09:34Z",
+  "commit_sha": "f4231fa12a3f548fcec71482feed184d8d074aa1",
+  "extracted_at": "2026-09-12T16:40:02Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 8 CRDs, 0 serving runtime definitions, 2 workloads, 1 services, 2 RBAC roles, 2 ingress routes, 24 controller watches, 4 registered HTTP endpoints, and 0 gRPC services.",
@@ -59,13 +59,13 @@
       "name": "TrustyAI controller",
       "type": "Controller",
       "purpose": "Reconciles TrustyAI resources",
-      "source": "trustyai-operator-module/pkg/trustyaimodule/reconciler.go:416"
+      "source": "trustyai-operator-module/pkg/trustyaimodule/reconciler.go:419"
     },
     {
       "name": "TrustyAIService controller",
       "type": "Controller",
       "purpose": "Reconciles TrustyAIService resources",
-      "source": "controllers/tas/trustyaiservice_controller.go:299"
+      "source": "controllers/tas/trustyaiservice_controller.go:315"
     },
     {
       "name": "Workload controller",
@@ -288,7 +288,8 @@
             "verbs": [
               "get",
               "list",
-              "patch"
+              "patch",
+              "watch"
             ]
           },
           {
@@ -301,7 +302,8 @@
             "verbs": [
               "get",
               "list",
-              "patch"
+              "patch",
+              "watch"
             ]
           },
           {
@@ -371,7 +373,8 @@
             ],
             "verbs": [
               "get",
-              "list"
+              "list",
+              "watch"
             ]
           },
           {
@@ -384,7 +387,8 @@
             "verbs": [
               "get",
               "list",
-              "patch"
+              "patch",
+              "watch"
             ]
           },
           {
@@ -445,7 +449,8 @@
             "verbs": [
               "get",
               "list",
-              "patch"
+              "patch",
+              "watch"
             ]
           },
           {
@@ -458,7 +463,8 @@
             "verbs": [
               "get",
               "list",
-              "patch"
+              "patch",
+              "watch"
             ]
           },
           {
@@ -528,7 +534,8 @@
             ],
             "verbs": [
               "get",
-              "list"
+              "list",
+              "watch"
             ]
           },
           {
@@ -541,7 +548,8 @@
             "verbs": [
               "get",
               "list",
-              "patch"
+              "patch",
+              "watch"
             ]
           },
           {
@@ -1082,7 +1090,7 @@
       "type": "For",
       "gvk": "api/tas/v1/TrustyAIService",
       "controller": "TrustyAIServiceReconciler",
-      "source": "controllers/tas/trustyaiservice_controller.go:299",
+      "source": "controllers/tas/trustyaiservice_controller.go:315",
       "resource_ops": null
     },
     {
@@ -1103,7 +1111,7 @@
       "type": "Owns",
       "gvk": "apps/v1/Deployment",
       "controller": "TrustyAIServiceReconciler",
-      "source": "controllers/tas/trustyaiservice_controller.go:300",
+      "source": "controllers/tas/trustyaiservice_controller.go:316",
       "resource_ops": null
     },
     {
@@ -1139,7 +1147,7 @@
       "type": "For",
       "gvk": "pkg/apis/v1alpha1/TrustyAI",
       "controller": "TrustyAIModuleReconciler",
-      "source": "trustyai-operator-module/pkg/trustyaimodule/reconciler.go:416",
+      "source": "trustyai-operator-module/pkg/trustyaimodule/reconciler.go:419",
       "resource_ops": null
     },
     {
@@ -1153,7 +1161,7 @@
       "type": "Watches",
       "gvk": "serving.kserve.io/v1beta1/InferenceService",
       "controller": "TrustyAIServiceReconciler",
-      "source": "controllers/tas/trustyaiservice_controller.go:301",
+      "source": "controllers/tas/trustyaiservice_controller.go:317",
       "resource_ops": null
     }
   ],
@@ -1302,39 +1310,39 @@
   ],
   "recent_changes": [
     {
-      "version": "487c79a5",
-      "date": "2026-09-04",
+      "version": "f4231fa1",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "870559ac",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1916 from red-hat-data-services/migrate-runtime-to-pqc-main"
+      "version": "825b451b",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1935 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "a10f5162",
-      "date": "2026-09-03",
-      "changes": "Migrate manager runtime base image to PQC variant"
-    },
-    {
-      "version": "9373fde8",
-      "date": "2026-09-03",
+      "version": "37a2f69c",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "8a856b12",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1925 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "fc3ba5f9",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1938 from trustyai-explainability/main"
     },
     {
-      "version": "ae5bedf5",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+      "version": "2c38de92",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #913 from kpunwatk/fix/module-services-watch-rbac"
     },
     {
-      "version": "7ddc9753",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "64b0da19",
+      "date": "2026-09-10",
+      "changes": "policy: add OPA guard against regressing the module RBAC watch fix"
+    },
+    {
+      "version": "97c83560",
+      "date": "2026-09-10",
+      "changes": "fix(module): add missing watch verb on services and prometheuses RBAC"
     }
   ],
   "component_refs": [
@@ -1425,7 +1433,7 @@
     {
       "component": "apps/v1/Deployment",
       "type": "Kubernetes API",
-      "reference": "create, get, list, update operations by EvalHubReconciler, GuardrailsOrchestratorReconciler, NemoGuardrailsReconciler, RunningServiceChecker, TrustyAIModuleReconciler, TrustyAIServiceReconciler",
+      "reference": "create, delete, get, list, update operations by EvalHubReconciler, GuardrailsOrchestratorReconciler, NemoGuardrailsReconciler, RunningServiceChecker, TrustyAIModuleReconciler, TrustyAIServiceReconciler",
       "source": "controllers/evalhub/deployment.go:34",
       "interaction": "Resource CRUD"
     },
@@ -1544,11 +1552,18 @@
       "source": "tests/Dockerfile:59"
     },
     {
+      "name": "trustyai-operator-module/Dockerfile.konflux:ENTRYPOINT",
+      "type": "Container entrypoint",
+      "runtime": "Container",
+      "command": "[\"/manager\"]",
+      "source": "trustyai-operator-module/Dockerfile.konflux:46"
+    },
+    {
       "name": "trustyai-operator-module/Dockerfile:ENTRYPOINT",
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/manager\"]",
-      "source": "trustyai-operator-module/Dockerfile:44"
+      "source": "trustyai-operator-module/Dockerfile:45"
     },
     {
       "name": "trustyai-operator-module",
@@ -1820,14 +1835,14 @@
   "category_coverage": {
     "architecture_components": {
       "status": "complete",
-      "fact_count": 24,
+      "fact_count": 25,
       "discovery_contract": "architecture-components/v1",
       "completed_checks": [
         "source-entrypoint-workload-inventory"
       ],
       "limitations": [],
       "evidence": [
-        "summary:24 runtime component/entrypoint/workload facts extracted"
+        "summary:25 runtime component/entrypoint/workload facts extracted"
       ]
     },
     "authentication": {
@@ -2107,7 +2122,7 @@
       "details": "api/tas/v1/TrustyAIService",
       "sources": [
         "controllers/tas/statuses.go:34",
-        "controllers/tas/trustyaiservice_controller.go:299"
+        "controllers/tas/trustyaiservice_controller.go:315"
       ]
     },
     {
@@ -2118,7 +2133,7 @@
       "details": "apps/v1/Deployment",
       "sources": [
         "controllers/evalhub/deployment.go:34",
-        "controllers/tas/trustyaiservice_controller.go:300"
+        "controllers/tas/trustyaiservice_controller.go:316"
       ]
     }
   ],
@@ -2759,7 +2774,7 @@
       },
       {
         "source": "trustyai-operator-module/Dockerfile",
-        "line_range": "44",
+        "line_range": "45",
         "symbols": [
           "trustyai-operator-module/Dockerfile:ENTRYPOINT"
         ],
@@ -2771,10 +2786,10 @@
         ]
       },
       {
-        "source": "trustyai-operator-module/cmd/trustyai-operator-module/main.go",
-        "line_range": "33",
+        "source": "trustyai-operator-module/Dockerfile.konflux",
+        "line_range": "46",
         "symbols": [
-          "trustyai-operator-module"
+          "trustyai-operator-module/Dockerfile.konflux:ENTRYPOINT"
         ],
         "question": "What lifecycle, command, probes, and deployment configuration surround this entrypoint?",
         "expected_signal": "main command, startup path, probe, signal handling, or workload mapping",
@@ -3378,7 +3393,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 299,
+      "value": 308,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

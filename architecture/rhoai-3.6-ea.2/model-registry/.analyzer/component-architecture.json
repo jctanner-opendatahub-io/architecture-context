@@ -1,8 +1,8 @@
 {
   "component": "model-registry",
   "repo": "https://github.com/red-hat-data-services/model-registry.git",
-  "commit_sha": "fb262cf005ae7bf5181959f4f2b1c13eeee4a5a7",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "123bb9608d652a90220e83f746368150e5372f13",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 4 RBAC roles, 3 ingress routes, 2 controller watches, 7 registered HTTP endpoints, and 0 gRPC services.",
@@ -391,7 +391,7 @@
       },
       {
         "module": "github.com/brianvoe/gofakeit/v7",
-        "version": "v7.15.0",
+        "version": "v7.16.0",
         "category": "",
         "purpose": "",
         "source": "clients/ui/bff/go.mod"
@@ -434,7 +434,7 @@
       },
       {
         "module": "github.com/go-sql-driver/mysql",
-        "version": "v1.10.0",
+        "version": "v1.10.1",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -525,7 +525,7 @@
       },
       {
         "module": "github.com/onsi/gomega",
-        "version": "v1.42.1",
+        "version": "v1.43.0",
         "category": "",
         "purpose": "",
         "source": "clients/ui/bff/go.mod"
@@ -676,7 +676,7 @@
       },
       {
         "module": "k8s.io/api",
-        "version": "v0.36.4",
+        "version": "v0.37.0",
         "category": "runtime-integration",
         "role": "runtime-integration",
         "purpose": "",
@@ -684,7 +684,7 @@
       },
       {
         "module": "k8s.io/apimachinery",
-        "version": "v0.36.4",
+        "version": "v0.37.0",
         "category": "runtime-integration",
         "role": "runtime-integration",
         "purpose": "",
@@ -692,7 +692,7 @@
       },
       {
         "module": "k8s.io/client-go",
-        "version": "v0.36.4",
+        "version": "v0.37.0",
         "category": "runtime-integration",
         "role": "runtime-integration",
         "purpose": "",
@@ -707,7 +707,7 @@
       },
       {
         "module": "sigs.k8s.io/controller-runtime",
-        "version": "v0.24.1",
+        "version": "v0.25.0",
         "category": "runtime-framework",
         "role": "runtime-framework",
         "purpose": "",
@@ -724,7 +724,7 @@
       },
       {
         "name": "controller-runtime",
-        "version": "0.24.1",
+        "version": "0.25.0",
         "ecosystem": "go",
         "purpose": "Operator framework",
         "source": "clients/ui/bff/go.mod"
@@ -1417,39 +1417,39 @@
   ],
   "recent_changes": [
     {
-      "version": "fb262cf0",
-      "date": "2026-09-04",
+      "version": "123bb960",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "74b25729",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update dockerfile digest updates (#1686)"
+      "version": "1cb8a7d0",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1714 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "619ca557",
-      "date": "2026-09-03",
+      "version": "bad98beb",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "adc7efd9",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1685 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "c467931a",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset:1.26 docker digest to 685ccca (#1715)"
     },
     {
-      "version": "00715fc0",
-      "date": "2026-09-03",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "93370284",
-      "date": "2026-09-03",
+      "version": "b5b52b78",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "4d52704e",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1644 from red-hat-data-services/migrate-runtime-to-pqc-main"
+      "version": "b828fc0e",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/stable'"
+    },
+    {
+      "version": "996d6cdd",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #1876 from opendatahub-io/main"
     }
   ],
   "component_refs": [
@@ -1932,9 +1932,11 @@
         "unsupported runtime source languages require platform dependency analysis"
       ],
       "evidence": [
+        "catalog/internal/catalog/modelcatalog/hf_catalog.go (kubeflow.org; commented configuration)",
         "clients/ui/bff/internal/api/model_registry_settings_handler.go (gatewayconfig; naming convention (subdomain))",
         "clients/ui/bff/internal/integrations/kubernetes/shared_k8s_client.go (kubeflow.org; naming convention (subdomain))",
         "clients/ui/bff/internal/models/model_registry_kind.go (gatewayconfig; naming convention (Go identifier))",
+        "clients/ui/bff/internal/repositories/model_catalog_settings.go (kubeflow.org; naming convention (subdomain))",
         "clients/ui/bff/internal/repositories/model_transfer_job_trust.go (kubeflow.org; naming convention (subdomain))",
         "clients/ui/bff/internal/repositories/model_transfer_jobs.go (kubeflow.org; naming convention (subdomain))",
         "cmd/controller/internal/controllers/inferenceservice_controller.go (serving.kserve.io; commented configuration)",
@@ -1942,8 +1944,6 @@
         "manifests/kustomize/options/controller/default/kustomization.yaml (cert-manager.io; commented configuration)",
         "manifests/kustomize/options/controller/prometheus/monitor.yaml (monitoring.coreos.com; unselected manifest configuration)",
         "manifests/kustomize/options/controller/rbac/role.yaml (serving.kserve.io; accounted selected manifest relationship)",
-        "manifests/kustomize/options/csi/clusterstoragecontainer.yaml (serving.kserve.io; unselected manifest configuration)",
-        "manifests/kustomize/options/ui/components/skill-catalog-settings/skill-catalog-settings-rbac.yaml (kubeflow.org; unselected manifest configuration)",
         "summary:6 additional evidence items omitted"
       ]
     },
@@ -3288,7 +3288,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 1367,
+      "value": 1373,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

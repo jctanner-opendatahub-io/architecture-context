@@ -1,8 +1,8 @@
 {
   "component": "llm-d-autoscaling",
   "repo": "https://github.com/llm-d/llm-d-autoscaling.git",
-  "commit_sha": "099b6a5688e6415c1061b104eee5ac5edc6a4812",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "0a926fab08ee74942f961cd5e7835ec2ab651ad4",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 5 RBAC roles, 0 ingress routes, 5 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -835,6 +835,21 @@
   ],
   "recent_changes": [
     {
+      "version": "0a926fa",
+      "date": "2026-09-10",
+      "changes": "deps(docker): bump projectquay/golang from 1.26 to 1.27 (#1541)"
+    },
+    {
+      "version": "be94e04",
+      "date": "2026-09-09",
+      "changes": "benchmark: extend the Grafana dashboard, add a token-aware scenario, drop deprecated session_id (#1555)"
+    },
+    {
+      "version": "6b93399",
+      "date": "2026-09-09",
+      "changes": "Vllm model sim (#1545)"
+    },
+    {
       "version": "099b6a5",
       "date": "2026-09-02",
       "changes": "fix: broken base image (#1549)"
@@ -853,21 +868,6 @@
       "version": "bebbe88",
       "date": "2026-08-12",
       "changes": "benchmark: add p/d with sim benchmark scenario example (#1520)"
-    },
-    {
-      "version": "a6b3980",
-      "date": "2026-08-07",
-      "changes": "bump: go version from 1.25 to 1.26 (#1512)"
-    },
-    {
-      "version": "d5d5864",
-      "date": "2026-08-07",
-      "changes": "Prepare for release v0.9.0 (#1522)"
-    },
-    {
-      "version": "57f3fe6",
-      "date": "2026-08-07",
-      "changes": "refactor(pipeline): derive the per-model anchor on demand; add analyzer enablement (#1516)"
     }
   ],
   "component_refs": [
@@ -2230,7 +2230,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 215,
+      "value": 216,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

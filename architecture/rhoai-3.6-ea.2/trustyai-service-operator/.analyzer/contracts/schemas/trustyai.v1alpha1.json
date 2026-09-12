@@ -129,22 +129,6 @@
           "type": "array",
           "x-kubernetes-list-type": "atomic"
         },
-        "distribution": {
-          "description": "DistributionInfo represents distribution information",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "version": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "name",
-            "version"
-          ],
-          "type": "object"
-        },
         "observedGeneration": {
           "description": "ObservedGeneration is the most recent .metadata.generation observed\nby the controller. It allows consumers to determine whether the\ncontroller has processed the latest spec changes.",
           "format": "int64",

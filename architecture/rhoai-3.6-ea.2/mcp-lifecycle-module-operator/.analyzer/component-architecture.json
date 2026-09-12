@@ -1,8 +1,8 @@
 {
   "component": "mcp-lifecycle-module-operator",
   "repo": "https://github.com/red-hat-data-services/mcp-lifecycle-module-operator.git",
-  "commit_sha": "78c01f389dc739d8eb85ed65ea1a89f4589da9b2",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "ad16350a1afdf665151036b0ca07f815f97b5a11",
+  "extracted_at": "2026-09-12T16:39:57Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 2 CRDs, 0 serving runtime definitions, 2 workloads, 1 services, 9 RBAC roles, 0 ingress routes, 11 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -25,7 +25,7 @@
   "services": [
     {
       "name": "mcp-lifecycle-operator-controller-manager-metrics-service",
-      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2032",
+      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2067",
       "type": "ClusterIP",
       "ports": [
         {
@@ -71,7 +71,7 @@
     {
       "name": "mcp-lifecycle-operator-controller-manager",
       "kind": "Controller-created Deployment",
-      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2051",
+      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2086",
       "service_account": "mcp-lifecycle-operator-controller-manager",
       "containers": [
         {
@@ -697,7 +697,7 @@
       },
       {
         "name": "mcp-lifecycle-operator-manager-role",
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1793",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1828",
         "rules": [
           {
             "apiGroups": [
@@ -831,7 +831,7 @@
           "app.kubernetes.io/name": "mcp-lifecycle-operator",
           "rbac.authorization.k8s.io/aggregate-to-admin": "true"
         },
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1877",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1912",
         "rules": [
           {
             "apiGroups": [
@@ -871,7 +871,7 @@
           "app.kubernetes.io/name": "mcp-lifecycle-operator",
           "rbac.authorization.k8s.io/aggregate-to-edit": "true"
         },
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1906",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1941",
         "rules": [
           {
             "apiGroups": [
@@ -910,7 +910,7 @@
           "app.kubernetes.io/name": "mcp-lifecycle-operator",
           "rbac.authorization.k8s.io/aggregate-to-view": "true"
         },
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1934",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1969",
         "rules": [
           {
             "apiGroups": [
@@ -940,7 +940,7 @@
       },
       {
         "name": "mcp-lifecycle-operator-metrics-auth-role",
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1958",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1993",
         "rules": [
           {
             "apiGroups": [
@@ -968,7 +968,7 @@
       },
       {
         "name": "mcp-lifecycle-operator-metrics-reader",
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1976",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2011",
         "rules": [
           {
             "apiGroups": null,
@@ -990,7 +990,7 @@
           "app.kubernetes.io/managed-by": "kustomize",
           "app.kubernetes.io/name": "mcp-lifecycle-operator"
         },
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1752",
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1787",
         "rules": [
           {
             "apiGroups": [
@@ -1079,7 +1079,7 @@
             "namespace": "mcp-lifecycle-operator-system"
           }
         ],
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2003"
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2038"
       },
       {
         "name": "mcp-lifecycle-operator-metrics-auth-rolebinding",
@@ -1092,7 +1092,7 @@
             "namespace": "mcp-lifecycle-operator-system"
           }
         ],
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2019"
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2054"
       }
     ],
     "role_bindings": [
@@ -1108,7 +1108,7 @@
             "namespace": "mcp-lifecycle-operator-system"
           }
         ],
-        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1986"
+        "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2021"
       }
     ]
   },
@@ -1272,49 +1272,49 @@
       "type": "Watches",
       "gvk": "/v1/ConfigMap",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:487",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:488",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "/v1/ServiceAccount",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:489",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:490",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "/v1/Service",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:490",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:491",
       "resource_ops": null
     },
     {
       "type": "For",
       "gvk": "api/v1alpha1/MCPLifecycleOperator",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:486",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:487",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "apiextensions/v1/CustomResourceDefinition",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:495",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:496",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "apps/v1/Deployment",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:488",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:489",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "config.openshift.io/v1/APIServer",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:498",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:499",
       "conditional": true,
       "resource_ops": null
     },
@@ -1322,28 +1322,28 @@
       "type": "Watches",
       "gvk": "rbac.authorization.k8s.io/v1/ClusterRoleBinding",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:492",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:493",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "rbac.authorization.k8s.io/v1/ClusterRole",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:491",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:492",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "rbac.authorization.k8s.io/v1/RoleBinding",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:494",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:495",
       "resource_ops": null
     },
     {
       "type": "Watches",
       "gvk": "rbac.authorization.k8s.io/v1/Role",
       "controller": "MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:493",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:494",
       "resource_ops": null
     }
   ],
@@ -1386,7 +1386,7 @@
       "mechanism": "RBAC aggregation (aggregate-to-admin/edit/view ClusterRoles)",
       "enforcement_point": "kube-apiserver",
       "policy": "Built-in admin, edit, and view roles inherit permissions from mcp-lifecycle-operator-mcpserver-admin-role, mcp-lifecycle-operator-mcpserver-editor-role, and mcp-lifecycle-operator-mcpserver-viewer-role",
-      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1877"
+      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1912"
     },
     {
       "endpoint": "Kubernetes API",
@@ -1418,39 +1418,39 @@
   ],
   "recent_changes": [
     {
+      "version": "ad16350",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "46a0920",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
+    },
+    {
+      "version": "28c1251",
+      "date": "2026-09-11",
+      "changes": "Update operand manifests from ODH MCPLO main (#92)"
+    },
+    {
+      "version": "0baec4d",
+      "date": "2026-09-08",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "71cf1df",
+      "date": "2026-09-08",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
+    },
+    {
+      "version": "4918f20",
+      "date": "2026-09-08",
+      "changes": "OCPMCP-493: Propagate TLS groups from API Server profile to operand (#91)"
+    },
+    {
       "version": "78c01f3",
       "date": "2026-09-03",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "6fee71c",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #22 from red-hat-data-services/migrate-runtime-to-pqc-main"
-    },
-    {
-      "version": "0031859",
-      "date": "2026-08-31",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "90a9332",
-      "date": "2026-08-31",
-      "changes": "sync pipelineruns with konflux-central - 85bde91"
-    },
-    {
-      "version": "4a53c73",
-      "date": "2026-08-26",
-      "changes": "Migrate runtime base image to PQC variant"
-    },
-    {
-      "version": "1f142ec",
-      "date": "2026-08-19",
-      "changes": "sync pipelineruns with konflux-central - 954b713, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/32273026277"
-    },
-    {
-      "version": "b86b4ed",
-      "date": "2026-08-19",
-      "changes": "sync pipelineruns with konflux-central - 37ff31f, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/32232733784"
     }
   ],
   "component_refs": [
@@ -1458,7 +1458,7 @@
       "component": "/v1/ConfigMap",
       "type": "Kubernetes API",
       "reference": "get operations by MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:426",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:427",
       "interaction": "Resource read"
     },
     {
@@ -1472,7 +1472,7 @@
       "component": "apps/v1/Deployment",
       "type": "Kubernetes API",
       "reference": "get operations by MCPLifecycleOperatorReconciler",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:298",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:299",
       "interaction": "Resource read"
     }
   ],
@@ -1525,16 +1525,6 @@
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
       "watched_gvk": "/v1/ConfigMap",
-      "source": "internal/controller/mcplifecycleoperator_reconciler.go:487-487",
-      "limitations": [
-        "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
-      ]
-    },
-    {
-      "kind": "named-watch-predicate",
-      "status": "unresolved",
-      "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "apps/v1/Deployment",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:488-488",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1544,7 +1534,7 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "/v1/ServiceAccount",
+      "watched_gvk": "apps/v1/Deployment",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:489-489",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1554,7 +1544,7 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "/v1/Service",
+      "watched_gvk": "/v1/ServiceAccount",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:490-490",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1564,7 +1554,7 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "rbac.authorization.k8s.io/v1/ClusterRole",
+      "watched_gvk": "/v1/Service",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:491-491",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1574,7 +1564,7 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "rbac.authorization.k8s.io/v1/ClusterRoleBinding",
+      "watched_gvk": "rbac.authorization.k8s.io/v1/ClusterRole",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:492-492",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1584,7 +1574,7 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "rbac.authorization.k8s.io/v1/Role",
+      "watched_gvk": "rbac.authorization.k8s.io/v1/ClusterRoleBinding",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:493-493",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1594,7 +1584,7 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "rbac.authorization.k8s.io/v1/RoleBinding",
+      "watched_gvk": "rbac.authorization.k8s.io/v1/Role",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:494-494",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
@@ -1604,8 +1594,18 @@
       "kind": "named-watch-predicate",
       "status": "unresolved",
       "identity": "internal/controller.MCPLifecycleOperatorReconciler",
-      "watched_gvk": "apiextensions/v1/CustomResourceDefinition",
+      "watched_gvk": "rbac.authorization.k8s.io/v1/RoleBinding",
       "source": "internal/controller/mcplifecycleoperator_reconciler.go:495-495",
+      "limitations": [
+        "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
+      ]
+    },
+    {
+      "kind": "named-watch-predicate",
+      "status": "unresolved",
+      "identity": "internal/controller.MCPLifecycleOperatorReconciler",
+      "watched_gvk": "apiextensions/v1/CustomResourceDefinition",
+      "source": "internal/controller/mcplifecycleoperator_reconciler.go:496-496",
       "limitations": [
         "Watch predicates use a dynamic value or unsupported wrapper; named-resource filtering is unresolved"
       ]
@@ -1624,21 +1624,21 @@
       "api_group": "networking.k8s.io",
       "name": "mcp-lifecycle-operator-allow-metrics-traffic",
       "namespace": "mcp-lifecycle-operator-system",
-      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2142"
+      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2177"
     },
     {
       "kind": "ServiceAccount",
       "api_group": "",
       "name": "mcp-lifecycle-operator-controller-manager",
       "namespace": "mcp-lifecycle-operator-system",
-      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1743"
+      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:1778"
     },
     {
       "kind": "ServiceMonitor",
       "api_group": "monitoring.coreos.com",
       "name": "mcp-lifecycle-operator-controller-manager-metrics-monitor",
       "namespace": "system",
-      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2120"
+      "source": "internal/controller/resources/mcp-lifecycle-operator.yaml:2155"
     }
   ],
   "data_coverage": {
@@ -1683,9 +1683,9 @@
       "evidence": [
         "cmd/main.go:155",
         "cmd/main.go:159",
-        "internal/controller/resources/mcp-lifecycle-operator.yaml:2032",
+        "internal/controller/resources/mcp-lifecycle-operator.yaml:2067",
         "config/manager/manager.yaml:1",
-        "internal/controller/resources/mcp-lifecycle-operator.yaml:2051"
+        "internal/controller/resources/mcp-lifecycle-operator.yaml:2086"
       ]
     },
     "fips_compliance": {
@@ -1801,8 +1801,8 @@
       "relationship": "watches-reference",
       "details": "/v1/ConfigMap",
       "sources": [
-        "internal/controller/mcplifecycleoperator_reconciler.go:426",
-        "internal/controller/mcplifecycleoperator_reconciler.go:487"
+        "internal/controller/mcplifecycleoperator_reconciler.go:427",
+        "internal/controller/mcplifecycleoperator_reconciler.go:488"
       ]
     },
     {
@@ -1813,7 +1813,7 @@
       "details": "api/v1alpha1/MCPLifecycleOperator",
       "sources": [
         "internal/controller/mcplifecycleoperator_reconciler.go:112",
-        "internal/controller/mcplifecycleoperator_reconciler.go:486"
+        "internal/controller/mcplifecycleoperator_reconciler.go:487"
       ]
     },
     {
@@ -1823,8 +1823,8 @@
       "relationship": "watches-reference",
       "details": "apps/v1/Deployment",
       "sources": [
-        "internal/controller/mcplifecycleoperator_reconciler.go:298",
-        "internal/controller/mcplifecycleoperator_reconciler.go:488"
+        "internal/controller/mcplifecycleoperator_reconciler.go:299",
+        "internal/controller/mcplifecycleoperator_reconciler.go:489"
       ]
     }
   ],
@@ -1857,7 +1857,7 @@
       "status": "observed",
       "finding": "1 services facts extracted",
       "sources": [
-        "internal/controller/resources/mcp-lifecycle-operator.yaml:2032"
+        "internal/controller/resources/mcp-lifecycle-operator.yaml:2067"
       ]
     },
     {
@@ -1900,7 +1900,7 @@
       {
         "claim": "RBAC-aggregated resources (mcp.x-k8s.io) methods=Kubernetes API mechanism=RBAC aggregation (aggregate-to-admin/edit/view ClusterRoles) enforcement=kube-apiserver policy=Built-in admin, edit, and view roles inherit permissions from mcp-lifecycle-operator-mcpserver-admin-role, mcp-lifecycle-operator-mcpserver-editor-role, and mcp-lifecycle-operator-mcpserver-viewer-role",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1877"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1912"
         ]
       }
     ],
@@ -1950,7 +1950,7 @@
       {
         "claim": "mcp-lifecycle-operator-controller-manager-metrics-service port=8443 target=8443 protocol=TCP encryption= auth=",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:2032"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:2067"
         ]
       }
     ]
@@ -1961,7 +1961,7 @@
         "claim": "Controller-created Deployment workload mcp-lifecycle-operator-controller-manager uses service account mcp-lifecycle-operator-controller-manager and 1 container(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:2051"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:2086"
         ]
       },
       {
@@ -1975,7 +1975,7 @@
         "claim": "Service mcp-lifecycle-operator-controller-manager-metrics-service targets mcp-lifecycle-operator-controller-manager with 1 port(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:2032"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:2067"
         ]
       }
     ],
@@ -2032,7 +2032,7 @@
         "claim": "Kubernetes API RBAC-aggregated resources (mcp.x-k8s.io) uses RBAC aggregation (aggregate-to-admin/edit/view ClusterRoles) at kube-apiserver; policy=Built-in admin, edit, and view roles inherit permissions from mcp-lifecycle-operator-mcpserver-admin-role, mcp-lifecycle-operator-mcpserver-editor-role, and mcp-lifecycle-operator-mcpserver-viewer-role",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1877"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1912"
         ]
       },
       {
@@ -2053,49 +2053,49 @@
         "claim": "RBAC role mcp-lifecycle-operator-leader-election-role grants 3 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1752"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1787"
         ]
       },
       {
         "claim": "RBAC role mcp-lifecycle-operator-manager-role grants 9 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1793"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1828"
         ]
       },
       {
         "claim": "RBAC role mcp-lifecycle-operator-mcpserver-admin-role grants 2 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1877"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1912"
         ]
       },
       {
         "claim": "RBAC role mcp-lifecycle-operator-mcpserver-editor-role grants 2 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1906"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1941"
         ]
       },
       {
         "claim": "RBAC role mcp-lifecycle-operator-mcpserver-viewer-role grants 2 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1934"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1969"
         ]
       },
       {
         "claim": "RBAC role mcp-lifecycle-operator-metrics-auth-role grants 2 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1958"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:1993"
         ]
       },
       {
         "claim": "RBAC role mcp-lifecycle-operator-metrics-reader grants 1 rule(s)",
         "status": "observed",
         "sources": [
-          "internal/controller/resources/mcp-lifecycle-operator.yaml:1976"
+          "internal/controller/resources/mcp-lifecycle-operator.yaml:2011"
         ]
       },
       {
@@ -2169,7 +2169,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1877",
+        "line_range": "1912",
         "symbols": [
           "RBAC aggregation (aggregate-to-admin/edit/view ClusterRoles)",
           "RBAC-aggregated resources (mcp.x-k8s.io)"
@@ -2239,7 +2239,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1752",
+        "line_range": "1787",
         "symbols": [
           "mcp-lifecycle-operator-leader-election-role"
         ],
@@ -2252,7 +2252,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1793",
+        "line_range": "1828",
         "symbols": [
           "mcp-lifecycle-operator-manager-role"
         ],
@@ -2265,7 +2265,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1877",
+        "line_range": "1912",
         "symbols": [
           "mcp-lifecycle-operator-mcpserver-admin-role"
         ],
@@ -2278,7 +2278,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1906",
+        "line_range": "1941",
         "symbols": [
           "mcp-lifecycle-operator-mcpserver-editor-role"
         ],
@@ -2291,7 +2291,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1934",
+        "line_range": "1969",
         "symbols": [
           "mcp-lifecycle-operator-mcpserver-viewer-role"
         ],
@@ -2304,7 +2304,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1958",
+        "line_range": "1993",
         "symbols": [
           "mcp-lifecycle-operator-metrics-auth-role"
         ],
@@ -2317,7 +2317,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "1976",
+        "line_range": "2011",
         "symbols": [
           "mcp-lifecycle-operator-metrics-reader"
         ],
@@ -2330,7 +2330,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "2003",
+        "line_range": "2038",
         "symbols": [
           "mcp-lifecycle-operator-manager-role",
           "mcp-lifecycle-operator-manager-rolebinding"
@@ -2534,7 +2534,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "298",
+        "line_range": "299",
         "symbols": [
           "apps/v1/Deployment",
           "get operations by MCPLifecycleOperatorReconciler"
@@ -2548,7 +2548,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "426",
+        "line_range": "427",
         "symbols": [
           "/v1/ConfigMap",
           "get operations by MCPLifecycleOperatorReconciler"
@@ -2564,7 +2564,7 @@
     "kubernetes_relationships": [
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "426",
+        "line_range": "427",
         "symbols": [
           "/v1/ConfigMap",
           "get operations by MCPLifecycleOperatorReconciler"
@@ -2578,7 +2578,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "486",
+        "line_range": "487",
         "symbols": [
           "MCPLifecycleOperatorReconciler",
           "api/v1alpha1/MCPLifecycleOperator"
@@ -2592,7 +2592,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "487-487",
+        "line_range": "488-488",
         "symbols": [
           "/v1/ConfigMap",
           "internal/controller.MCPLifecycleOperatorReconciler"
@@ -2606,7 +2606,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "488-488",
+        "line_range": "489-489",
         "symbols": [
           "apps/v1/Deployment",
           "internal/controller.MCPLifecycleOperatorReconciler"
@@ -2620,7 +2620,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "489-489",
+        "line_range": "490-490",
         "symbols": [
           "/v1/ServiceAccount",
           "internal/controller.MCPLifecycleOperatorReconciler"
@@ -2634,7 +2634,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "490-490",
+        "line_range": "491-491",
         "symbols": [
           "/v1/Service",
           "internal/controller.MCPLifecycleOperatorReconciler"
@@ -2648,7 +2648,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "491-491",
+        "line_range": "492-492",
         "symbols": [
           "internal/controller.MCPLifecycleOperatorReconciler",
           "rbac.authorization.k8s.io/v1/ClusterRole"
@@ -2662,7 +2662,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "492-492",
+        "line_range": "493-493",
         "symbols": [
           "internal/controller.MCPLifecycleOperatorReconciler",
           "rbac.authorization.k8s.io/v1/ClusterRoleBinding"
@@ -2676,7 +2676,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "493-493",
+        "line_range": "494-494",
         "symbols": [
           "internal/controller.MCPLifecycleOperatorReconciler",
           "rbac.authorization.k8s.io/v1/Role"
@@ -2690,7 +2690,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "494-494",
+        "line_range": "495-495",
         "symbols": [
           "internal/controller.MCPLifecycleOperatorReconciler",
           "rbac.authorization.k8s.io/v1/RoleBinding"
@@ -2704,7 +2704,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "495-495",
+        "line_range": "496-496",
         "symbols": [
           "apiextensions/v1/CustomResourceDefinition",
           "internal/controller.MCPLifecycleOperatorReconciler"
@@ -2718,7 +2718,7 @@
       },
       {
         "source": "internal/controller/mcplifecycleoperator_reconciler.go",
-        "line_range": "498",
+        "line_range": "499",
         "symbols": [
           "MCPLifecycleOperatorReconciler",
           "config.openshift.io/v1/APIServer"
@@ -2747,7 +2747,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "2032",
+        "line_range": "2067",
         "symbols": [
           "mcp-lifecycle-operator-controller-manager",
           "mcp-lifecycle-operator-controller-manager-metrics-service"
@@ -2761,7 +2761,7 @@
       },
       {
         "source": "internal/controller/resources/mcp-lifecycle-operator.yaml",
-        "line_range": "2051",
+        "line_range": "2086",
         "symbols": [
           "mcp-lifecycle-operator-controller-manager"
         ],

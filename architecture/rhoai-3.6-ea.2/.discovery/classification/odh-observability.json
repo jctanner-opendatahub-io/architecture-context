@@ -1,0 +1,17 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/odh-observability",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "go.mod",
+    "cmd/main.go",
+    "api/v1alpha1/monitoring_types.go",
+    "internal/controller/monitoring_reconciler.go",
+    "internal/webhook/mutating.go",
+    "charts/odh-observability/Chart.yaml",
+    "charts/odh-observability/templates/deployment.yaml",
+    "charts/odh-observability/crds/services.platform.opendatahub.io_monitorings.yaml",
+    "docs/ARCHITECTURE.md"
+  ],
+  "reasoning": "This is a Kubernetes operator. The project README identifies it as the ODH Observability Operator, and the Go entrypoint configures a controller-runtime manager, registers a MonitoringReconciler, and optionally registers a mutating admission webhook. The repository defines a cluster-scoped Monitoring custom resource and corresponding CRD, reconciles that resource into observability-stack resources, and packages the controller deployment and CRD in a Helm chart."
+}

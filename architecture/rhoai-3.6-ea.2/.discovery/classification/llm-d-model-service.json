@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-model-service",
+  "classification": "operator",
+  "files_read": [
+    "README.md",
+    "PROJECT",
+    "go.mod",
+    "main.go",
+    "api/v1alpha1/modelservice_types.go",
+    "internal/controller/modelservice_controller.go",
+    "config/crd/bases/llm-d.ai_modelservices.yaml",
+    "config/rbac/role.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator built with Kubebuilder and controller-runtime. PROJECT declares a namespaced ModelService custom resource with an active controller, while the API defines the ModelService CRD. The ModelServiceReconciler watches ModelService objects and creates or updates dependent deployments, services, inference pools/models, HTTP routes, ConfigMaps, service accounts, and RBAC bindings. The README also explicitly identifies the project as a Kubernetes operator."
+}

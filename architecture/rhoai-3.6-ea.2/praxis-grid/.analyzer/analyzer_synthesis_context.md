@@ -6,7 +6,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - **crds (observed)**: 3 crds facts extracted [source: deploy/crds/gridnetwork.yaml:1, deploy/crds/gridsite.yaml:1, deploy/crds/inferenceprovider.yaml:1]
 - **grpc_services (not-verified)**: 0 grpc_services facts extracted; absence is not proven by the available coverage
-- **http_endpoints (observed)**: 13 http_endpoints facts extracted [source: mock-providers/src/anthropic.rs:25, mock-providers/src/anthropic.rs:26, mock-providers/src/bedrock.rs:26, mock-providers/src/bedrock.rs:27, mock-providers/src/openai.rs:37, mock-providers/src/openai.rs:38, mock-providers/src/openai.rs:39, mock-providers/src/openai.rs:40, mock-providers/src/vertex.rs:31, operator/src/main.rs:589, operator/src/main.rs:590, overlay-sync/src/main.rs:265, overlay-sync/src/main.rs:267]
+- **http_endpoints (observed)**: 13 http_endpoints facts extracted [source: mock-providers/src/anthropic.rs:25, mock-providers/src/anthropic.rs:26, mock-providers/src/bedrock.rs:26, mock-providers/src/bedrock.rs:27, mock-providers/src/openai.rs:37, mock-providers/src/openai.rs:38, mock-providers/src/openai.rs:39, mock-providers/src/openai.rs:40, mock-providers/src/vertex.rs:31, operator/src/main.rs:606, operator/src/main.rs:607, overlay-sync/src/main.rs:265, overlay-sync/src/main.rs:267]
 - **services (observed)**: 2 services facts extracted
 - **ingress (confirmed-empty)**: 0 ingress facts extracted
 - **webhooks (confirmed-empty)**: 0 webhooks facts extracted
@@ -92,11 +92,11 @@ No bounded behavioral evidence was extracted.
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `operator/src/main.rs`:589 (/healthz, GET)
+  **Candidate:** `operator/src/main.rs`:606 (/healthz, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
-  **Candidate:** `operator/src/main.rs`:590 (/readyz, GET)
+  **Candidate:** `operator/src/main.rs`:607 (/readyz, GET)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Does this endpoint have additional dynamic routes or a concrete handler/owner?
   **Expected signal:** route registration, handler binding, middleware, or owner symbol
@@ -124,10 +124,10 @@ No bounded behavioral evidence was extracted.
 ### http_endpoints
 
 - GET /health on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: mock-providers/src/anthropic.rs:26]
-- GET /healthz on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: operator/src/main.rs:589]
+- GET /healthz on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: operator/src/main.rs:606]
 - GET /livez on port ; transport= encryption=None auth=None owner= [source: overlay-sync/src/main.rs:265]
 - GET /metrics on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: mock-providers/src/openai.rs:40]
-- GET /readyz on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: operator/src/main.rs:590]
+- GET /readyz on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: operator/src/main.rs:607]
 - GET /status on port ; transport= encryption=None auth=None owner= [source: overlay-sync/src/main.rs:267]
 - GET /v1/models on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: mock-providers/src/openai.rs:39]
 - POST /model/{model_id}/converse on port ; transport= encryption=TLS 1.2+ (optional) auth=Passthrough headers owner= [source: mock-providers/src/bedrock.rs:26]
@@ -162,7 +162,7 @@ No bounded behavioral evidence was extracted.
 - **dependency-signal**: crypto-library targets hyper-rustls: Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification [source: Cargo.toml:33]
 - **dependency-signal**: crypto-library targets rustls: Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification [source: Cargo.toml:33]
 - **dependency-signal**: crypto-library targets tokio-rustls: Rust TLS dependency is present; the cryptographic provider and FIPS mode require configuration or lockfile verification [source: Cargo.toml:60]
-- **dependency-signal**: crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider [source: Cargo.lock:2212]
+- **dependency-signal**: crypto-provider targets ring: Cargo.lock selects ring as a cryptographic provider; ring is not a FIPS-validated provider [source: Cargo.lock:2339]
 - **not-extracted**: fips-posture targets FIPS validation: FIPS validation and runtime provider selection are not fully determined by static dependency/build signals [source: Cargo.toml:33]
 ### supply_chain
 

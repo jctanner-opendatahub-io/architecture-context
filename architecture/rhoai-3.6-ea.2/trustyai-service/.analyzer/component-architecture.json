@@ -1,8 +1,8 @@
 {
   "component": "trustyai-service",
   "repo": "https://github.com/red-hat-data-services/trustyai-service.git",
-  "commit_sha": "746b8b99eb7ce950f4f15b36d049238db41cedec",
-  "extracted_at": "2026-09-10T15:09:34Z",
+  "commit_sha": "add0dcbd98f989cd29c0c0a7c45c25cfbbc64efc",
+  "extracted_at": "2026-09-12T16:40:02Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 11 registered HTTP endpoints, and 0 gRPC services.",
@@ -483,6 +483,31 @@
   ],
   "recent_changes": [
     {
+      "version": "add0dcb",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "9eb8f67",
+      "date": "2026-09-10",
+      "changes": "Migrate runtime base image to PQC variant for main"
+    },
+    {
+      "version": "b34dd04",
+      "date": "2026-09-08",
+      "changes": "sync pipelineruns with konflux-central - 226270f, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/34224737932"
+    },
+    {
+      "version": "38427cc",
+      "date": "2026-09-08",
+      "changes": "sync pipelineruns with konflux-central - e220b1d, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/34213771657"
+    },
+    {
+      "version": "11e1b0a",
+      "date": "2026-09-07",
+      "changes": "sync pipelineruns with konflux-central - 99bb77a, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/34105295950"
+    },
+    {
       "version": "746b8b9",
       "date": "2026-09-02",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -491,31 +516,6 @@
       "version": "fc8fa07",
       "date": "2026-09-02",
       "changes": "fix: remove cryptography from pyproject.toml (take main version)"
-    },
-    {
-      "version": "40a9af4",
-      "date": "2026-09-02",
-      "changes": "fix(drift): fix delete_meanshift_schedule to delete under deprecated name"
-    },
-    {
-      "version": "a36511e",
-      "date": "2026-09-02",
-      "changes": "fix(drift): fix list_meanshift_requests to look up under deprecated name"
-    },
-    {
-      "version": "5955ba5",
-      "date": "2026-09-02",
-      "changes": "fix(drift): preserve deprecated meanshift metric name in prometheus"
-    },
-    {
-      "version": "00860a8",
-      "date": "2026-09-02",
-      "changes": "feat(consumer): add CloudEvent consumer for KServe inference logger (#319)"
-    },
-    {
-      "version": "54be170",
-      "date": "2026-09-02",
-      "changes": "[pre-commit.ci] pre-commit autoupdate"
     }
   ],
   "component_refs": null,

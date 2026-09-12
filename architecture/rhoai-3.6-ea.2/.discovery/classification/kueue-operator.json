@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/openshift.rhoai-3.6-ea.2/kueue-operator",
+  "classification": "operator",
+  "files_read": [
+    "PROJECT",
+    "go.mod",
+    "pkg/cmd/operator/cmd.go",
+    "pkg/operator/starter.go",
+    "pkg/operator/target_config_reconciler.go",
+    "pkg/apis/kueueoperator/v1/types.go",
+    "bundle/manifests/kueue.openshift.io_kueues.yaml",
+    "bundle/manifests/kueue-operator.clusterserviceversion.yaml"
+  ],
+  "reasoning": "This is a Kubernetes operator project. PROJECT identifies a Kubebuilder v4 project with a controller and API resource; the Go code defines an operator command, starts informers, creates Kubernetes/OpenShift clients, and runs a target configuration reconciler. The API defines the cluster-scoped Kueue custom resource, while the bundle contains its CRD and an OLM ClusterServiceVersion with owned APIs and installation permissions."
+}

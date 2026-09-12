@@ -1,0 +1,14 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/notebooks",
+  "classification": "other",
+  "files_read": [
+    "ARCHITECTURE.md",
+    "README.md",
+    "pyproject.toml",
+    "Makefile",
+    "jupyter/minimal/ubi9-python-3.12/Dockerfile.konflux.cpu",
+    "jupyter/minimal/ubi9-python-3.12/build-args/konflux.cpu.conf",
+    ".tekton/odh-pipeline-runtime-minimal-cpu-py312-v3-6-ea-2-push.yaml"
+  ],
+  "reasoning": "This checkout is a container-image and build-pipeline repository for ODH/RHOAI Jupyter and Code-Server workbenches and Elyra pipeline runtimes. Its architecture documentation and Dockerfile define self-contained notebook images, while the Makefile, build arguments, and Tekton PipelineRuns orchestrate image construction and publishing; manifests package the resulting images for OpenShift. It is therefore not primarily an operator, library, service, or configuration-only project, so it is best classified as other."
+}

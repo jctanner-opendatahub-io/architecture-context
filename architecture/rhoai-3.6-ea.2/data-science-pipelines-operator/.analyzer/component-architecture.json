@@ -1,8 +1,8 @@
 {
   "component": "data-science-pipelines-operator",
   "repo": "https://github.com/red-hat-data-services/data-science-pipelines-operator.git",
-  "commit_sha": "177d174307912f64225d4b23fe949202bc8a7a0e",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "d644271ae216d4949623e97e36e4f22d25f58499",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 14 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 10 RBAC roles, 0 ingress routes, 11 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -1939,39 +1939,39 @@
   ],
   "recent_changes": [
     {
-      "version": "177d1743",
-      "date": "2026-09-03",
+      "version": "d644271a",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "17634f8e",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #1146 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "51af0e8f",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1153 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "48457015",
-      "date": "2026-09-03",
+      "version": "0d1f2e51",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "85b8e4cd",
-      "date": "2026-09-03",
+      "version": "5f51d347",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "b26d7cb4",
+      "version": "5651bded",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#1152)"
+    },
+    {
+      "version": "108c134b",
+      "date": "2026-09-07",
+      "changes": "sync pipelineruns with konflux-central - 99bb77a, triggered_by: https://github.com/red-hat-data-services/konflux-central/actions/runs/34105295950"
+    },
+    {
+      "version": "177d1743",
       "date": "2026-09-03",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#1145)"
-    },
-    {
-      "version": "018eaac5",
-      "date": "2026-09-02",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "76662a44",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #1133 from red-hat-data-services/migrate-runtime-to-pqc-main"
     }
   ],
   "component_refs": [

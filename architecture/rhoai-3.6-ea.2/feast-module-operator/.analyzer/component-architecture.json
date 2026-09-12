@@ -1,8 +1,8 @@
 {
   "component": "feast-module-operator",
   "repo": "https://github.com/red-hat-data-services/feast-module-operator.git",
-  "commit_sha": "d7cecc781b3c24dcb86837afb4e0f6e2791964ed",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "20505d830002986511eefbc2bf5bb7331d682cf2",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 14 RBAC roles, 0 ingress routes, 12 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -1739,6 +1739,26 @@
   ],
   "recent_changes": [
     {
+      "version": "20505d8",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "bde0ba4",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 685ccca (#64)"
+    },
+    {
+      "version": "5cc8448",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "da8d68b",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#63)"
+    },
+    {
       "version": "d7cecc7",
       "date": "2026-09-04",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -1752,26 +1772,6 @@
       "version": "f79d929",
       "date": "2026-09-03",
       "changes": "Merge pull request #58 from patelchaitany/update-feast-sha-3.6-ea.2"
-    },
-    {
-      "version": "487f52c",
-      "date": "2026-09-03",
-      "changes": "chore: bump RHOAI feast manifest SHA to rhoai-3.6-ea.2 head"
-    },
-    {
-      "version": "4eaf39e",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "586dab1",
-      "date": "2026-09-03",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#57)"
-    },
-    {
-      "version": "4f81959",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
   "component_refs": [

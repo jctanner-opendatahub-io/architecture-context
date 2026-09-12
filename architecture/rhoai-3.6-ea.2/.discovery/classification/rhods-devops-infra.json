@@ -1,0 +1,15 @@
+{
+  "checkout": "/data/checkouts/red-hat-data-services.rhoai-3.6-ea.2/rhods-devops-infra",
+  "classification": "configuration",
+  "files_read": [
+    "README.md",
+    ".github/workflows/main-release-auto-merge.yaml",
+    ".github/workflows/upstream-auto-merge.yaml",
+    ".github/workflows/rhoai-sync-agent.yaml",
+    "src/config/main-release-source-map.yaml",
+    "src/config/upstream-source-map.yaml",
+    "tools/rhoai-sync-agent/sync_controller.py",
+    "tools/rhoai-sync-agent/sync-config.yaml"
+  ],
+  "reasoning": "This repository is configuration-driven DevOps infrastructure for RHOAI. Its README and GitHub Actions workflows describe scheduled branch synchronization, release automation, image synchronization, and validation. The source maps and sync configuration control repository and release behavior, while the Python and shell files are helper automation. It does not contain a standalone application service or an operator implementation, so configuration is the best classification."
+}

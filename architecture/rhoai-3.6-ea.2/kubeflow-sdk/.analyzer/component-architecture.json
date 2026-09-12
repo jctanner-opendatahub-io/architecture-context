@@ -1,8 +1,8 @@
 {
   "component": "kubeflow-sdk",
   "repo": "https://github.com/opendatahub-io/kubeflow-sdk.git",
-  "commit_sha": "4e38b932ac54e829f0a4b06dc0b40c6b0dd24640",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "d0ac18a98130a7a2e09ba46a33eb6993b64368f0",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 0 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 1 registered HTTP endpoints, and 0 gRPC services.",
@@ -48,7 +48,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "kubeflow/trainer/rhai/speculator.py:572"
+      "source": "kubeflow/trainer/rhai/speculator.py:571"
     }
   ],
   "http_endpoints": [
@@ -681,6 +681,16 @@
   ],
   "recent_changes": [
     {
+      "version": "d0ac18a",
+      "date": "2026-09-09",
+      "changes": "fix: set Eagle3 speculator config for inference compatibility (#141)"
+    },
+    {
+      "version": "ed8eef7",
+      "date": "2026-09-09",
+      "changes": "fix: add checkpoint validation to SpeculativeDecodingTrainer Online Mode (#142)"
+    },
+    {
       "version": "4e38b93",
       "date": "2026-08-14",
       "changes": "feat: add SpeculativeDecodingTrainer with Eagle3 draft model training support (#138)"
@@ -704,16 +714,6 @@
       "version": "3d2fefc",
       "date": "2026-08-04",
       "changes": "chore: remove inactive maintainers from OWNERS (#130)"
-    },
-    {
-      "version": "9e2df86",
-      "date": "2026-08-04",
-      "changes": "fix: split large rhai modules below 500 lines (RHOAIENG-79853) (#128)"
-    },
-    {
-      "version": "0dece94",
-      "date": "2026-08-03",
-      "changes": "chore(test): add unit tests for rhai constants (RHOAIENG-79852) (#127)"
     }
   ],
   "component_refs": null,

@@ -1,8 +1,8 @@
 {
   "component": "trainer-operator",
   "repo": "https://github.com/red-hat-data-services/trainer-operator.git",
-  "commit_sha": "622c9fd98cd177005f5978c9c9a89e7e4f4a9048",
-  "extracted_at": "2026-09-10T15:09:34Z",
+  "commit_sha": "d00af3574d91d3ed58327692481fd4840f220939",
+  "extracted_at": "2026-09-12T16:40:01Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 1 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 8 RBAC roles, 0 ingress routes, 4 controller watches, 2 registered HTTP endpoints, and 0 gRPC services.",
@@ -458,8 +458,7 @@
             "resourceNames": [
               "kubeflow-trainer-controller-manager",
               "kubeflow-trainer-view",
-              "trainer-metrics-auth",
-              "trainer-metrics-reader"
+              "trainer-tls-profile"
             ],
             "verbs": [
               "delete",
@@ -497,8 +496,7 @@
               "kubeflow-trainer-controller-manager",
               "kubeflow-trainer-edit",
               "kubeflow-trainer-view",
-              "trainer-metrics-auth",
-              "trainer-metrics-reader",
+              "trainer-tls-profile",
               "training-admin",
               "training-edit",
               "training-view"
@@ -1100,8 +1098,7 @@
             "resourceNames": [
               "kubeflow-trainer-controller-manager",
               "kubeflow-trainer-view",
-              "trainer-metrics-auth",
-              "trainer-metrics-reader"
+              "trainer-tls-profile"
             ],
             "verbs": [
               "delete",
@@ -1139,8 +1136,7 @@
               "kubeflow-trainer-controller-manager",
               "kubeflow-trainer-edit",
               "kubeflow-trainer-view",
-              "trainer-metrics-auth",
-              "trainer-metrics-reader",
+              "trainer-tls-profile",
               "training-admin",
               "training-edit",
               "training-view"
@@ -1641,39 +1637,39 @@
   ],
   "recent_changes": [
     {
-      "version": "622c9fd",
-      "date": "2026-09-04",
+      "version": "d00af35",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "3ba9529",
-      "date": "2026-09-04",
+      "version": "a1a34ac",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "2b56ced",
-      "date": "2026-09-04",
-      "changes": "feat(tls): serve metrics over HTTPS with cluster TLS profile"
+      "version": "d219f34",
+      "date": "2026-09-11",
+      "changes": "chore: sync trainer manifests"
     },
     {
-      "version": "12b09e9",
-      "date": "2026-09-04",
+      "version": "0262483",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "5a86ea9",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 5e68f09 (#34)"
+      "version": "73ada88",
+      "date": "2026-09-11",
+      "changes": "chore(deps): update registry.access.redhat.com/ubi9/go-toolset docker digest to 685ccca (#39)"
     },
     {
-      "version": "ba4f438",
-      "date": "2026-09-03",
+      "version": "36e5650",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "9dd1e9e",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main'"
+      "version": "b5cf708",
+      "date": "2026-09-10",
+      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3809cd5 (#38)"
     }
   ],
   "component_refs": [
@@ -2688,7 +2684,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 126,
+      "value": 124,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

@@ -1,11 +1,11 @@
 {
   "component": "mlflow",
   "repo": "https://github.com/red-hat-data-services/mlflow.git",
-  "commit_sha": "412c75c1e83ff642714c8849a02c13bc97ba2089",
-  "extracted_at": "2026-09-10T15:09:31Z",
+  "commit_sha": "dd84c5916b3bdd5d4e85846c74b210750c63ce8f",
+  "extracted_at": "2026-09-12T16:39:58Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 48 registered HTTP endpoints, and 0 gRPC services.",
+  "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 1 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 54 registered HTTP endpoints, and 0 gRPC services.",
   "source_components": [
     {
       "name": "mlflow-skinny",
@@ -52,7 +52,7 @@
         "Python application"
       ],
       "provisioned_by": "runtime environment",
-      "source": "mlflow/genai/judges/optimizers/dspy_utils.py:170"
+      "source": "mlflow/genai/judges/optimizers/dspy_utils.py:204"
     },
     {
       "name": "DATABRICKS_PASSWORD",
@@ -249,6 +249,26 @@
       "source": "mlflow/genai/agent_server/server.py:245"
     },
     {
+      "method": "GET",
+      "path": "/ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}",
+      "port": null,
+      "protocol": "HTTP/HTTPS",
+      "encryption": "Configurable",
+      "auth": "Unknown",
+      "description": "Python API route",
+      "source": "mlflow/server/artifact_router.py:61"
+    },
+    {
+      "method": "PUT",
+      "path": "/ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}",
+      "port": null,
+      "protocol": "HTTP/HTTPS",
+      "encryption": "Configurable",
+      "auth": "Unknown",
+      "description": "Python API route",
+      "source": "mlflow/server/artifact_router.py:136"
+    },
+    {
       "method": "POST",
       "path": "/ajax-api/3.0/jobs/",
       "port": null,
@@ -296,7 +316,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:266"
+      "source": "mlflow/server/assistant/api.py:555"
     },
     {
       "method": "PUT",
@@ -306,7 +326,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:281"
+      "source": "mlflow/server/assistant/api.py:591"
     },
     {
       "method": "POST",
@@ -316,7 +336,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:117"
+      "source": "mlflow/server/assistant/api.py:325"
     },
     {
       "method": "GET",
@@ -326,7 +346,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:245"
+      "source": "mlflow/server/assistant/api.py:506"
     },
     {
       "method": "GET",
@@ -336,7 +356,27 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:413"
+      "source": "mlflow/server/assistant/api.py:732"
+    },
+    {
+      "method": "GET",
+      "path": "/ajax-api/3.0/mlflow/assistant/providers",
+      "port": null,
+      "protocol": "HTTP/HTTPS",
+      "encryption": "Configurable",
+      "auth": "Unknown",
+      "description": "Python API route",
+      "source": "mlflow/server/assistant/api.py:528"
+    },
+    {
+      "method": "POST",
+      "path": "/ajax-api/3.0/mlflow/assistant/sessions/{session_id}/permission",
+      "port": null,
+      "protocol": "HTTP/HTTPS",
+      "encryption": "Configurable",
+      "auth": "Unknown",
+      "description": "Python API route",
+      "source": "mlflow/server/assistant/api.py:478"
     },
     {
       "method": "GET",
@@ -346,7 +386,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:153"
+      "source": "mlflow/server/assistant/api.py:362"
     },
     {
       "method": "PATCH",
@@ -356,7 +396,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:217"
+      "source": "mlflow/server/assistant/api.py:444"
     },
     {
       "method": "POST",
@@ -366,7 +406,27 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/assistant/api.py:352"
+      "source": "mlflow/server/assistant/api.py:668"
+    },
+    {
+      "method": "GET",
+      "path": "/api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}",
+      "port": null,
+      "protocol": "HTTP/HTTPS",
+      "encryption": "Configurable",
+      "auth": "Unknown",
+      "description": "Python API route",
+      "source": "mlflow/server/artifact_router.py:60"
+    },
+    {
+      "method": "PUT",
+      "path": "/api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}",
+      "port": null,
+      "protocol": "HTTP/HTTPS",
+      "encryption": "Configurable",
+      "auth": "Unknown",
+      "description": "Python API route",
+      "source": "mlflow/server/artifact_router.py:135"
     },
     {
       "method": "GET",
@@ -406,7 +466,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/gateway_api.py:744"
+      "source": "mlflow/server/gateway_api.py:757"
     },
     {
       "method": "POST",
@@ -416,7 +476,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/gateway_api.py:1425"
+      "source": "mlflow/server/gateway_api.py:1438"
     },
     {
       "method": "POST",
@@ -426,7 +486,7 @@
       "encryption": "Configurable",
       "auth": "Unknown",
       "description": "Python API route",
-      "source": "mlflow/server/gateway_api.py:615"
+      "source": "mlflow/server/gateway_api.py:626"
     },
     {
       "method": "GET",
@@ -791,7 +851,7 @@
       },
       {
         "name": "cryptography",
-        "version": "\u003c49,\u003e=43.0.0",
+        "version": "\u003c50,\u003e=43.0.0",
         "ecosystem": "PyPI",
         "role": "runtime-security",
         "purpose": "Python package dependency",
@@ -908,7 +968,7 @@
       },
       {
         "name": "langchain",
-        "version": "\u003e=0.3.26,\u003c=1.3.4",
+        "version": "\u003e=1.0.0,\u003c=1.3.14",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "libs/skinny/pyproject.toml:98"
@@ -1004,7 +1064,7 @@
       },
       {
         "name": "pyarrow",
-        "version": "\u003c25,\u003e=4.0.0",
+        "version": "\u003c26,\u003e=4.0.0",
         "ecosystem": "PyPI",
         "purpose": "Python package dependency",
         "source": "pyproject.toml:54"
@@ -1194,7 +1254,7 @@
       "protocol": "HTTPS",
       "encryption": "TLS",
       "port": "443",
-      "source": "mlflow/tracing/fluent.py:1645",
+      "source": "mlflow/tracing/fluent.py:1676",
       "function": "Literal outbound HTTP endpoint"
     },
     {
@@ -1257,7 +1317,7 @@
       "protocol": "HTTPS",
       "encryption": "TLS",
       "purpose": "Literal outbound HTTP endpoint",
-      "source": "mlflow/tracing/fluent.py:1645"
+      "source": "mlflow/tracing/fluent.py:1676"
     },
     {
       "component": "www.my.images",
@@ -1272,38 +1332,38 @@
   ],
   "recent_changes": [
     {
-      "version": "412c75c1e",
-      "date": "2026-09-03",
+      "version": "dd84c5916",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "e6a287e49",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #717 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "eff483b42",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #730 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "be5488126",
-      "date": "2026-09-03",
+      "version": "2c533f28d",
+      "date": "2026-09-10",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "6a5d38961",
+      "date": "2026-09-10",
+      "changes": "Merge pull request #727 from red-hat-data-services/sync-odh-master-base-image"
+    },
+    {
+      "version": "3b705ed87",
+      "date": "2026-09-10",
+      "changes": "Merge opendatahub-io/mlflow master into main"
+    },
+    {
+      "version": "baf98f0f4",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "cd17dc2dd",
-      "date": "2026-09-02",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "5fd7ced9f",
-      "date": "2026-09-02",
-      "changes": "Merge pull request #714 from jonburdo/add-new-approvers-to-owners-file-rhds-main"
-    },
-    {
-      "version": "b3c789771",
-      "date": "2026-09-02",
-      "changes": "keep: add new approvers to OWNERS"
-    },
-    {
-      "version": "792bd5eb5",
-      "date": "2026-09-01",
+      "version": "40a6504a0",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     }
   ],
@@ -1314,7 +1374,7 @@
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"python3.12\", \"-m\", \"mlflow\", \"server\", \"--host\", \"0.0.0.0\", \"--port\", \"5000\", \"--app-name\", \"kubernetes-auth\", \"--enable-workspaces\", \"--workspace-store-uri\", \"kubernetes://\", \"--serve-artifacts\"]",
-      "source": "Dockerfile.konflux:80"
+      "source": "Dockerfile.konflux:82"
     },
     {
       "name": "mlflow",
@@ -1361,7 +1421,7 @@
   "dockerfiles": null,
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 58 runtime facts, 3 source components, and 64 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 64 runtime facts, 3 source components, and 64 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "not_applicable",
     "go_module_configs": "not_found",
@@ -1398,15 +1458,15 @@
         "security-evidence-inventory"
       ],
       "limitations": [
-        "49 inbound runtime surfaces are not fully accounted for by authentication facts"
+        "55 inbound runtime surfaces are not fully accounted for by authentication facts"
       ],
       "evidence": [
         "mlflow/gateway/app.py:301",
         "mlflow/tracing/distributed/__init__.py:53",
         "mlflow/genai/agent_server/server.py:245",
-        "mlflow/server/job_api.py:70",
-        "mlflow/server/job_api.py:88",
-        "mlflow/server/job_api.py:116"
+        "mlflow/server/artifact_router.py:61",
+        "mlflow/server/artifact_router.py:136",
+        "mlflow/server/job_api.py:70"
       ]
     },
     "fips_compliance": {
@@ -1438,14 +1498,14 @@
     },
     "http_endpoints": {
       "status": "complete",
-      "fact_count": 48,
+      "fact_count": 54,
       "discovery_contract": "http-endpoints/v1",
       "completed_checks": [
         "literal-transport-inventory"
       ],
       "limitations": [],
       "evidence": [
-        "summary:48 deterministic http_endpoints facts extracted"
+        "summary:54 deterministic http_endpoints facts extracted"
       ]
     },
     "integration_points": {
@@ -1473,8 +1533,6 @@
         "summary:no analyzer-discovered outbound runtime clients",
         "summary:3 external connections accounted for by integration point facts",
         ".claude/hooks/enforce-uv.sh (unsupported runtime source)",
-        ".claude/skills/copilot/approve.sh (unsupported runtime source)",
-        ".claude/skills/copilot/poll.sh (unsupported runtime source)",
         "dev/dev-env-setup.sh (unsupported runtime source)",
         "dev/find-unused-media.sh (unsupported runtime source)",
         "dev/generate-protos.sh (unsupported runtime source)",
@@ -1482,6 +1540,8 @@
         "dev/install-skinny.sh (unsupported runtime source)",
         "dev/js.sh (unsupported runtime source)",
         "dev/mlflow-typo.sh (unsupported runtime source)",
+        "dev/profile.sh (unsupported runtime source)",
+        "dev/proto-plugin.sh (unsupported runtime source)",
         "summary:2 additional evidence items omitted"
       ]
     },
@@ -1514,11 +1574,11 @@
         "mlflow/gateway/providers/bedrock.py (gatewayconfig; runtime source/config reference)",
         "mlflow/genai/utils/gateway_utils.py (gatewayconfig; runtime source/config reference)",
         ".claude/hooks/enforce-uv.sh (unsupported runtime source)",
-        ".claude/skills/copilot/approve.sh (unsupported runtime source)",
-        ".claude/skills/copilot/poll.sh (unsupported runtime source)",
         "dev/dev-env-setup.sh (unsupported runtime source)",
         "dev/find-unused-media.sh (unsupported runtime source)",
         "dev/generate-protos.sh (unsupported runtime source)",
+        "dev/install-common-deps.sh (unsupported runtime source)",
+        "dev/install-skinny.sh (unsupported runtime source)",
         "summary:6 additional evidence items omitted"
       ]
     },
@@ -1549,7 +1609,7 @@
     {
       "category": "http_endpoints",
       "status": "observed",
-      "finding": "48 http_endpoints facts extracted",
+      "finding": "54 http_endpoints facts extracted",
       "sources": [
         "mlflow/gateway/app.py:301",
         "mlflow/gateway/app.py:305",
@@ -1562,17 +1622,23 @@
         "mlflow/genai/agent_server/server.py:245",
         "mlflow/genai/agent_server/server.py:263",
         "mlflow/pyfunc/scoring_server/__init__.py:470",
-        "mlflow/server/assistant/api.py:117",
-        "mlflow/server/assistant/api.py:153",
-        "mlflow/server/assistant/api.py:217",
-        "mlflow/server/assistant/api.py:245",
-        "mlflow/server/assistant/api.py:266",
-        "mlflow/server/assistant/api.py:281",
-        "mlflow/server/assistant/api.py:352",
-        "mlflow/server/assistant/api.py:413",
-        "mlflow/server/gateway_api.py:1425",
-        "mlflow/server/gateway_api.py:615",
-        "mlflow/server/gateway_api.py:744",
+        "mlflow/server/artifact_router.py:135",
+        "mlflow/server/artifact_router.py:136",
+        "mlflow/server/artifact_router.py:60",
+        "mlflow/server/artifact_router.py:61",
+        "mlflow/server/assistant/api.py:325",
+        "mlflow/server/assistant/api.py:362",
+        "mlflow/server/assistant/api.py:444",
+        "mlflow/server/assistant/api.py:478",
+        "mlflow/server/assistant/api.py:506",
+        "mlflow/server/assistant/api.py:528",
+        "mlflow/server/assistant/api.py:555",
+        "mlflow/server/assistant/api.py:591",
+        "mlflow/server/assistant/api.py:668",
+        "mlflow/server/assistant/api.py:732",
+        "mlflow/server/gateway_api.py:1438",
+        "mlflow/server/gateway_api.py:626",
+        "mlflow/server/gateway_api.py:757",
         "mlflow/server/job_api.py:116",
         "mlflow/server/job_api.py:50",
         "mlflow/server/job_api.py:70",
@@ -1643,18 +1709,6 @@
         ]
       },
       {
-        "claim": "DELETE /{name:path}/tags/{key:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
-        "sources": [
-          "mlflow/server/mcp_server_api.py:852"
-        ]
-      },
-      {
-        "claim": "DELETE /{name:path}/versions/{version:path}/tags/{key:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
-        "sources": [
-          "mlflow/server/mcp_server_api.py:659"
-        ]
-      },
-      {
         "claim": "GET / on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
           "mlflow/gateway/app.py:301"
@@ -1667,6 +1721,12 @@
         ]
       },
       {
+        "claim": "GET /ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
+        "sources": [
+          "mlflow/server/artifact_router.py:61"
+        ]
+      },
+      {
         "claim": "GET /ajax-api/3.0/jobs/{job_id} on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
           "mlflow/server/job_api.py:50"
@@ -1675,25 +1735,37 @@
       {
         "claim": "GET /ajax-api/3.0/mlflow/assistant/config on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:266"
+          "mlflow/server/assistant/api.py:555"
+        ]
+      },
+      {
+        "claim": "GET /ajax-api/3.0/mlflow/assistant/providers on port ; transport= encryption=Configurable auth=Unknown owner=",
+        "sources": [
+          "mlflow/server/assistant/api.py:528"
         ]
       },
       {
         "claim": "GET /ajax-api/3.0/mlflow/assistant/providers/{provider}/health on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:245"
+          "mlflow/server/assistant/api.py:506"
         ]
       },
       {
         "claim": "GET /ajax-api/3.0/mlflow/assistant/providers/{provider}/models on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:413"
+          "mlflow/server/assistant/api.py:732"
         ]
       },
       {
         "claim": "GET /ajax-api/3.0/mlflow/assistant/sessions/{session_id}/stream on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:153"
+          "mlflow/server/assistant/api.py:362"
+        ]
+      },
+      {
+        "claim": "GET /api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
+        "sources": [
+          "mlflow/server/artifact_router.py:60"
         ]
       },
       {
@@ -1733,12 +1805,6 @@
         ]
       },
       {
-        "claim": "GET /{name:path}/endpoints on port ; transport= encryption=Configurable auth=Unknown owner=",
-        "sources": [
-          "mlflow/server/mcp_server_api.py:815"
-        ]
-      },
-      {
         "claim": "GET /{name:path}/endpoints/{endpoint_id} on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
           "mlflow/server/mcp_server_api.py:778"
@@ -1753,7 +1819,7 @@
       {
         "claim": "PATCH /ajax-api/3.0/mlflow/assistant/sessions/{session_id} on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:217"
+          "mlflow/server/assistant/api.py:444"
         ]
       },
       {
@@ -1783,31 +1849,37 @@
       {
         "claim": "POST /ajax-api/3.0/mlflow/assistant/message on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:117"
+          "mlflow/server/assistant/api.py:325"
+        ]
+      },
+      {
+        "claim": "POST /ajax-api/3.0/mlflow/assistant/sessions/{session_id}/permission on port ; transport= encryption=Configurable auth=Unknown owner=",
+        "sources": [
+          "mlflow/server/assistant/api.py:478"
         ]
       },
       {
         "claim": "POST /ajax-api/3.0/mlflow/assistant/skills/install on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:352"
+          "mlflow/server/assistant/api.py:668"
         ]
       },
       {
         "claim": "POST /gateway/mlflow/v1/chat/completions on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/gateway_api.py:744"
+          "mlflow/server/gateway_api.py:757"
         ]
       },
       {
         "claim": "POST /gateway/proxy/{endpoint_name}/{path:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/gateway_api.py:1425"
+          "mlflow/server/gateway_api.py:1438"
         ]
       },
       {
         "claim": "POST /gateway/{endpoint_name}/mlflow/invocations on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/gateway_api.py:615"
+          "mlflow/server/gateway_api.py:626"
         ]
       },
       {
@@ -1847,27 +1919,21 @@
         ]
       },
       {
-        "claim": "POST /{name:path}/endpoints on port ; transport= encryption=Configurable auth=Unknown owner=",
+        "claim": "PUT /ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/mcp_server_api.py:758"
-        ]
-      },
-      {
-        "claim": "POST /{name:path}/tags on port ; transport= encryption=Configurable auth=Unknown owner=",
-        "sources": [
-          "mlflow/server/mcp_server_api.py:844"
-        ]
-      },
-      {
-        "claim": "POST /{name:path}/versions/{version:path}/tags on port ; transport= encryption=Configurable auth=Unknown owner=",
-        "sources": [
-          "mlflow/server/mcp_server_api.py:649"
+          "mlflow/server/artifact_router.py:136"
         ]
       },
       {
         "claim": "PUT /ajax-api/3.0/mlflow/assistant/config on port ; transport= encryption=Configurable auth=Unknown owner=",
         "sources": [
-          "mlflow/server/assistant/api.py:281"
+          "mlflow/server/assistant/api.py:591"
+        ]
+      },
+      {
+        "claim": "PUT /api/2.0/mlflow-artifacts/artifacts/{artifact_path:path} on port ; transport= encryption=Configurable auth=Unknown owner=",
+        "sources": [
+          "mlflow/server/artifact_router.py:135"
         ]
       }
     ],
@@ -1899,7 +1965,7 @@
       {
         "claim": "your-service-endpoint interaction=HTTP client role=runtime-integration protocol=HTTPS purpose=Literal outbound HTTP endpoint",
         "sources": [
-          "mlflow/tracing/fluent.py:1645"
+          "mlflow/tracing/fluent.py:1676"
         ]
       }
     ],
@@ -1986,7 +2052,7 @@
     "authentication": [
       {
         "source": "Dockerfile.konflux",
-        "line_range": "80",
+        "line_range": "82",
         "symbols": [
           "Dockerfile.konflux:CMD",
           "kubernetes-auth"
@@ -2016,7 +2082,7 @@
     "configuration_lifecycle": [
       {
         "source": "Dockerfile.konflux",
-        "line_range": "80",
+        "line_range": "82",
         "symbols": [
           "Dockerfile.konflux:CMD"
         ],
@@ -2084,7 +2150,7 @@
       },
       {
         "source": "mlflow/tracing/fluent.py",
-        "line_range": "1645",
+        "line_range": "1676",
         "symbols": [
           "Literal outbound HTTP endpoint",
           "your-service-endpoint"
@@ -2141,8 +2207,36 @@
         ]
       },
       {
+        "source": "mlflow/server/artifact_router.py",
+        "line_range": "136",
+        "symbols": [
+          "/ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}",
+          "PUT"
+        ],
+        "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
+        "expected_signal": "route registration, handler binding, middleware, or owner symbol",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "mlflow/server/artifact_router.py",
+        "line_range": "61",
+        "symbols": [
+          "/ajax-api/2.0/mlflow-artifacts/artifacts/{artifact_path:path}",
+          "GET"
+        ],
+        "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
+        "expected_signal": "route registration, handler binding, middleware, or owner symbol",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
         "source": "mlflow/server/assistant/api.py",
-        "line_range": "117",
+        "line_range": "325",
         "symbols": [
           "/ajax-api/3.0/mlflow/assistant/message",
           "POST"
@@ -2156,21 +2250,7 @@
       },
       {
         "source": "mlflow/server/assistant/api.py",
-        "line_range": "245",
-        "symbols": [
-          "/ajax-api/3.0/mlflow/assistant/providers/{provider}/health",
-          "GET"
-        ],
-        "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
-        "expected_signal": "route registration, handler binding, middleware, or owner symbol",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "mlflow/server/assistant/api.py",
-        "line_range": "266",
+        "line_range": "555",
         "symbols": [
           "/ajax-api/3.0/mlflow/assistant/config",
           "GET"
@@ -2184,24 +2264,10 @@
       },
       {
         "source": "mlflow/server/assistant/api.py",
-        "line_range": "281",
+        "line_range": "591",
         "symbols": [
           "/ajax-api/3.0/mlflow/assistant/config",
           "PUT"
-        ],
-        "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
-        "expected_signal": "route registration, handler binding, middleware, or owner symbol",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "mlflow/server/assistant/api.py",
-        "line_range": "413",
-        "symbols": [
-          "/ajax-api/3.0/mlflow/assistant/providers/{provider}/models",
-          "GET"
         ],
         "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
         "expected_signal": "route registration, handler binding, middleware, or owner symbol",
@@ -2326,7 +2392,7 @@
       },
       {
         "source": "mlflow/tracing/fluent.py",
-        "line_range": "1645",
+        "line_range": "1676",
         "symbols": [
           "HTTP client",
           "your-service-endpoint"
@@ -2389,7 +2455,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 3382,
+      "value": 3443,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

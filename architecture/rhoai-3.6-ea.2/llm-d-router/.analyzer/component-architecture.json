@@ -1,11 +1,11 @@
 {
   "component": "llm-d-router",
   "repo": "https://github.com/red-hat-data-services/llm-d-router.git",
-  "commit_sha": "2f7e7bae1e978195cb41e56e367b27bc18e2fcaf",
-  "extracted_at": "2026-09-10T15:09:30Z",
+  "commit_sha": "9273ebe9e78f96296123c516192f867b49f5e6ea",
+  "extracted_at": "2026-09-12T16:39:57Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
-  "summary": "Static analysis found 3 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 4 controller watches, 6 registered HTTP endpoints, and 2 gRPC services.",
+  "summary": "Static analysis found 3 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 4 controller watches, 8 registered HTTP endpoints, and 2 gRPC services.",
   "source_components": [
     {
       "name": "InferenceModelRewrite controller",
@@ -85,7 +85,7 @@
       "description": "Registered Go HTTP route",
       "owner": "pkg/sidecar/proxy",
       "transport": "HTTP/1.1",
-      "source": "pkg/sidecar/proxy/proxy.go:635"
+      "source": "pkg/sidecar/proxy/proxy.go:639"
     },
     {
       "method": "GET",
@@ -95,7 +95,7 @@
       "description": "Registered Go HTTP route",
       "owner": "pkg/coordinator/server",
       "transport": "HTTP/1.1",
-      "source": "pkg/coordinator/server/server.go:124"
+      "source": "pkg/coordinator/server/server.go:135"
     },
     {
       "method": "Unknown",
@@ -115,7 +115,7 @@
       "description": "Registered Go HTTP route",
       "owner": "cmd/epp/runner",
       "transport": "HTTP/1.1",
-      "source": "cmd/epp/runner/runner.go:1235"
+      "source": "cmd/epp/runner/runner.go:1246"
     },
     {
       "method": "Unknown",
@@ -135,7 +135,27 @@
       "description": "Registered Go HTTP route",
       "owner": "pkg/coordinator/server",
       "transport": "HTTP/1.1",
-      "source": "pkg/coordinator/server/server.go:125"
+      "source": "pkg/coordinator/server/server.go:136"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/requests/{id}",
+      "port": null,
+      "protocol": "HTTP",
+      "description": "Registered Go HTTP route",
+      "owner": "pkg/coordinator/steps/asyncbroker",
+      "transport": "HTTP/1.1",
+      "source": "pkg/coordinator/steps/asyncbroker/routes.go:51"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/requests/{id}",
+      "port": null,
+      "protocol": "HTTP",
+      "description": "Registered Go HTTP route",
+      "owner": "pkg/coordinator/steps/asyncbroker",
+      "transport": "HTTP/1.1",
+      "source": "pkg/coordinator/steps/asyncbroker/routes.go:50"
     }
   ],
   "grpc_services": [
@@ -214,7 +234,7 @@
       },
       {
         "module": "github.com/fsnotify/fsnotify",
-        "version": "v1.9.0",
+        "version": "v1.10.1",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -298,7 +318,14 @@
         "source": "go.mod"
       },
       {
-        "module": "github.com/llm-d/llm-d-kv-cache",
+        "module": "github.com/llm-d/llm-d-async/api",
+        "version": "v0.9.0",
+        "category": "",
+        "purpose": "",
+        "source": "go.mod"
+      },
+      {
+        "module": "github.com/llm-d/llm-d-async/producer",
         "version": "v0.9.0",
         "category": "",
         "purpose": "",
@@ -335,7 +362,7 @@
       },
       {
         "module": "github.com/prometheus/client_model",
-        "version": "v0.6.2",
+        "version": "v0.6.3",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -349,7 +376,7 @@
       },
       {
         "module": "github.com/redis/go-redis/v9",
-        "version": "v9.20.1",
+        "version": "v9.21.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -449,14 +476,14 @@
       },
       {
         "module": "golang.org/x/crypto",
-        "version": "v0.53.0",
+        "version": "v0.55.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "golang.org/x/sync",
-        "version": "v0.21.0",
+        "version": "v0.22.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -477,7 +504,7 @@
       },
       {
         "module": "google.golang.org/grpc",
-        "version": "v1.83.1",
+        "version": "v1.83.2",
         "category": "runtime-transport",
         "role": "runtime-transport",
         "purpose": "",
@@ -493,7 +520,7 @@
       },
       {
         "module": "k8s.io/api",
-        "version": "v0.35.8",
+        "version": "v0.36.4",
         "category": "runtime-integration",
         "role": "runtime-integration",
         "purpose": "",
@@ -501,14 +528,14 @@
       },
       {
         "module": "k8s.io/apiextensions-apiserver",
-        "version": "v0.35.8",
+        "version": "v0.36.4",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "k8s.io/apimachinery",
-        "version": "v0.35.8",
+        "version": "v0.36.4",
         "category": "runtime-integration",
         "role": "runtime-integration",
         "purpose": "",
@@ -516,7 +543,7 @@
       },
       {
         "module": "k8s.io/client-go",
-        "version": "v0.35.8",
+        "version": "v0.36.4",
         "category": "runtime-integration",
         "role": "runtime-integration",
         "purpose": "",
@@ -524,28 +551,28 @@
       },
       {
         "module": "k8s.io/code-generator",
-        "version": "v0.35.8",
+        "version": "v0.36.4",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "k8s.io/component-base",
-        "version": "v0.35.8",
+        "version": "v0.36.4",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "k8s.io/utils",
-        "version": "v0.0.0-20260108192941-914a6e750570",
+        "version": "v0.0.0-20260319190234-28399d86e0b5",
         "category": "",
         "purpose": "",
         "source": "go.mod"
       },
       {
         "module": "sigs.k8s.io/controller-runtime",
-        "version": "v0.23.3",
+        "version": "v0.24.1",
         "category": "runtime-framework",
         "role": "runtime-framework",
         "purpose": "",
@@ -553,7 +580,7 @@
       },
       {
         "module": "sigs.k8s.io/controller-tools",
-        "version": "v0.20.1",
+        "version": "v0.21.0",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -574,7 +601,7 @@
       },
       {
         "module": "sigs.k8s.io/structured-merge-diff/v6",
-        "version": "v6.3.3",
+        "version": "v6.4.2",
         "category": "",
         "purpose": "",
         "source": "go.mod"
@@ -597,7 +624,7 @@
       },
       {
         "name": "controller-runtime",
-        "version": "0.23.3",
+        "version": "0.24.1",
         "ecosystem": "go",
         "purpose": "Operator framework",
         "source": "go.mod"
@@ -619,11 +646,11 @@
         "source": "pkg/epp/controller/inferencepool_reconciler.go:28"
       },
       {
-        "component": "llm-d-kv-cache",
+        "component": "llm-d-async",
         "interaction": "Go library",
         "role": "runtime-library",
-        "purpose": "Use runtime packages from github.com/llm-d/llm-d-kv-cache",
-        "source": "pkg/epp/framework/plugins/requestcontrol/dataproducer/tokenizer/legacy_pool.go:22"
+        "purpose": "Use runtime packages from github.com/llm-d/llm-d-async/api",
+        "source": "pkg/coordinator/steps/asyncbroker/broker.go:29"
       },
       {
         "component": "Envoy proxy",
@@ -723,39 +750,39 @@
   ],
   "recent_changes": [
     {
-      "version": "2f7e7bae",
-      "date": "2026-09-04",
+      "version": "9273ebe9",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "cc507252",
-      "date": "2026-09-04",
+      "version": "c75f16bc",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "d9a2167b",
-      "date": "2026-09-04",
-      "changes": "Merge pull request #312 from zdtsw-forking/sync/upstream-2decc1a0"
+      "version": "46a7d5e1",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #319 from zdtsw-forking/sync/upstream-deb085eb"
     },
     {
-      "version": "93a79845",
-      "date": "2026-09-04",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "72802ec6",
+      "date": "2026-09-11",
+      "changes": "Merge branch 'main' into sync/upstream-deb085eb"
     },
     {
-      "version": "94e43832",
-      "date": "2026-09-04",
-      "changes": "chore(deps): update registry.redhat.io/ubi9/ubi-minimal-pqc docker digest to 3e00939 (#28)"
+      "version": "5bf1bb05",
+      "date": "2026-09-11",
+      "changes": "Sync upstream llm-d/llm-d-router deb085eb"
     },
     {
-      "version": "be042ec8",
-      "date": "2026-09-04",
-      "changes": "Sync upstream llm-d/llm-d-router 2decc1a0"
+      "version": "0210e4d3",
+      "date": "2026-09-11",
+      "changes": "Sync upstream llm-d/llm-d-router deb085eb"
     },
     {
-      "version": "dcf0e60e",
-      "date": "2026-09-03",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "deb085eb",
+      "date": "2026-09-10",
+      "changes": "fix(scheduling): return 503 for no endpoints (#2631)"
     }
   ],
   "component_refs": [
@@ -860,6 +887,7 @@
         "pkg/epp/framework/plugins/requestcontrol/dataproducer/tokenizer/vllm_http.go",
         "pkg/epp/server/options.go",
         "pkg/epp/server/runserver.go",
+        "pkg/sidecar/proxy/options.go",
         "pkg/sidecar/proxy/proxy.go",
         "pkg/sidecar/proxy/proxy_helpers.go",
         "pkg/sidecar/proxy/tls.go"
@@ -899,8 +927,12 @@
   ],
   "runtime_module_uses": [
     {
-      "module": "github.com/llm-d/llm-d-kv-cache",
-      "source": "pkg/epp/framework/plugins/requestcontrol/dataproducer/tokenizer/legacy_pool.go:22"
+      "module": "github.com/llm-d/llm-d-async/api",
+      "source": "pkg/coordinator/steps/asyncbroker/broker.go:29"
+    },
+    {
+      "module": "github.com/llm-d/llm-d-async/producer",
+      "source": "pkg/coordinator/steps/asyncbroker/broker.go:30"
     },
     {
       "module": "sigs.k8s.io/gateway-api-inference-extension",
@@ -917,7 +949,7 @@
   ],
   "behavioral_evidence": [],
   "data_coverage": {
-    "agent_baseline": "sufficient: 16 runtime facts, 6 source components, and 65 dependencies; broad repository discovery is not required",
+    "agent_baseline": "sufficient: 18 runtime facts, 6 source components, and 66 dependencies; broad repository discovery is not required",
     "controller_templates": "not_found",
     "go_crds": "complete: extracted 3 Kubebuilder CRD identities",
     "go_module_configs": "complete: 2 canonical Go module config objects (CustomResourceDefinition)",
@@ -954,15 +986,15 @@
         "security-evidence-inventory"
       ],
       "limitations": [
-        "6 inbound runtime surfaces are not fully accounted for by authentication facts"
+        "8 inbound runtime surfaces are not fully accounted for by authentication facts"
       ],
       "evidence": [
-        "pkg/sidecar/proxy/proxy.go:635",
-        "pkg/coordinator/server/server.go:124",
+        "pkg/sidecar/proxy/proxy.go:639",
+        "pkg/coordinator/server/server.go:135",
         "cmd/coordinator/main.go:181",
-        "cmd/epp/runner/runner.go:1235",
+        "cmd/epp/runner/runner.go:1246",
         "pkg/sidecar/proxy/dns_metrics.go:125",
-        "pkg/coordinator/server/server.go:125"
+        "pkg/coordinator/server/server.go:136"
       ]
     },
     "fips_compliance": {
@@ -995,7 +1027,7 @@
     },
     "http_endpoints": {
       "status": "partial",
-      "fact_count": 6,
+      "fact_count": 8,
       "discovery_contract": "http-endpoints/v1",
       "completed_checks": [
         "literal-transport-inventory"
@@ -1004,7 +1036,7 @@
         "dynamic http_endpoints construction is not fully resolved"
       ],
       "evidence": [
-        "summary:6 deterministic http_endpoints facts extracted"
+        "summary:8 deterministic http_endpoints facts extracted"
       ]
     },
     "integration_points": {
@@ -1104,14 +1136,16 @@
     {
       "category": "http_endpoints",
       "status": "observed",
-      "finding": "6 http_endpoints facts extracted",
+      "finding": "8 http_endpoints facts extracted",
       "sources": [
         "cmd/coordinator/main.go:181",
-        "cmd/epp/runner/runner.go:1235",
-        "pkg/coordinator/server/server.go:124",
-        "pkg/coordinator/server/server.go:125",
+        "cmd/epp/runner/runner.go:1246",
+        "pkg/coordinator/server/server.go:135",
+        "pkg/coordinator/server/server.go:136",
+        "pkg/coordinator/steps/asyncbroker/routes.go:50",
+        "pkg/coordinator/steps/asyncbroker/routes.go:51",
         "pkg/sidecar/proxy/dns_metrics.go:125",
-        "pkg/sidecar/proxy/proxy.go:635"
+        "pkg/sidecar/proxy/proxy.go:639"
       ]
     },
     {
@@ -1153,21 +1187,33 @@
     ],
     "http_endpoints": [
       {
+        "claim": "DELETE /v1/requests/{id} on port ; transport=HTTP/1.1 encryption= auth= owner=pkg/coordinator/steps/asyncbroker",
+        "sources": [
+          "pkg/coordinator/steps/asyncbroker/routes.go:51"
+        ]
+      },
+      {
         "claim": "GET /healthz on port ; transport=HTTP/1.1 encryption= auth= owner=pkg/coordinator/server",
         "sources": [
-          "pkg/coordinator/server/server.go:124"
+          "pkg/coordinator/server/server.go:135"
         ]
       },
       {
         "claim": "GET /readyz on port ; transport=HTTP/1.1 encryption= auth= owner=pkg/coordinator/server",
         "sources": [
-          "pkg/coordinator/server/server.go:125"
+          "pkg/coordinator/server/server.go:136"
+        ]
+      },
+      {
+        "claim": "GET /v1/requests/{id} on port ; transport=HTTP/1.1 encryption= auth= owner=pkg/coordinator/steps/asyncbroker",
+        "sources": [
+          "pkg/coordinator/steps/asyncbroker/routes.go:50"
         ]
       },
       {
         "claim": "Unknown / on port ; transport=HTTP/1.1 encryption= auth= owner=pkg/sidecar/proxy",
         "sources": [
-          "pkg/sidecar/proxy/proxy.go:635"
+          "pkg/sidecar/proxy/proxy.go:639"
         ]
       },
       {
@@ -1179,7 +1225,7 @@
       {
         "claim": "Unknown /metrics on port ; transport=HTTP/1.1 encryption= auth= owner=cmd/epp/runner",
         "sources": [
-          "cmd/epp/runner/runner.go:1235"
+          "cmd/epp/runner/runner.go:1246"
         ]
       },
       {
@@ -1217,9 +1263,9 @@
         ]
       },
       {
-        "claim": "llm-d-kv-cache interaction=Go library role=runtime-library purpose=Use runtime packages from github.com/llm-d/llm-d-kv-cache",
+        "claim": "llm-d-async interaction=Go library role=runtime-library purpose=Use runtime packages from github.com/llm-d/llm-d-async/api",
         "sources": [
-          "pkg/epp/framework/plugins/requestcontrol/dataproducer/tokenizer/legacy_pool.go:22"
+          "pkg/coordinator/steps/asyncbroker/broker.go:29"
         ]
       }
     ]
@@ -1254,24 +1300,38 @@
     ],
     "ingress": [
       {
+        "claim": "HTTP DELETE /v1/requests/{id} is owned by pkg/coordinator/steps/asyncbroker",
+        "status": "observed",
+        "sources": [
+          "pkg/coordinator/steps/asyncbroker/routes.go:51"
+        ]
+      },
+      {
         "claim": "HTTP GET /healthz is owned by pkg/coordinator/server",
         "status": "observed",
         "sources": [
-          "pkg/coordinator/server/server.go:124"
+          "pkg/coordinator/server/server.go:135"
         ]
       },
       {
         "claim": "HTTP GET /readyz is owned by pkg/coordinator/server",
         "status": "observed",
         "sources": [
-          "pkg/coordinator/server/server.go:125"
+          "pkg/coordinator/server/server.go:136"
+        ]
+      },
+      {
+        "claim": "HTTP GET /v1/requests/{id} is owned by pkg/coordinator/steps/asyncbroker",
+        "status": "observed",
+        "sources": [
+          "pkg/coordinator/steps/asyncbroker/routes.go:50"
         ]
       },
       {
         "claim": "HTTP Unknown / is owned by pkg/sidecar/proxy",
         "status": "observed",
         "sources": [
-          "pkg/sidecar/proxy/proxy.go:635"
+          "pkg/sidecar/proxy/proxy.go:639"
         ]
       },
       {
@@ -1285,7 +1345,7 @@
         "claim": "HTTP Unknown /metrics is owned by cmd/epp/runner",
         "status": "observed",
         "sources": [
-          "cmd/epp/runner/runner.go:1235"
+          "cmd/epp/runner/runner.go:1246"
         ]
       },
       {
@@ -1328,6 +1388,7 @@
           "pkg/epp/framework/plugins/requestcontrol/dataproducer/tokenizer/vllm_http.go",
           "pkg/epp/server/options.go",
           "pkg/epp/server/runserver.go",
+          "pkg/sidecar/proxy/options.go",
           "pkg/sidecar/proxy/proxy.go",
           "pkg/sidecar/proxy/proxy_helpers.go",
           "pkg/sidecar/proxy/tls.go"
@@ -1660,7 +1721,7 @@
       },
       {
         "source": "cmd/epp/runner/runner.go",
-        "line_range": "1235",
+        "line_range": "1246",
         "symbols": [
           "/metrics",
           "Unknown",
@@ -1675,7 +1736,7 @@
       },
       {
         "source": "pkg/coordinator/server/server.go",
-        "line_range": "124",
+        "line_range": "135",
         "symbols": [
           "/healthz",
           "GET",
@@ -1690,11 +1751,41 @@
       },
       {
         "source": "pkg/coordinator/server/server.go",
-        "line_range": "125",
+        "line_range": "136",
         "symbols": [
           "/readyz",
           "GET",
           "pkg/coordinator/server"
+        ],
+        "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
+        "expected_signal": "route registration, handler binding, middleware, or owner symbol",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "pkg/coordinator/steps/asyncbroker/routes.go",
+        "line_range": "50",
+        "symbols": [
+          "/v1/requests/{id}",
+          "GET",
+          "pkg/coordinator/steps/asyncbroker"
+        ],
+        "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
+        "expected_signal": "route registration, handler binding, middleware, or owner symbol",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
+      {
+        "source": "pkg/coordinator/steps/asyncbroker/routes.go",
+        "line_range": "51",
+        "symbols": [
+          "/v1/requests/{id}",
+          "DELETE",
+          "pkg/coordinator/steps/asyncbroker"
         ],
         "question": "Does this endpoint have additional dynamic routes or a concrete handler/owner?",
         "expected_signal": "route registration, handler binding, middleware, or owner symbol",
@@ -1720,7 +1811,7 @@
       },
       {
         "source": "pkg/sidecar/proxy/proxy.go",
-        "line_range": "635",
+        "line_range": "639",
         "symbols": [
           "/",
           "Unknown",
@@ -1751,6 +1842,20 @@
       }
     ],
     "internal_dependencies": [
+      {
+        "source": "pkg/coordinator/steps/asyncbroker/broker.go",
+        "line_range": "29",
+        "symbols": [
+          "Go library",
+          "llm-d-async"
+        ],
+        "question": "Where is this internal dependency invoked and what is the interaction boundary?",
+        "expected_signal": "import, client call, queue, or controller handoff",
+        "status": "candidate",
+        "limitations": [
+          "candidate location only; source inspection is required to establish the relationship"
+        ]
+      },
       {
         "source": "pkg/epp/controller/inferencepool_reconciler.go",
         "line_range": "28",
@@ -1788,20 +1893,6 @@
         ],
         "question": "What source-backed runtime behavior uses this component reference?",
         "expected_signal": "client, API, watch, or configuration handoff",
-        "status": "candidate",
-        "limitations": [
-          "candidate location only; source inspection is required to establish the relationship"
-        ]
-      },
-      {
-        "source": "pkg/epp/framework/plugins/requestcontrol/dataproducer/tokenizer/legacy_pool.go",
-        "line_range": "22",
-        "symbols": [
-          "Go library",
-          "llm-d-kv-cache"
-        ],
-        "question": "Where is this internal dependency invoked and what is the interaction boundary?",
-        "expected_signal": "import, client call, queue, or controller handoff",
         "status": "candidate",
         "limitations": [
           "candidate location only; source inspection is required to establish the relationship"
@@ -1899,7 +1990,7 @@
     {
       "category": "internal_dependencies",
       "metric": "files_scanned",
-      "value": 625,
+      "value": 640,
       "unit": "files",
       "scope": "runtime source/config platform-alias scan"
     },

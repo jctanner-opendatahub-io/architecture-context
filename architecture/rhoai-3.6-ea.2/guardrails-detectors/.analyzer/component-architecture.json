@@ -1,8 +1,8 @@
 {
   "component": "guardrails-detectors",
   "repo": "https://github.com/red-hat-data-services/guardrails-detectors.git",
-  "commit_sha": "764b3e454a2221b42893fbaaf10d426d7383c139",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "fc87bdfb8f5512ebc12248f2ed860d88e594af06",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 2 serving runtime definitions, 1 workloads, 2 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 5 registered HTTP endpoints, and 0 gRPC services.",
@@ -428,39 +428,39 @@
   ],
   "recent_changes": [
     {
-      "version": "764b3e4",
-      "date": "2026-09-03",
+      "version": "fc87bdf",
+      "date": "2026-09-11",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "cf51cd6",
-      "date": "2026-09-03",
-      "changes": "Merge pull request #475 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "9993a43",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #481 from red-hat-data-services/sync-gatekeeper-main"
     },
     {
-      "version": "64c5572",
-      "date": "2026-09-03",
+      "version": "604c948",
+      "date": "2026-09-10",
       "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
     },
     {
-      "version": "3fd2e60",
-      "date": "2026-09-01",
+      "version": "6192193",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "0da226a",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #473 from red-hat-data-services/sync-gatekeeper-main"
+      "version": "4099709",
+      "date": "2026-09-09",
+      "changes": "sync pipelineruns with konflux-central - 0666fe9"
     },
     {
-      "version": "248f755",
-      "date": "2026-09-01",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+      "version": "ed9d222",
+      "date": "2026-09-09",
+      "changes": "Merge remote-tracking branch 'upstream/main'"
     },
     {
-      "version": "3f4c949",
-      "date": "2026-08-31",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+      "version": "cd00a25",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #90 from trustyai-explainability/relax-torch"
     }
   ],
   "component_refs": null,
@@ -470,14 +470,14 @@
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"/app/bin/regex-detector\"]",
-      "source": "detectors/Dockerfile.builtIn:25"
+      "source": "detectors/Dockerfile.builtIn:26"
     },
     {
       "name": "detectors/Dockerfile.hf:CMD",
       "type": "Container entrypoint",
       "runtime": "Container",
       "command": "[\"uvicorn\", \"app:app\", \"--workers\", \"1\", \"--host\", \"0.0.0.0\", \"--port\", \"8000\", \"--log-config\", \"/common/log_conf.yaml\"]",
-      "source": "detectors/Dockerfile.hf:23"
+      "source": "detectors/Dockerfile.hf:24"
     },
     {
       "name": "detectors/Dockerfile.judge:CMD",
@@ -869,7 +869,7 @@
     "configuration_lifecycle": [
       {
         "source": "detectors/Dockerfile.builtIn",
-        "line_range": "25",
+        "line_range": "26",
         "symbols": [
           "detectors/Dockerfile.builtIn:CMD"
         ],
@@ -882,7 +882,7 @@
       },
       {
         "source": "detectors/Dockerfile.hf",
-        "line_range": "23",
+        "line_range": "24",
         "symbols": [
           "detectors/Dockerfile.hf:CMD"
         ],

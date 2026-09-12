@@ -1,8 +1,8 @@
 {
   "component": "MLServer",
   "repo": "https://github.com/red-hat-data-services/MLServer.git",
-  "commit_sha": "b679cb95ca56ea11ec6fee1d37284463cac6a380",
-  "extracted_at": "2026-09-10T15:09:29Z",
+  "commit_sha": "42aa4ba441484779a5d51e44fb74b401dd3ea30f",
+  "extracted_at": "2026-09-12T16:39:56Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 0 workloads, 0 services, 0 RBAC roles, 0 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 16 gRPC services.",
@@ -690,39 +690,39 @@
   ],
   "recent_changes": [
     {
-      "version": "b679cb95",
-      "date": "2026-09-03",
+      "version": "42aa4ba4",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "65429cb9",
-      "date": "2026-09-03",
+      "version": "74854b26",
+      "date": "2026-09-10",
       "changes": "Merge remote-tracking branch 'upstream/rhoai-staging'"
     },
     {
-      "version": "246fcd13",
-      "date": "2026-09-03",
-      "changes": "chore: regenerate pinned requirements (#298)"
+      "version": "0951d416",
+      "date": "2026-09-10",
+      "changes": "chore: regenerate pinned requirements (#314)"
     },
     {
-      "version": "4548a588",
-      "date": "2026-08-31",
+      "version": "615cbde4",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
     },
     {
-      "version": "f29af5bb",
-      "date": "2026-08-31",
-      "changes": "sync pipelineruns with konflux-central - 85bde91"
-    },
-    {
-      "version": "c9c27059",
-      "date": "2026-08-26",
-      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "78789216",
-      "date": "2026-08-26",
+      "version": "ea5cce01",
+      "date": "2026-09-09",
       "changes": "Merge remote-tracking branch 'upstream/rhoai-staging'"
+    },
+    {
+      "version": "ab3f6c3e",
+      "date": "2026-09-09",
+      "changes": "Merge pull request #313 from opendatahub-io/sync/release-1.7.x-2026-09-09-153136"
+    },
+    {
+      "version": "4f572640",
+      "date": "2026-09-09",
+      "changes": "Merge remote-tracking branch 'origin/release-1.7.x' into sync/release-1.7.x-2026-09-09-153136"
     }
   ],
   "component_refs": null,

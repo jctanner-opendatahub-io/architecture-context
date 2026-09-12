@@ -1,0 +1,13 @@
+{
+  "checkout": "/data/checkouts/llm-d.rhoai-3.6-ea.2/llm-d-deployer",
+  "classification": "configuration",
+  "files_read": [
+    "README.md",
+    "charts/llm-d/Chart.yaml",
+    "charts/llm-d/values.yaml",
+    "charts/llm-d/templates/modelservice/deployment.yaml",
+    "charts/llm-d/crds/modelservice-crd.yaml",
+    "quickstart/README.md"
+  ],
+  "reasoning": "This checkout is a Kubernetes deployment/configuration package centered on a Helm chart. Chart.yaml declares the chart as type application, while the repository provides Helm values and templates, a ModelService CRD manifest, Kubernetes deployment resources, and installer/quickstart scripts. It does not contain the controller or operator implementation source; the controller is deployed as an image by the chart. Therefore the repository itself is best classified as configuration rather than operator, library, or service."
+}

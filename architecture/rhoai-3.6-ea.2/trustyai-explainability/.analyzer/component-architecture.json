@@ -1,8 +1,8 @@
 {
   "component": "trustyai-explainability",
   "repo": "https://github.com/red-hat-data-services/trustyai-explainability.git",
-  "commit_sha": "79720164a1f55392e4112d9eb9851ad15cf2363f",
-  "extracted_at": "2026-09-10T15:09:34Z",
+  "commit_sha": "4ea3f12f1fc37635598ade5bd51fb285668d99be",
+  "extracted_at": "2026-09-12T16:40:02Z",
   "analyzer_version": "0.1.0-dev",
   "schema_version": "1",
   "summary": "Static analysis found 0 CRDs, 0 serving runtime definitions, 1 workloads, 1 services, 1 RBAC roles, 1 ingress routes, 0 controller watches, 0 registered HTTP endpoints, and 0 gRPC services.",
@@ -144,6 +144,21 @@
   ],
   "recent_changes": [
     {
+      "version": "4ea3f12f",
+      "date": "2026-09-11",
+      "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
+    },
+    {
+      "version": "f56314e0",
+      "date": "2026-09-11",
+      "changes": "Merge pull request #1359 from red-hat-data-services/sync-gatekeeper-main"
+    },
+    {
+      "version": "9ea42f02",
+      "date": "2026-09-10",
+      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
+    },
+    {
       "version": "79720164",
       "date": "2026-09-03",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
@@ -162,21 +177,6 @@
       "version": "b0080a57",
       "date": "2026-09-01",
       "changes": "Merge remote-tracking branch 'upstream/main' into rhoai-3.6-ea.2"
-    },
-    {
-      "version": "b88b7afd",
-      "date": "2026-09-01",
-      "changes": "Merge pull request #1327 from red-hat-data-services/sync-gatekeeper-main"
-    },
-    {
-      "version": "43bb4782",
-      "date": "2026-09-01",
-      "changes": "feat: add post-codefreeze-gatekeeper evaluation workflow"
-    },
-    {
-      "version": "6a59eace",
-      "date": "2026-08-20",
-      "changes": "Merge pull request #1283 from red-hat-data-services/RHOAIENG-87528-tekton-cleanup"
     }
   ],
   "component_refs": null,

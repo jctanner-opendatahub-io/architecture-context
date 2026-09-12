@@ -4,7 +4,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 ## Coverage Findings
 
-- **crds (not-verified)**: 0 crds facts extracted; absence is not proven by the available coverage
+- **crds (observed)**: 2 crds facts extracted [source: api/inference/v1alpha1/externalmodel_types.go:31, api/inference/v1alpha1/externalprovider_types.go:32]
 - **grpc_services (confirmed-empty)**: 0 grpc_services facts extracted
 - **http_endpoints (observed)**: 2 http_endpoints facts extracted [source: cmd/manager/main.go:101, cmd/manager/main.go:105]
 - **services (not-verified)**: 0 services facts extracted; absence is not proven by the available coverage
@@ -22,6 +22,10 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 ### authentication
 
+- **Question:** Where is authentication enforced for this surface, and is it conditional?
+  **Expected signal:** middleware, filter, policy, or enforcement branch
+  **Candidate:** `api/inference/v1alpha1/common_types.go`:20 (Ai Gateway Controller (CRD-configured), Configurable: apikey;sigv4;oauth2)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 - **Question:** Where is authentication enforced for this surface, and is it conditional?
   **Expected signal:** middleware, filter, policy, or enforcement branch
   **Candidate:** `cmd/manager/main.go`:101 (:8081/healthz, None)
@@ -94,6 +98,16 @@ This file is a bounded, source-linked projection. Read it before the full analyz
   **Expected signal:** import, client call, queue, or controller handoff
   **Candidate:** `config/self/rbac/clusterrole.yaml`:5 (CRD CRUD, Gateway API)
   **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+- **Question:** What source-backed runtime behavior uses this component reference?
+  **Expected signal:** client, API, watch, or configuration handoff
+  **Candidate:** `pkg/publisher/publisher.go`:140 (/v1/ConfigMap, get operations by Publisher)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
+### kubernetes_relationships
+
+- **Question:** How is this Kubernetes or platform resource reference used at runtime?
+  **Expected signal:** typed client, CRUD operation, watch, or configuration projection
+  **Candidate:** `pkg/publisher/publisher.go`:140 (/v1/ConfigMap, get operations by Publisher)
+  **Status:** candidate; **Limitations:** candidate location only; source inspection is required to establish the relationship
 ### services
 
 - **Question:** Which container listener, probe, and service mapping expose this workload?
@@ -107,6 +121,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 
 - :8081/healthz methods=GET mechanism=None enforcement=N/A policy=Kubernetes health probe; unauthenticated by design [source: cmd/manager/main.go:101]
 - :8081/readyz methods=GET mechanism=None enforcement=N/A policy=Kubernetes readiness probe; unauthenticated by design [source: cmd/manager/main.go:105]
+- Ai Gateway Controller (CRD-configured) methods=ALL mechanism=Configurable: apikey;sigv4;oauth2 enforcement=CRD-specified authentication configuration policy=Authentication type selected by CRD enum with credential secret reference [source: api/inference/v1alpha1/common_types.go:20]
 - Kubernetes API methods=REST mechanism=ServiceAccount token (in-cluster) enforcement=kube-apiserver policy=RBAC enforced via ai-gateway-controller-role ClusterRole; SA ai-gateway-controller [source: cmd/manager/main.go:87]
 ### http_endpoints
 
@@ -136,6 +151,7 @@ This file is a bounded, source-linked projection. Read it before the full analyz
 - **observed**: HTTP GET /readyz is owned by cmd/manager [source: cmd/manager/main.go:105]
 ### security
 
+- **observed**: ALL Ai Gateway Controller (CRD-configured) uses Configurable: apikey;sigv4;oauth2 at CRD-specified authentication configuration; policy=Authentication type selected by CRD enum with credential secret reference [source: api/inference/v1alpha1/common_types.go:20]
 - **observed**: GET :8081/healthz uses None at N/A; policy=Kubernetes health probe; unauthenticated by design [source: cmd/manager/main.go:101]
 - **observed**: GET :8081/readyz uses None at N/A; policy=Kubernetes readiness probe; unauthenticated by design [source: cmd/manager/main.go:105]
 - **observed**: RBAC role ai-gateway-controller-role grants 16 rule(s) [source: config/self/rbac/clusterrole.yaml:5]
