@@ -46,11 +46,24 @@ _rhoai_common: &rhoai_common
     - org: project-codeflare
       repo: codeflare-sdk
   exclude_repos:
+    - "*-template"
+    - "*.github"
+    - "*.github.io"
+    - "*benchmarks"
+    - "*demos"
+    - "*-demo"
     - "*-docs"
     - "*-design"
+    - "*enhancements"
     - "*/test-infra"
   exclude_components:
+    - RHOAI-Build-Config
+    - rhaii-cluster-validation
+    - rhods-devops-infra
     - opendatahub-operator
+    - llm-d-infra
+    - konflux-central
+    - .project
   post_checkout:
     - repo: models-perf-benchmark-data
       exclude_files:
@@ -232,6 +245,10 @@ rhoai-3.6-ea.2:
       repo_org: IBM
       repo_name: ai4rag
       type: library
+    - key: codeflare-sdk
+      repo_org: project-codeflare
+      repo_name: codeflare-sdk
+      type: shared_library
     - key: kubeflow-sdk
       repo_org: opendatahub-io
       repo_name: kubeflow-sdk
@@ -240,22 +257,64 @@ rhoai-3.6-ea.2:
       repo_org: Red-Hat-AI-Innovation-Team
       repo_name: training_hub
       type: library
-    - key: rhoai-mcp
-      repo_org: opendatahub-io
-      repo_name: rhoai-mcp
-      type: service
-    - key: llm-d-planner
-      repo_org: llm-d-incubation
-      repo_name: llm-d-planner
-      type: service
+    #- key: rhoai-mcp
+    #  repo_org: opendatahub-io
+    #  repo_name: rhoai-mcp
+    #  type: service
     - key: kueue-operator
       repo_org: openshift
       repo_name: kueue-operator
       type: operator
+    #- key: openshell
+    #  repo_org: red-hat-data-services
+    #  repo_name: openshell
+    - key: llm-d
+      repo_org: llm-d
+      repo_name: llm-d
+    #- key: llm-d-async
+    #  repo_org: red-hat-data-services
+    #  repo_name: llm-d-async
+    - key: llm-d-autoscaling
+      repo_org: llm-d
+      repo_name: llm-d-autoscaling
+    #- key: llm-d-batch-gateway
+    #  repo_org: llm-d
+    #  repo_name: llm-d-batch-gateway
+    #- key: llm-d-batch-gateway-operator
+    #  repo_org: red-hat-data-services
+    #  repo_name: llm-d-batch-gateway-operator
+    - key: llm-d-inference-payload-processor
+      repo_org: llm-d
+      repo_name: llm-d-inference-payload-processor
+    #- key: llm-d-kv-cache
+    #  repo_org: llm-d
+    #  repo_name: llm-d-kv-cache
+    #- key: llm-d-latency-predictor
+    #  repo_org: red-hat-data-services
+    #  repo_name: llm-d-latency-predictor
+    - key: llm-d-planner
+      repo_org: llm-d-incubation
+      repo_name: llm-d-planner
+      type: service
+    #- key: llm-d-router
+    #  repo_org: red-hat-data-services
+    #  repo_name: llm-d-router
+    #- key: llm-d-routing-sidecar
+    #  repo_org: llm-d
+    #  repo_name: llm-d-routing-sidecar
+    - key: praxis-ai
+      repo_org: praxis-proxy
+      repo_name: ai
+    - key: praxis-enhancements
+      repo_org: praxis-proxy
+      repo_name: enhancements
     - key: praxis-grid
       repo_org: praxis-proxy
       repo_name: grid
       type: operator
+    - key: praxis-policy
+      repo_org: praxis-proxy
+      repo_name: policy
 
 rhoai-3.6-ea.1:
   <<: *rhoai_3x_common

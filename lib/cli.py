@@ -736,6 +736,11 @@ def parse_args():
         ),
     )
     _add_strace_flag(pipeline_parser)
+    pipeline_parser.add_argument(
+        "--pull",
+        action="store_true",
+        help="Pull latest changes in existing repos during fetch phase"
+    )
 
     # All phases
     all_parser = subparsers.add_parser(

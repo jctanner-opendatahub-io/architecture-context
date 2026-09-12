@@ -1352,6 +1352,8 @@ async def run_agents_concurrently(
                 )
             return await _finalize_result(index, job, result)
         except BaseException as e:
+            #print(e)
+            #import pdb; pdb.set_trace()
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
             progress.agent_completed(job["name"], success=False)
