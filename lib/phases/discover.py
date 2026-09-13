@@ -140,7 +140,6 @@ async def _get_provenance(args, checkouts_dirs):
             print(f"\t{lineage}")
             parent = parent.parent
         provenance[pkey]["lineage"] = lineage[::-1]
-        #import pdb; pdb.set_trace()
 
     with open(cachefile, "w") as f:
         f.write(json.dumps(provenance))
@@ -162,7 +161,6 @@ async def _assemble_component_map(args, classifications, provenance):
 
         if rdata["checkout"] not in classifications:
             print(f"ERROR: {rdata['checkout']} not in classifications map")
-            # import pdb; pdb.set_trace()
             continue
 
         codename = rdata["codename"]
@@ -182,9 +180,7 @@ async def _assemble_component_map(args, classifications, provenance):
             "confidence": "high",
             "lineage": rdata["lineage"][:]
         }
-        # import pdb; pdb.set_trace()
 
-    # import pdb; pdb.set_trace()
     return cm
 
 
