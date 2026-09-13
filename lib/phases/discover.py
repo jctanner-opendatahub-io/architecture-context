@@ -110,7 +110,7 @@ async def _get_provenance(args, checkouts_dirs):
             repo_url = repo_url.replace("git@", "https://")
         repo_ps = urllib.parse.urlsplit(repo_url)
         repo_name = Path(repo_url).name
-        repo_org = repo_ps.path.rstrip(repo_name).lstrip("/").rstrip("/")
+        repo_org = repo_ps.path.removesuffix(repo_name).strip("/")
         repo_fullname = repo_org + "/" + repo_name
 
         provenance[repo_fullname] = {

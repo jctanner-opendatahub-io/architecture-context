@@ -87,7 +87,7 @@ DestinationRule specifying `mode: TLS` and `tls.sni`, traffic falls back to HTTP
 
 **DestinationRule is required** to:
 - Force TLS for component traffic (even when not mesh mTLS)
-- Allow self-signed certificates (skip CA validation)
+- Configure trust for self-signed certificates (via caCertificates)
 - Set SNI for proper certificate handling
 
 When documenting gateway infrastructure: if you find DestinationRule alongside 

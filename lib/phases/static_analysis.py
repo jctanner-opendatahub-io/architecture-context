@@ -3,7 +3,6 @@
 import asyncio
 import hashlib
 import json
-import os
 import tempfile
 from pathlib import Path
 
@@ -571,13 +570,6 @@ async def run_static_analysis_phase(args) -> None:
 
         if r.get("schema") and r["schema"]["success"]:
             schemas_total += r["schema"]["schema_count"]
-
-        render_file = (render or {}).get("markdown_file")
-        if render_file:
-            try:
-                os.remove(render_file)
-            except OSError:
-                pass
 
     print("=" * 60)
     print("STATIC ANALYSIS COMPLETE")

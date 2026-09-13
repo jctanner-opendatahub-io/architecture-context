@@ -67,6 +67,8 @@ def _remove_legacy_component_outputs(
         )
         if not alias or alias == component.repo_name or not component.repo_name:
             continue
+        if component.repo_name in components:
+            continue
 
         legacy_file = platform_dir / f"{component.repo_name}.md"
         if legacy_file.exists():
@@ -85,10 +87,20 @@ def _remove_legacy_component_outputs(
             legacy_component_dir.rmdir()
 
         if diagrams_dir.exists():
-            for diagram_file in diagrams_dir.glob(f"{component.repo_name}-*"):
-                if diagram_file.is_file():
-                    diagram_file.unlink()
-                    print(f"  Removed legacy diagram: {diagram_file}")
+            active_prefixes = tuple(
+                f"{k}-" for k in components if k != component.repo_name
+            )
+            legacy_prefix = f"{component.repo_name}-"
+            for diagram_file in diagrams_dir.iterdir():
+                if not diagram_file.is_file():
+                    continue
+                name = diagram_file.name
+                if not name.startswith(legacy_prefix):
+                    continue
+                if any(name.startswith(p) for p in active_prefixes):
+                    continue
+                diagram_file.unlink()
+                print(f"  Removed legacy diagram: {diagram_file}")
 
 
 async def run_generate_architecture_phase(args) -> None:
