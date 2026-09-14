@@ -41,6 +41,7 @@ async def _classify_checkouts(
     # run a classifier on a list of checkouts
     jobs = []
     output_folder = Path(architecture_dir) / args.platform / ".discovery/classification"
+    output_folder.mkdir(parents=True, exist_ok=True)
     output_files = {}
     for checkout in sorted(checkouts):
         output_file = output_folder / (checkout.name + '.json')
@@ -66,6 +67,16 @@ async def _classify_checkouts(
         phase_label=phase,
          harness=harness,
     )
+
+    missing = [
+        checkout.name for checkout, output_file in output_files.items()
+        if not output_file.exists()
+    ]
+    if missing:
+        raise FileNotFoundError(
+            f"Classification failed for {len(missing)} component(s): "
+            + ", ".join(sorted(missing))
+        )
 
     classifications = {}
     for output_file in output_files.values():
