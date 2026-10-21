@@ -233,7 +233,7 @@ def check_run(result: dict, expected_keys: list[str], platform: str,
 		comp_md = arch_dir / f"{key}.md"
 		if not comp_md.exists():
 			errors.append(f"no published {comp_md}")
-		elif not comp_md.read_text().startswith(f"# {key}"):
+		elif not comp_md.read_text().startswith(f"# Component: {key}"):
 			errors.append(f"published {comp_md} has wrong title")
 	pub_platform = arch_dir / "PLATFORM.md"
 	if not pub_platform.exists():
@@ -359,6 +359,30 @@ def main() -> int:
 			for err in errors:
 				print(f"  - {err}")
 			failures += bool(errors)
+
+		# Recovery case: a flaky child (broken JSON first attempt) must be
+		# healed by the fanout retry — workflow succeeds, both attempts'
+		# usage recorded (partial spend is real spend).
+		result = run_once(args.pi, args.ext, args.repo_root, args.out / "recovery-flaky",
+		                  '{"platform":"test","items":[{"key":"__flaky__","repoDir":"."}]}', None)
+		errors = []
+		ends = [e for e in result["events"]
+		        if e.get("type") == "tool_execution_end" and e.get("toolName") == "workflow"]
+		if result["returncode"] != 0 or len(ends) != 1 or ends[0].get("isError"):
+			errors.append("flaky child was not healed by retry (expected success)")
+		else:
+			try:
+				wf_dir = latest_run_dir(args.repo_root)
+				records = [json.loads(l) for l in (wf_dir / "usage.jsonl").read_text().splitlines() if l.strip()]
+				if len(records) != 2:
+					errors.append(f"expected 2 usage records (failed attempt + retry), got {len(records)}")
+			except AssertionError as err:
+				errors.append(str(err))
+		status = "PASS" if not errors else "FAIL"
+		print(f"recovery flaky-child-retry: {status}")
+		for err in errors:
+			print(f"  - {err}")
+		failures += bool(errors)
 
 	print("RUNG1-CHECK:", "PASS" if failures == 0 else "FAIL")
 	return 0 if failures == 0 else 1

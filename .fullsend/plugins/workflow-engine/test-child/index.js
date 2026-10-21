@@ -31,6 +31,34 @@ function lastUserText(messages) {
 	return "";
 }
 
+
+// ANALYZE fixture: a SummarySchema-conforming deterministic summary.
+function fixtureSummary(key) {
+	return JSON.stringify({
+		component: key,
+		purpose: {
+			short: `fixture summary of ${key}`,
+			detailed: `fixture architecture summary of ${key}`,
+		},
+		architecturalAnalysis: `fixture architectural analysis of ${key}`,
+		architectureComponents: [{ name: key, type: "fixture", purpose: `fixture component ${key}` }],
+		subComponents: [],
+		apisExposed: {
+			httpEndpoints: [{ path: "/", methods: ["GET"], description: `fixture endpoint of ${key}` }],
+			grpcServices: [],
+			customResourceDefinitions: [],
+		},
+		dependencies: { external: [], internalPlatform: [] },
+		deployment: { summary: `fixture deployment of ${key}`, variants: [] },
+		network: { services: [], ingress: [], egress: [] },
+		security: { authentication: "fixture", authorization: "fixture", secrets: [], fipsCompliance: "fixture" },
+		multiTenancy: { model: "none", isolationMechanisms: [], sharedServices: [] },
+		dataFlows: [],
+		integrationPoints: [],
+		concerns: [],
+	});
+}
+
 function zeroUsage() {
 	return {
 		input: 0,
@@ -96,36 +124,54 @@ export default function (pi) {
 			}
 			const clone = /^CLONE\s+([^\n]+)/.exec(trimmed);
 			const scan = /^SCAN\s+([^\n]+)\s+at\s+([^\n]+)/.exec(trimmed);
+			const retryAnalyze = /^RETRY\s+ANALYZE\s+(\S+)/.exec(trimmed);
 			const analyze = /^ANALYZE\s+(\S+)/.exec(trimmed);
 			const match = /^CLASSIFY\s+([^\n]+)/.exec(trimmed);
+			if (retryAnalyze) {
+				// Corrective retry: __malformed__ stays broken (the check
+				// script's persistent-failure negative); everything else —
+				// including the flaky fixture's second attempt — succeeds,
+				// proving the fanout retry path end-to-end offline.
+				const key = retryAnalyze[1];
+				if (key === "__malformed__") {
+					return emit("this is still not json");
+				}
+				return emit(fixtureSummary(key));
+			}
 			if (analyze) {
 				const key = analyze[1];
 				// Deliberately-bad fixtures for the check script's negative
 				// suite: __malformed__ emits non-JSON (host must fail on
 				// parse), __wrongkey__ emits valid JSON about the wrong
-				// component (assertComplete reality check must catch it).
+				// component (assertComplete reality check must catch it),
+				// __flaky__ emits the real-world failure shape (unescaped
+				// quotes inside a string) and recovers on retry.
 				if (key === "__malformed__") {
 					return emit("this is not json");
+				}
+				if (key === "__flaky__") {
+					// Mimics the GLM failure: /{"tenant"}/ breaks the JSON.
+					return emit('{"component":"__flaky__","purpose":{"short":"quotes " inside" break JSON"}}');
 				}
 				if (key === "__wrongkey__") {
 					return emit(JSON.stringify({
 						component: "someone-else",
-						summary: "fixture architecture summary of someone-else",
-						responsibilities: ["fixture responsibility"],
-						interfaces: [],
-						dependencies: [],
+						purpose: { short: "fixture", detailed: "fixture" },
+						architecturalAnalysis: "fixture",
+						architectureComponents: [],
+						subComponents: [],
+						apisExposed: { httpEndpoints: [], grpcServices: [], customResourceDefinitions: [] },
+						dependencies: { external: [], internalPlatform: [] },
+						deployment: { summary: "fixture", variants: [] },
+						network: { services: [], ingress: [], egress: [] },
+						security: { authentication: "fixture", authorization: "fixture", secrets: [], fipsCompliance: "fixture" },
+						multiTenancy: { model: "none", isolationMechanisms: [], sharedServices: [] },
+						dataFlows: [],
+						integrationPoints: [],
 						concerns: [],
 					}));
 				}
-				const out = JSON.stringify({
-					component: key,
-					summary: `fixture architecture summary of ${key}`,
-					responsibilities: [`fixture responsibility of ${key}`],
-					interfaces: [{ name: `${key}-api`, kind: "fixture", description: `fixture interface of ${key}` }],
-					dependencies: [],
-					concerns: [],
-				});
-				return emit(out);
+				return emit(fixtureSummary(key));
 			}
 			if (clone) {
 				const out = JSON.stringify({

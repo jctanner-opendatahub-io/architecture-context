@@ -156,7 +156,13 @@ def main() -> None:
         for entry in includes:
             comp = components[entry["key"]]
             repo_dir = comp.checkout_path.relative_to(REPO_ROOT)
-            work_items.append({
+            # Analyzer baseline (phase 2c output) consumed by the generate
+            # stage — the skill's ground-truth facts. Emitted only when the
+            # host-side analyze phase has produced it.
+            analyzer_dir = (
+                Path(args.architecture_dir) / args.platform / comp.key / ".analyzer"
+            )
+            item = {
                 "key": comp.key,
                 "repoDir": str(repo_dir),
                 "promptContext": {
@@ -165,7 +171,10 @@ def main() -> None:
                     "checkout_branch": comp.checkout_branch,
                     "type": comp.type,
                 },
-            })
+            }
+            if analyzer_dir.is_dir():
+                item["analyzerDir"] = str(analyzer_dir)
+            work_items.append(item)
         wf_path = Path(args.architecture_dir) / args.platform / "components.json"
         wf_path.parent.mkdir(parents=True, exist_ok=True)
         wf_path.write_text(json.dumps(work_items, indent=2) + "\n")

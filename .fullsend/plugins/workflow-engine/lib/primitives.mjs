@@ -43,20 +43,40 @@ export function validateInput(input, schema, workflow = "workflow") {
  * journaled by the host. Returns positional results aligned with items.
  *
  * opts: { promptOf(item, i), labelOf(item, i), schema, cwdOf?(item, i),
- *         model?, concurrency = 2, timeoutMs? }
+ *         model?, concurrency = 2, timeoutMs?, retries = 0,
+ *         retryPromptOf?(item, i, error) }
+ *
+ * retries: on agent failure (invalid JSON, schema violation, nonzero
+ * exit), the item is re-attempted with retryPromptOf(item, i, error) —
+ * a fresh child session carrying the error context, so a model that
+ * emitted malformed or non-conforming output gets one corrective shot.
+ * Failed attempts' usage is still sunk (partial spend is real spend).
  */
 export async function fanout(wf, items, opts) {
-	const { promptOf, labelOf, schema, cwdOf, model, concurrency = 2, timeoutMs } = opts;
+	const {
+		promptOf, labelOf, schema, cwdOf, model, concurrency = 2, timeoutMs,
+		retries = 0, retryPromptOf,
+	} = opts;
+	const attempt = async (item, index) => {
+		const callOpts = {
+			label: labelOf(item, index),
+			schema,
+			cwd: cwdOf ? cwdOf(item, index) : undefined,
+			model,
+			timeoutMs,
+		};
+		try {
+			return await wf.agent(promptOf(item, index), callOpts);
+		} catch (err) {
+			if (retries < 1 || typeof retryPromptOf !== "function") throw err;
+			return await wf.agent(retryPromptOf(item, index, err), {
+				...callOpts,
+				label: `${labelOf(item, index)}:retry`,
+			});
+		}
+	};
 	return wf.parallel(
-		items.map((item, index) => () =>
-			wf.agent(promptOf(item, index), {
-				label: labelOf(item, index),
-				schema,
-				cwd: cwdOf ? cwdOf(item, index) : undefined,
-				model,
-				timeoutMs,
-			}),
-		),
+		items.map((item, index) => () => attempt(item, index)),
 		{ concurrency },
 	);
 }

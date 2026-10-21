@@ -7,7 +7,8 @@
       "ref": "d3a8a8f859393f6eae1b0098ff6ab36d720390c8",
       "checkout_branch": "main",
       "type": "library"
-    }
+    },
+    "analyzerDir": "architecture/breadboard/breadboard/.analyzer"
   },
   {
     "key": "jira-emulator",
@@ -17,7 +18,8 @@
       "ref": "2ebb61cf319c2a717a1527fe0d74ac14e75929b4",
       "checkout_branch": "main",
       "type": "service"
-    }
+    },
+    "analyzerDir": "architecture/breadboard/jira-emulator/.analyzer"
   },
   {
     "key": "github-emulator",
@@ -27,7 +29,8 @@
       "ref": "4bc669c72ce1346d99783323a14cf686004b7f21",
       "checkout_branch": "main",
       "type": "service"
-    }
+    },
+    "analyzerDir": "architecture/breadboard/github-emulator/.analyzer"
   },
   {
     "key": "gitlab-emulator",
@@ -37,7 +40,8 @@
       "ref": "3fc44805939c2afac02353771173bbe67dc5bded",
       "checkout_branch": "main",
       "type": "service"
-    }
+    },
+    "analyzerDir": "architecture/breadboard/gitlab-emulator/.analyzer"
   },
   {
     "key": "entra-id-emulator",
@@ -47,6 +51,7 @@
       "ref": "bfb27e4edb6e4038487d774c572e4856a04e9057",
       "checkout_branch": "main",
       "type": "service"
-    }
+    },
+    "analyzerDir": "architecture/breadboard/entra-id-emulator/.analyzer"
   }
 ]
