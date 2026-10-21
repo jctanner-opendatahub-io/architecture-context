@@ -1,0 +1,52 @@
+[
+  {
+    "key": "breadboard",
+    "repoDir": "checkouts/jctanner.head/breadboard",
+    "promptContext": {
+      "repo_url": "https://github.com/jctanner/breadboard",
+      "ref": "d3a8a8f859393f6eae1b0098ff6ab36d720390c8",
+      "checkout_branch": "main",
+      "type": "library"
+    }
+  },
+  {
+    "key": "jira-emulator",
+    "repoDir": "checkouts/jctanner.head/jira-emulator",
+    "promptContext": {
+      "repo_url": "https://github.com/jctanner/jira-emulator",
+      "ref": "2ebb61cf319c2a717a1527fe0d74ac14e75929b4",
+      "checkout_branch": "main",
+      "type": "service"
+    }
+  },
+  {
+    "key": "github-emulator",
+    "repoDir": "checkouts/jctanner.head/github-emulator",
+    "promptContext": {
+      "repo_url": "https://github.com/jctanner/github-emulator",
+      "ref": "4bc669c72ce1346d99783323a14cf686004b7f21",
+      "checkout_branch": "main",
+      "type": "service"
+    }
+  },
+  {
+    "key": "gitlab-emulator",
+    "repoDir": "checkouts/jctanner.head/gitlab-emulator",
+    "promptContext": {
+      "repo_url": "https://github.com/jctanner/gitlab-emulator",
+      "ref": "3fc44805939c2afac02353771173bbe67dc5bded",
+      "checkout_branch": "main",
+      "type": "service"
+    }
+  },
+  {
+    "key": "entra-id-emulator",
+    "repoDir": "checkouts/jctanner.head/entra-id-emulator",
+    "promptContext": {
+      "repo_url": "https://github.com/jctanner/entra-id-emulator",
+      "ref": "bfb27e4edb6e4038487d774c572e4856a04e9057",
+      "checkout_branch": "main",
+      "type": "service"
+    }
+  }
+]
