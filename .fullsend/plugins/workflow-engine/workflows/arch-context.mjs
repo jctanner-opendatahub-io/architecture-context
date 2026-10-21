@@ -47,6 +47,7 @@ const Input = {
 		platform: { type: "string", minLength: 1 },
 		stages: { type: "array", items: { type: "string", minLength: 1 } },
 		concurrency: { type: "integer", minimum: 1 },
+		timeoutMs: { type: "integer", minimum: 1000 },
 		components: { type: "array", items: { type: "string", minLength: 1 } },
 		items: { type: "array", items: { type: "object" } },
 	},
@@ -122,7 +123,10 @@ function promptFor(item) {
 		``,
 		`Read the source in the working directory and produce a structured architecture summary of this component.`,
 		``,
-		`Return ONLY a JSON object with these fields:`,
+		`Respond with ONLY the raw JSON object — no markdown code fences, no prose before or after.`,
+		`The first character of the response must be '{' and the last must be '}'.`,
+		``,
+		`JSON fields:`,
 		`- component: exactly ${JSON.stringify(item.key)}`,
 		`- summary: one paragraph describing what this component is and does`,
 		`- responsibilities: non-empty array of its architectural responsibilities`,
@@ -249,12 +253,16 @@ export default async function run(wf, input) {
 	}
 
 	// Phase B — fan-out: one analysis child per component, in its checkout.
+	// Real analysis runs minutes, not seconds: default timeout 5 min,
+	// overridable via input.timeoutMs (host default of 120s is for
+	// scripted children only).
 	const summaries = await fanout(wf, items, {
 		promptOf: promptFor,
 		labelOf: (item) => `analyze:${item.key}`,
 		schema: SummarySchema,
 		cwdOf: (item) => item.repoDir,
 		concurrency: cfg.concurrency ?? 2,
+		timeoutMs: cfg.timeoutMs ?? 300000,
 	});
 
 	// Phase C — completeness, per-component results, platform aggregate.
