@@ -100,6 +100,23 @@ export default function (pi) {
 			const match = /^CLASSIFY\s+([^\n]+)/.exec(trimmed);
 			if (analyze) {
 				const key = analyze[1];
+				// Deliberately-bad fixtures for the check script's negative
+				// suite: __malformed__ emits non-JSON (host must fail on
+				// parse), __wrongkey__ emits valid JSON about the wrong
+				// component (assertComplete reality check must catch it).
+				if (key === "__malformed__") {
+					return emit("this is not json");
+				}
+				if (key === "__wrongkey__") {
+					return emit(JSON.stringify({
+						component: "someone-else",
+						summary: "fixture architecture summary of someone-else",
+						responsibilities: ["fixture responsibility"],
+						interfaces: [],
+						dependencies: [],
+						concerns: [],
+					}));
+				}
 				const out = JSON.stringify({
 					component: key,
 					summary: `fixture architecture summary of ${key}`,
