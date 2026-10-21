@@ -4,12 +4,12 @@
     "discovery_method": "static_platforms_yaml",
     "entry_point": null,
     "checkouts_dirs": [
-      "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/architecture-context/checkouts/jctanner.head"
+      "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/checkouts/architecture-context/checkouts/jctanner.head"
     ],
     "total_repos_scanned": 5,
     "components_discovered": 5,
     "components_excluded": 0,
-    "discovered_at": "2026-10-21T14:03:19.152157"
+    "discovered_at": "2026-10-21T14:06:11.188066"
   },
   "components": {
     "breadboard": {
@@ -19,7 +19,7 @@
       "repo_url": "https://github.com/jctanner/breadboard",
       "ref": "d3a8a8f859393f6eae1b0098ff6ab36d720390c8",
       "source_folder": ".",
-      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/architecture-context/checkouts/jctanner.head/breadboard",
+      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/checkouts/architecture-context/checkouts/jctanner.head/breadboard",
       "checkout_branch": "main",
       "has_architecture": false,
       "tier": "payload_component",
@@ -37,7 +37,7 @@
       "repo_url": "https://github.com/jctanner/jira-emulator",
       "ref": "2ebb61cf319c2a717a1527fe0d74ac14e75929b4",
       "source_folder": ".",
-      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/architecture-context/checkouts/jctanner.head/jira-emulator",
+      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/checkouts/architecture-context/checkouts/jctanner.head/jira-emulator",
       "checkout_branch": "main",
       "has_architecture": false,
       "tier": "payload_component",
@@ -55,7 +55,7 @@
       "repo_url": "https://github.com/jctanner/github-emulator",
       "ref": "4bc669c72ce1346d99783323a14cf686004b7f21",
       "source_folder": ".",
-      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/architecture-context/checkouts/jctanner.head/github-emulator",
+      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/checkouts/architecture-context/checkouts/jctanner.head/github-emulator",
       "checkout_branch": "main",
       "has_architecture": false,
       "tier": "payload_component",
@@ -73,7 +73,7 @@
       "repo_url": "https://github.com/jctanner/gitlab-emulator",
       "ref": "3fc44805939c2afac02353771173bbe67dc5bded",
       "source_folder": ".",
-      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/architecture-context/checkouts/jctanner.head/gitlab-emulator",
+      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/checkouts/architecture-context/checkouts/jctanner.head/gitlab-emulator",
       "checkout_branch": "main",
       "has_architecture": false,
       "tier": "payload_component",
@@ -91,7 +91,7 @@
       "repo_url": "https://github.com/jctanner/entra-id-emulator",
       "ref": "bfb27e4edb6e4038487d774c572e4856a04e9057",
       "source_folder": ".",
-      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/architecture-context/checkouts/jctanner.head/entra-id-emulator",
+      "checkout_path": "/home/jtanner/workspace/github/jctanner.redhat/2026_10_12_pi_arch_context/checkouts/architecture-context/checkouts/jctanner.head/entra-id-emulator",
       "checkout_branch": "main",
       "has_architecture": false,
       "tier": "payload_component",
