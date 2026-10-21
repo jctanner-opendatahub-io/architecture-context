@@ -65,15 +65,21 @@ export async function fanout(wf, items, opts) {
 			model,
 			timeoutMs,
 		};
-		try {
-			return await wf.agent(promptOf(item, index), callOpts);
-		} catch (err) {
-			if (retries < 1 || typeof retryPromptOf !== "function") throw err;
-			return await wf.agent(retryPromptOf(item, index, err), {
-				...callOpts,
-				label: `${labelOf(item, index)}:retry`,
-			});
+		let lastErr;
+		for (let attemptNo = 0; attemptNo <= retries; attemptNo++) {
+			try {
+				if (attemptNo === 0) {
+					return await wf.agent(promptOf(item, index), callOpts);
+				}
+				return await wf.agent(retryPromptOf(item, index, lastErr, attemptNo), {
+					...callOpts,
+					label: `${labelOf(item, index)}:retry${attemptNo}`,
+				});
+			} catch (err) {
+				lastErr = err;
+			}
 		}
+		throw lastErr;
 	};
 	return wf.parallel(
 		items.map((item, index) => () => attempt(item, index)),

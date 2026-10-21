@@ -187,7 +187,18 @@ const SummarySchema = {
 			type: "object",
 			properties: {
 				summary: { type: "string", minLength: 1 },
-				variants: { type: "array", items: { type: "string" } },
+				variants: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							name: { type: "string", minLength: 1 },
+							description: { type: "string", minLength: 1 },
+						},
+						required: ["name", "description"],
+						additionalProperties: false,
+					},
+				},
 			},
 			required: ["summary", "variants"],
 			additionalProperties: false,
@@ -195,9 +206,42 @@ const SummarySchema = {
 		network: {
 			type: "object",
 			properties: {
-				services: { type: "array", items: { type: "string" } },
-				ingress: { type: "array", items: { type: "string" } },
-				egress: { type: "array", items: { type: "string" } },
+				services: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							name: { type: "string", minLength: 1 },
+							description: { type: "string", minLength: 1 },
+						},
+						required: ["name", "description"],
+						additionalProperties: false,
+					},
+				},
+				ingress: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							name: { type: "string", minLength: 1 },
+							description: { type: "string", minLength: 1 },
+						},
+						required: ["name", "description"],
+						additionalProperties: false,
+					},
+				},
+				egress: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							name: { type: "string", minLength: 1 },
+							description: { type: "string", minLength: 1 },
+						},
+						required: ["name", "description"],
+						additionalProperties: false,
+					},
+				},
 			},
 			required: ["services", "ingress", "egress"],
 			additionalProperties: false,
@@ -302,12 +346,21 @@ function promptFor(item) {
 	} else {
 		lines.push(``, `No analyzer baseline is provided; analyze the source directly.`);
 	}
-	lines.push(
+	lines.push(...contractLines(item));
+	return lines.join("\n");
+}
+
+/** The output contract, shared by the first attempt and every retry —
+ * a retry is a FRESH session that has never seen the original prompt,
+ * so it must carry the full field list, not a reference to it. */
+function contractLines(item) {
+	return [
 		``,
 		`Respond with ONLY the raw JSON object — no markdown code fences, no prose before or after.`,
 		`The first character of the response must be '{' and the last must be '}'.`,
 		`Every value must match the exact JSON type listed: narrative fields are strings`,
-		`(write "none" or "not applicable" — never booleans or null); arrays may be empty.`,
+		`(write "none" or "not applicable" — never booleans, null, or empty strings);`,
+		`arrays may be empty.`,
 		`The JSON must be strictly valid: escape every double quote inside string values`,
 		`(write \\\" for each \") and avoid literal double quotes in URL paths (write`,
 		`/{tenant}/ rather than /{"tenant"}/). Keep string values concise (under ~25 words).`,
@@ -317,41 +370,39 @@ function promptFor(item) {
 		`- component: exactly ${JSON.stringify(item.key)}`,
 		`- purpose: {short: one sentence, detailed: one paragraph}`,
 		`- architecturalAnalysis: concise architecture narrative synthesized from analyzer facts and bounded source evidence`,
-		`- architectureComponents: [{name, type, purpose}]`,
+		`- architectureComponents: [{name, type, purpose}] — every field a non-empty string`,
 		`- subComponents: [{name, apiRoutes: [{path, methods}], upstreamDependencies: [], configuration: []}]`,
 		`- apisExposed: {httpEndpoints: [{path, methods, description}], grpcServices: [{name, description}], customResourceDefinitions: [{group, version, kind, purpose}]}`,
 		`- dependencies: {external: [], internalPlatform: []}`,
-		`- deployment: {summary, variants: []}`,
-		`- network: {services: [], ingress: [], egress: []}`,
+		`- deployment: {summary, variants: [{name, description}]}`,
+		`- network: {services: [{name, description}], ingress: [{name, description}], egress: [{name, description}]}`,
 		`- security: {authentication, authorization, secrets: [], fipsCompliance: string such as "not applicable" or a compliance summary}`,
 		`- multiTenancy: {model, isolationMechanisms: [], sharedServices: []}`,
 		`- dataFlows: [{name, description}]`,
 		`- integrationPoints: [{name, description}]`,
 		`- concerns: [] (architectural concerns or risks)`,
-	);
-	return lines.join("\n");
+		``,
+		`Before responding, self-check: every narrative field is a non-empty string;`,
+		`no null or boolean values anywhere; all 14 top-level fields present.`,
+	];
 }
 
 /** Corrective retry prompt: a fresh child session carrying the exact
- * failure (invalid JSON, schema violation) so the model can fix its
- * previous output. Used via the fanout primitive's retries option. */
+ * failure (invalid JSON, schema violation) and the FULL output contract.
+ * Used via the fanout primitive's retries option. */
 function retryPromptFor(item, err) {
 	return [
 		`RETRY ANALYZE ${item.key}`,
 		``,
-		`Your previous response for this component was rejected:`,
+		`A previous response for this component was rejected:`,
 		`${err.message}`,
 		``,
 		`Regenerate the complete architecture summary JSON for the repository at the`,
 		`current working directory (${item.repoDir}), fixing the reported problem.`,
 		...(item.analyzerDir
-			? [`The analyzer baseline facts remain at ${item.analyzerDir}/.`]
+			? [`The analyzer baseline facts are at ${item.analyzerDir}/ (read the synthesis context first).`]
 			: []),
-		``,
-		`Respond with ONLY the raw JSON object — no markdown code fences, no prose.`,
-		`The JSON must be strictly valid: escape every double quote inside string values,`,
-		`never use booleans or null for narrative fields, and match the same field`,
-		`structure as before (component must be exactly ${JSON.stringify(item.key)}).`,
+		...contractLines(item),
 	].join("\n");
 }
 
@@ -429,7 +480,7 @@ function renderComponentDoc(result) {
 	}
 	lines.push(`## Deployment`, ``, result.deployment.summary, ``);
 	if (result.deployment.variants.length > 0) {
-		lines.push(`**Variants:** ${result.deployment.variants.join(", ")}`, ``);
+		lines.push(`**Variants:**`, ``, ...result.deployment.variants.map((v) => `- **${v.name}**: ${v.description}`), ``);
 	}
 	const { network } = result;
 	lines.push(`## Network Architecture`, ``);
@@ -438,7 +489,9 @@ function renderComponentDoc(result) {
 		["Ingress", network.ingress],
 		["Egress", network.egress],
 	]) {
-		if (entries.length > 0) lines.push(`**${label}:**`, ``, ...entries.map((e) => `- ${e}`), ``);
+		if (entries.length > 0) {
+			lines.push(`**${label}:**`, ``, ...entries.map((e) => `- **${e.name}**: ${e.description}`), ``);
+		}
 	}
 	const { security } = result;
 	lines.push(
@@ -632,10 +685,12 @@ export default async function run(wf, input) {
 			cwdOf: (item) => item.repoDir,
 			concurrency: cfg.concurrency ?? 2,
 			timeoutMs: cfg.timeoutMs ?? 300000,
-			// One corrective retry: models occasionally emit invalid JSON
-			// (unescaped quotes in long outputs) or violate a leaf type;
-			// the retry session carries the exact failure.
-			retries: 1,
+			// Corrective retries: models occasionally emit invalid JSON
+			// (unescaped quotes in long outputs), null/boolean leaves, or
+			// (pre-contract-fix) drift from the field structure. Each
+			// retry is a fresh session carrying the exact failure AND the
+			// full output contract.
+			retries: 2,
 			retryPromptOf: retryPromptFor,
 		});
 		assertComplete(items, summaries, {
