@@ -194,8 +194,10 @@ def check_run(result: dict, expected_keys: list[str], platform: str,
 
 	usage_file = wf_dir / "usage.jsonl"
 	records = [json.loads(l) for l in usage_file.read_text().splitlines() if l.strip()]
-	if len(records) != len(expected_keys):
-		errors.append(f"usage.jsonl has {len(records)} records, expected {len(expected_keys)}")
+	# default stages include platform synthesis: one extra agent call
+	expected_usage = len(expected_keys) + 1
+	if len(records) != expected_usage:
+		errors.append(f"usage.jsonl has {len(records)} records, expected {expected_usage} ({len(expected_keys)} components + 1 platform)")
 	for i, rec in enumerate(records):
 		if rec.get("seq") != i + 1:
 			errors.append(f"usage record {i} seq={rec.get('seq')}")
@@ -238,8 +240,13 @@ def check_run(result: dict, expected_keys: list[str], platform: str,
 	pub_platform = arch_dir / "PLATFORM.md"
 	if not pub_platform.exists():
 		errors.append(f"no published {pub_platform}")
-	elif not pub_platform.read_text().startswith(f"# Platform Architecture — {platform}"):
-		errors.append(f"published {pub_platform} has wrong title")
+	else:
+		pub_text = pub_platform.read_text()
+		if not pub_text.startswith(f"# Platform Architecture — {platform}"):
+			errors.append(f"published {pub_platform} has wrong title")
+		for section in ("## Platform Overview", "## Component Relationships", "## Analyzer Inventory"):
+			if section not in pub_text:
+				errors.append(f"published PLATFORM.md missing {section!r}")
 
 	return errors
 
@@ -364,7 +371,7 @@ def main() -> int:
 		# healed by the fanout retry — workflow succeeds, both attempts'
 		# usage recorded (partial spend is real spend).
 		result = run_once(args.pi, args.ext, args.repo_root, args.out / "recovery-flaky",
-		                  '{"platform":"test","items":[{"key":"__flaky__","repoDir":"."}]}', None)
+		                  '{"platform":"test","stages":["analyze","generate"],"items":[{"key":"__flaky__","repoDir":"."}]}', None)
 		errors = []
 		ends = [e for e in result["events"]
 		        if e.get("type") == "tool_execution_end" and e.get("toolName") == "workflow"]

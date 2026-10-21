@@ -128,9 +128,27 @@ export default function (pi) {
 			}
 			const clone = /^CLONE\s+([^\n]+)/.exec(trimmed);
 			const scan = /^SCAN\s+([^\n]+)\s+at\s+([^\n]+)/.exec(trimmed);
+			const retryAggregate = /^RETRY\s+AGGREGATE\s+PLATFORM\s+(\S+)/.exec(trimmed);
+			const aggregate = /^AGGREGATE\s+PLATFORM\s+(\S+)/.exec(trimmed);
 			const retryAnalyze = /^RETRY\s+ANALYZE\s+(\S+)/.exec(trimmed);
 			const analyze = /^ANALYZE\s+(\S+)/.exec(trimmed);
 			const match = /^CLASSIFY\s+([^\n]+)/.exec(trimmed);
+			if (retryAggregate || aggregate) {
+				const name = (aggregate || retryAggregate)[1];
+				return emit(JSON.stringify({
+					platform: name,
+					overview: `fixture platform overview of ${name}`,
+					componentRelationships: {
+						centralComponents: ["fixture-central"],
+						integrationPatterns: [{ name: "fixture pattern", description: `fixture integration pattern of ${name}` }],
+					},
+					networkArchitecture: `fixture network architecture of ${name}`,
+					securitySummary: `fixture security summary of ${name}`,
+					dataFlows: [{ name: "fixture flow", description: `fixture data flow of ${name}` }],
+					deploymentTopology: `fixture deployment topology of ${name}`,
+					crossCuttingConcerns: [],
+				}));
+			}
 			if (retryAnalyze) {
 				// Corrective retry: __malformed__ stays broken (the check
 				// script's persistent-failure negative); everything else —

@@ -2,22 +2,23 @@
 
 ## Purpose
 
-The emulator is a Flask-based Python service that mimics Microsoft Entra ID for local development. It exposes tenant-scoped OIDC/OAuth2 endpoints (discovery, authorize, token, JWKS, userinfo, logout) supporting authorization code with PKCE, refresh token, password, and hybrid flows. State lives in SQLite seeded from a YAML config, tokens are signed with generated RSA keys, and a password-protected admin REST API and web UI allow full CRUD on tenants, users, groups, and clients.
+entra-id-emulator is a Flask-based Python service that emulates Microsoft Entra ID for local development. It exposes per-tenant OIDC/OAuth2 endpoints (discovery, authorize, token, JWKS, userinfo, logout), supports authorization code with PKCE, refresh token and password grants, hybrid flows, pairwise subject identifiers, groups claims with overage handling, and per-tenant/per-client token lifetime overrides. Data lives in SQLite with YAML-driven seeding, and an admin REST API plus password-protected web UI manage tenants, users, groups, and clients.
 
 ## Architectural Analysis
 
-A single-process Flask application created by a factory (entra_mock/app.py) that loads YAML config, initializes and seeds an SQLite database, ensures an RSA signing key, and registers route blueprints under entra_mock/routes/. OIDC surfaces are tenant-scoped paths mirroring Entra ID URL conventions (/<tenant>/oauth2/v2.0/*, discovery, JWKS), plus an admin REST API (/api/tenants, /api/users, /api/groups, /api/clients) protected by optional HTTP Basic Auth against a configured admin_password, and an /oidc/userinfo endpoint. Token issuance (entra_mock/tokens.py) supports ID, access, and refresh tokens with pairwise subject identifiers and per-tenant/client lifetime overrides; keys.py manages RSA keys and JWKS. Deployment is a python:3.11-slim container running run.py on port 8080, with source mounted at runtime; example compose files pair it with oauth2-proxy as a relying party. There is no ingress, gRPC, CRD, or platform integration; state is local SQLite and all data is in-memory/file-backed, making it a single-instance development tool rather than a scalable service.
+The service is a single-process Flask application assembled by an app factory (entra_mock/app.py) that loads YAML config, initializes and seeds a SQLite database, ensures an RSA signing key, and registers route blueprints. Routes are split by concern under entra_mock/routes: per-tenant OIDC endpoints (discovery, authorize, token, jwks, userinfo, logout) and an admin REST API with HTTP Basic Auth guarding tenants, users, groups, and clients CRUD, plus a landing page and admin web UI. Token issuance and claim building live in tokens.py; key management in keys.py; persistence and seeding in db.py. Deployment is via run.py on port 8080, a Dockerfile, or compose examples; configuration comes from config.yaml and environment variables (ENTRA_MOCK_DB, FLASK_SECRET_KEY). The analyzer found no authentication middleware on OIDC endpoints (by design for an emulator), no CRDs, no gRPC services, and no ingress resources.
 
 ## Architecture Components
 
 | Component | Type | Purpose |
 |----|----|-------|
-| entra_mock app factory | Flask application factory | Loads YAML config, initializes SQLite DB, seeds data, ensures signing keys, and registers route bluephints |
-| OIDC route blueprints | Flask blueprints | Tenant-scoped authorize, token, discovery, JWKS, userinfo, and logout endpoints emulating Entra ID v2.0 |
-| Admin API and UI | Flask blueprint with HTTP Basic Auth | CRUD management of tenants, users, groups, and clients, plus password-protected admin web console at /admin/ |
-| Token service | Python module | Generates and signs ID, access, and refresh tokens with pairwise subs and lifetime overrides |
-| Key management | Python module | Generates 2048-bit RSA signing keys, persists them, and builds JWKS responses |
-| SQLite datastore | Embedded database | Stores tenants, users, groups, clients, tokens, and signing keys; seeded from config.yaml |
+| app factory | Flask application factory | Creates the app, loads config, initializes DB, ensures signing key, registers routes |
+| routes (OIDC) | Flask blueprints | Per-tenant discovery, authorize, token, JWKS, userinfo, and logout endpoints |
+| admin API and UI | Flask blueprint | CRUD REST API for tenants, users, groups, clients plus password-protected admin console and landing page |
+| tokens | Python module | JWT/ID token issuance, claim building, token lifetime handling |
+| keys | Python module | RSA signing key management for JWKS and token signing |
+| db | SQLite persistence layer | Schema creation, config seeding, and helper queries |
+| config | Python module | Loads YAML configuration for server, tenants, users, groups, clients, lifetimes |
 
 ## Sub-Component: entra_mock
 
@@ -25,28 +26,29 @@ A single-process Flask application created by a factory (entra_mock/app.py) that
 
 | Path | Methods |
 |----|--------|
-| /<tenant>/oauth2/v2.0/authorize | GET, POST |
-| /<tenant>/oauth2/v2.0/token | POST |
-| /<tenant>/oauth2/v2.0/logout | GET, POST |
-| /<tenant>/v2.0/.well-known/openid-configuration | GET |
-| /<tenant>/discovery/v2.0/keys | GET |
+| /{tenant}/v2.0/.well-known/openid-configuration | GET |
+| /{tenant}/oauth2/v2.0/authorize | GET, POST |
+| /{tenant}/oauth2/v2.0/token | POST |
+| /{tenant}/discovery/v2.0/keys | GET |
+| /{tenant}/oauth2/v2.0/logout | GET, POST |
 | /oidc/userinfo | GET, POST |
-| /api/tenants | GET, POST |
-| /api/tenants/<tenant_id> | PUT, DELETE |
-| /api/users | GET, POST |
-| /api/users/<user_id> | PUT, DELETE |
-| /api/groups | GET, POST |
-| /api/groups/<group_id> | PUT, DELETE |
-| /api/clients | GET, POST |
-| /api/clients/<client_id> | PUT, DELETE |
 | / | GET |
-| /admin/ | GET |
+| /api/tenants | GET, POST |
+| /api/tenants/{tenant_id} | PUT, DELETE |
+| /api/users | GET, POST |
+| /api/users/{user_id} | PUT, DELETE |
+| /api/groups | GET, POST |
+| /api/groups/{group_id} | PUT, DELETE |
+| /api/clients | GET, POST |
+| /api/clients/{client_id} | PUT, DELETE |
+
+**Upstream Dependencies:** flask, pyjwt, jwcrypto, cryptography, pyyaml
 
 **Configuration:**
 
-- config.yaml (server host/port/scheme/debug/admin_password, tenants, users, clients, token lifetimes)
-- ENTRA_MOCK_DB environment variable (SQLite path, default data/entra_mock.db)
-- FLASK_SECRET_KEY environment variable (Flask session secret)
+- config.yaml
+- ENTRA_MOCK_DB
+- FLASK_SECRET_KEY
 
 ## APIs Exposed
 
@@ -54,92 +56,82 @@ A single-process Flask application created by a factory (entra_mock/app.py) that
 
 | Path | Methods | Description |
 |----|---------|-------------|
-| /<tenant>/oauth2/v2.0/authorize | GET, POST | OIDC authorization endpoint supporting code, hybrid, and implicit flows with PKCE |
-| /<tenant>/oauth2/v2.0/token | POST | Token endpoint supporting authorization code, refresh token, and password grants |
-| /<tenant>/oauth2/v2.0/logout | GET, POST | OIDC logout including front-channel logout |
-| /<tenant>/v2.0/.well-known/openid-configuration | GET | OIDC discovery document for the tenant |
-| /<tenant>/discovery/v2.0/keys | GET | JWKS endpoint exposing public signing keys |
-| /oidc/userinfo | GET, POST | UserInfo endpoint returning claims for bearer access tokens |
-| /api/tenants | GET, POST | List and create tenants (admin, optionally password-protected) |
-| /api/tenants/<tenant_id> | PUT, DELETE | Update and delete tenants |
-| /api/users | GET, POST | List and create users |
-| /api/users/<user_id> | PUT, DELETE | Update and delete users |
-| /api/groups | GET, POST | List and create groups |
-| /api/groups/<group_id> | PUT, DELETE | Update and delete groups |
-| /api/clients | GET, POST | List and create OAuth2 client registrations |
-| /api/clients/<client_id> | PUT, DELETE | Update and delete OAuth2 client registrations |
+| /{tenant}/v2.0/.well-known/openid-configuration | GET | OIDC discovery document per tenant |
+| /{tenant}/oauth2/v2.0/authorize | GET, POST | Authorization endpoint supporting code, hybrid, and implicit flows with PKCE |
+| /{tenant}/oauth2/v2.0/token | POST | Token endpoint for authorization code, refresh token, and password grants |
+| /{tenant}/discovery/v2.0/keys | GET | JWKS endpoint exposing public signing keys |
+| /{tenant}/oauth2/v2.0/logout | GET, POST | End-session/logout endpoint |
+| /oidc/userinfo | GET, POST | UserInfo endpoint returning claims for authenticated user |
 | / | GET | Landing page linking to the admin console |
-| /admin/ | GET | Admin web UI, protected by HTTP Basic Auth when admin_password is set |
+| /api/tenants | GET, POST | List and create tenants |
+| /api/tenants/{tenant_id} | PUT, DELETE | Update or delete a tenant |
+| /api/users | GET, POST | List and create users |
+| /api/users/{user_id} | PUT, DELETE | Update or delete a user |
+| /api/groups | GET, POST | List and create groups |
+| /api/groups/{group_id} | PUT, DELETE | Update or delete a group |
+| /api/clients | GET, POST | List and create OAuth clients |
+| /api/clients/{client_id} | PUT, DELETE | Update or delete an OAuth client |
 
 ## Dependencies
 
-**External:** flask>=3.0, pyjwt>=2.8, cryptography>=42.0, jwcrypto>=1.5, pyyaml>=6.0, SQLite (stdlib)
+**External:** flask, pyjwt, jwcrypto, cryptography, pyyaml, SQLite (stdlib)
 
 ## Deployment
 
-Single-container deployment from a python:3.11-slim Docker image running run.py on port 8080, with source and data mounted at runtime; compose examples integrate it with oauth2-proxy for testing OIDC flows.
+Runs as a single Python process via run.py on port 8080 (default), configured by config.yaml; ships a Dockerfile (python:3.11-slim) and podman/docker compose examples with an oauth2-proxy integration sample.
 
 **Variants:**
 
-- **Local Python**: pip install requirements.txt and python run.py; serves on host/port from config.yaml
-- **Docker/Podman compose**: Container with mounted source and data volumes, port 8080 published, optionally alongside oauth2-proxy as relying party
+- **local Python**: pip install requirements.txt and python run.py, serving on localhost:8080
+- **container**: Dockerfile based on python:3.11-slim exposing port 8080, source mounted at runtime
+- **compose with oauth2-proxy**: Example compose files wiring the emulator behind oauth2-proxy for integration testing
 
 ## Network Architecture
 
 **Services:**
 
-- **entra-id-emulator**: Single Flask HTTP service listening on port 8080 (configurable via config.yaml)
-
-**Ingress:**
-
-- **none**: No ingress resources; direct HTTP exposure on port 8080, scheme configurable in config.yaml
-
-**Egress:**
-
-- **none**: No outbound runtime connections; the emulator makes no calls to external services
+- **entra-id-emulator**: Single Flask HTTP service listening on configurable host/port (default 0.0.0.0:8080)
 
 ## Security
 
-- **Authentication:** Emulated OIDC authentication: user passwords hashed (werkzeug) in SQLite, client authentication via client_secret_basic or client_secret_post at the token endpoint, and bearer access tokens for /oidc/userinfo. Admin API and UI use optional HTTP Basic Auth against server.admin_password from config.yaml; no authentication middleware is registered on the Flask app itself.
-- **Authorization:** OAuth2 scope and redirect_uri validation per registered client; no role-based authorization beyond the admin password gate.
+- **Authentication:** OIDC endpoints emulate Entra ID (client credentials, auth codes, PKCE); admin API and UI protected by HTTP Basic Auth when admin_password is configured; no middleware-level auth on public OIDC endpoints
+- **Authorization:** Emulated OAuth2 scopes and client-based flows; admin surface gated by shared admin password
 - **FIPS Compliance:** not applicable
 
 **Secrets:**
 
-- FLASK_SECRET_KEY environment variable (Flask session secret)
-- server.admin_password in config.yaml (admin Basic Auth)
-- client_secret values stored in SQLite/config.yaml
-- RSA signing private keys stored in SQLite
+- FLASK_SECRET_KEY (environment variable for session cookies)
+- admin_password (config.yaml for admin Basic Auth)
+- client_secret and user passwords (config.yaml / SQLite)
 
 ## Multi-Tenancy
 
-**Model:** Emulated multi-tenancy: multiple Entra ID tenants stored as rows in SQLite, each with its own domain, salt, and token lifetime overrides, addressed via tenant-scoped URL paths.
+**Model:** Multiple emulated Entra ID tenants, each with own domain, users, groups, clients, salt, and token lifetime overrides, addressed via per-tenant URL paths
 
 **Isolation Mechanisms:**
 
-- Per-tenant URL path scoping (/<tenant>/...)
-- Per-tenant salt for pairwise subject identifiers
-- Tenant foreign keys on users, groups, and clients
+- per-tenant URL path segments (/{tenant}/...)
+- per-tenant pairwise subject identifier salts
+- tenant-scoped users, groups, and clients in SQLite
 
-**Shared Services:** Single shared SQLite database and shared signing keys across all emulated tenants
+**Shared Services:** single shared Flask process and SQLite database
 
 ## Data Flows
 
-- **OIDC authorization code flow**: Client redirects user to authorize endpoint; user authenticates against seeded credentials; server issues a one-time code exchanged at the token endpoint for signed ID/access/refresh tokens.
-- **Config seeding**: On startup, config.yaml tenants, users, groups, and clients are loaded into SQLite; signing keys are generated if absent.
-- **Admin management**: Admin API/UI CRUD operations write directly to the SQLite datastore, affecting subsequent OIDC behavior.
-- **Token validation by relying parties**: Relying parties (e.g., oauth2-proxy) fetch JWKS and discovery documents to validate issued JWTs.
+- **OIDC authorization flow**: Client redirects to per-tenant authorize endpoint; user authenticates against seeded credentials; code (with PKCE) is issued and exchanged at the token endpoint for JWTs signed by the RSA key
+- **token issuance**: tokens.py builds access/ID/refresh tokens with configurable lifetimes, pairwise sub claims, and groups claim with overage handling; JWKS publishes public keys
+- **admin management**: Admin UI/REST API performs CRUD on SQLite-backed tenants, users, groups, and clients, seeded from config.yaml at startup
+- **userinfo**: Resource server presents access token to /oidc/userinfo, which returns claims for the token subject
 
 ## Integration Points
 
-- **OAuth2 relying parties**: Any OIDC client such as oauth2-proxy can use the emulator as an identity provider; examples include compose and oauth2-proxy configuration
-- **ODH/RHOAI BYOIDC**: Documentation describes configuring OpenShift AI and ODH Bring-Your-Own-Identity-Provider against the emulator for local testing
+- **OIDC relying parties**: Any OAuth2/OIDC client (e.g., oauth2-proxy per example config) can use discovery, authorize, token, JWKS, and userinfo endpoints
+- **oauth2-proxy integration**: Example compose and oauth2-proxy.cfg demonstrate using the emulator as the OIDC provider for oauth2-proxy
 
 ## Concerns
 
-- Emulator only: emulated authentication, plaintext secrets in config.yaml, and no production hardening; must not be exposed publicly
-- Single-instance, stateful SQLite storage with no high-availability or replication path
-- Admin API has no authentication unless admin_password is explicitly configured; default credentials are committed in config.yaml
-- No TLS by default (scheme http); encryption depends on external ingress
-- No health probes, resource limits, or Kubernetes manifests; Dockerfile omits source, requiring runtime volume mounts
+- No authentication middleware on public OIDC endpoints; acceptable for an emulator but unsafe if exposed beyond localhost
+- Default admin password (changeme1234) and plaintext secrets in config.yaml
+- Single-process SQLite storage with no HA story; intended only for local development and testing
+- Sign-in and consent flows are simulated, so fidelity to real Entra ID behavior is partial
 

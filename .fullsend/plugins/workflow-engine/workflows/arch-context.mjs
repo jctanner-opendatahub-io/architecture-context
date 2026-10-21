@@ -311,6 +311,68 @@ const SummarySchema = {
 	],
 	additionalProperties: false,
 };
+// ---------------------------------------------------------------------------
+// Swappable data block 1b: platform synthesis schema
+// (mirrors aggregate-platform-architecture's template; RHOAI-specific
+// sections — webhooks, kustomize patterns, overlay deployment, maturity
+// scoring — are collapsed)
+// ---------------------------------------------------------------------------
+
+const PlatformSchema = {
+	type: "object",
+	properties: {
+		platform: { type: "string", minLength: 1 },
+		overview: { type: "string", minLength: 1 },
+		componentRelationships: {
+			type: "object",
+			properties: {
+				centralComponents: { type: "array", items: { type: "string", minLength: 1 } },
+				integrationPatterns: {
+					type: "array",
+					items: {
+						type: "object",
+						properties: {
+							name: { type: "string", minLength: 1 },
+							description: { type: "string", minLength: 1 },
+						},
+						required: ["name", "description"],
+						additionalProperties: false,
+					},
+				},
+			},
+			required: ["centralComponents", "integrationPatterns"],
+			additionalProperties: false,
+		},
+		networkArchitecture: { type: "string", minLength: 1 },
+		securitySummary: { type: "string", minLength: 1 },
+		dataFlows: {
+			type: "array",
+			items: {
+				type: "object",
+				properties: {
+					name: { type: "string", minLength: 1 },
+					description: { type: "string", minLength: 1 },
+				},
+				required: ["name", "description"],
+				additionalProperties: false,
+			},
+		},
+		deploymentTopology: { type: "string", minLength: 1 },
+		crossCuttingConcerns: { type: "array", items: { type: "string" } },
+	},
+	required: [
+		"platform",
+		"overview",
+		"componentRelationships",
+		"networkArchitecture",
+		"securitySummary",
+		"dataFlows",
+		"deploymentTopology",
+		"crossCuttingConcerns",
+	],
+	additionalProperties: false,
+};
+
 
 // ---------------------------------------------------------------------------
 // Swappable data block 2: per-component analysis prompt
@@ -353,7 +415,8 @@ function promptFor(item) {
 /** The output contract, shared by the first attempt and every retry —
  * a retry is a FRESH session that has never seen the original prompt,
  * so it must carry the full field list, not a reference to it. */
-function contractLines(item) {
+/** Output discipline shared by every agent prompt in this workflow. */
+function disciplineLines() {
 	return [
 		``,
 		`Respond with ONLY the raw JSON object — no markdown code fences, no prose before or after.`,
@@ -362,8 +425,17 @@ function contractLines(item) {
 		`(write "none" or "not applicable" — never booleans, null, or empty strings);`,
 		`arrays may be empty.`,
 		`The JSON must be strictly valid: escape every double quote inside string values`,
-		`(write \\\" for each \") and avoid literal double quotes in URL paths (write`,
-		`/{tenant}/ rather than /{"tenant"}/). Keep string values concise (under ~25 words).`,
+		`(write \\\\" for each \") and avoid literal double quotes in URL paths (write`,
+		`/{tenant}/ rather than /{\"tenant\"}/). Keep string values concise (under ~25 words).`,
+		``,
+		`Before responding, self-check: every narrative field is a non-empty string;`,
+		`no null or boolean values anywhere; all required fields present.`,
+	];
+}
+
+function contractLines(item) {
+	return [
+		...disciplineLines(),
 		``,
 		`JSON fields (the architecture template's sections; empty arrays where a`,
 		`section does not apply):`,
@@ -381,8 +453,6 @@ function contractLines(item) {
 		`- dataFlows: [{name, description}]`,
 		`- integrationPoints: [{name, description}]`,
 		`- concerns: [] (architectural concerns or risks)`,
-		``,
-		`Before responding, self-check: every narrative field is a non-empty string;`,
 		`no null or boolean values anywhere; all 14 top-level fields present.`,
 	];
 }
@@ -403,6 +473,103 @@ function retryPromptFor(item, err) {
 			? [`The analyzer baseline facts are at ${item.analyzerDir}/ (read the synthesis context first).`]
 			: []),
 		...contractLines(item),
+	].join("\n");
+}
+
+/** Deterministic cross-component inventory — the arch-query
+ * platform-summary analog: merges the prebuilt analyzer baselines so
+ * the synthesis agent (and the published doc) get machine-extracted
+ * facts, including cross-repo service wiring that no single-repo read
+ * can produce. */
+function platformInventory(items) {
+	const components = [];
+	const crossRepoIngress = [];
+	for (const item of items) {
+		const entry = {
+			component: item.key,
+			httpEndpoints: 0,
+			services: 0,
+			deployments: 0,
+			entrypoints: 0,
+		};
+		if (item.analyzerDir) {
+			try {
+				const facts = JSON.parse(
+					fs.readFileSync(path.join(path.resolve(item.analyzerDir), "component-architecture.json"), "utf8"),
+				);
+				entry.httpEndpoints = Array.isArray(facts.http_endpoints) ? facts.http_endpoints.length : 0;
+				entry.services = Array.isArray(facts.services) ? facts.services.length : 0;
+				entry.deployments = Array.isArray(facts.deployments) ? facts.deployments.length : 0;
+				entry.entrypoints = Array.isArray(facts.entrypoints) ? facts.entrypoints.length : 0;
+				for (const rule of facts.ingress_routing || []) {
+					if (rule.host && rule.backend) {
+						crossRepoIngress.push({
+							name: String(rule.name || rule.host),
+							host: String(rule.host),
+							paths: (rule.paths || []).join(", "),
+							backend: String(rule.backend),
+							tls: Boolean(rule.tls),
+						});
+					}
+				}
+			} catch {
+				/* missing/invalid baseline is reported loudly by the analyze stage */
+			}
+		}
+		components.push(entry);
+	}
+	return { components, crossRepoIngress };
+}
+
+/** Platform synthesis field contract (shared by attempt and retries). */
+function platformContractLines(platform) {
+	return [
+		``,
+		`JSON fields:`,
+		`- platform: exactly ${JSON.stringify(platform)}`,
+		`- overview: one to two paragraphs synthesizing what this platform is and does`,
+		`- componentRelationships: {centralComponents: [component names], integrationPatterns: [{name, description}]}`,
+		`- networkArchitecture: the platform network story (string)`,
+		`- securitySummary: shared authentication/authorization/secrets posture (string)`,
+		`- dataFlows: [{name, description}] — key end-to-end workflows across components`,
+		`- deploymentTopology: how the platform deploys and runs (string)`,
+		`- crossCuttingConcerns: [] (strings)`,
+	];
+}
+
+/** The platform-synthesis prompt (the aggregate-platform-architecture
+ * skill's port): validated component results + deterministic analyzer
+ * inventory in, one cross-cutting synthesis out. */
+function platformPromptFor(platform, items, summaries, inventory) {
+	const trimmed = summaries.map((r) => ({
+		component: r.component,
+		purpose: r.purpose,
+		architecturalAnalysis: r.architecturalAnalysis,
+		dependencies: r.dependencies,
+		network: r.network,
+		integrationPoints: r.integrationPoints,
+		dataFlows: r.dataFlows,
+		concerns: r.concerns,
+	}));
+	return [
+		`AGGREGATE PLATFORM ${platform}`,
+		``,
+		`You are synthesizing the platform-level architecture document for the`,
+		`${JSON.stringify(platform)} platform from ${summaries.length} component summaries.`,
+		``,
+		`COMPONENT SUMMARIES (validated structured results):`,
+		JSON.stringify(trimmed, null, 1),
+		``,
+		`ANALYZER INVENTORY (deterministic, machine-extracted — ground truth for`,
+		`wiring and counts; do not contradict it):`,
+		JSON.stringify(inventory, null, 1),
+		``,
+		`Synthesize the cross-cutting view: how the components relate and integrate,`,
+		`the platform network story, the shared security posture, the key end-to-end`,
+		`data flows, the deployment topology, and cross-cutting concerns. Where the`,
+		`inventory shows service wiring (hosts, backends), use it verbatim.`,
+		...disciplineLines(),
+		...platformContractLines(platform),
 	].join("\n");
 }
 
@@ -531,21 +698,65 @@ function renderComponentDoc(result) {
 	return lines.join("\n") + "\n";
 }
 
-function renderPlatformDoc(artifact) {
+function renderPlatformDoc(summary, artifact) {
 	const lines = [
-		`# Platform Architecture — ${artifact.platform}`,
+		`# Platform Architecture — ${summary.platform}`,
+		``,
+		`## Metadata`,
 		``,
 		`- Components analyzed: ${artifact.analyzed}/${artifact.expected}`,
 		`- Complete: ${artifact.complete}`,
+		`- Components: ${artifact.components.join(", ")}`,
+		``,
+		`## Platform Overview`,
+		``,
+		summary.overview,
+		``,
+		`## Component Relationships`,
+		``,
+		`### Internal Dependencies`,
 		``,
 	];
-	for (const stage of artifact.stages) lines.push(`- Stage: ${stage}`);
-	lines.push(``);
+	const edges = [];
 	for (const result of artifact.results) {
-		lines.push(`## ${result.component}`, ``, result.purpose.short, ``);
-		if (result.concerns.length > 0) {
-			lines.push(`**Concerns:**`, ``, ...result.concerns.map((c) => `- ${c}`), ``);
+		for (const dep of result.dependencies.internalPlatform) {
+			edges.push(`${result.component} -> ${dep}`);
 		}
+	}
+	lines.push(...(edges.length > 0 ? edges.map((e) => `- ${e}`) : ["_(none declared)_"]), ``);
+	const cr = summary.componentRelationships;
+	if (cr.centralComponents.length > 0) {
+		lines.push(`### Central Components`, ``, ...cr.centralComponents.map((c) => `- **${c}**`), ``);
+	}
+	if (cr.integrationPatterns.length > 0) {
+		lines.push(`### Integration Patterns`, ``);
+		for (const ip of cr.integrationPatterns) lines.push(`- **${ip.name}**: ${ip.description}`);
+		lines.push(``);
+	}
+	lines.push(`## Network Architecture`, ``, summary.networkArchitecture, ``);
+	if (artifact.inventory && artifact.inventory.crossRepoIngress.length > 0) {
+		lines.push(`### Analyzer-Detected Service Wiring`, ``, `| Ingress | Host | Paths | Backend | TLS |`, `|----|----|----|----|----|`);
+		for (const w of artifact.inventory.crossRepoIngress) {
+			lines.push(`| ${w.name} | ${w.host} | ${w.paths} | ${w.backend} | ${w.tls} |`);
+		}
+		lines.push(``);
+	}
+	lines.push(`## Platform Security`, ``, summary.securitySummary, ``);
+	if (summary.dataFlows.length > 0) {
+		lines.push(`## Data Flows`, ``);
+		for (const f of summary.dataFlows) lines.push(`- **${f.name}**: ${f.description}`);
+		lines.push(``);
+	}
+	lines.push(`## Deployment Topology`, ``, summary.deploymentTopology, ``);
+	if (summary.crossCuttingConcerns.length > 0) {
+		lines.push(`## Cross-Cutting Concerns`, ``, ...summary.crossCuttingConcerns.map((c) => `- ${c}`), ``);
+	}
+	if (artifact.inventory && artifact.inventory.components.length > 0) {
+		lines.push(`## Analyzer Inventory`, ``, `| Component | Endpoints | Services | Deployments | Entrypoints |`, `|----|----|----|----|----|`);
+		for (const inv of artifact.inventory.components) {
+			lines.push(`| ${inv.component} | ${inv.httpEndpoints} | ${inv.services} | ${inv.deployments} | ${inv.entrypoints} |`);
+		}
+		lines.push(``);
 	}
 	return lines.join("\n") + "\n";
 }
@@ -718,6 +929,34 @@ export default async function run(wf, input) {
 		}
 	}
 
+	// Phase 6 — platform synthesis: one agent over the validated component
+	// results + the deterministic analyzer inventory (the
+	// aggregate-platform-architecture skill's port). Single-item fanout
+	// gives it the same retry semantics as the component children.
+	let platformSummary = null;
+	const inventory = platformInventory(items);
+	if (runPlatform && summaries.length > 0) {
+		[platformSummary] = await fanout(wf, [platform], {
+			promptOf: () => platformPromptFor(platform, items, summaries, inventory),
+			labelOf: () => "aggregate-platform",
+			schema: PlatformSchema,
+			concurrency: 1,
+			timeoutMs: cfg.timeoutMs ?? 300000,
+			retries: 2,
+			retryPromptOf: (name, _i, err) => [
+				`RETRY AGGREGATE PLATFORM ${name}`,
+				``,
+				`A previous platform synthesis was rejected:`,
+				`${err.message}`,
+				``,
+				`Regenerate the complete platform synthesis JSON from the same component`,
+				`summaries and analyzer inventory (platform must be exactly ${JSON.stringify(name)}).`,
+				...disciplineLines(),
+				...platformContractLines(name),
+			].join("\n"),
+		});
+	}
+
 	const artifact = {
 		platform,
 		stages,
@@ -727,15 +966,17 @@ export default async function run(wf, input) {
 		components: items.map((item) => item.key),
 		notes,
 		results: summaries,
+		platformSummary,
+		inventory,
 		summary: runGenerate
 			? `${summaries.length}/${items.length} components analyzed (${platform})`
 			: `analyze-only: ${items.length} component(s) validated (${platform})`,
 	};
 	writeArtifact(wf, artifact);
-	if (runPlatform && summaries.length > 0) {
-		fs.writeFileSync(path.join(wf.runDir, "PLATFORM.md"), renderPlatformDoc(artifact));
+	if (platformSummary) {
+		fs.writeFileSync(path.join(wf.runDir, "PLATFORM.md"), renderPlatformDoc(platformSummary, artifact));
 		fs.mkdirSync(archDir, { recursive: true });
-		fs.writeFileSync(path.join(archDir, "PLATFORM.md"), renderPlatformDoc(artifact));
+		fs.writeFileSync(path.join(archDir, "PLATFORM.md"), renderPlatformDoc(platformSummary, artifact));
 	}
 	if (runGenerate && !artifact.complete) {
 		throw new Error(`arch-context: incomplete — ${summaries.length}/${items.length} components analyzed`);
