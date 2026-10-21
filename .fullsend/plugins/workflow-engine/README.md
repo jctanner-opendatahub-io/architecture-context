@@ -21,8 +21,27 @@ Layout:
 
 ## Running it yourself
 
-Everything below runs from the **architecture-context repo root**
-(work items' `repoDir` values are repo-root-relative):
+The easy way — `scripts/archctx.sh` (local convenience only; fullsend
+invokes pi directly):
+
+```bash
+scripts/archctx.sh prepare                     # host-side P0: fetch + analyze + manifest
+scripts/archctx.sh run                         # offline workflow (no inference)
+scripts/archctx.sh run --real                  # real inference (GLM via EnMaaS)
+scripts/archctx.sh run --real --components jira-emulator,entra-id-emulator
+scripts/archctx.sh run --stages analyze        # validation only, no inference
+scripts/archctx.sh check --runs 3              # full rung-1 verification suite
+```
+
+Real mode reads the provider key from `~/.pi/agent/auth.json`
+(provider = first segment of the model spec) and passes it env-only.
+Offline runs that publish will **overwrite real markdown with fixture
+content** — the wrapper warns; re-run `--real` or `git checkout` to
+restore.
+
+The long way (what the wrapper does), for reference — everything runs
+from the **architecture-context repo root** (work items' `repoDir`
+values are repo-root-relative):
 
 ```bash
 cd <repo-root>   # e.g. .../2026_10_12_pi_arch_context/checkouts/architecture-context
