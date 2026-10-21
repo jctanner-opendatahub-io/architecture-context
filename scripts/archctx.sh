@@ -40,8 +40,9 @@ die() { echo "archctx: $*" >&2; exit 1; }
 
 cmd="${1:-help}"; [ $# -gt 0 ] && shift || true
 case "$cmd" in
-	fetch|analyze|manifest|prepare|run|check|help) ;;
-	*) die "unknown command '$cmd' (try: prepare, fetch, analyze, manifest, run, check)" ;;
+	fetch|analyze|manifest|prepare|run|check) ;;
+	-h|--help|help) cmd=help ;;
+	*) die "unknown command '$cmd' (try: prepare, fetch, analyze, manifest, run, check, or --help)" ;;
 esac
 
 # ---------------------------------------------------------------- host-side
@@ -64,6 +65,9 @@ do_run() {
 	local REAL=0 STAGES="" COMPONENTS="" CONCURRENCY="" TIMEOUT="" MODEL="$DEFAULT_MODEL"
 	while [ $# -gt 0 ]; do
 		case "$1" in
+			-h|--help)
+				sed -n "2,30p" "$0" | sed 's/^# \{0,1\}//'
+				return 0 ;;
 			--real) REAL=1 ;;
 			--model) MODEL="$2"; shift ;;
 			--components) COMPONENTS="$2"; shift ;;
