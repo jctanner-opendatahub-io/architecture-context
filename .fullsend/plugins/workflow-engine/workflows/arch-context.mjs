@@ -50,6 +50,7 @@ const Input = {
 		timeoutMs: { type: "integer", minimum: 1000 },
 		components: { type: "array", items: { type: "string", minLength: 1 } },
 		items: { type: "array", items: { type: "object" } },
+		architectureDir: { type: "string", minLength: 1 },
 	},
 	additionalProperties: false,
 };
@@ -138,8 +139,25 @@ function promptFor(item) {
 }
 
 // ---------------------------------------------------------------------------
-// Swappable data block 3: aggregation renderer
+// Swappable data block 3: aggregation renderers
 // ---------------------------------------------------------------------------
+
+function renderComponentDoc(result) {
+	const lines = [`# ${result.component}`, ``, result.summary, ``];
+	lines.push(`**Responsibilities:**`, ``, ...result.responsibilities.map((r) => `- ${r}`), ``);
+	if (result.interfaces.length > 0) {
+		lines.push(`**Interfaces:**`, ``);
+		for (const i of result.interfaces) lines.push(`- **${i.name}** (${i.kind}): ${i.description}`);
+		lines.push(``);
+	}
+	if (result.dependencies.length > 0) {
+		lines.push(`**Dependencies:** ${result.dependencies.join(", ")}`, ``);
+	}
+	if (result.concerns.length > 0) {
+		lines.push(`**Concerns:**`, ``, ...result.concerns.map((c) => `- ${c}`), ``);
+	}
+	return lines.join("\n") + "\n";
+}
 
 function renderPlatformDoc(artifact) {
 	const lines = [
@@ -266,16 +284,27 @@ export default async function run(wf, input) {
 	});
 
 	// Phase C — completeness, per-component results, platform aggregate.
+	// Mirrors the original pipeline's phases 4+6: validated results are
+	// published as markdown into <architectureDir>/<platform>/ (the
+	// repo's conventional output tree) in addition to the run dir's
+	// machine-readable copies. Publishing renders from validated JSON —
+	// children never write markdown, so published files are
+	// deterministic functions of validated results.
 	assertComplete(items, summaries, {
 		itemKey: (item) => item.key,
 		resultKey: (summary) => summary.component,
 		workflow: "arch-context",
 	});
+	const archDir = path.resolve(cfg.architectureDir || "architecture", platform);
 	if (runCollect) {
 		writeResults(wf, summaries, {
 			fileOf: (summary) => `${summary.component}.json`,
 			workflow: "arch-context",
 		});
+		fs.mkdirSync(archDir, { recursive: true });
+		for (const summary of summaries) {
+			fs.writeFileSync(path.join(archDir, `${summary.component}.md`), renderComponentDoc(summary));
+		}
 	}
 
 	const artifact = {
@@ -292,6 +321,8 @@ export default async function run(wf, input) {
 	writeArtifact(wf, artifact);
 	if (runPlatform) {
 		fs.writeFileSync(path.join(wf.runDir, "PLATFORM.md"), renderPlatformDoc(artifact));
+		fs.mkdirSync(archDir, { recursive: true });
+		fs.writeFileSync(path.join(archDir, "PLATFORM.md"), renderPlatformDoc(artifact));
 	}
 	if (!artifact.complete) {
 		throw new Error(`arch-context: incomplete — ${summaries.length}/${items.length} components analyzed`);

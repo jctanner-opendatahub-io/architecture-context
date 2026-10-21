@@ -226,6 +226,21 @@ def check_run(result: dict, expected_keys: list[str], platform: str,
 	elif not platform_doc.read_text().startswith(f"# Platform Architecture — {platform}"):
 		errors.append("PLATFORM.md has wrong title")
 
+	# Published artifacts in the repo's architecture tree (pipeline
+	# convention: <architectureDir>/<platform>/<component>.md + PLATFORM.md).
+	arch_dir = repo_root / "architecture" / platform
+	for key in expected_keys:
+		comp_md = arch_dir / f"{key}.md"
+		if not comp_md.exists():
+			errors.append(f"no published {comp_md}")
+		elif not comp_md.read_text().startswith(f"# {key}"):
+			errors.append(f"published {comp_md} has wrong title")
+	pub_platform = arch_dir / "PLATFORM.md"
+	if not pub_platform.exists():
+		errors.append(f"no published {pub_platform}")
+	elif not pub_platform.read_text().startswith(f"# Platform Architecture — {platform}"):
+		errors.append(f"published {pub_platform} has wrong title")
+
 	return errors
 
 
@@ -269,6 +284,7 @@ def main() -> int:
 
 	failures = 0
 	normalized_streams = []
+	published = []
 	for n in range(1, args.runs + 1):
 		result = run_once(args.pi, args.ext, args.repo_root, args.out / f"run-{n}",
 		                  args.workflow_input, args.input_file)
@@ -285,11 +301,30 @@ def main() -> int:
 				s = s.replace(m, "<masked>")
 			normalized.append(s)
 		normalized_streams.append(normalized)
+		pub_dir = args.repo_root / "architecture" / platform
+		pub_names = [f"{k}.md" for k in expected_keys] + ["PLATFORM.md"]
+		published.append({
+			name: ((pub_dir / name).read_bytes() if (pub_dir / name).exists() else None)
+			for name in pub_names
+		})
 		status = "PASS" if not errors else "FAIL"
 		print(f"run {n}: {status} ({len(result['events'])} events, exit {result['returncode']})")
 		for err in errors:
 			print(f"  - {err}")
 		failures += bool(errors)
+
+	# Published-artifact determinism: the published markdown must be
+	# byte-identical across runs (deterministic render of validated
+	# results).
+	if any(content is None for run in published for content in run.values()):
+		failures += 1
+		print("published artifacts: FAIL — missing published files")
+	elif len({json.dumps({k: (v.hex() if v else None) for k, v in run.items()}) for run in published}) != 1:
+		failures += 1
+		print("published artifacts: FAIL — published markdown differs across runs")
+	else:
+		n = len(published[0])
+		print(f"published artifacts: PASS — {n} files byte-identical across {args.runs} runs")
 
 	if len({json.dumps(s) for s in normalized_streams}) != 1:
 		failures += 1
