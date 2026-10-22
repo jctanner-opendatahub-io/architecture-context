@@ -8,36 +8,40 @@
 
 ## Platform Overview
 
-Breadboard is an AI-native software engineering platform combining a Python CLI/pipeline agent with a resettable local K3s service stack in the ai-pipeline namespace. The pipeline runs bug, RFE, and strategy phases with Claude-based agents, while the stack hosts roughly 29 workloads: the Breadboard dashboard, markovd workflow engine with Postgres, Observatory, MLflow, Model Relay, Org Pulse, Fullsend runners, and API emulators for Jira, GitHub, GitLab, and Entra ID. The emulators provide offline, high-fidelity stand-ins for external SaaS systems, enabling end-to-end testing of clients, CI runners, OIDC flows, and agent integrations without touching production services. Everything is exposed through Traefik and a Go host proxy via *.local routes.
+Breadboard is an AI-native software engineering platform combining a Python CLI/pipeline agent with a resettable local K3s service stack on a developer workstation. The platform emulates real source systems (Jira, GitHub, GitLab, Entra ID) so agents, CI runners, and dashboards can operate offline against realistic APIs. Pipeline agents run bug, RFE, and strategy phases orchestrated by markovd workflows, execute through Fullsend agents and sandbox runners, and call Claude models via Model Relay. The Breadboard dashboard aggregates tickets across emulators, submits Kubernetes jobs, and surfaces MLflow and Observatory traces.
 
 ## Component Relationships
 
 ### Internal Dependencies
 
-- breadboard -> Kubernetes API (jobs, pods, configmaps, secrets via Python SDK)
-- breadboard -> Vertex AI / Anthropic model endpoints via Model Relay
-- breadboard -> Jira production API (optional)
+- breadboard -> jira-emulator
+- breadboard -> github-emulator
+- breadboard -> gitlab-emulator
+- breadboard -> markovd
+- breadboard -> observatory
+- breadboard -> fullsend-mint-dev
+- breadboard -> model-relay
+- breadboard -> org-pulse
+- breadboard -> openshell
+- breadboard -> github-actions-runner
+- breadboard -> gitlab-runner
 
 ### Central Components
 
 - **breadboard**
-- **jira-emulator**
-- **github-emulator**
-- **gitlab-emulator**
-- **entra-id-emulator**
 
 ### Integration Patterns
 
-- **emulator-backed development**: Pipeline and dashboard target local Jira, GitHub, and GitLab emulators instead of production SaaS APIs
-- **MCP tool integration**: Jira emulator exposes a FastMCP server so Claude agents manipulate issues via tool calls
-- **CI runner coordination**: gitlab-runner registers with the GitLab emulator to execute CI jobs triggered by agent workflows
-- **OIDC identity federation**: Entra ID emulator issues OIDC/OAuth2 tokens, e.g., for oauth2-proxy and GitHub Actions OIDC in the Fullsend flow
-- **model gateway**: Agents call Model Relay, which forwards to Vertex/Anthropic and records telemetry and MLflow traces
-- **Kubernetes job orchestration**: Dashboard and markovd submit Kubernetes jobs; runners execute and stream logs back via SSE
+- **Emulator-as-source-system**: FastAPI/Flask emulators replace Jira, GitHub, GitLab, and Entra ID, each persisted in SQLite and exposed via cluster-local HTTPS routes.
+- **Kubernetes service mesh by convention**: All components deploy into the ai-pipeline namespace; dashboard and orchestrators interact via in-cluster Services and the Kubernetes API.
+- **Ingress edge via Traefik and ingress-proxy**: Traefik plus a Go ingress-proxy terminate TLS and route *.local hosts to backend Services like github-emulator, jira-emulator, and pipeline-dashboard.
+- **Model Relay gateway**: Agents call Model Relay, which fronts Vertex/Anthropic inference with usage telemetry and managed upstream accounts.
+- **MCP tool integration**: The jira-emulator FastMCP server on port 8081 exposes Jira operations as tools for Claude integration.
+- **OIDC credential exchange**: GitHub Actions in the emulator trigger Fullsend Mint to exchange OIDC assertions for scoped GitHub credentials used by sandbox runners.
 
 ## Network Architecture
 
-Traefik and the Go ingress-proxy LoadBalancer terminate TLS on ports 80/443 for *.local hosts, routing to ClusterIP services. Cross-repo ingress maps github-emulator.ai-pipeline.svc.cluster.local to github-emulator backends, gitlab-emulator.ai-pipeline.svc.cluster.local to gitlab-emulator-backend, jira-emulator.ai-pipeline.svc.cluster.local to jira-emulator-backend, dashboard.ai-pipeline.svc.cluster.local to pipeline-dashboard, plus TLS routes to fullsend-dashboard, markovd, observatory, org-pulse-frontend, and model-relay. Host routes include dashboard.local, fullsend.local, github.local, gitlab.local, jira.local, markovd.local, observatory.local, orgpulse.local, and relay.local; jira-simple (jira.local) and github-simple (github.local) are non-TLS. Egress includes webhook delivery from emulators, Vertex/Anthropic inference via Model Relay, and in-cluster Kubernetes API calls.
+Traefik (LoadBalancer 80/443) and the Go ingress-proxy expose *.local HTTPS hosts into the ai-pipeline namespace. The inventory shows cross-repo TLS ingress wiring github-emulator.ai-pipeline.svc.cluster.local to github-emulator-backend, gitlab-emulator to gitlab-emulator-backend, jira-emulator to jira-emulator-backend, dashboard to pipeline-dashboard, plus markovd, observatory, org-pulse-frontend, model-relay, and fullsend-dashboard routes. Non-TLS simple routes jira.local and github.local point at jira-emulator and github-emulator. Emulators also terminate their own TLS via internal Caddy proxies with local CAs. Egress goes to Vertex/Anthropic inference and optional real Jira or GitLab/GitHub import.
 
 ### Analyzer-Detected Service Wiring
 
@@ -61,34 +65,36 @@ Traefik and the Go ingress-proxy LoadBalancer terminate TLS on ports 80/443 for 
 
 ## Platform Security
 
-Security is perimeter-based. Internal services and dashboards lack authentication middleware, relying on cluster isolation, Kubernetes RBAC (pipeline-orchestrator, gitlab-runner, fullsend-dashboard-readonly), and Secrets like pipeline-secrets and gcp-credentials. Emulators ship insecure defaults: permissive AUTH_MODE with admin:admin (Jira, GitLab), changeme1234 admin password (Entra ID), and public OIDC endpoints by design. Public OIDC endpoints on the Entra ID emulator are intentional for an emulator but unsafe beyond localhost.
+Authentication is largely absent at HTTP surfaces: dashboards expose admin and destructive endpoints unauthenticated, Traefik runs with --api.insecure=true, and emulator OIDC endpoints are intentionally unauthenticated. Default credentials and tokens (admin/admin, changeme1234, change-me secrets) ship in manifests and compose files. Secrets like observatory-secrets and org-pulse credentials are provisioned directly in Kubernetes manifests. Access control relies on Kubernetes RBAC (read-only Fullsend ClusterRole, broad gitlab-runner namespace rights) rather than per-request auth on services.
 
 ## Data Flows
 
-- **ticket aggregation**: Dashboard queries Jira, GitHub, and GitLab emulators, merges issues, PRs, and MRs, then filters and renders the ticket browser
-- **pipeline execution**: CLI phases fetch issues from emulators, run Claude agents, validate outputs against schemas, and store artifacts in issues/ and workspace/
-- **job orchestration**: Dashboard or markovd submits Kubernetes jobs; runners execute and logs stream back via the API and SSE
-- **fullsend flow**: GitHub emulator Actions trigger OIDC, Mint exchanges assertions for scoped credentials, OpenShell runs agent work in the sandbox runner
-- **model inference**: Agents call Model Relay, which forwards to Vertex/Anthropic and records usage telemetry and MLflow traces
-- **CI runner flow**: gitlab-runner polls the GitLab emulator coordinator for jobs, executes them, and uploads traces, artifacts, and cache
-- **OIDC authentication**: Relying parties redirect to Entra ID emulator authorize endpoints; tokens are issued, signed, and validated via JWKS/userinfo
-- **observability**: Observatory collects traces and artifacts, extracts claims, verifies them, and reports quality
+- **Ticket aggregation**: Breadboard dashboard fetches issues, PRs, and MRs from Jira, GitHub, and GitLab emulators, combines and filters them across emulated source systems.
+- **Pipeline job lifecycle**: Dashboard submits and monitors Kubernetes Jobs via the Python client; pipeline events stream to the dashboard via Server-Sent Events from /api/events/push.
+- **Markov workflow orchestration**: markovd reads declarative workflow definitions, tracks run state and approvals in PostgreSQL, and orchestrates jobs following the RFE to quality gate to strategy to review to epics flow.
+- **Fullsend agent flow**: GitHub Actions in the emulator trigger OIDC assertion exchange at Fullsend Mint, issuing scoped credentials for sandbox runner agent work via OpenShell.
+- **Model inference**: Agents call Model Relay, which fronts Vertex/Anthropic with usage telemetry; entra-id-emulator can supply OIDC identity for relying parties like oauth2-proxy.
+- **Observability**: Observatory collects traces and artifacts with claim verification while MLflow stores experiment runs, both queried by the Breadboard dashboard.
 
 ## Deployment Topology
 
-Breadboard deploys a K3s stack (deploy/k8s) with ~29 workloads in the ai-pipeline namespace, fronted by Traefik and a Go host proxy. Emulators each run as single self-contained containers (Docker Compose or podman with supervisord, Caddy TLS, SQLite and bare git repos on persistent volumes). Single-replica deployments throughout; no high-availability design.
+A local K3s cluster in the ai-pipeline namespace runs 21 workloads and 22 Services defined by breadboard deploy/k8s manifests: dashboards (Flask, FastAPI), markovd with PostgreSQL, observatory, MLflow, model-relay, org-pulse with MongoDB, fullsend-mint, OpenShell, and CI runners. Emulators run as containers (supervisord managing uvicorn, Caddy, sshd) and are wired in via cross-repo ingress. The Python CLI/pipeline agent and Go ingress-proxy run outside the cluster; cert-manager supplies internal certificates and Traefik plus ingress-proxy expose *.local hosts.
 
 ## Cross-Cutting Concerns
 
-- No authentication middleware on internal dashboard APIs; security relies entirely on cluster and host-network isolation
-- Single-instance, stateful emulator design (SQLite, local disk, in-memory caches) precludes horizontal scaling and high availability
-- Default seeded admin credentials (admin:admin, changeme1234) across emulators are insecure if exposed beyond local development
-- Many services share one namespace with broad secrets like pipeline-secrets and gcp-credentials
-- Mixed plaintext and TLS ingress paths (jira-simple, github-simple) could expose emulators without encryption
-- Broad emulator egress (webhooks, repository imports) could be abused if deployed outside a trusted network
-- Very large API surfaces (552 GitLab, 381 GitHub endpoints) increase maintenance burden
-- Supply chain posture unresolved: multiple image registries, pinned SDK versions, no SBOM evidence
-- GitLab emulator is still a scaffold preserving github_emulator architecture; runner coordination compatibility in progress
+- No authentication middleware on dashboard HTTP surfaces; admin and destructive endpoints (/admin, /api/jobs/all, workspace reset) appear unauthenticated
+- Default credentials and tokens ship across emulators and manifests (admin/admin, jira-emulator-default-token, changeme1234, change-me secret keys)
+- Traefik deployed with --api.insecure=true
+- Broad gitlab-runner RBAC including secret access within its namespace
+- Single-replica, single-SQLite storage in emulators limits concurrency and horizontal scaling; no HA story platform-wide
+- Secrets provisioned directly in Kubernetes manifests (observatory-secrets, org-pulse credentials)
+- RSA private keys stored unencrypted in SQLite without documented rotation (entra-id-emulator)
+- Flask development server used instead of production WSGI server (entra-id-emulator)
+- Very large API surface areas (552 gitlab-emulator, 381 github-emulator, 113 jira-emulator endpoints) create broad maintenance and test burden
+- gitlab-emulator is an explicit scaffold with incomplete GitLab-specific routes and CI API coverage
+- Emulated CI runners execute arbitrary workflow code, unsafe if exposed beyond trusted environments
+- Many services run without dedicated service accounts (empty service account names)
+- No supply-chain or high-availability evidence found by the analyzer
 
 ## Analyzer Inventory
 
