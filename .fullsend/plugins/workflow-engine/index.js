@@ -282,7 +282,14 @@ async function runPipeline(params, onUpdate) {
 	const input = params.input && typeof params.input === "object" ? params.input : {};
 	const runId = runIdFor(command + "\n" + JSON.stringify(input));
 	const runDir = path.join(process.cwd(), "workflow-runs", runId);
-	fs.rmSync(runDir, { recursive: true, force: true });
+	// P5 durable resume: with WORKFLOW_KEEP_RUNS set, an existing runDir
+	// for the same command+input hash is NOT wiped — the host's journal
+	// (content-addressed, per-runDir) then replays completed children
+	// instead of re-spawning them. Killed mid-fan-out, a re-run pays only
+	// for the uncompleted children.
+	if (!process.env.WORKFLOW_KEEP_RUNS) {
+		fs.rmSync(runDir, { recursive: true, force: true });
+	}
 	fs.mkdirSync(runDir, { recursive: true });
 
 	// Usage records are written in item order after the run so the file is

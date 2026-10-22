@@ -36,10 +36,13 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import os
+import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent          # .fullsend/plugins/workflow-engine
@@ -67,7 +70,7 @@ def normalize(value):
 
 
 def run_once(pi: str, ext: Path, repo_root: Path, run_dir: Path, workflow_input: str,
-             input_file: Path | None, prompt: str = PROMPT) -> dict:
+             input_file: Path | None, prompt: str = PROMPT, env_extra: dict | None = None) -> dict:
 	run_dir.mkdir(parents=True, exist_ok=False)
 	home = run_dir / "home"
 	home.mkdir()
@@ -84,6 +87,8 @@ def run_once(pi: str, ext: Path, repo_root: Path, run_dir: Path, workflow_input:
 	env["WORKFLOW_INPUT"] = workflow_input
 	if input_file is not None:
 		env["WORKFLOW_INPUT_FILE"] = str(input_file)
+	if env_extra:
+		env.update(env_extra)
 	proc = subprocess.run(argv, cwd=str(repo_root), env=env, capture_output=True,
 	                      text=True, timeout=600)
 	(run_dir / "stdout.jsonl").write_text(proc.stdout)
@@ -390,6 +395,91 @@ def main() -> int:
 		for err in errors:
 			print(f"  - {err}")
 		failures += bool(errors)
+
+		# Durable resume (P5): kill a run mid-fan-out (after >= 1 child
+		# journals), re-run with WORKFLOW_KEEP_RUNS=1, and assert only the
+		# uncompleted children re-execute — the journaled ones replay.
+		resume_errors = []
+		for d in glob.glob(str(args.repo_root / "workflow-runs" / "*")):
+			shutil.rmtree(d, ignore_errors=True)
+
+		def journal_entries():
+			total = 0
+			for j in (args.repo_root / "workflow-runs").glob("*/journal.jsonl"):
+				total += sum(1 for l in j.read_text().splitlines() if l.strip())
+			return total
+
+		resume_input = (
+			'{"platform":"test","stages":["analyze","generate","collect","platform"],'
+			'"concurrency":1,"items":['
+			'{"key":"slow-a","repoDir":"."},{"key":"slow-b","repoDir":"."},{"key":"slow-c","repoDir":"."}]}'
+		)
+		run1 = args.out / "resume-run1"
+		run1.mkdir(parents=True, exist_ok=False)
+		(run1 / "home").mkdir()
+		env1 = dict(os.environ)
+		env1["HOME"] = str(run1 / "home")
+		env1["WORKFLOW_COMMAND"] = "run-arch-context"
+		env1["WORKFLOW_INPUT"] = resume_input
+		env1["WORKFLOW_KEEP_RUNS"] = "1"
+		argv = [
+			args.pi, "--print", "--mode", "json", "--no-approve", "--no-extensions",
+			"--no-prompt-templates", "--no-themes", "--session-dir", str(run1 / "session"),
+			"-e", str(args.ext), "--model", "workflow-engine/v1", "--tools", "workflow",
+			"Run the workflow",
+		]
+		proc = subprocess.Popen(argv, cwd=str(args.repo_root), env=env1,
+		                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+		killed = False
+		deadline = time.time() + 60
+		while time.time() < deadline:
+			if journal_entries() >= 1:
+				proc.terminate()
+				killed = True
+				break
+			if proc.poll() is not None:
+				break
+			time.sleep(0.25)
+		try:
+			proc.wait(timeout=15)
+		except subprocess.TimeoutExpired:
+			proc.kill()
+			proc.wait()
+		if not killed:
+			resume_errors.append("run 1 completed (or died) before a child journaled — kill window missed")
+		if journal_entries() < 1:
+			resume_errors.append("no journal entries after run 1")
+		artifacts = list((args.repo_root / "workflow-runs").glob("*/artifact.json"))
+		if artifacts:
+			resume_errors.append("run 1 should not have produced an artifact")
+
+		# Resume: same input, same env — the runDir is kept, journal replays.
+		result = run_once(args.pi, args.ext, args.repo_root, args.out / "resume-run2",
+		                  resume_input, None, env_extra={"WORKFLOW_KEEP_RUNS": "1"})
+		ends = [e for e in result["events"]
+		        if e.get("type") == "tool_execution_end" and e.get("toolName") == "workflow"]
+		if result["returncode"] != 0 or len(ends) != 1 or ends[0].get("isError"):
+			resume_errors.append("resume run did not succeed")
+		else:
+			wf_dir = latest_run_dir(args.repo_root)
+			art = json.loads((wf_dir / "artifact.json").read_text())
+			if not art.get("complete") or art.get("analyzed") != 3:
+				resume_errors.append(f"resumed artifact incomplete: {art.get('summary')}")
+			recs = [json.loads(l) for l in (wf_dir / "usage.jsonl").read_text().splitlines() if l.strip()]
+			# slow-a replayed from journal (no spawn, no usage record);
+			# slow-b + slow-c + platform synthesis spawned fresh.
+			if len(recs) != 3:
+				resume_errors.append(f"usage.jsonl has {len(recs)} records, expected 3 (replayed child must not re-spend)")
+			slow_a_sessions = list((wf_dir / "child-sessions" / "agent-analyze_slow-a").glob("*.jsonl"))
+			if len(slow_a_sessions) != 1:
+				resume_errors.append(f"slow-a has {len(slow_a_sessions)} session files, expected 1 (must not re-spawn)")
+			if journal_entries() != 4:
+				resume_errors.append(f"journal has {journal_entries()} entries, expected 4 (3 children + platform)")
+		status = "PASS" if not resume_errors else "FAIL"
+		print(f"resume durable-kill-replay: {status}")
+		for err in resume_errors:
+			print(f"  - {err}")
+		failures += bool(resume_errors)
 
 	print("RUNG1-CHECK:", "PASS" if failures == 0 else "FAIL")
 	return 0 if failures == 0 else 1

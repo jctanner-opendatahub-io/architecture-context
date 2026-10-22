@@ -108,7 +108,13 @@ export default function (pi) {
 		],
 		streamSimple(model, context) {
 			const stream = createAssistantMessageEventStream();
-			const emit = (out) => {
+			// slow- fixtures: delayed emit (~2.5s) so the check suite can kill
+			// a run mid-fan-out and exercise durable resume offline.
+			const emit = (out, delayMs = 0) => {
+				if (delayMs > 0) {
+					setTimeout(() => emit(out), delayMs);
+					return stream;
+				}
 				const final = assistant([{ type: "text", text: out }], "stop");
 				stream.push({ type: "start", partial: assistant([], "pending") });
 				stream.push({ type: "text_start", contentIndex: 0, partial: assistant([{ type: "text", text: "" }], "pending") });
@@ -193,7 +199,7 @@ export default function (pi) {
 						concerns: [],
 					}));
 				}
-				return emit(fixtureSummary(key));
+				return emit(fixtureSummary(key), key.startsWith("slow-") ? 2500 : 0);
 			}
 			if (clone) {
 				const out = JSON.stringify({

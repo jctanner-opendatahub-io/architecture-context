@@ -140,8 +140,13 @@ All through `WORKFLOW_INPUT`:
 
 `fetch`/`parse` are host-side (P0: `main.py fetch` /
 `main.py static-analysis`); `diagrams` is a non-goal; `collect`/
-`platform` without `generate` needs journal replay (P5) and fails
-loudly.
+`platform` without `generate` fails loudly (results must be in memory).
+
+**Durable resume (P5)**: set `WORKFLOW_KEEP_RUNS=1` — an interrupted
+run's journal (content-addressed, per runDir) then replays completed
+children on re-run, so only uncompleted children re-execute and
+re-spend. Verified with real GLM children: kill after 2 of 3 journaled,
+resume re-spawned only the in-flight child + platform synthesis.
 
 ## Verified (2026-10-21)
 
@@ -156,6 +161,11 @@ loudly.
   published docs are template-shaped and source-accurate.
 - Portability (plan req 9): `org-scan.mjs` and `arch-context.mjs`
   compose the same five primitives.
+- Rung 2 (OpenShell + podman) and rung 3 (fullsend run): exit 0, full
+  event contract, usage folded into metrics.json with oracle
+  cross-check (see scripts/rung2-openshell.sh, scripts/rung3-fullsend.sh).
+- Durable resume: `resume durable-kill-replay` case in check-archctx.py
+  (offline) + the real-children demo above.
 
 ## Findings recorded during implementation
 

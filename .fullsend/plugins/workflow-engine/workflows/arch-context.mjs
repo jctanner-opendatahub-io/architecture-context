@@ -874,7 +874,7 @@ export default async function run(wf, input) {
 	const runPlatform = stages.includes("platform");
 	if ((runCollect || runPlatform) && !runGenerate) {
 		throw new Error(
-			"arch-context: 'collect'/'platform' without 'generate' needs durable journal replay (planned P5); include 'generate' in stages",
+			"arch-context: 'collect'/'platform' without 'generate' needs the validated results in memory; durable journal replay (WORKFLOW_KEEP_RUNS) only resumes interrupted generate runs — include 'generate' in stages",
 		);
 	}
 
