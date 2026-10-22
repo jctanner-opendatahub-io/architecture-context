@@ -27,8 +27,12 @@ RUN npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.3.0
 
 # OpenShell requires a non-root OCI USER ("OCI USER is required because
 # run_as_user is omitted" — the supervisor refuses root sandboxes). The
-# node base ships a uid-1000 `node` user; /workspace must be writable
-# by it (WORKDIR alone creates a root-owned dir).
-RUN mkdir -p /workspace && chown node:node /workspace
+# node base ships a uid-1000 `node` user.
+#
+# WORKDIR is load-bearing at openshell >= 0.1: the podman driver resolves
+# the managed workspace root from the image's OCI WorkingDir
+# (resolve_oci_workspace_root) — /sandbox matches fullsend's
+# SandboxWorkspace constant. The dir must exist and be writable by USER.
+RUN mkdir -p /sandbox && chown node:node /sandbox
 USER node
-WORKDIR /workspace
+WORKDIR /sandbox
