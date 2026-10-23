@@ -11,67 +11,66 @@
 
 ## Purpose
 
-Breadboard integrates a Python CLI and pipeline agent (bug, RFE, and strategy phases) with a resettable local K3s service stack including Jira, GitHub, and GitLab emulators, Markov workflow orchestration, Observatory trace collection, MLflow, Fullsend agent execution (Mint, OpenShell, sandbox runners), Org Pulse, Model Relay, and dashboards, all exposed through Traefik and a host proxy as *.local HTTPS routes.
+Breadboard provides two related execution paths: a Python CLI and pipeline agent that run bug, RFE, and strategy phases (fetching from Jira/GitHub/GitLab, analyzing issues with Claude-based agents, validating outputs against schemas, and launching Kubernetes jobs), and an integrated local K3s service stack in the ai-pipeline namespace running Markov workflows (markovd with Postgres), Jira/GitHub/GitLab emulators, CI runners, Observatory, MLflow, Model Relay, Org Pulse, and the Fullsend agent flow (Actions, OIDC, Mint, OpenShell sandbox runner). Traefik, cert-manager, and a Go reverse proxy expose services as *.local HTTPS hosts, with the Breadboard dashboard as the primary combined UI.
 
 ## Architectural Analysis
 
-Breadboard is a monorepo orchestrating two execution paths: a Python CLI/pipeline agent (main.py, src/cli) running bug, RFE, and strategy phases, and an integrated K3s stack in the ai-pipeline namespace defined by deploy/k8s manifests (21 workloads, 22 Services, 15 ingress routes, 4 RBAC roles, 0 CRDs, 0 gRPC services). The Breadboard dashboard (Flask, src/dashboard/webapp.py) exposes roughly 40 HTTP routes covering ticket browsing across the emulators, job submission via the Kubernetes API, pipeline status, MLflow and Observatory views, and Fullsend onboarding. The Fullsend dashboard is a read-only FastAPI app with a dedicated read-only ClusterRole. Traefik and a Go ingress-proxy (deploy/golang-reverse-proxy) terminate TLS and route *.local hosts; cert-manager supplies internal certificates. Markov workflows run through markovd with PostgreSQL state; Model Relay fronts Vertex/Anthropic inference; Org Pulse adds a MongoDB-backed dashboard. Authentication is largely absent at HTTP surfaces (no auth middleware detected; unauthenticated health probes), relying instead on Kubernetes RBAC and secrets. The reference flow is RFE to quality gate to strategy to review to epics to investigation/codegen, with Fullsend providing a GitHub-first agent path using Actions, OIDC, Fullsend Mint, OpenShell, and sandbox runners.
+Breadboard is a polyglot integration repo (Python 3.13 pipeline/CLI plus a Go reverse proxy) deploying roughly 29 Kubernetes workloads. The Python side (main.py, src/cli, src/dashboard) orchestrates bug/RFE/strategy phases, submits Kubernetes jobs, and serves a Flask-based ticket browser and pipeline dashboard with ~40 HTTP routes including SSE event streams, job submission, evals, and file browsing. A read-only FastAPI Fullsend dashboard (/api/state) observes GitHub Actions, jobs, pods, and events. Deployed services form a resettable local platform: Jira, GitHub, and GitLab emulators (backed by separate backend Services), markovd workflow engine with Postgres, Observatory trace/quality collection, MLflow, Model Relay (Vertex/Anthropic gateway with admin port), Org Pulse (backend + nginx frontend + MongoDB), Fullsend Mint (OIDC-to-GitHub credential exchange), and CI runners. Traefik and an ingress-proxy route TLS hosts; *.local names resolve through the Go reverse proxy. Kubernetes RBAC roles (pipeline-orchestrator, traefik, gitlab-runner, fullsend-dashboard-readonly, openshell-gateway-sandbox) bound to service accounts control in-cluster access; secrets supply GCP credentials, emulator tokens, and TLS material. Application-layer HTTP authentication is largely absent (unauthenticated healthz probes, no auth middleware in the Fullsend dashboard), relying on the local-only network boundary. No CRDs or gRPC services were verified.
 
 ## Architecture Components
 
 | Component | Type | Purpose |
 |----|----|-------|
-| pipeline-cli | Python CLI | Phase orchestration (bug, RFE, strategy) dispatched from main.py via src/cli |
-| breadboard-dashboard | Flask web application | Ticket browser, pipeline job views, artifact and service views with SSE events |
-| fullsend-dashboard | FastAPI web application | Read-only operational view of Actions, jobs, pods, and events |
-| markovd | Kubernetes service (Go/Python) | Declarative workflow run state, approvals, and job orchestration with PostgreSQL |
-| observatory | Kubernetes service | Trace and artifact collection, claim extraction, verification, quality reporting |
-| mlflow | Kubernetes service (third-party image) | Agent traces and experiment data |
-| jira-emulator | Kubernetes service | Jira-compatible issues, UI, snapshots, and MCP-compatible operations |
-| github-emulator | Kubernetes service | GitHub REST/GraphQL, Git transport, web UI, Actions, and admin APIs |
-| gitlab-emulator | Kubernetes service | GitLab API, Git transport, issues, merge requests, CI APIs |
-| gitlab-runner | Kubernetes-executor runner | Runs emulator CI jobs in Kubernetes pods |
-| github-actions-runners | Runner deployments | Run emulator Actions workflows including Fullsend workflows |
-| fullsend-mint-dev | Kubernetes service | Exchanges development OIDC assertions for scoped GitHub credentials |
-| fullsend-runner-openshell | Agent execution path | Runs role-specific agent work inside a sandbox boundary |
-| org-pulse | Frontend/backend/MongoDB stack | AI Engineering dashboard pointed at the emulators |
-| model-relay | Kubernetes service (Go) | Vertex/Anthropic Messages gateway with usage telemetry and admin console |
-| ingress-proxy | Go reverse proxy | Host-facing *.local TLS proxy for the stack |
-| traefik | Ingress controller | Internal TLS routing and ingress for ai-pipeline services |
-| claude-agent | Kubernetes deployment | Agent workload consuming pipeline secrets and GCP credentials |
+| pipeline-dashboard (Breadboard dashboard) | Python Service (Flask) | Combined ticket browser, pipeline job view, artifact and service-link UI on port 5000 |
+| fullsend-dashboard | FastAPI Service | Read-only view of Fullsend Actions, jobs, pods, and events |
+| fullsend-mint-dev | Deployment | Exchanges development OIDC assertions for scoped GitHub credentials |
+| github-emulator | Deployment | GitHub REST/GraphQL, Git transport, web UI, Actions, admin APIs |
+| gitlab-emulator | Deployment | GitLab API, Git transport, issues, merge requests, CI APIs |
+| jira-emulator | Deployment | Jira-compatible issues, UI, snapshots, and MCP operations |
+| markovd | Deployment (markovd + nginx) | Declarative workflow engine with run state, approvals, job orchestration |
+| markovd-postgres | Deployment (postgres:16) | Persistence for markovd workflow state |
+| observatory | Deployment | Trace and artifact collection, claim extraction, verification, quality reporting |
+| mlflow | Deployment | Agent traces and experiment data tracking |
+| model-relay | Deployment | Vertex/Anthropic Messages gateway with usage telemetry and admin console |
+| org-pulse (backend/frontend/mongodb) | Deployment set | AI Engineering dashboard backed by MongoDB, pointed at emulators |
+| github-actions-runner / site-runner | Deployment | Runners for emulator Actions workflows including Fullsend workflows |
+| gitlab-runner | Deployment (gitlab-runner v19.1.1) | Kubernetes-executor runner for emulator CI jobs |
+| claude-agent | Deployment | Agent host requiring GCP credentials, sleeping as a workspace |
+| ingress-proxy (reverse-proxy) | Go executable / Deployment | Host-facing *.local TLS routing proxy with /healthz |
+| traefik | Deployment (traefik v2.11) | Ingress controller providing internal TLS and service routing |
+| pipeline-agent | Container image | Pipeline job image running phase commands in Kubernetes jobs |
 
-## Sub-Component: breadboard-dashboard
+## Sub-Component: src/cli
+
+**Upstream Dependencies:** Jira API (or jira-emulator), GitHub/GitLab APIs (or emulators), Vertex/Anthropic via model-relay
+
+**Configuration:**
+
+- var/pipeline-skills.yaml
+- var/skills-registry.yaml
+- --model, --issue, --limit, --force options
+
+## Sub-Component: src/dashboard
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| / | GET |
-| /healthz | GET |
-| /admin | GET |
 | /api/tickets | GET |
-| /api/issues | GET |
-| /api/jobs | GET |
 | /api/jobs/submit | POST |
-| /api/jobs/<job_name> | GET, DELETE |
-| /api/jobs/<job_name>/logs | GET |
-| /api/jobs/<job_name>/stop | POST |
-| /api/jobs/all | DELETE |
-| /api/fullsend/onboard | POST |
 | /api/events/push | POST |
+| /api/events | GET |
+| /api/fullsend/onboard | POST |
 | /api/mlflow/runs | GET |
-| /api/workspace/reset | POST |
 
-**Upstream Dependencies:** jira-emulator, github-emulator, gitlab-emulator, Kubernetes API, mlflow, observatory
+**Upstream Dependencies:** jira-emulator, github-emulator, gitlab-emulator, Kubernetes API (python client), MLflow
 
 **Configuration:**
 
-- pipeline-secrets
-- github-token
-- gcp-credentials
-- github-actions-runner-credentials
+- port via --port
+- SSE event stream
 
-## Sub-Component: fullsend-dashboard
+## Sub-Component: src/fullsend-dashboard
 
 **API Routes:**
 
@@ -85,22 +84,32 @@ Breadboard is a monorepo orchestrating two execution paths: a Python CLI/pipelin
 
 **Configuration:**
 
-- github-token
+- read-only service account fullsend-dashboard-readonly
 
-## Sub-Component: ingress-proxy
+## Sub-Component: deploy/golang-reverse-proxy
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| / | GET |
 | /healthz | GET |
+| / | GET |
 
-**Upstream Dependencies:** traefik, backend services
+**Upstream Dependencies:** traefik, backend *.local services
 
 **Configuration:**
 
-- ingress-proxy-tls
+- TLS via ingress-proxy-tls secret
+- Go crypto/tls
+
+## Sub-Component: src/dashboard/fullsend_onboarding
+
+**Upstream Dependencies:** Kubernetes API
+
+**Configuration:**
+
+- fullsend-onboarding-app secret
+- github-actions-runner-credentials secret
 
 ## APIs Exposed
 
@@ -108,141 +117,157 @@ Breadboard is a monorepo orchestrating two execution paths: a Python CLI/pipelin
 
 | Path | Methods | Description |
 |----|---------|-------------|
-| / | GET | Dashboard root ticket browser (breadboard) and Fullsend dashboard root |
-| /healthz | GET | Health endpoints across dashboard, fullsend-dashboard, ingress-proxy, observatory, org-pulse |
-| /api/tickets | GET | Combined issues, pull requests, and merge requests from emulators |
-| /api/jobs/submit | POST | Submit Kubernetes pipeline jobs from the dashboard |
-| /api/jobs/<job_name> | GET, DELETE | Inspect or delete a pipeline job |
-| /api/jobs/<job_name>/stop | POST | Stop a running pipeline job |
-| /api/fullsend/onboard | POST | Trigger Fullsend onboarding flow via Kubernetes API |
-| /api/events/push | POST | Push pipeline activity events for SSE streaming |
-| /api/evals/submit | POST | Submit evaluations |
-| /api/files/list | GET | List artifact files |
+| / | GET | Dashboard root (ticket browser / fullsend-dashboard index) |
+| /healthz | GET | Liveness health endpoints across services |
+| /api/tickets | GET | Combined Jira/GitHub/GitLab ticket listing |
+| /api/issues | GET | Fetched issue data |
+| /api/rfes | GET | RFE phase artifacts |
+| /api/strategies | GET | Strategy phase artifacts |
+| /api/jobs | GET | List Kubernetes pipeline jobs |
+| /api/jobs/submit | POST | Submit a Kubernetes pipeline job |
+| /api/jobs/<job_name>/stop | POST | Stop a running job |
+| /api/jobs/<job_name> | DELETE | Delete a job |
+| /api/jobs/all | DELETE | Delete all jobs |
+| /api/jobs/<job_name>/logs | GET | Fetch job logs |
+| /api/events/push | POST | Push pipeline activity events |
+| /api/events | GET | Server-Sent Events activity stream |
+| /api/fullsend/onboard | POST | Trigger Fullsend repository onboarding |
+| /api/files/list | GET | List workspace artifact files |
 | /api/files/read | GET | Read artifact file contents |
+| /api/files/raw | GET | Raw artifact file contents |
+| /api/evals | GET | List evaluations |
+| /api/evals/submit | POST | Submit evaluations |
 | /api/mlflow/runs | GET | List MLflow runs |
 | /api/mlflow/traces | GET | List MLflow traces |
+| /api/mlflow/clear | POST | Clear MLflow data |
+| /api/mlflow/hard-clear | POST | Hard-clear MLflow data |
+| /api/observatory/clear | POST | Clear Observatory data |
+| /api/workspace/reset | POST | Reset workspace data |
+| /api/volumes/clear | POST | Clear volumes |
 | /api/pipeline/status | GET | Pipeline status |
-| /api/state | GET | Fullsend dashboard state snapshot |
+| /api/pipeline/queue | GET | Pipeline queue state |
+| /api/state | GET | Fullsend dashboard aggregate state |
+| /admin | GET | Dashboard admin view |
 
 ## Dependencies
 
 **External:**
 
-- **Flask/FastAPI** — Dashboard web frameworks
-- **kubernetes Python client** — Job orchestration and resource operations
-- **mlflow** — Trace and experiment tracking
-- **PostgreSQL** — markovd workflow state store
-- **MongoDB** — Org Pulse data store
-- **Traefik** — Ingress controller and TLS routing
-- **cert-manager** — Internal certificate management
-- **Go net/http and crypto/tls** — Ingress proxy implementation and TLS
-- **pyjwt** — JWT/OAuth authentication library
-- **Podman/Docker** — Image builds and patch validation
-- **Anthropic Vertex / Claude** — Agent model inference via Model Relay
+- **kubernetes (python client)** — Job submission, pod/service queries, RBAC operations from the dashboard and onboarding code
+- **pyjwt** — JWT/OAuth token handling for authentication flows
+- **Anthropic Vertex / Claude** — LLM-backed agent execution for bug, RFE, and strategy phases via model-relay
+- **PostgreSQL (markovd-postgres)** — Persistence for Markov workflow state
+- **MongoDB (org-pulse)** — Persistence for Org Pulse dashboard data
+- **Traefik v2.11** — Ingress controller and TLS termination
+- **GitLab Runner v19.1.1** — Kubernetes-executor CI runner for the GitLab emulator
+- **MLflow v3.11.1** — Agent trace and experiment tracking server
 
-**Internal Platform:** jira-emulator, github-emulator, gitlab-emulator, markovd, observatory, fullsend-mint-dev, model-relay, org-pulse, openshell, github-actions-runner, gitlab-runner
+**Internal Platform:** ai-pipeline Kubernetes namespace, traefik ingress, cert-manager, jira-emulator, github-emulator, gitlab-emulator, model-relay
 
 ## Deployment
 
-Deployed as a resettable local K3s stack in the ai-pipeline namespace via deploy/k8s manifests and deploy/scripts/deploy-all.sh, with Makefile host targets for building and rebuilding component images; the Python CLI and dashboard can also run directly on the host with uv.
+Deployed as a resettable multi-service stack on local K3s in the ai-pipeline namespace via deploy/k8s manifests and deploy/scripts/deploy-all.sh, fronted by Traefik and a Go reverse proxy exposing *.local HTTPS hosts. Individual components (dashboard, fullsend-dashboard, org-pulse, relay, emulators, agent, markov) have dedicated Makefile host-rebuild targets.
 
 **Variants:**
 
-- **host**: Local development running python main.py dashboard and pipeline CLI directly with uv
-- **k3s-integrated**: Full stack on local K3s with Traefik, host proxy, emulators, markovd, observatory, Fullsend, Org Pulse, and Model Relay
+- **host-deploy-all**: Complete K3s deployment of the integrated stack via make host-deploy-all
+- **local python development**: python main.py dashboard --port 5000 for dashboard-only development without images
+- **pipeline jobs**: Pipeline agent runs as Kubernetes Jobs from the pipeline-agent image
+- **fullsend sandbox path**: GitHub-first flow using Actions, OIDC, Mint, OpenShell, and a sandbox runner
 
 ## Network Architecture
 
 **Services:**
 
-- **pipeline-dashboard**: ClusterIP service on port 5000 for the Breadboard dashboard
-- **fullsend-dashboard**: ClusterIP service on port 5000 for the read-only Fullsend dashboard
-- **markovd**: ClusterIP service on port 8080 (target 8081) for workflow orchestration API
-- **observatory**: ClusterIP service on port 8000 for trace and artifact collection
-- **mlflow**: ClusterIP service on port 5000 for MLflow
-- **github-emulator**: ClusterIP services on 80/443/8000 for GitHub emulation
-- **gitlab-emulator**: ClusterIP services on 80/443/8000 for GitLab emulation
-- **jira-emulator**: ClusterIP services on 80/443/8080/8081 including MCP port
-- **model-relay**: ClusterIP services on 8080 inference, 8081 admin, 8082 token
-- **org-pulse-backend**: ClusterIP service on port 3001 backed by MongoDB on 27017
-- **fullsend-mint-dev**: ClusterIP service on port 8080 for OIDC-to-GitHub credential exchange
-- **traefik**: LoadBalancer service on 80/443 for cluster ingress
-- **ingress-proxy**: LoadBalancer Go proxy on 80/443 exposing *.local hosts
+- **pipeline-dashboard**: Breadboard dashboard on port 5000
+- **fullsend-dashboard**: Read-only Fullsend operations dashboard on port 5000
+- **jira-emulator / jira-emulator-backend**: Jira emulator on ports 80, 443, 8080, 8081
+- **github-emulator / github-emulator-backend**: GitHub emulator on ports 80, 443, 8000
+- **gitlab-emulator / gitlab-emulator-backend**: GitLab emulator on ports 80, 443, 8000
+- **markovd**: Workflow engine service on port 8080 (target 8081) with nginx sidecar
+- **markovd-postgres**: Postgres on port 5432
+- **observatory**: Trace and quality service on port 8000
+- **mlflow**: MLflow server on port 5000
+- **model-relay / model-relay-admin**: Relay on 8080/8082, admin on 8081
+- **org-pulse-backend / org-pulse-frontend / org-pulse-mongodb**: Org Pulse services on 3001, 8080, 27017
+- **fullsend-mint-dev**: OIDC credential exchange on port 8080
+- **ingress-proxy**: Host-facing reverse proxy on ports 80 and 443
+- **traefik**: Ingress controller on ports 80 and 443
 
 **Ingress:**
 
-- **dashboard.local**: HTTPS route to pipeline-dashboard via ingress-proxy
-- **fullsend.local**: HTTPS route to fullsend-dashboard
-- **github.local**: HTTPS route to github-emulator
-- **gitlab.local**: HTTPS route to gitlab-emulator
-- **jira.local**: HTTPS route to jira-emulator
-- **markovd.local**: HTTPS route to markovd
-- **observatory.local**: HTTPS route to observatory
-- **orgpulse.local**: HTTPS route to org-pulse-frontend
-- **relay.local**: HTTPS route to model-relay admin console
+- ***.local host routes**: Go ingress-proxy plus Traefik routes for dashboard.local, github.local, gitlab.local, jira.local, markovd.local, observatory.local, orgpulse.local, relay.local, fullsend.local
+- **cluster-internal TLS ingresses**: HTTPS Ingresses per service (dashboard, emulators, markovd, observatory, org-pulse, model-relay) on *.ai-pipeline.svc.cluster.local hosts
 
 **Egress:**
 
-- **Vertex/Anthropic API**: Model inference via Model Relay and claude-agent using GCP credentials
-- **production Jira**: Optional Jira API access using JIRA_SERVER/JIRA_USER/JIRA_TOKEN when not using the emulator
+- **gitlab.local (HTTPS/TLS 443)**: Runner registration HTTP client calls from fullsend entrypoint smoke tests
+- **Vertex / Anthropic API**: Model Relay gateway upstream for agent inference using GCP credentials
+- **production Jira (optional)**: JIRA_SERVER/JIRA_USER/JIRA_TOKEN when not using the emulator
 
 ## Security
 
-- **Authentication:** Largely absent at HTTP surfaces; no auth middleware detected on dashboards and health probes are unauthenticated. Fullsend uses OIDC assertions exchanged by Fullsend Mint for scoped GitHub credentials; pyjwt is a declared dependency for JWT/OAuth.
-- **Authorization:** Kubernetes RBAC: pipeline-orchestrator Role bound to pipeline-dashboard, markovd, and pipeline-agent service accounts; fullsend-dashboard-readonly ClusterRole for read-only pod/job/event access; gitlab-runner Role for CI pod management; traefik ClusterRole for ingress resources.
+- **Authentication:** No application-layer auth middleware detected on the dashboards; healthz probe endpoints are unauthenticated. Security relies on the local network boundary, TLS via Traefik/cert-manager and the Go proxy (crypto/tls), and Fullsend Mint exchanging development OIDC assertions for scoped GitHub credentials. pyjwt is available for JWT/OAuth flows.
+- **Authorization:** Kubernetes RBAC: roles for traefik (ingress), pipeline-orchestrator (7 rules for job orchestration), gitlab-runner, fullsend-dashboard-readonly, and openshell-gateway-sandbox, each bound to service accounts. Fullsend Mint issues scoped GitHub credentials per role.
 - **FIPS Compliance:** not applicable
 
 **Secrets:**
 
-- **pipeline-secrets** — Shared pipeline credentials used by claude-agent, markovd, observatory, pipeline-dashboard, and runners
-- **gcp-credentials** — Google Cloud credentials for Vertex-backed agents
-- **github-token** — GitHub emulator token used by dashboards and emulator
+- **gcp-credentials** — Google Cloud credentials used by claude-agent, observatory, pipeline-dashboard, and runners for Vertex access
+- **github-token** — GitHub API token used by github-emulator, pipeline-dashboard, and fullsend-dashboard
 - **github-actions-runner-credentials** — Runner registration credentials for Actions runners
-- **model-relay-admin** — Admin credentials for Model Relay
-- **org-pulse-mongodb** — MongoDB credentials for Org Pulse
-- **observatory-secrets** — Observatory service credentials
-- **fullsend-onboarding-app** — Fullsend onboarding app secret and token
-- **runner tokens (openshell-m2, podman-m1)** — GitLab runner registration tokens for demo runners
+- **gitlab-runner-ca** — CA certificate for gitlab-runner instances
+- **fullsend-mint-role-apps** — Role/app configuration for Fullsend Mint OIDC exchange
+- **fullsend-onboarding-app** — App credentials for Fullsend onboarding from the dashboard
+- **ingress-proxy-tls / github-emulator-tls / gitlab-emulator-tls / fullsend-mint-dev-tls** — TLS certificate secrets for internal HTTPS routes
 
 ## Multi-Tenancy
 
-**Model:** Single-namespace (ai-pipeline) local development stack; no tenant model.
+**Model:** Single local development platform in one namespace (ai-pipeline); no tenant model. Fullsend distinguishes role-specific agent identities via scoped Mint credentials.
 
 **Isolation Mechanisms:**
 
-- Kubernetes namespaces (ai-pipeline, traefik, gitlab-runner, openshell-system)
-- RBAC roles per service account
-- Sandbox boundary for OpenShell agent work
+- Kubernetes namespaces and service accounts
+- RBAC roles per workload (readonly for fullsend-dashboard, orchestrator for pipeline)
+- OpenShell sandbox boundary for agent work
+- Scoped GitHub credentials minted per role via OIDC
 
-**Shared Services:** pipeline-secrets, traefik ingress, cert-manager certificates, model-relay inference gateway
+**Shared Services:** traefik ingress and internal TLS, model-relay inference gateway, MLflow and Observatory telemetry, Jira/GitHub/GitLab emulators
 
 ## Data Flows
 
-- **ticket-aggregation**: Dashboard fetches all pages from Jira, GitHub, and GitLab emulators, combines issues, PRs, and MRs before filtering
-- **pipeline-job-submission**: Dashboard submits and monitors Kubernetes jobs via the Python Kubernetes client
-- **pipeline-events**: Pipeline activity pushed to /api/events/push and streamed to the dashboard via Server-Sent Events
-- **markov-workflow**: markovd reads workflow definitions, tracks run state and approvals in PostgreSQL, and orchestrates jobs
-- **fullsend-flow**: GitHub Actions in the emulator trigger OIDC assertion exchange at Fullsend Mint, issuing scoped credentials for sandbox runner agent work
-- **model-inference**: Agents call Model Relay, which fronts Vertex/Anthropic with usage telemetry and managed upstream accounts
-- **observability**: Observatory collects traces and artifacts, extracts and verifies claims; MLflow stores runs and traces
+- **ticket aggregation**: Dashboard queries Jira, GitHub, and GitLab emulators, fetches all pages, combines issues/PRs/MRs, then filters (hiding closed/merged by default)
+- **pipeline execution**: CLI phases fetch Jira issues into issues/, run Claude agents in workspace/, validate YAML artifacts against schemas, retry with validation feedback, and emit SSE events to the dashboard
+- **job submission**: Dashboard submits Kubernetes Jobs via the python kubernetes client; job status and logs flow back through /api/jobs endpoints
+- **fullsend flow**: GitHub Actions in triage-target repo uses OIDC to Mint, obtains scoped GitHub credentials, runs role-specific agent work in an OpenShell sandbox runner, observed by the fullsend-dashboard
+- **markov workflow orchestration**: markovd executes declarative workflows from var/markov-workflows, persisting run state in Postgres and dispatching jobs
+- **telemetry collection**: Observatory collects traces and artifacts, extracts and verifies claims, reports quality; MLflow stores agent traces and experiment data
+- **model inference**: Agents call Model Relay (relay-api.local) which forwards to Vertex/Anthropic with managed upstream accounts and usage telemetry
 
 ## Integration Points
 
-- **Jira emulator / production Jira**: Jira-compatible API plus MCP-compatible operations on port 8081; production Jira via ATLASSIAN_MCP_URL and JIRA_TOKEN
-- **GitHub emulator**: REST/GraphQL, Git transport, Actions, admin APIs, and /ui/ web links
-- **GitLab emulator and runner**: GitLab API and CI jobs executed by a Kubernetes-executor GitLab runner
-- **Kubernetes API**: Dashboard and orchestrators manage jobs, pods, configmaps, and secrets via Python client
-- **Model Relay**: Vertex/Anthropic Messages gateway at relay-api.local with usage telemetry
-- **Fullsend Mint**: OIDC assertion to scoped GitHub credential exchange for agent execution
-- **MLflow**: Experiment and trace storage queried by the dashboard
-- **Markov workflows**: Declarative workflow definitions under var/markov-workflows consumed by markovd
+- **Jira API / jira-emulator**: Issue fetching and MCP-compatible operations (ATLASSIAN_MCP_URL, JIRA_SERVER)
+- **GitHub emulator**: REST/GraphQL, Git transport, Actions workflows; UI links use the /ui/ prefix
+- **GitLab emulator**: GitLab API, Git transport, CI APIs consumed by the Kubernetes-executor runner
+- **Kubernetes API**: Job submission, pod/event queries, and onboarding via python client library
+- **Model Relay**: Vertex/Anthropic Messages gateway with usage telemetry and managed upstream accounts
+- **Fullsend Mint**: OIDC assertion to scoped GitHub credential exchange
+- **MLflow**: Trace and experiment tracking queried by the dashboard
 
 ## Concerns
 
-- No authentication middleware on dashboard HTTP surfaces; admin and destructive endpoints (/admin, /api/jobs/all, workspace reset) appear unauthenticated
-- Broad gitlab-runner RBAC including secret access within its namespace
-- Traefik deployed with --api.insecure=true
-- Many services run without dedicated service accounts (empty service account names)
-- No high-availability or supply-chain evidence found by the analyzer; single-replica local stack
-- Secrets such as observatory-secrets and org-pulse credentials provisioned directly in manifests
+- No application-layer authentication on dashboard HTTP APIs; destructive endpoints (job deletion, workspace reset, volume clear) rely solely on the local network boundary
+- Unauthenticated healthz endpoints across services (acceptable for probes but widens surface if exposed)
+- Credentials (GCP, GitHub tokens) mounted into multiple workloads from secrets; .env handling required to avoid committing credentials
+- Test/manifest duplication (test-clusterip-services, test-simple-ingress) alongside production manifests risks drift
+- No verified high-availability or supply-chain controls; stack is designed as a resettable local environment, not production
+- CRDs and webhooks not verified by analyzer coverage, so operator-style extensions may exist unobserved
+
+## Recent Changes
+
+- d3a8a8f fix: accept explicit scope subjects in reviewer assessment gate
+- 0b89021 bench: add one mixed-state Opus 5.5 comparison run
+- 9232633 Validate hardened S1 with a full mixed-state ten-ticket batch
+- f980238 Pin the completion-hook repair for one ten-ticket Opus retest
+- 2963585 Add a fresh distinct ten-RFE Opus validation batch
 

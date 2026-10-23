@@ -11,82 +11,43 @@
 
 ## Purpose
 
-The service emulates Jira REST API v2 and v3 endpoints (issues, JQL search, projects, users, workflows, attachments, links, webhooks, tokens, admin/snapshots) over an async FastAPI application backed by SQLite via SQLAlchemy/aiosqlite. It also serves a Jinja2 web UI for browsing and administering data, and ships a FastMCP server exposing Jira operations to Claude. It is designed for offline development, testing, CI/CD integration, and AI-driven workflows without a real Jira instance.
+A Python/FastAPI service that emulates the Jira REST API (v2 and v3) backed by SQLite, providing issues, JQL search, workflows, projects, users, attachments, webhooks, auth, and admin/snapshot operations. It ships a Jinja2 web UI, a FastMCP server for Claude integration, and containerized deployment via Podman/Docker with supervisord, enabling offline development and testing of Jira-integrated tooling.
 
 ## Architectural Analysis
 
-The emulator is a single-process Python/FastAPI service using a layered architecture: routers handle HTTP concerns across three API surfaces (REST v2, REST v3 via middleware rewriting, and web UI routes), a service layer encapsulates business logic (issues, search, projects, auth, workflows, import/export, snapshots, webhooks), SQLAlchemy 2.0 async models persist to SQLite, and a Lark-based JQL engine parses and executes searches. A separate FastMCP server process exposes Jira operations for Claude integration. Container deployment uses supervisord to run both the API (port 8080) and MCP (8081) with a persistent /data volume for the SQLite database and attachments. API v3 requests are rewritten internally to v2 endpoints, with response-format branching for pagination and ADF. Authentication is configurable (permissive/strict/none) via auth middleware supporting Basic auth, Bearer/PAT tokens, and cookies. No CRDs, gRPC services, ingress, or Kubernetes workloads are defined; the single Service-like entrypoint is the source-level server itself.
+jira-emulator is an async-first Python service built on FastAPI/Uvicorn with a layered design: routers handle HTTP concerns, services encapsulate business logic, SQLAlchemy 2.0 models (~21 tables) define the SQLite schema via aiosqlite, and Pydantic schemas define API contracts. It exposes three first-class surfaces: Jira REST API v2 (offset pagination), v3 (rewritten to v2 endpoints via middleware with cursor pagination and ADF responses), and an MCP server (FastMCP, ~14 tools) on port 8081. A JQL engine built on a Lark context-free grammar powers search across both GET and POST search endpoints. A Jinja2 web UI serves Jira-compatible page URLs (/browse/KEY, /project/KEY) plus admin pages for users, projects, snapshots, import, and webhooks. Auth middleware supports permissive/strict/none modes with Basic, Bearer/PAT, and cookie session mechanisms. Deployment is via container images running supervisord to manage both API (8080) and MCP servers, with persistent /data volume for the SQLite database, attachments, and snapshots; a health probe hits /rest/api/2/priority.
 
 ## Architecture Components
 
 | Component | Type | Purpose |
 |----|----|-------|
-| FastAPI application (app.py) | service | App factory, lifespan management, v2/v3 request rewriting middleware, exception handlers |
-| Routers layer | interface | HTTP route handlers for issues, search, projects, users, auth, attachments, links, webhooks, admin, tokens, metadata, fields |
-| Services layer | logic | Business logic: issue, search, project, user, auth, workflow, import, snapshot, webhook, history, seed services |
-| Models layer | data | SQLAlchemy async ORM models (~21 tables) persisted in SQLite |
-| JQL engine | logic | Lark-based JQL parser, transformer, and search functions |
-| Auth middleware | security | Configurable authentication (permissive/strict/none) with Basic, Bearer/PAT, cookie support |
-| Web UI | interface | Jinja2 + Pico CSS browser interface for browsing issues, projects, and administration |
-| MCP server | service | FastMCP server exposing Jira operations as tools for Claude integration on port 8081 |
-| ADF serializer | logic | Atlassian Document Format serialization for v3 API responses |
+| FastAPI application | service | Core ASGI app factory with lifespan, exception handlers, and v3-to-v2 request rewriting middleware |
+| REST API routers | module | Issue, search, project, auth, attachment, webhook, user, token, and admin route handlers for v2/v3 surfaces |
+| Service layer | module | Business logic for issues, search, import, auth, workflows, and webhooks |
+| SQLAlchemy models | module | Async ORM models (~21 tables) persisted to SQLite via aiosqlite |
+| JQL engine | module | Lark grammar-based JQL parser, transformer, and functions for issue search |
+| Web UI | module | Jinja2 templates and routes providing browser-based issue/project/admin interfaces |
+| MCP server | service | FastMCP server (port 8081) exposing ~14 Jira tools for Claude integration |
+| Admin/snapshot subsystem | module | Database backup, restore, reset, and import operations via /api/admin endpoints |
 
-## Sub-Component: routers/issues
-
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /rest/api/{version}/issue | POST |
-| /rest/api/{version}/issue/{key} | GET, PUT, DELETE |
-| /rest/api/{version}/issue/{key}/comment | GET, POST |
-
-## Sub-Component: routers/search
+## Sub-Component: routers
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /rest/api/{version}/search | GET, POST |
-| /rest/api/{version}/search/jql | GET, POST |
+| /rest/api/2/issue | POST |
+| /rest/api/2/issue/{issueIdOrKey} | GET, PUT, DELETE |
+| /rest/api/2/search | GET, POST |
+| /rest/api/2/search/jql | GET, POST |
+| /rest/api/2/project | GET |
+| /rest/api/2/myself | GET |
+| /rest/api/2/webhook | GET, POST, PUT, DELETE |
 
-## Sub-Component: routers/projects
+**Configuration:**
 
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /rest/api/{version}/project | GET, POST |
-| /rest/api/{version}/project/{key} | GET, PUT, DELETE |
-
-## Sub-Component: routers/auth
-
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /rest/api/{version}/myself | GET |
-| /rest/api/{version}/auth/1/session | POST, DELETE |
-
-## Sub-Component: routers/admin
-
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /api/admin/import | POST |
-| /api/admin/snapshots | GET, POST |
-| /api/admin/snapshots/{name}/restore | POST |
-| /api/admin/reset | POST |
-
-## Sub-Component: routers/attachments
-
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /rest/api/{version}/issue/{key}/attachments | POST |
-| /rest/api/{version}/attachment/{id} | GET, DELETE |
+- AUTH_MODE
+- SEED_DATA
 
 ## Sub-Component: web UI
 
@@ -95,11 +56,45 @@ The emulator is a single-process Python/FastAPI service using a layered architec
 | Path | Methods |
 |----|--------|
 | / | GET |
-| /issues | GET |
 | /browse/{key} | GET |
-| /admin/backup | POST |
+| /issue/{key} | GET |
+| /issue/{key}/edit | POST |
+| /admin/users | POST |
+| /admin/snapshots | POST |
+| /admin/import | GET, POST |
 
-## Sub-Component: mcp_servers/atlassian_jira
+## Sub-Component: admin API
+
+**API Routes:**
+
+| Path | Methods |
+|----|--------|
+| /api/admin/import | POST |
+| /api/admin/projects | POST |
+| /api/admin/reset | POST |
+| /api/admin/snapshots | GET, POST |
+| /api/admin/snapshots/{name}/restore | POST |
+
+## Sub-Component: MCP server
+
+**Upstream Dependencies:** jira-emulator REST API
+
+**Configuration:**
+
+- JIRA_TOKEN
+
+## Sub-Component: auth
+
+**API Routes:**
+
+| Path | Methods |
+|----|--------|
+| /rest/auth/1/session | GET, POST, DELETE |
+| /rest/pat/latest/tokens | GET, POST |
+
+**Configuration:**
+
+- AUTH_MODE
 
 ## APIs Exposed
 
@@ -107,84 +102,92 @@ The emulator is a single-process Python/FastAPI service using a layered architec
 
 | Path | Methods | Description |
 |----|---------|-------------|
-| /rest/api/2/* | GET, POST, PUT, DELETE | Jira REST API v2 emulation: issues, search, projects, users, fields, links, attachments, webhooks |
-| /rest/api/3/* | GET, POST, PUT, DELETE | Jira REST API v3 emulation with cursor pagination and ADF, rewritten internally to v2 handlers |
-| /api/admin/* | GET, POST, DELETE | Admin endpoints: import, reset, projects, snapshots, database backup/restore |
-| / | GET | Web UI dashboard (Jinja2) for browsing issues, projects, and administration |
-| /browse/{key} | GET | Web UI issue browser view |
-| /issue/create | POST | Web UI issue creation form handler |
+| /rest/api/2/* and /rest/api/3/* | GET, POST, PUT, DELETE | Jira REST API v2 and v3: issues, comments, transitions, watchers, properties, links, remote links, search (JQL), projects, components, versions, users, attachments, webhooks, fields, metadata |
+| /rest/auth/1/session | GET, POST, DELETE | Cookie-based session authentication |
+| /rest/pat/latest/tokens | GET, POST, DELETE | Personal access token management |
+| /api/admin/* | GET, POST, DELETE | Admin operations: import, reset, projects, snapshots |
+| / and /issue/* /project/* /browse/* /admin/* | GET, POST | Jinja2 web UI pages |
 
 ## Dependencies
 
 **External:**
 
-- **FastAPI** — Async web framework for REST API and web UI
-- **SQLAlchemy + aiosqlite** — Async ORM over SQLite database
-- **Pydantic** — Request/response validation and settings
-- **Lark** — JQL parsing via context-free grammar
-- **Jinja2** — Web UI templating
-- **bcrypt** — Password hashing for authentication
-- **FastMCP** — Model Context Protocol server for Claude integration
-- **Uvicorn** — ASGI server
-- **supervisord** — Container process manager for API and MCP servers
+- **fastapi** — Async web framework
+- **uvicorn** — ASGI server
+- **sqlalchemy** — Async ORM over aiosqlite/SQLite
+- **pydantic** — Request/response validation and settings
+- **lark** — JQL context-free grammar parser
+- **jinja2** — Web UI templating
+- **bcrypt** — Password hashing
+- **fastmcp/mcp** — Model Context Protocol server for Claude integration
+- **httpx** — Async HTTP client (MCP and integrations)
 
 ## Deployment
 
-Deployed as a Python container (podman/docker) running supervisord to manage the FastAPI app on port 8080 and the MCP server on port 8081, with a persistent /data volume for the SQLite database, snapshots, and attachments. Can also run locally via uv/Makefile.
+Runs as a single Python service via uvicorn (port 8080) locally, or as a container (Podman/Docker) where supervisord manages the API and MCP servers; SQLite data persists in a /data volume. A Dockerfile.k3s variant targets k3s deployment. Container health is probed via /rest/api/2/priority.
 
 **Variants:**
 
-- **Container (podman/docker)**: Image built from Dockerfile; supervisord runs API (8080) and MCP (8081); /data volume persists SQLite DB and attachments
-- **Local development**: make serve / serve-mcp / serve-all run uvicorn with auto-reload from source via uv
-- **k3s build**: Dockerfile.k3s variant exists for k3s-based deployments
+- **local dev**: make serve / serve-mcp / serve-all running uvicorn with auto-reload and file-based SQLite
+- **container**: Podman/Docker image running supervisord with API (8080) and MCP (8081), persistent /data volume for DB, attachments, snapshots
+- **k3s**: Dockerfile.k3s and supervisord.k3s.conf variant targeting k3s clusters
 
 ## Network Architecture
 
 **Services:**
 
-- **jira-emulator**: Single source-level service exposing the FastAPI app and web UI
-
-**Egress:**
-
-- **MCP Jira client**: The MCP server connects to the Jira emulator API (or real Jira) using JIRA_TOKEN environment variable
+- **jira-emulator API**: FastAPI REST and web UI service listening on port 8080
+- **jira-emulator MCP**: FastMCP server listening on port 8081
 
 ## Security
 
-- **Authentication:** Configurable via AUTH_MODE (permissive/strict/none); supports HTTP Basic auth, Bearer/PAT tokens, and cookie sessions; passwords hashed with bcrypt; admin API uses Bearer token or API key.
-- **Authorization:** Source-defined; admin-level endpoints and admin API require elevated credentials in strict mode; no RBAC framework.
+- **Authentication:** Auth middleware supporting AUTH_MODE=permissive/strict/none; mechanisms include HTTP Basic (bcrypt-hashed passwords), Bearer personal access tokens, and cookie sessions via /rest/auth/1/session.
+- **Authorization:** Project/issue permissions emulated in service layer following Jira semantics; admin operations restricted to authenticated admin users.
 - **FIPS Compliance:** not applicable
 
 **Secrets:**
 
-- **JIRA_TOKEN** — Environment variable providing the API token for MCP server to authenticate to the emulator
-- **JIRA_API_TOKEN** — Environment variable used by export scripts for authenticated API access
+- **JIRA_TOKEN** — Environment variable providing API token to the MCP server client
+- **JIRA_API_TOKEN** — Environment variable used by export scripts for API authentication
 
 ## Multi-Tenancy
 
-**Model:** Single-tenant; one SQLite database shared by all users and projects
+**Model:** single-tenant emulator with multi-user accounts
 
-**Shared Services:** All endpoints, database, and web UI are shared across users
+**Isolation Mechanisms:**
+
+- per-user accounts with hashed credentials
+- per-project issue key sequences
+
+**Shared Services:** shared SQLite database, shared web UI
 
 ## Data Flows
 
-- **Issue lifecycle**: Client creates/updates issues via REST v2/v3 or web UI; routers delegate to issue_service which persists via SQLAlchemy to SQLite and records history
-- **JQL search**: Search requests are parsed by the Lark JQL engine and executed by search_service against the database, returning v2 offset or v3 cursor pagination
-- **Import/export**: JSON issue data is imported/exported via admin API and web UI; project config import seeds projects and workflows
-- **Snapshots and restore**: Admin snapshot service copies the SQLite database into /data/snapshots; restore replaces the live database
-- **Attachments**: Files uploaded via REST are stored in ATTACHMENT_DIR and served through API and web UI views
-- **MCP tool calls**: Claude invokes FastMCP tools which call the emulator REST API using JIRA_TOKEN
+- **issue CRUD**: Clients call REST v2/v3 issue endpoints; routers delegate to issue services which persist via async SQLAlchemy to SQLite
+- **JQL search**: JQL strings are parsed by the Lark grammar engine, transformed to queries, and paginated results returned (offset for v2, cursor for v3)
+- **attachment upload**: Multipart uploads stored on the filesystem under ATTACHMENT_DIR with metadata in SQLite
+- **webhook delivery**: Webhook events queued and delivered asynchronously by a background worker to registered HTTP endpoints
+- **snapshot/restore**: Admin snapshot API copies and restores the SQLite database for test isolation
+- **JSON import**: Admin import endpoints load Jira JSON export data into the database, also available at startup via IMPORT_ON_STARTUP
 
 ## Integration Points
 
-- **Claude / MCP**: FastMCP server on port 8081 exposes Jira operations as tools for AI assistants
-- **CI/CD pipelines**: Emulator used as a drop-in Jira stand-in for offline integration testing
-- **JSON import/export**: Bulk issue import/export for test fixtures and data migration
+- **MCP tools**: FastMCP server exposes ~14 Jira tools (get/create/edit issues, search, comments, transitions, properties, attachments) for Claude clients over HTTP
+- **Jira client compatibility**: REST v2/v3 and auth session endpoints are wire-compatible with standard Jira clients and SDKs
+- **webhooks**: Outbound webhook registration and delivery emulating Jira webhook API
 
 ## Concerns
 
-- Default credentials and a default token (admin/admin, jira-emulator-default-token) ship with the container
-- AUTH_MODE defaults to permissive, which disables strict authentication
-- Single-process SQLite storage limits concurrency and horizontal scaling
-- No TLS termination or ingress defined; encryption is delegated to external configuration
-- 113 endpoints across three API surfaces create broad maintenance and test surface area
+- Default permissive AUTH_MODE could expose unauthenticated admin endpoints if deployed carelessly
+- SQLite single-file database limits concurrency and horizontal scaling
+- No TLS/ingress configuration in-repo; encryption depends on deployment environment
+- Webhook delivery worker must coordinate with database reset to avoid races (recent fixes noted)
+
+## Recent Changes
+
+- 2ebb61c Document Jira server-info schema and reset locking investigation
+- d5e472f JQL: ORDER BY resolved and the other date aliases
+- 2139dfe Web: serve Jira's own page URLs, /browse/KEY-123 and /projects/KEY
+- a49a6cb JQL: relative dates, literal dates, and the resolved field
+- 8dbe0eb Close reset authentication session before DDL
 

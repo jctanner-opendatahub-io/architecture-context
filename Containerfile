@@ -16,7 +16,9 @@
 # the binary (built on a current Fedora host) needs glibc >= 2.39 —
 # bookworm ships 2.36, trixie 2.41. The upstream-faithful alternative
 # is a musl-static supervisor build, which makes the base irrelevant.
-FROM docker.io/library/node:24-trixie-slim
+# Base pinned by digest (supply chain): the mutable tag can silently
+# change under us; the digest is the content we validated rungs 2-3 on.
+FROM docker.io/library/node@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \

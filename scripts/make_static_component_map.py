@@ -93,6 +93,18 @@ def main() -> None:
         )
 
     checkouts_dir = Path(args.checkouts_dir).resolve()
+    if args.workflow_input:
+        # Work items carry repo-root-relative repoDir paths (the workflow
+        # resolves them against its cwd); an external checkouts dir cannot
+        # produce those — reject before writing anything.
+        try:
+            checkouts_dir.relative_to(REPO_ROOT)
+        except ValueError:
+            sys.exit(
+                f"--checkouts-dir must live under the repo root for "
+                f"--workflow-input (got {checkouts_dir}, repo root "
+                f"{REPO_ROOT})"
+            )
     components: dict[str, ComponentInfo] = {}
     missing: list[str] = []
 
@@ -106,6 +118,12 @@ def main() -> None:
             continue
 
         ref = git_output(checkout, "rev-parse", "HEAD")
+        if ref is None:
+            sys.exit(
+                f"Component '{key}' checkout has no resolvable HEAD "
+                f"({checkout}) — not a valid git checkout; refusing to "
+                "pin None as the component ref"
+            )
         branch = git_output(checkout, "rev-parse", "--abbrev-ref", "HEAD")
         components[key] = ComponentInfo(
             key=key,
@@ -162,6 +180,12 @@ def main() -> None:
             analyzer_dir = (
                 Path(args.architecture_dir) / args.platform / comp.key / ".analyzer"
             )
+            # Recent commits for the doc linter's required "Recent
+            # Changes" section — captured at P0 so the renderer emits a
+            # deterministic, pinned-to-ref history.
+            recent = git_output(
+                comp.checkout_path, "log", "--oneline", "-n", "5", f"{comp.ref}"
+            )
             item = {
                 "key": comp.key,
                 "repoDir": str(repo_dir),
@@ -170,6 +194,7 @@ def main() -> None:
                     "ref": comp.ref,
                     "checkout_branch": comp.checkout_branch,
                     "type": comp.type,
+                    "recent_changes": recent.splitlines() if recent else [],
                 },
             }
             if analyzer_dir.is_dir():

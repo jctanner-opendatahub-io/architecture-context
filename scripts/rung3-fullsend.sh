@@ -44,7 +44,9 @@ if [ ! -f "$TARGET/architecture/breadboard/components.json" ]; then
 	rsync -a --exclude='/.git' --exclude='/.venv' --exclude='/tmp' --exclude='/bin' \
 		--exclude='/workflow-runs' --exclude='/logs' --exclude='/.env' --exclude='__pycache__' \
 		"$REPO_ROOT/" "$TARGET/"
-	(cd "$TARGET/architecture" && ls | grep -v '^breadboard$' | xargs -r rm -rf)
+	# find -exec (not ls|xargs: whitespace-safe, no symlink traversal
+	# beyond the pruned names)
+	find "$TARGET/architecture" -mindepth 1 -maxdepth 1 ! -name breadboard -exec rm -rf {} +
 fi
 # 2. The run.
 echo "rung3: fullsend run arch-context -> $OUT"

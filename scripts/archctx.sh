@@ -114,7 +114,11 @@ EOF
 		local KEY
 		KEY=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d[sys.argv[2]]['key'])" "$AUTH" "$PROVIDER") \
 			|| die "no auth entry for provider '$PROVIDER' in $AUTH"
-		local MODELS="/tmp/archctx-$PROVIDER-models.json"
+		# mktemp, not a predictable path (CWE-377/59): a pre-created
+		# symlink at a fixed name would let another local user rewrite
+		# the child provider config (and redirect the API key).
+		local MODELS
+		MODELS="$(mktemp "/tmp/archctx-$PROVIDER-models.XXXXXXXX")"
 		python3 - "$PROVIDER" "$MODELS" << 'EOF'
 import json, os, sys
 provider, out = sys.argv[1], sys.argv[2]
@@ -135,13 +139,14 @@ EOF
 
 	echo "archctx: input $INPUT"
 	echo "archctx: scratch $SCRATCH"
+	# set -e would kill the script before the failure report; capture rc.
+	local RC=0
 	env "${RUNENV[@]}" \
 		pi --print --mode json --no-approve --no-extensions --no-prompt-templates --no-themes \
 			--session-dir "$SCRATCH/session" \
 			-e "$PLUGIN" \
 			--model workflow-engine/v1 --tools workflow \
-			"Run the architecture context workflow" > "$SCRATCH/stdout.jsonl" 2> "$SCRATCH/stderr.txt"
-	local RC=$?
+			"Run the architecture context workflow" > "$SCRATCH/stdout.jsonl" 2> "$SCRATCH/stderr.txt" || RC=$?
 
 	echo
 	if grep -q "workflow failed" "$SCRATCH/stdout.jsonl"; then

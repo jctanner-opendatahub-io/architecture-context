@@ -11,85 +11,57 @@
 
 ## Purpose
 
-The github-emulator is a lightweight, self-contained emulator of the GitHub API built with FastAPI. It implements a compatible subset of GitHub REST API v3, a Strawberry-based GraphQL API, Git smart HTTP and SSH transports against bare repositories, GitHub Actions workflows with self-hosted and real runners, GitHub Apps with JWT/installation tokens, webhooks, OAuth/OIDC, and an admin web UI. State is persisted in SQLite via aiosqlite/SQLAlchemy, requiring no external database, making it deployable locally via Docker Compose or in CI for testing client libraries, gh CLI workflows, and automation without touching real GitHub.
+github-emulator is a Python FastAPI application that emulates the GitHub API surface for integration testing. It implements REST endpoints under /api/v3, an Actions distributed-task protocol under /_apis, Git smart HTTP transport, GraphQL, OAuth/OIDC, webhooks, an admin web UI, and seeded default credentials and tokens. It persists state via SQLAlchemy over SQLite, serves through uvicorn under supervisord, and ships Docker, docker-compose, and k3s deployment variants.
 
 ## Architectural Analysis
 
-Single-process FastAPI application (app.main) wiring ~50 REST router modules under src/app/api, a Strawberry GraphQL router, an admin/web UI, Git smart HTTP and SSH transports (asyncssh, port 2222), and Actions service endpoints including the Azure DevOps-style distributed task protocol (/_apis/distributedtask) used by real GitHub Actions runners. A layered structure separates API routes, ORM models (SQLAlchemy), business logic services, and git transport. Authentication is centralized in shared FastAPI dependencies (deps.py): personal access tokens, Basic auth, GitHub App JWT/installation tokens, job tokens, and browser sessions with CSRF. Persistence is SQLite through async SQLAlchemy with Alembic migrations; repository contents live in bare git repos on disk under the data directory. Deployment is a container image run by docker-compose alongside Caddy (TLS termination, internal CA) and runner containers; Dockerfile.k3s and Vagrant variants exist. Analyzer found 381 HTTP endpoints, one internal service, no CRDs, gRPC, or ingress resources.
+Single FastAPI application service layered into api routes, ORM models, services, git transport, and admin/web UI modules under src/app. Analyzer evidence records 381 registered HTTP endpoints across REST, Actions, admin, and Git smart-HTTP surfaces, one internal service, and no CRDs, gRPC services, or RBAC. Authentication is enforced per-request via FastAPI dependencies accepting Bearer tokens or API keys (src/app/api/deps.py:273). Entrypoints are uvicorn managed by supervisord in container images, with a health probe hitting /api/v3 at startup. Persistence uses SQLAlchemy with alembic migrations over an async SQLite backend. Emulated Actions runners exist as separate container entrypoints (emulator and upstream runners).
 
 ## Architecture Components
 
 | Component | Type | Purpose |
 |----|----|-------|
-| FastAPI app (app.main) | service | Entry point wiring all REST routers, GraphQL router, middleware, and startup lifecycle |
-| REST API routers (src/app/api) | api-layer | ~50 router modules implementing GitHub-compatible v3 endpoints plus Actions runner protocol and admin APIs |
-| GraphQL API (app.graphql) | api-layer | Strawberry-based GitHub GraphQL queries and mutations |
-| Service layer (src/app/services) | business-logic | Auth, workflows, issues, pull requests, imports, webhooks, secrets crypto, and domain logic |
-| ORM models (src/app/models) | data-layer | SQLAlchemy models for users, repositories, issues, runs, tokens, apps |
-| Git transport (src/app/git) | transport | Smart HTTP plus SSH git server over bare repositories with hooks |
-| SSH server (app.git.ssh_server) | transport | asyncssh-based git clone/push with public key auth from SSHKey table |
-| Admin and web UI (src/app/admin, src/app/web) | ui | Browser UI for repositories, Actions, and admin management of users, tokens, apps, runners |
-| Actions runners (src/runners) | worker | Emulated and upstream GitHub Actions runner containers executing workflow jobs |
-| Caddy | edge | TLS termination with local CA and reverse proxy to uvicorn |
+| github-emulator API app | Python Service (FastAPI) | GitHub-compatible REST, GraphQL, and Actions API emulator for integration testing |
+| Git smart HTTP transport | Git transport handler | Serves Git protocol operations over HTTP for emulated repositories |
+| Actions distributed-task service | Emulated Azure DevOps-style Actions backend | Implements runner pools, plans, timelines, logs, and job messaging under /_apis |
+| Admin and web UI | Server-rendered web application | Admin management pages and browser UI for repositories, users, tokens, and jobs |
+| Database layer | SQLAlchemy ORM with alembic migrations | Persistent storage of users, repos, issues, runs, and tokens via async SQLite |
+| Emulated runners | Container entrypoints | Runner containers (emulator and upstream) that poll the emulator for Actions jobs |
 
-## Sub-Component: REST API surface
+## Sub-Component: api
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /api/v3 and / (root, meta, rate_limit) | GET |
-| /repos/{owner}/{repo}/** | GET, POST, PATCH, PUT, DELETE |
-| /repos/{owner}/{repo}/actions/** | GET, POST, PUT, DELETE |
-| /orgs/**, /users/**, /teams/** | GET, POST, PATCH, DELETE |
+| /api/v3/* | GET, POST, PATCH, PUT, DELETE |
+| /_apis/distributedtask/* | GET, POST, PATCH, OPTIONS |
+| /admin/api/* | GET, POST, DELETE |
+| /graphql | POST |
 
-## Sub-Component: Actions distributed task protocol
+**Configuration:**
 
-**API Routes:**
+- GITHUB_EMULATOR_SEED_DATA
+- GITHUB_EMULATOR_DEFAULT_ADMIN_TOKEN
 
-| Path | Methods |
-|----|--------|
-| /_apis/distributedtask/** | GET, POST, PATCH, PUT, DELETE |
-| /_apis/oauth2/token | POST |
-| /_apis/connectionData | GET |
-
-## Sub-Component: Actions runner endpoints
+## Sub-Component: git transport
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /actions/runner/register, /actions/runner/heartbeat, /actions/runner/jobs | POST, GET |
-| /_services/pipelines/** | GET, POST, DELETE |
-| /enterprises/{enterprise}/actions/runners/** | GET, POST, DELETE |
+| /{owner}/{repo}/info/refs | GET |
+| /{owner}/{repo}/git-upload-pack | POST |
 
-## Sub-Component: Auth and apps
-
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /app/installations/**, /app | GET, POST |
-| /login/oauth/authorize, /login/oauth/access_token | GET, POST |
-| /.well-known/openid-configuration, /.well-known/jwks.json, /actions/oidc/token | GET |
-
-## Sub-Component: Admin API and UI
+## Sub-Component: oidc
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /admin/api/** | GET, POST, PATCH, DELETE |
-| /admin/apps/**, /admin/users, /admin/tokens, /admin/repos/import | GET, POST, PATCH, DELETE |
-
-## Sub-Component: Browser UI APIs
-
-**API Routes:**
-
-| Path | Methods |
-|----|--------|
-| /api/_ui/session | GET, POST, DELETE |
-| /api/_ui/repos/{owner}/{repo}/** | GET |
+| /.well-known/openid-configuration | GET |
+| /.well-known/jwks.json | GET |
+| /actions/oidc/token | GET |
 
 ## APIs Exposed
 
@@ -97,110 +69,100 @@ Single-process FastAPI application (app.main) wiring ~50 REST router modules und
 
 | Path | Methods | Description |
 |----|---------|-------------|
-| / | GET | API root index |
-| /api/v3 | GET | GitHub v3 API root with endpoint directory |
-| /repos/{owner}/{repo}/actions/runs | GET, POST | List or manage workflow runs |
-| /repos/{owner}/{repo}/** | GET, POST, PATCH, PUT, DELETE | GitHub-compatible repository, issues, pulls, contents, branches, commits endpoints |
-| /_apis/distributedtask/** | GET, POST, PATCH, PUT, DELETE | Azure DevOps-style protocol consumed by real Actions runners |
-| /actions/runner/register | POST | Runner registration and job dispatch endpoints |
-| /app/installations/{installation_id}/access_tokens | POST | GitHub App installation access tokens |
-| /login/oauth/access_token | POST | OAuth token exchange |
-| /.well-known/openid-configuration | GET | OIDC discovery for Actions tokens |
-| /graphql | GET, POST | Strawberry GraphQL API |
-| /admin/api/** | GET, POST, PATCH, DELETE | Admin management API for users, tokens, orgs, repos, runners, jobs |
-| /{owner}/{repo}.git/info/refs and git-receive-pack | GET, POST | Git smart HTTP transport |
-| /api/_ui/** | GET, POST, DELETE | Web UI session and repository browsing APIs |
+| /api/v3/{rest of GitHub REST surface} | GET, POST, PATCH, PUT, DELETE | Emulated GitHub REST v3 endpoints for repos, issues, pulls, users, orgs, apps, and more |
+| /_apis/distributedtask/... | GET, POST, PATCH, OPTIONS | Actions distributed-task protocol: pools, agents, plans, timelines, records, logs, and job requests |
+| /.well-known/openid-configuration | GET | OIDC discovery document for emulated token issuance |
+| /.well-known/jwks.json | GET | JWKS public keys for OIDC token verification |
+| /admin/api/* | GET, POST, DELETE | Administrative API for users, repositories, tokens, apps, jobs, and runners |
+| / | GET | Root endpoint and web UI entry |
 
 ## Dependencies
 
 **External:**
 
-- **fastapi** — Web framework for the REST and GraphQL API
-- **uvicorn** — ASGI server
-- **sqlalchemy + aiosqlite** — Async ORM and SQLite access
-- **alembic** — Database migrations
-- **python-jose** — JWT signing for GitHub App and OIDC tokens
-- **strawberry-graphql** — GraphQL schema and FastAPI router
-- **asyncssh** — Git SSH transport server
-- **pynacl** — libsodium sealed-box crypto for Actions secrets
-- **passlib/bcrypt** — Password hashing
-- **httpx** — Webhook delivery and GitHub import fetching
-- **caddy** — TLS termination reverse proxy with local CA
+- **fastapi** — Web framework for the emulated API surface
+- **uvicorn** — ASGI server hosting the application
+- **sqlalchemy** — ORM and database access layer
+- **aiosqlite** — Async SQLite driver for persistence
+- **alembic** — Database schema migrations
+- **strawberry-graphql** — GraphQL API implementation
+- **python-jose** — JWT and OAuth token handling
+- **passlib** — Password hashing for seeded users
+- **asyncssh** — SSH transport support for Git operations
+- **pynacl** — Cryptographic operations including secret encryption
+- **httpx** — HTTP client for probes and upstream calls
+- **supervisor** — Process manager running uvicorn in containers
 
 ## Deployment
 
-Deployed as a single container image running uvicorn, with SQLite storage on a /data volume; docker-compose adds a Caddy TLS edge, an emulated Actions runner, and optionally a real upstream runner; Dockerfile.k3s and Vagrant variants exist for other targets.
+Deployed as a Python container running supervisord which starts uvicorn; a startup health probe polls /api/v3. Variants include Docker, docker-compose, k3s, Vagrant, and local uvicorn development.
 
 **Variants:**
 
-- **docker-compose (default)**: github-emulator container exposing ports 443/80/8000/2222 with Caddy TLS, data volume, and actions-runner service
-- **docker-compose real-runner profile**: Adds an upstream GitHub Actions runner container talking to the emulator over the distributed task protocol
-- **k3s (Dockerfile.k3s)**: Container variant for running the emulator inside k3s
-- **local/vagrant**: Local uvicorn runs (make up/smoke) and a Vagrantfile for VM-based testing
+- **Docker**: Container image with supervisord entrypoint and httpx health check against /api/v3
+- **k3s**: Kubernetes-targeted image variant (Dockerfile.k3s) with the same supervisord entrypoint
+- **docker-compose**: Compose files orchestrating the emulator with Caddy reverse proxy
+- **local development**: uvicorn app.main:app --reload with Procfile.dev and Vagrantfile options
 
 ## Network Architecture
 
 **Services:**
 
-- **github-emulator**: Main FastAPI/uvicorn service listening on port 8000 plus git smart HTTP and SSH (2222)
+- **github-emulator**: Single internal FastAPI service serving REST, GraphQL, Actions, and Git endpoints
 
 **Ingress:**
 
-- **Caddy reverse proxy**: Terminates TLS with an internal CA at ghemu.local and proxies to uvicorn on 127.0.0.1:8000
-
-**Egress:**
-
-- **GitHub import**: Admin-triggered clone/bulk import of repositories from real github.com
-- **webhook delivery**: Outbound HTTP delivery of recorded webhook event payloads to configured targets
+- **Caddy reverse proxy**: Caddyfile-configured proxy in front of the emulator in compose deployments
 
 ## Security
 
-- **Authentication:** Personal access tokens (token/Bearer), HTTP Basic, GitHub App JWT and installation tokens, runner/job tokens, OIDC/OAuth flows, and browser sessions with CSRF — enforced via FastAPI dependencies in deps.py and auth_service.
-- **Authorization:** Fine-grained token permissions, repository visibility checks (private repos 404 to unauthorized callers), job token permission policies, and admin-scoped routes.
+- **Authentication:** Bearer tokens (token or Authorization header) and API keys, enforced per-request via FastAPI dependencies; seeded admin user and default token ghp_admin_default_token
+- **Authorization:** Source-defined GitHub-style scoping; admin endpoints separated under /admin
 - **FIPS Compliance:** not applicable
 
 **Secrets:**
 
-- **GITHUB_EMULATOR_SECRET_KEY** — App secret key for signing (compose default change-me-in-production)
-- **GITHUB_EMULATOR_SECRET_SALT** — Salt used by secret_crypto service for encrypting stored secrets
-- **GITHUB_EMULATOR_TOKEN** — Runner token used by runner containers to authenticate to the emulator
-- **GITHUB_EMULATOR_UI_PASSWORD** — Password used in UI smoke testing
-- **GITHUB_EMULATOR_ADMIN_PASSWORD** — Seeded admin user password
+- **GITHUB_EMULATOR_SECRET_SALT** — Salt used by the secret encryption service for stored secrets
+- **GITHUB_EMULATOR_TOKEN** — Token used by runner containers to authenticate to the emulator
+- **GITHUB_EMULATOR_UI_PASSWORD** — Password protecting the actions UI smoke test
+- **GITHUB_EMULATOR_DEFAULT_ADMIN_TOKEN** — Overrides the seeded default admin personal access token
 
 ## Multi-Tenancy
 
-**Model:** Single-instance, multi-user: users, organizations, and repositories share one emulator instance and database.
+**Model:** Single-tenant emulator instance; multi-user accounts with GitHub-style organizations and repositories
 
 **Isolation Mechanisms:**
 
-- Repository visibility checks (private repositories hidden from unauthorized users)
-- Fine-grained token permissions and scopes
-- Organization and team membership checks
+- Per-user and per-organization data scoping in API routes
+- Token-based identity separation
 
-**Shared Services:** Shared SQLite database, Shared bare git repository storage on the data volume, Shared Actions runner pools
+**Shared Services:** Shared SQLite database instance, Shared admin and web UI
 
 ## Data Flows
 
-- **REST request handling**: Client (gh CLI, library, or UI) calls GitHub-compatible endpoints; deps authenticate and authorize; services act on ORM models in SQLite and return GitHub-shaped JSON.
-- **Git push/clone**: git clients use smart HTTP or SSH (2222) against bare repositories on disk; hooks and services update the database and trigger events.
-- **Actions execution**: Workflow triggers enqueue jobs; runner (emulated or real) registers via /_apis distributed task endpoints, leases jobs, executes them, and posts logs, timelines, and artifacts back.
-- **Webhook delivery**: Webhook service records event payloads and delivers them via httpx to configured target URLs.
-- **GitHub import**: Admin panel triggers import_service to fetch repositories or clones from real github.com and materialize them locally.
-- **App auth flow**: Clients exchange GitHub App JWTs for installation access tokens, which are validated per request with fine-grained permissions.
+- **API request flow**: Client request authenticated via deps.py, routed to FastAPI api handlers, persisted through SQLAlchemy to SQLite
+- **Git transport flow**: Git clients perform smart HTTP fetch/push against git transport handlers backed by server-side repositories
+- **Actions job flow**: Emulator dispatches jobs through /_apis pools; runner containers poll, execute, and report timelines, records, and logs back
+- **OIDC token flow**: Actions jobs request OIDC tokens from /actions/oidc/token signed with JWKS-published keys
 
 ## Integration Points
 
-- **gh CLI**: Works as a GH_HOST target via the Caddy TLS edge
-- **GitHub Actions runners**: Real upstream runner binaries connect using the distributed task protocol and registration tokens
-- **GitHub.com import**: Bulk repository import from real GitHub users/orgs
-- **Webhook consumers**: External HTTP endpoints receive recorded event deliveries
-- **Git clients**: Standard git clone/fetch/push over HTTPS and SSH
+- **GitHub API clients**: Test clients point REST, GraphQL, and webhook integrations at the emulator instead of github.com
+- **Git clients**: Standard git CLI operations over smart HTTP against emulated repositories
+- **GitHub Actions runners**: Runner containers register, poll, and execute jobs via the distributed-task endpoints
+- **Admin UI**: Operators manage users, repos, tokens, and apps through the web admin interface
 
 ## Concerns
 
-- Compose defaults ship a fixed admin password and a change-me secret key; production use requires overriding these.
-- SQLite single-file storage limits concurrency and horizontal scalability; no HA story observed.
-- Very large API surface (381 endpoints) with duplicated responsibility between API routes and git/service code noted in AGENTS.md.
-- No ingress or deployment manifests verified by the analyzer; k3s variant coverage is unproven.
-- Emulated Actions runners execute workflow jobs, which can run arbitrary code if exposed beyond trusted testing environments.
+- Default seeded admin credentials (admin/admin and ghp_admin_default_token) are insecure if exposed beyond test environments
+- Persistent reliance on SQLite may not reflect production GitHub semantics for concurrency
+- Very large emulated endpoint surface (381 routes) increases drift risk versus real GitHub API behavior
+
+## Recent Changes
+
+- 4bc669c UI: syntax highlighting in the file viewer
+- 9e67195 UI: repository file list with last-commit columns, folder pages, header layout
+- 85121dc GraphQL: user.contributionsCollection, GitHub's contribution calendar
+- eb6a2dd A deleted repository takes its history with it, and its id is never reused
+- 5105122 Installation tokens: variables and secrets are their own App permissions
 

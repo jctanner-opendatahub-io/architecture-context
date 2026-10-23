@@ -30,6 +30,7 @@ import path from "node:path";
 import {
 	assertComplete,
 	fanout,
+	safeJoin,
 	validateInput,
 	writeArtifact,
 	writeResults,
@@ -449,7 +450,7 @@ function disciplineLines() {
 		`(write "none" or "not applicable" — never booleans, null, or empty strings);`,
 		`arrays may be empty.`,
 		`The JSON must be strictly valid: escape every double quote inside string values`,
-		`(write \\\\" for each \") and avoid literal double quotes in URL paths (write`,
+		`(write \\" for each \") and avoid literal double quotes in URL paths (write`,
 		`/{tenant}/ rather than /{\"tenant\"}/). Keep string values concise (under ~25 words).`,
 		``,
 		`Before responding, self-check: every narrative field is a non-empty string;`,
@@ -484,12 +485,12 @@ function contractLines(item) {
 /** Corrective retry prompt: a fresh child session carrying the exact
  * failure (invalid JSON, schema violation) and the FULL output contract.
  * Used via the fanout primitive's retries option. */
-function retryPromptFor(item, err) {
+function retryPromptFor(item, _index, err) {
 	return [
 		`RETRY ANALYZE ${item.key}`,
 		``,
 		`A previous response for this component was rejected:`,
-		`${err.message}`,
+		`${err && err.message ? err.message : String(err)}`,
 		``,
 		`Regenerate the complete architecture summary JSON for the repository at the`,
 		`current working directory (${item.repoDir}), fixing the reported problem.`,
@@ -741,6 +742,12 @@ function renderComponentDoc(result, item, platform) {
 	if (result.concerns.length > 0) {
 		lines.push(`## Concerns`, ``, ...result.concerns.map((c) => `- ${c}`), ``);
 	}
+	// Required by the repo's doc linter; deterministic from the pinned
+	// ref's git history (captured at P0 into promptContext).
+	const recent = (item && item.promptContext && item.promptContext.recent_changes) || [];
+	if (recent.length > 0) {
+		lines.push(`## Recent Changes`, ``, ...recent.map((c) => `- ${c}`), ``);
+	}
 	return lines.join("\n") + "\n";
 }
 
@@ -972,7 +979,7 @@ export default async function run(wf, input) {
 		fs.mkdirSync(archDir, { recursive: true });
 		summaries.forEach((summary, index) => {
 			fs.writeFileSync(
-				path.join(archDir, `${summary.component}.md`),
+				safeJoin(archDir, `${summary.component}.md`),
 				renderComponentDoc(summary, items[index], platform),
 			);
 		});
@@ -1023,9 +1030,9 @@ export default async function run(wf, input) {
 	};
 	writeArtifact(wf, artifact);
 	if (platformSummary) {
-		fs.writeFileSync(path.join(wf.runDir, "PLATFORM.md"), renderPlatformDoc(platformSummary, artifact));
+		fs.writeFileSync(safeJoin(wf.runDir, "PLATFORM.md"), renderPlatformDoc(platformSummary, artifact));
 		fs.mkdirSync(archDir, { recursive: true });
-		fs.writeFileSync(path.join(archDir, "PLATFORM.md"), renderPlatformDoc(platformSummary, artifact));
+		fs.writeFileSync(safeJoin(archDir, "PLATFORM.md"), renderPlatformDoc(platformSummary, artifact));
 	}
 	if (runGenerate && !artifact.complete) {
 		throw new Error(`arch-context: incomplete — ${summaries.length}/${items.length} components analyzed`);

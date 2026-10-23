@@ -11,57 +11,64 @@
 
 ## Purpose
 
-gitlab-emulator is a FastAPI-based service that emulates the GitLab REST API v4, a Strawberry GraphQL API, Git Smart HTTP and SSH transports, a web UI, an admin panel, webhooks, and GitLab CI runner endpoints (job request, trace, artifacts, cache). It stores everything in SQLite via aiosqlite, serves git from bare repositories, and can import repos from real GitLab. It is deployed as a single container (supervisord running uvicorn, Caddy TLS proxy, and an SSH server) intended for local and CI use, with an optional Vagrant three-VM topology for glab and gitlab-runner validation.
+GitLab Emulator is a lightweight FastAPI service that emulates the GitLab REST API v4, a Strawberry GraphQL API, Git Smart HTTP and SSH transports, a web UI, an admin panel, webhook delivery, and CI pipeline/runner coordination endpoints (including official GitLab Runner registration, job assignment, traces, artifacts, and S3-backed runner cache). It persists state in SQLite via async SQLAlchemy and stores bare git repositories on disk, so integration tests can run locally or in CI with zero external GitLab dependency.
 
 ## Architectural Analysis
 
-A single Python FastAPI application (app/main.py) mounts routers under /api/v4 for the GitLab v4 REST surface (projects, groups, issues, merge requests, pipelines, jobs, runner, webhooks, snippets, etc.), plus /api/graphql and /graphql Strawberry GraphQL, an /admin/ panel, a /ui/ web frontend, and Git Smart HTTP routes. A lifecycle-managed asyncssh server (port 2222) provides git SSH transport. State lives in SQLite via SQLAlchemy async (aiosqlite) with Alembic migrations; git data is stored as bare repositories on disk. Authentication uses Basic or Bearer personal-access tokens resolved through FastAPI dependencies (app/api/deps.py) with SHA-256 token hashing; OAuth token issuance is emulated at /login/oauth. The container runs supervisord with uvicorn bound to 127.0.0.1:8000 behind a Caddy reverse proxy providing automatic TLS, and a MinIO sidecar acts as a GitLab runner cache. CI job execution is emulated via runner registration/job-request/trace/artifact endpoints and an admin CI Lab for pipeline experiments. The project is a scaffold preserving github_emulator architecture; GitLab-specific route and schema coverage is still in progress.
+The service is a single Python FastAPI application (app/main.py) served by uvicorn on port 8000, fronted by a Caddy TLS reverse proxy inside the same container under supervisord. Routers are grouped by domain under app/api/ (projects, groups, merge_requests, pipelines, runner, repos, users, webhooks, etc.) and mounted under /api/v4, with additional routers for the admin UI, web UI, OAuth, Git Smart HTTP, and a Strawberry GraphQL schema mounted at both /graphql and /api/graphql. Persistence uses async SQLAlchemy over aiosqlite with Alembic migrations; bare git repositories live in a data directory managed by app/git/bare_repo.py, smart_http.py, and ssh_server.py (SSH on port 2222). A background asyncio task materializes due pipeline schedules. Authentication uses personal access tokens (Bearer/token headers) and JWT sessions (python-jose) verified in app/api/deps.py. CI Lab and runner coordinator endpoints emulate job assignment, traces, artifacts, and variables, with secrets and variable redaction services. Deployment is a single Docker image plus an optional MinIO service for GitLab Runner distributed cache; a Vagrant three-VM topology (server, client, runner) validates glab and official runner compatibility over TLS. The analyzer found no CRDs, gRPC services, or ingress resources; the project is a standalone test emulator, not a Kubernetes workload.
 
 ## Architecture Components
 
 | Component | Type | Purpose |
 |----|----|-------|
-| FastAPI application | Python service | Core ASGI app assembling REST, GraphQL, admin, web UI, and git routers |
-| GitLab v4 REST API routers | HTTP API layer | Emulate GitLab REST v4 endpoints for projects, groups, issues, MRs, pipelines, jobs, runner, and more |
-| Strawberry GraphQL API | GraphQL schema | GitLab-compatible GraphQL queries and mutations mounted at /api/graphql and /graphql |
-| Git Smart HTTP transport | HTTP git protocol handler | Serve clone, fetch, and push over HTTP against bare repositories |
-| Git SSH server | asyncssh server | Serve git clone and push over SSH on port 2222 |
-| Admin panel | Web UI | Manage users, tokens, orgs, repos, imports, CI variables, runners, and CI Lab experiments |
-| Web UI | Server-rendered frontend | Browse repositories, files, commits, issues, and merge requests |
-| SQLAlchemy async persistence | Data layer | SQLite/aiosqlite storage with Alembic migrations for all entities |
-| Caddy reverse proxy | TLS edge proxy | Automatic HTTPS with local CA proxying to uvicorn on 127.0.0.1:8000 |
-| CI runner emulation | API module | Runner registration, job request, trace updates, artifacts, and MinIO-backed cache |
+| FastAPI application factory | application | app/main.py wires routers, middleware, GraphQL, admin and web UI, lifespan (DB init, SSH server, schedule worker) |
+| REST API routers | api | Domain routers under app/api mounted at /api/v4 emulating GitLab REST v4 (projects, groups, pipelines, runner, merge requests, users, webhooks, etc.) |
+| GraphQL API | api | Strawberry GraphQL schema mounted at /graphql and /api/graphql for common GitLab queries and mutations |
+| Git Smart HTTP transport | service | app/git/smart_http.py serves clone, fetch, and push over HTTP against bare repositories on disk |
+| Git SSH transport | service | app/git/ssh_server.py provides git clone/push over SSH on port 2222 |
+| Admin panel | ui | app/admin/routes.py manages users, tokens, orgs, repos, imports, CI variables, and CI Lab experiments |
+| Web UI | ui | app/web/routes.py browses repositories, files, commits, issues, and merge-request-style objects at /ui/ |
+| Database layer | data | Async SQLAlchemy over aiosqlite SQLite database with Alembic migrations and app/models ORM entities |
+| CI emulation services | service | app/services implement CI YAML parsing, variables, secrets, redaction, bridge jobs, and pipeline schedule worker |
+| Runner coordinator API | api | app/api/runner.py emulates GitLab Runner registration, job assignment, trace upload, status, and artifacts |
+| Auth dependencies | security | app/api/deps.py enforces Bearer token / personal access token and JWT session authentication |
+| Caddy TLS proxy | infrastructure | In-container reverse proxy with internal CA providing HTTPS on 443 in front of uvicorn port 8000 |
 
-## Sub-Component: REST API (app/api)
+## Sub-Component: rest-api
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /api/v4/projects/{project_ref:path}/issues | GET, POST |
-| /api/v4/projects/{project_ref:path}/pipelines | GET, POST |
-| /api/v4/groups/{group_ref:path}/members | GET, POST |
-| /api/v4/jobs/request | POST |
-
-**Upstream Dependencies:** SQLite via aiosqlite, MinIO cache (optional)
+| /api/v4/projects | GET, POST |
+| /api/v4/groups | GET, POST |
+| /api/v4/projects/{id}/merge_requests | GET, POST |
+| /api/v4/projects/{id}/pipelines | GET, POST |
 
 **Configuration:**
 
 - GITLAB_EMULATOR_BASE_URL
 - GITLAB_EMULATOR_DATABASE_URL
 
-## Sub-Component: GraphQL API (app/graphql)
+## Sub-Component: graphql-api
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /api/graphql | POST, GET |
-| /graphql | POST, GET |
+| /api/graphql | POST |
+| /graphql | POST |
 
-**Upstream Dependencies:** Strawberry GraphQL, REST data layer
+## Sub-Component: runner-coordinator
 
-## Sub-Component: Git transports (app/git)
+**API Routes:**
+
+| Path | Methods |
+|----|--------|
+| /api/v4/runners/register | POST |
+| /api/v4/jobs/request | POST |
+
+## Sub-Component: git-transports
 
 **API Routes:**
 
@@ -70,24 +77,25 @@ A single Python FastAPI application (app/main.py) mounts routers under /api/v4 f
 | /{owner}/{repo}.git/info/refs | GET |
 | /{owner}/{repo}.git/git-upload-pack | POST |
 
-**Upstream Dependencies:** bare repositories on disk, SSH server (port 2222)
-
 **Configuration:**
 
 - GITLAB_EMULATOR_SSH_ENABLED
 - GITLAB_EMULATOR_SSH_PORT
 
-## Sub-Component: Admin panel (app/admin)
+## Sub-Component: admin-panel
 
 **API Routes:**
 
 | Path | Methods |
 |----|--------|
-| /admin/login | GET, POST |
-| /admin/users | GET, POST |
-| /admin/ci-lab | GET |
+| /admin/ | GET |
+| /admin/ci-lab | GET, POST |
+| /admin/ci-variables | GET, POST |
 
-**Upstream Dependencies:** SQLAlchemy async persistence, GitLab import service
+**Configuration:**
+
+- GITLAB_EMULATOR_ADMIN_USERNAME
+- GITLAB_EMULATOR_ADMIN_PASSWORD
 
 ## APIs Exposed
 
@@ -95,104 +103,108 @@ A single Python FastAPI application (app/main.py) mounts routers under /api/v4 f
 
 | Path | Methods | Description |
 |----|---------|-------------|
-| /api/v4 | GET | GitLab REST API v4 root with metadata, version, and rate-limit endpoints |
-| /api/v4/projects/{project_ref:path} | GET, POST, PUT, DELETE | Project CRUD, members, hooks, issues, pipelines, jobs, artifacts, deploy keys, environments, schedules |
-| /api/v4/groups/{group_ref:path} | GET, POST | Group management with subgroups, members, variables, secrets, and hooks |
-| /api/v4/projects/{project_ref:path}/issues/{issue_iid} | GET, PUT, PATCH | Issue read and update |
-| /api/v4/projects/{project_ref:path}/merge_requests | GET, POST | Merge request operations including approvals and reviews |
-| /api/v4/jobs/request | POST | GitLab runner job request endpoint for CI job dispatch |
-| /api/v4/jobs/{job_id}/trace | PATCH | Runner job trace (log) updates |
-| /api/v4/jobs/{job_id}/artifacts | GET, POST | Runner artifact upload and download |
-| /projects/{project_id}/cache/{cache_key:path} | GET, HEAD, PUT | Runner cache backed by MinIO |
-| /api/graphql | POST, GET | Strawberry GraphQL API mirroring GitLab GraphQL |
-| /login/oauth/access_token | POST | OAuth token issuance emulation |
-| /admin/ | GET, POST | Admin panel for users, tokens, orgs, repos, imports, runners, CI variables, and CI Lab |
-| /ui/ | GET | Web UI for browsing repos, commits, issues, and merge requests |
-| /api/v4/projects/{project_ref:path}/repository/files/{path} | GET, POST, PUT, DELETE | Repository file operations |
+| /api/v4 | GET | GitLab REST API v4 surface (552 emulated endpoints spanning projects, groups, pipelines, runner, issues, MRs, webhooks, users) |
+| /api/graphql | POST | Strawberry GraphQL endpoint, also mounted at /graphql |
+| /ui/ | GET | Web UI for browsing repositories, files, commits, issues, and reviews |
+| /admin/ | GET, POST | Admin panel for users, tokens, orgs, repos, imports, CI variables, and CI Lab |
+| /{owner}/{repo}.git/info/refs | GET | Git Smart HTTP protocol endpoint for clone/fetch/push against bare repos |
+| / | GET | Root endpoint identifying the gitlab-emulator service |
 
 ## Dependencies
 
 **External:**
 
-- **fastapi** — Web framework for REST API and routers
-- **uvicorn** — ASGI server bound to localhost behind Caddy
-- **sqlalchemy + aiosqlite** — Async SQLite ORM persistence
-- **strawberry-graphql** — GraphQL API implementation
-- **asyncssh** — Git SSH transport server on port 2222
-- **python-jose** — JWT/OAuth token handling
-- **passlib/bcrypt** — Password hashing for users
-- **httpx** — GitLab import client and outbound HTTP
-- **Caddy** — TLS reverse proxy with internal CA
-- **supervisord** — Container process manager for caddy, uvicorn, sshd
-- **MinIO** — S3-compatible runner cache store
+- **fastapi** — Web framework for the emulator API and UI routers
+- **uvicorn** — ASGI server for the FastAPI application
+- **sqlalchemy + aiosqlite** — Async ORM and SQLite driver for zero-dependency storage
+- **alembic** — Database schema migrations
+- **strawberry-graphql** — GraphQL schema and FastAPI integration
+- **python-jose** — JWT/session signing for authentication
+- **passlib[bcrypt]** — Password hashing for admin and user accounts
+- **httpx** — HTTP client for health checks, imports, and remote CI includes
+- **PyYAML** — Parsing of .gitlab-ci.yml pipeline definitions
+- **Caddy** — In-container TLS reverse proxy with internal CA
+- **MinIO** — Optional S3-compatible backend for GitLab Runner distributed cache
+- **git** — Bare repository management for Smart HTTP and SSH transports
 
 ## Deployment
 
-Single Docker Compose stack: one container built from the Dockerfile running supervisord (Caddy TLS proxy on 443/80, uvicorn on 127.0.0.1:8000 exposed as 8000, SSH on 2222) with a persistent /data volume for SQLite and git repos, plus MinIO and a minio-init bucket-creation sidecar. A Vagrant three-VM topology (server, client, runner) supports glab CLI and official gitlab-runner validation with TLS.
+Single Docker image running supervisord with uvicorn (port 8000) and Caddy TLS (443/80); docker-compose adds an optional MinIO cache service; a Vagrant three-VM topology (server, client, runner) validates glab and official GitLab Runner over TLS.
 
 **Variants:**
 
-- **docker-compose**: Primary deployment: gitlab-emulator container plus MinIO cache services with named volumes
-- **vagrant**: Three VMs (server at glemu.local, client running glab, runner running gitlab-runner with Docker executor)
+- **docker-compose**: Local single-container deployment with MinIO and MinIO init services, named volumes for data, ports 443/80/8000/2222
+- **vagrant-three-vm**: Server VM (emulator in Docker), client VM (glab and git smoke tests), runner VM (official gitlab-runner with Docker executor and S3 cache)
+- **local-python**: uv run uvicorn app.main:app for development without Docker
 
 ## Network Architecture
 
 **Services:**
 
-- **gitlab-emulator**: Single server process exposing REST/GraphQL/admin/UI on 8000, HTTPS on 443/80 via Caddy, and git SSH on 2222
-- **minio**: S3-compatible runner cache on ports 9000/9001
+- **gitlab-emulator**: Main service exposing HTTPS 443 (Caddy), HTTP 80, direct API 8000, and SSH 2222
+- **minio**: S3-compatible runner cache backend on ports 9000/9001 in docker-compose
 
 **Ingress:**
 
-- **Caddy reverse proxy**: Terminates TLS with internal CA at glemu.local and proxies to uvicorn on 127.0.0.1:8000
+- **Caddy reverse proxy**: In-container Caddy terminates TLS for glemu.local with an internal CA and proxies to uvicorn on 127.0.0.1:8000
 
 **Egress:**
 
-- **GitLab import**: Outbound HTTPS to real GitLab to clone repos by URL or bulk import user/org repos
-- **Webhook delivery**: Outbound HTTP POST of event payloads to registered webhook targets
+- **GitLab import**: Admin panel clones repos by URL or bulk-imports from a GitLab user/org over the network
+- **remote CI includes**: Pipelines may fetch include:remote YAML from an allowlisted set of hosts
 
 ## Security
 
-- **Authentication:** HTTP Basic or Bearer personal access tokens validated via FastAPI dependencies; tokens stored as SHA-256 hashes; admin panel uses session login; OAuth token endpoint emulated with python-jose
-- **Authorization:** Source-defined role checks in route handlers and admin panel; no RBAC framework
+- **Authentication:** Personal access tokens (Bearer/token headers, SHA-256 hashed) and JWT sessions signed with python-jose; admin panel uses username/password login with default admin/admin credentials.
+- **Authorization:** Source-defined role checks in API dependencies and admin routes; emulated GitLab-style scopes on tokens; not production-grade.
 - **FIPS Compliance:** not applicable
 
 **Secrets:**
 
-- **GITLAB_EMULATOR_SECRET_KEY** — Application secret key, defaulted to change-me-in-production in compose
-- **GITLAB_EMULATOR_ADMIN_PASSWORD** — Default admin account password, defaulted to admin
-- **Personal access tokens** — User tokens stored hashed; created and revoked via admin panel
+- **GITLAB_EMULATOR_SECRET_KEY** — Secret for JWT/session signing, defaults to change-me-in-production
+- **GITLAB_EMULATOR_ADMIN_PASSWORD** — Admin user password created on first startup, defaults to admin
+- **MINIO_ROOT_USER / MINIO_ROOT_PASSWORD** — Credentials for the MinIO runner cache service, defaults glemu/glemu-cache-secret
 
 ## Multi-Tenancy
 
-**Model:** Single-instance emulator with multiple users, organizations, and groups sharing one SQLite database; designed for testing, not production multi-tenancy
+**Model:** Single-instance emulator with logical organizations and groups per user; no physical tenant isolation.
 
 **Isolation Mechanisms:**
 
-- Per-user and per-org record ownership in the data model
-- Token-based per-user authentication
+- Logical owner/organization scoping of repositories and groups in the SQLite schema
 
-**Shared Services:** Shared SQLite database, Shared MinIO runner cache bucket
+**Shared Services:** Shared SQLite database and shared data directory across all emulated organizations
 
 ## Data Flows
 
-- **API request handling**: Clients send REST/GraphQL requests authenticated by Basic or PAT; FastAPI handlers read/write SQLite via SQLAlchemy async and return GitLab-shaped JSON
-- **Git operations**: git clients clone/push via Smart HTTP through Caddy or via SSH on 2222 against bare repositories stored under the data directory
-- **CI job execution**: gitlab-runner requests jobs, patches traces, uploads artifacts, and exchanges cache objects with the MinIO-backed cache endpoints
-- **GitLab import**: Admin-triggered jobs use httpx to clone repos from real GitLab into local bare repositories
-- **Webhook delivery**: Repository and group events trigger recorded webhook POST deliveries to configured targets
+- **API request flow**: Client request hits Caddy TLS proxy, forwarded to uvicorn, authenticated via deps.py token check, handled by /api/v4 routers against SQLite via async SQLAlchemy
+- **Git transport flow**: git clone/push over Smart HTTP or SSH reads and writes bare repositories under the data directory, with hooks updating the database
+- **CI pipeline flow**: Push events trigger .gitlab-ci.yml parsing; jobs are persisted, assigned to polling official runners, and traces/artifacts are uploaded and stored
+- **Runner cache flow**: GitLab Runner exchanges S3 cache archives with MinIO at glemu.local:9000 during job execution
+- **Import flow**: Admin import jobs clone source repos by URL from external GitLab and materialize them as emulated repositories
+- **Webhook delivery flow**: Event payloads are recorded and delivered to registered webhook endpoints
 
 ## Integration Points
 
-- **glab CLI**: Intended compatibility target for GitLab CLI workflows against emulated v4 REST and GraphQL APIs
-- **gitlab-runner**: Official runner connects via jobs/request, trace, artifact, and cache endpoints
-- **git clients**: Smart HTTP and SSH transports for clone, fetch, and push
-- **Real GitLab**: Import source for single-repo and bulk user/org repo cloning
+- **glab CLI**: Emulator targets glab CLI compatibility, validated from the Vagrant client VM with installed CA
+- **Official GitLab Runner**: Runner registers, polls for jobs, uploads traces and artifacts, and uses MinIO S3 distributed cache
+- **Git clients**: git clone/fetch/push via Smart HTTP and SSH transports
+- **External GitLab**: Admin panel imports repos by URL or bulk from a GitLab user/org
+- **Webhook consumers**: Registered webhook endpoints receive recorded event payloads
 
 ## Concerns
 
-- Project is an explicit scaffold preserving github_emulator architecture; GitLab-specific REST routes, response schemas, and CI APIs are incomplete
-- Default credentials (admin/admin) and a change-me secret key shipped in docker-compose
-- No RBAC framework or rate-limit enforcement details confirmed; authorization is source-defined per route
-- Single-process, single-SQLite deployment with no high-availability or scaling story (acceptable for a test emulator)
+- Default credentials (admin/admin) and default JWT secret key (change-me-in-production) ship in docker-compose; unsafe if exposed beyond test environments
+- Emulator scaffold preserves github_emulator architecture; many GitLab-specific route shapes, response schemas, and CI semantics remain incomplete per STATUS.md
+- SQLite and single-container design limits concurrency and high availability; no HA or ingress evidence found by the analyzer
+- Remote CI includes and Git import create outbound network calls from a test service, gated only by a host allowlist for includes
+- 552 emulated endpoints implemented across very large route modules (e.g. pipelines.py, web/routes.py), raising maintainability concerns
+
+## Recent Changes
+
+- 3fc4480 Pipelines: bridge jobs wait for their stage and needs, as in GitLab
+- 5c26ae7 Runner: store trace bytes verbatim and follow GitLab's append protocol
+- 8b08515 UI: variable rows keep the key in its own column, Delete beside Update
+- 1ac87bb Tests: CI Lab trace and artifact links use the browser session
+- 5060744 UI: project sidebar shows only the avatar and project name
 

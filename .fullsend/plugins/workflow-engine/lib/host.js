@@ -130,16 +130,26 @@ export function createHost(options) {
 		return parsed;
 	}
 
-	/** Bounded-concurrency fan-out over thunks; positional results. */
+	/** Bounded-concurrency fan-out over thunks; positional results.
+	 * Fail-stop: once a thunk rejects, workers claim no NEW items (an
+	 * in-flight call completes and its usage is recorded), so the usage
+	 * written at rejection time is not silently under-counted by later
+	 * spawns. The first rejection still propagates via Promise.all. */
 	async function parallel(thunks, opts = {}) {
 		const limit = Math.max(1, opts.concurrency || 2);
 		const results = new Array(thunks.length);
 		let next = 0;
+		let failed = false;
 		await Promise.all(
 			Array.from({ length: Math.min(limit, thunks.length) }, async () => {
-				while (next < thunks.length) {
+				while (!failed && next < thunks.length) {
 					const i = next++;
-					results[i] = await thunks[i]();
+					try {
+						results[i] = await thunks[i]();
+					} catch (err) {
+						failed = true;
+						throw err;
+					}
 				}
 			}),
 		);

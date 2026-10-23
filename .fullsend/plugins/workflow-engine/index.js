@@ -271,7 +271,26 @@ function recordUsage(runDir, seq, usage) {
 
 async function runPipeline(params, onUpdate) {
 	const command = params.command;
+	// Trust boundary: the command selects a workflow module that is
+	// imported into this process. Anything the model can name must not
+	// escape the workflows/ directory (path traversal -> arbitrary
+	// module import, CWE-22 -> CWE-94).
+	if (typeof command !== "string" || !/^[a-z0-9-]+$/.test(command)) {
+		return {
+			content: [{ type: "text", text: `workflow failed: invalid command ${JSON.stringify(command)} (allowed: lowercase alphanumeric and hyphens)` }],
+			isError: true,
+			details: { phase: "dispatch" },
+		};
+	}
 	const workflowPath = path.resolve(HERE, "workflows", `${command.replace(/^run-/, "")}.mjs`);
+	const workflowsRoot = path.resolve(HERE, "workflows");
+	if (!workflowPath.startsWith(workflowsRoot + path.sep)) {
+		return {
+			content: [{ type: "text", text: `workflow failed: command ${JSON.stringify(command)} escapes the workflows directory` }],
+			isError: true,
+			details: { phase: "dispatch" },
+		};
+	}
 	if (!fs.existsSync(workflowPath)) {
 		return {
 			content: [{ type: "text", text: `workflow failed: no workflow module for command ${JSON.stringify(command)}` }],

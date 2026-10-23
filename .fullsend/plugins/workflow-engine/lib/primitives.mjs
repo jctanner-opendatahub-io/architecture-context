@@ -22,6 +22,25 @@ import fs from "node:fs";
 import path from "node:path";
 import { Value } from "typebox/value";
 
+/** Path confinement (CWE-22): join `name` into `dir` and reject any
+ * result that escapes `dir`. Names here derive from model output
+ * (component keys, repo names) — a prompt-injected result must not
+ * write outside the run directory. Symlinks are not followed by
+ * path.resolve; a pre-existing symlink target escaping `dir` is caught
+ * by the prefix check only if the link itself is outside — symlink
+ * contents are the writer's concern (files are created, not followed). */
+export function safeJoin(dir, name) {
+	if (typeof name !== "string" || name.includes("\0")) {
+		throw new Error(`unsafe path name ${JSON.stringify(name)}`);
+	}
+	const resolved = path.resolve(dir, name);
+	const root = path.resolve(dir);
+	if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+		throw new Error(`path ${JSON.stringify(name)} escapes ${root}`);
+	}
+	return resolved;
+}
+
 /** Validate a workflow input object against a JSON Schema; loud on failure. */
 export function validateInput(input, schema, workflow = "workflow") {
 	if (!input || typeof input !== "object" || Array.isArray(input)) {
@@ -128,7 +147,7 @@ export function writeResults(wf, results, opts = {}) {
 	fs.mkdirSync(dir, { recursive: true });
 	const files = [];
 	for (const result of results) {
-		const file = path.join(dir, fileOf(result));
+		const file = safeJoin(dir, fileOf(result));
 		fs.writeFileSync(file, JSON.stringify(result) + "\n");
 		files.push(file);
 	}
@@ -138,7 +157,7 @@ export function writeResults(wf, results, opts = {}) {
 /** Write the run's artifact.json. Returns the artifact. */
 export function writeArtifact(wf, artifact) {
 	fs.writeFileSync(
-		path.join(wf.runDir, "artifact.json"),
+		safeJoin(wf.runDir, "artifact.json"),
 		JSON.stringify(artifact, null, "\t") + "\n",
 	);
 	return artifact;
