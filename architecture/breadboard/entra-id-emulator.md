@@ -173,3 +173,11 @@ Single-container Python 3.11 image running run.py (Flask dev server) on port 808
 - No HA or scaling story; single process with file-based SQLite state
 - Hardcoded default admin password (changeme1234) risks accidental exposure in shared environments
 
+## Recent Changes
+
+- bfb27e4 make debug mode configurable via server.debug config
+- 189e31a add landing page and password-protect admin UI/API
+- 1bad6b8 add odh doc
+- 7e9be92 update doc
+- ea25376 add byoidc notes
+
