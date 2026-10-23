@@ -314,9 +314,7 @@ def check_run(
         if not comp_md.exists():
             errors.append(f"no published {comp_md}")
         elif "## Recent Changes" not in comp_md.read_text():
-            errors.append(
-                f"published {comp_md} missing '## Recent Changes'"
-            )
+            errors.append(f"published {comp_md} missing '## Recent Changes'")
         elif not comp_md.read_text().startswith(f"# Component: {key}"):
             errors.append(f"published {comp_md} has wrong title")
     pub_platform = arch_dir / "PLATFORM.md"
@@ -462,6 +460,29 @@ def main() -> int:
             f"determinism: PASS — {args.runs}/{args.runs} normalized streams identical"
         )
 
+    # Golden prompt tests (M-3/m-2 regression class): rendered prompts
+    # byte-compared against committed goldens + self-consistency checks.
+    # Born from PR #91: the retry-signature and escape-instruction bugs
+    # were invisible to every contract-level test.
+    node_bin = shutil.which("node")
+    if node_bin is None:
+        print("prompt goldens: FAIL - node not found")
+        failures += 1
+    else:
+        proc = subprocess.run(
+            [node_bin, str(args.ext / "test-prompts.mjs")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        status = "PASS" if proc.returncode == 0 else "FAIL"
+        print(f"prompt goldens: {status}")
+        if proc.returncode != 0:
+            for err_line in (proc.stdout + proc.stderr).splitlines():
+                if err_line.strip():
+                    print(f"  - {err_line.strip()}")
+            failures += 1
+
     if not args.skip_negative:
         negatives = [
             (
@@ -531,6 +552,32 @@ def main() -> int:
                 if len(records) != 2:
                     errors.append(
                         f"expected 2 usage records (failed attempt + retry), got {len(records)}"  # noqa: E501
+                    )
+                # M-3 regression: the corrective retry must be INFORMED —
+                # the retry child's recorded prompt carries the actual
+                # rejection reason, not a mis-bound parameter ('undefined').
+                retry_prompt = ""
+                for sess in (wf_dir / "child-sessions").glob("*flaky*retry*/*.jsonl"):
+                    for raw in sess.read_text().splitlines():
+                        if not raw.strip().startswith("{"):
+                            continue
+                        evt = json.loads(raw)
+                        msg = evt.get("message", {})
+                        if evt.get("type") == "message" and msg.get("role") == "user":
+                            content = msg.get("content")
+                            if isinstance(content, list):
+                                retry_prompt = "".join(
+                                    b.get("text", "")
+                                    for b in content
+                                    if isinstance(b, dict)
+                                )
+                            break
+                    if retry_prompt:
+                        break
+                if "output not valid JSON" not in retry_prompt:
+                    errors.append(
+                        "retry child's prompt does not carry the rejection reason "
+                        "(M-3 class: error parameter mis-binding)"
                     )
             except AssertionError as err:
                 errors.append(str(err))
